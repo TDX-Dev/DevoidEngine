@@ -1,0 +1,67 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Engine\Content\Assemblies\freetype6.dll" />
+    <None Remove="Engine\Content\Shaders\2D\font.frag" />
+    <None Remove="Engine\Content\Shaders\2D\font.vert" />
+    <None Remove="Engine\Content\Shaders\2D\sprite2d.frag" />
+    <None Remove="Engine\Content\Shaders\2D\sprite2d.vert" />
+    <None Remove="Engine\ImGui\shaders\GUI.frag" />
+    <None Remove="Engine\ImGui\shaders\GUI.vert" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Engine\Content\Assemblies\freetype6.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Engine\Content\Shaders\2D\font.frag">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Engine\Content\Shaders\2D\font.vert">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Engine\Content\Shaders\2D\sprite2d.frag">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Engine\Content\Shaders\2D\sprite2d.vert">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Engine\ImGui\shaders\GUI.frag">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Engine\ImGui\shaders\GUI.vert">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aether.Physics2D" Version="2.0.0" />
+    <PackageReference Include="Box2D" Version="2.3.0" />
+    <PackageReference Include="ImGui.NET" Version="1.87.2" />
+    <PackageReference Include="OpenTK" Version="4.7.5" />
+    <PackageReference Include="SharpFont.Dependencies" Version="2.6.0" />
+    <PackageReference Include="SixLabors.Fonts" Version="2.0.0" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.0.2" />
+    <PackageReference Include="SkiaSharp" Version="2.88.6" />
+    <PackageReference Include="System.Drawing.Common" Version="7.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Engine\ImGui\imnodes\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="SharpFont">
+      <HintPath>..\..\..\Users\maari\.nuget\packages\sharpfont\3.1.0\lib\net20\SharpFont.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

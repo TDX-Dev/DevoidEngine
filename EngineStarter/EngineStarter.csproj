@@ -1,0 +1,145 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="animationExample\tile %281%29.png" />
+    <None Remove="animationExample\tile %2810%29.png" />
+    <None Remove="animationExample\tile %2811%29.png" />
+    <None Remove="animationExample\tile %2812%29.png" />
+    <None Remove="animationExample\tile %2813%29.png" />
+    <None Remove="animationExample\tile %2814%29.png" />
+    <None Remove="animationExample\tile %2815%29.png" />
+    <None Remove="animationExample\tile %2816%29.png" />
+    <None Remove="animationExample\tile %2817%29.png" />
+    <None Remove="animationExample\tile %2818%29.png" />
+    <None Remove="animationExample\tile %2819%29.png" />
+    <None Remove="animationExample\tile %282%29.png" />
+    <None Remove="animationExample\tile %2820%29.png" />
+    <None Remove="animationExample\tile %2821%29.png" />
+    <None Remove="animationExample\tile %2822%29.png" />
+    <None Remove="animationExample\tile %2823%29.png" />
+    <None Remove="animationExample\tile %2824%29.png" />
+    <None Remove="animationExample\tile %283%29.png" />
+    <None Remove="animationExample\tile %284%29.png" />
+    <None Remove="animationExample\tile %285%29.png" />
+    <None Remove="animationExample\tile %286%29.png" />
+    <None Remove="animationExample\tile %287%29.png" />
+    <None Remove="animationExample\tile %288%29.png" />
+    <None Remove="animationExample\tile %289%29.png" />
+    <None Remove="bg.png" />
+    <None Remove="ER.ttf" />
+    <None Remove="JetBrainsMono-Regular.ttf" />
+    <None Remove="LD.ttf" />
+    <None Remove="NOICE.png" />
+    <None Remove="sprite.png" />
+    <None Remove="untitled.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="animationExample\tile (1).png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="animationExample\tile (10).png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="animationExample\tile (11).png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="animationExample\tile (12).png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="animationExample\tile (13).png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="animationExample\tile (14).png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="animationExample\tile (15).png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="animationExample\tile (16).png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="animationExample\tile (17).png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="animationExample\tile (18).png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="animationExample\tile (19).png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="animationExample\tile (2).png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="animationExample\tile (20).png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="animationExample\tile (21).png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="animationExample\tile (22).png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="animationExample\tile (23).png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="animationExample\tile (24).png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="animationExample\tile (3).png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="animationExample\tile (4).png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="animationExample\tile (5).png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="animationExample\tile (6).png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="animationExample\tile (7).png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="animationExample\tile (8).png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="animationExample\tile (9).png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="bg.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ER.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="JetBrainsMono-Regular.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="LD.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="NOICE.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="sprite.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="untitled.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EmberaEngine\EmberaEngine.csproj" />
+  </ItemGroup>
+
+</Project>

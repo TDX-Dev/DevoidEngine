@@ -1,0 +1,249 @@
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\EngineStarter.exe
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\freetype6.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\Engine\Content\Assemblies\freetype6.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\Engine\Content\Shaders\2D\font.frag
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\Engine\Content\Shaders\2D\font.vert
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\Engine\Content\Shaders\2D\sprite2d.frag
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\Engine\Content\Shaders\2D\sprite2d.vert
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\Engine\ImGui\shaders\GUI.frag
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\Engine\ImGui\shaders\GUI.vert
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\animationExample\tile (1).png
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\animationExample\tile (10).png
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\animationExample\tile (11).png
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\animationExample\tile (12).png
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\animationExample\tile (13).png
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\animationExample\tile (14).png
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\animationExample\tile (15).png
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\animationExample\tile (16).png
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\animationExample\tile (17).png
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\animationExample\tile (18).png
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\animationExample\tile (19).png
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\animationExample\tile (2).png
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\animationExample\tile (20).png
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\animationExample\tile (21).png
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\animationExample\tile (22).png
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\animationExample\tile (23).png
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\animationExample\tile (24).png
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\animationExample\tile (3).png
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\animationExample\tile (4).png
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\animationExample\tile (5).png
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\animationExample\tile (6).png
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\animationExample\tile (7).png
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\animationExample\tile (8).png
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\animationExample\tile (9).png
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\bg.png
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\JetBrainsMono-Regular.ttf
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\LD.ttf
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\NOICE.png
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\sprite.png
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\untitled.png
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\EngineStarter.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\EngineStarter.deps.json
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\EngineStarter.runtimeconfig.json
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\EngineStarter.pdb
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\Microsoft.CSharp.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\Microsoft.VisualBasic.Core.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\Microsoft.VisualBasic.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\Microsoft.Win32.Primitives.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\Microsoft.Win32.Registry.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.AppContext.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Buffers.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Collections.Concurrent.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Collections.Immutable.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Collections.NonGeneric.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Collections.Specialized.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Collections.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.ComponentModel.Annotations.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.ComponentModel.DataAnnotations.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.ComponentModel.EventBasedAsync.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.ComponentModel.Primitives.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.ComponentModel.TypeConverter.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.ComponentModel.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Configuration.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Console.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Core.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Data.Common.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Data.DataSetExtensions.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Data.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Diagnostics.Contracts.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Diagnostics.Debug.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Diagnostics.DiagnosticSource.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Diagnostics.FileVersionInfo.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Diagnostics.Process.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Diagnostics.StackTrace.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Diagnostics.TextWriterTraceListener.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Diagnostics.Tools.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Diagnostics.TraceSource.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Diagnostics.Tracing.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Drawing.Primitives.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Drawing.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Dynamic.Runtime.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Formats.Asn1.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Formats.Tar.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Globalization.Calendars.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Globalization.Extensions.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Globalization.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.IO.Compression.Brotli.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.IO.Compression.FileSystem.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.IO.Compression.ZipFile.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.IO.Compression.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.IO.FileSystem.AccessControl.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.IO.FileSystem.DriveInfo.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.IO.FileSystem.Primitives.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.IO.FileSystem.Watcher.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.IO.FileSystem.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.IO.IsolatedStorage.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.IO.MemoryMappedFiles.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.IO.Pipes.AccessControl.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.IO.Pipes.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.IO.UnmanagedMemoryStream.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.IO.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Linq.Expressions.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Linq.Parallel.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Linq.Queryable.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Linq.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Memory.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Net.Http.Json.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Net.Http.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Net.HttpListener.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Net.Mail.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Net.NameResolution.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Net.NetworkInformation.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Net.Ping.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Net.Primitives.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Net.Quic.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Net.Requests.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Net.Security.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Net.ServicePoint.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Net.Sockets.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Net.WebClient.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Net.WebHeaderCollection.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Net.WebProxy.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Net.WebSockets.Client.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Net.WebSockets.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Net.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Numerics.Vectors.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Numerics.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.ObjectModel.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Private.CoreLib.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Private.DataContractSerialization.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Private.Uri.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Private.Xml.Linq.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Private.Xml.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Reflection.DispatchProxy.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Reflection.Emit.ILGeneration.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Reflection.Emit.Lightweight.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Reflection.Emit.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Reflection.Extensions.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Reflection.Metadata.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Reflection.Primitives.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Reflection.TypeExtensions.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Reflection.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Resources.Reader.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Resources.ResourceManager.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Resources.Writer.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Runtime.CompilerServices.Unsafe.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Runtime.CompilerServices.VisualC.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Runtime.Extensions.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Runtime.Handles.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Runtime.InteropServices.JavaScript.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Runtime.InteropServices.RuntimeInformation.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Runtime.InteropServices.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Runtime.Intrinsics.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Runtime.Loader.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Runtime.Numerics.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Runtime.Serialization.Formatters.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Runtime.Serialization.Json.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Runtime.Serialization.Primitives.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Runtime.Serialization.Xml.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Runtime.Serialization.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Runtime.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Security.AccessControl.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Security.Claims.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Security.Cryptography.Algorithms.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Security.Cryptography.Cng.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Security.Cryptography.Csp.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Security.Cryptography.Encoding.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Security.Cryptography.OpenSsl.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Security.Cryptography.Primitives.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Security.Cryptography.X509Certificates.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Security.Cryptography.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Security.Principal.Windows.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Security.Principal.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Security.SecureString.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Security.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.ServiceModel.Web.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.ServiceProcess.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Text.Encoding.CodePages.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Text.Encoding.Extensions.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Text.Encoding.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Text.Encodings.Web.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Text.Json.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Text.RegularExpressions.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Threading.Channels.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Threading.Overlapped.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Threading.Tasks.Dataflow.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Threading.Tasks.Extensions.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Threading.Tasks.Parallel.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Threading.Tasks.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Threading.Thread.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Threading.ThreadPool.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Threading.Timer.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Threading.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Transactions.Local.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Transactions.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.ValueTuple.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Web.HttpUtility.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Web.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Windows.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Xml.Linq.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Xml.ReaderWriter.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Xml.Serialization.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Xml.XDocument.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Xml.XPath.XDocument.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Xml.XPath.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Xml.XmlDocument.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Xml.XmlSerializer.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Xml.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\WindowsBase.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\mscorlib.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\netstandard.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\Microsoft.DiaSymReader.Native.x86.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.IO.Compression.Native.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\clretwrc.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\clrgc.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\clrjit.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\coreclr.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\createdump.exe
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\hostfxr.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\hostpolicy.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\mscordaccore.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\mscordaccore_x86_x86_7.0.723.27404.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\mscordbi.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\mscorrc.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\msquic.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\Aether.Physics2D.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\ImGui.NET.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\Microsoft.Win32.SystemEvents.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\OpenTK.Compute.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\OpenTK.Core.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\OpenTK.Graphics.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\OpenTK.Input.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\OpenTK.Mathematics.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\OpenTK.OpenAL.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\OpenTK.Windowing.Common.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\OpenTK.Windowing.Desktop.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\OpenTK.Windowing.GraphicsLibraryFramework.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\SixLabors.Fonts.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\SixLabors.ImageSharp.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\SkiaSharp.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\System.Drawing.Common.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\cimgui.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\glfw3.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\libSkiaSharp.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\EmberaEngine.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\SharpFont.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\EmberaEngine.pdb
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\SharpFont.xml
+C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\publish\win-x86\SharpFont.dll.config

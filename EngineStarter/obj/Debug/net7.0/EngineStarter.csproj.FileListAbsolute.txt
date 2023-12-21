@@ -1,0 +1,91 @@
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\EngineStarter.exe
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\EngineStarter.deps.json
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\EngineStarter.runtimeconfig.json
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\EngineStarter.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\EngineStarter.pdb
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\OpenTK.Compute.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\OpenTK.Core.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\OpenTK.Graphics.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\OpenTK.Input.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\OpenTK.Mathematics.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\OpenTK.Windowing.Common.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\OpenTK.Windowing.Desktop.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\OpenTK.Windowing.GraphicsLibraryFramework.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\runtimes\linux-x64\native\libglfw.so.3.3
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\runtimes\osx-arm64\native\libglfw.3.dylib
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\runtimes\osx-x64\native\libglfw.3.dylib
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\runtimes\win-x64\native\glfw3.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\runtimes\win-x86\native\glfw3.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\EmberaEngine.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\EmberaEngine.pdb
+C:\Programming\Embera Engine\EngineStarter\obj\Debug\net7.0\EngineStarter.csproj.AssemblyReference.cache
+C:\Programming\Embera Engine\EngineStarter\obj\Debug\net7.0\EngineStarter.GeneratedMSBuildEditorConfig.editorconfig
+C:\Programming\Embera Engine\EngineStarter\obj\Debug\net7.0\EngineStarter.AssemblyInfoInputs.cache
+C:\Programming\Embera Engine\EngineStarter\obj\Debug\net7.0\EngineStarter.AssemblyInfo.cs
+C:\Programming\Embera Engine\EngineStarter\obj\Debug\net7.0\EngineStarter.csproj.CoreCompileInputs.cache
+C:\Programming\Embera Engine\EngineStarter\obj\Debug\net7.0\EngineStarter.csproj.CopyComplete
+C:\Programming\Embera Engine\EngineStarter\obj\Debug\net7.0\EngineStarter.dll
+C:\Programming\Embera Engine\EngineStarter\obj\Debug\net7.0\refint\EngineStarter.dll
+C:\Programming\Embera Engine\EngineStarter\obj\Debug\net7.0\EngineStarter.pdb
+C:\Programming\Embera Engine\EngineStarter\obj\Debug\net7.0\EngineStarter.genruntimeconfig.cache
+C:\Programming\Embera Engine\EngineStarter\obj\Debug\net7.0\ref\EngineStarter.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\Microsoft.Win32.SystemEvents.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\System.Drawing.Common.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\runtimes\win-x64\native\cimgui.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\runtimes\win-x86\native\cimgui.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\runtimes\win\lib\net7.0\Microsoft.Win32.SystemEvents.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\runtimes\win\lib\net7.0\System.Drawing.Common.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\Engine\ImGui\shaders\GUI.frag
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\Engine\ImGui\shaders\GUI.vert
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\ImGui.NET.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\runtimes\linux-x64\native\libcimgui.so
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\runtimes\osx-universal\native\libcimgui.dylib
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\OpenTK.OpenAL.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\JetBrainsMono-Regular.ttf
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\NOICE.png
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\SixLabors.ImageSharp.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\untitled.png
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\Engine\Content\Shaders\2D\sprite2d.frag
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\Engine\Content\Shaders\2D\sprite2d.vert
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\Aether.Physics2D.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\sprite.png
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\animationExample\tile (1).png
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\animationExample\tile (10).png
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\animationExample\tile (11).png
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\animationExample\tile (12).png
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\animationExample\tile (13).png
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\animationExample\tile (14).png
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\animationExample\tile (15).png
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\animationExample\tile (16).png
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\animationExample\tile (17).png
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\animationExample\tile (18).png
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\animationExample\tile (19).png
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\animationExample\tile (2).png
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\animationExample\tile (20).png
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\animationExample\tile (21).png
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\animationExample\tile (22).png
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\animationExample\tile (23).png
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\animationExample\tile (24).png
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\animationExample\tile (3).png
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\animationExample\tile (4).png
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\animationExample\tile (5).png
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\animationExample\tile (6).png
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\animationExample\tile (7).png
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\animationExample\tile (8).png
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\animationExample\tile (9).png
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\bg.png
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\SixLabors.Fonts.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\SkiaSharp.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\runtimes\osx\native\libSkiaSharp.dylib
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\runtimes\win-arm64\native\libSkiaSharp.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\runtimes\win-x64\native\libSkiaSharp.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\runtimes\win-x86\native\libSkiaSharp.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\freetype6.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\Engine\Content\Assemblies\freetype6.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\SharpFont.dll
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\SharpFont.xml
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\SharpFont.dll.config
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\Engine\Content\Shaders\2D\font.frag
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\Engine\Content\Shaders\2D\font.vert
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\LD.ttf
+C:\Programming\Embera Engine\EngineStarter\bin\Debug\net7.0\ER.ttf

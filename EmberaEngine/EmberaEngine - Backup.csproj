@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Engine\Content\Shaders\2D\sprite2d.frag" />
+    <None Remove="Engine\Content\Shaders\2D\sprite2d.vert" />
+    <None Remove="Engine\ImGui\shaders\GUI.frag" />
+    <None Remove="Engine\ImGui\shaders\GUI.vert" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Engine\Content\Shaders\2D\sprite2d.frag">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Engine\Content\Shaders\2D\sprite2d.vert">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Engine\ImGui\shaders\GUI.frag">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Engine\ImGui\shaders\GUI.vert">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aether.Physics2D" Version="2.0.0" />
+    <PackageReference Include="Box2D" Version="2.3.0" />
+    <PackageReference Include="FarseerPhysics" Version="3.5.0" />
+    <PackageReference Include="FreeTypeSharp" Version="1.1.3" />
+    <PackageReference Include="ImGui.NET" Version="1.87.2" />
+    <PackageReference Include="OpenTK" Version="4.7.5" />
+    <PackageReference Include="SharpFont" Version="4.0.1" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.0.2" />
+    <PackageReference Include="System.Drawing.Common" Version="7.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Engine\ImGui\imnodes\" />
+  </ItemGroup>
+
+</Project>
