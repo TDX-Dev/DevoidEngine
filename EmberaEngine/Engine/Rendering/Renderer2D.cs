@@ -60,7 +60,7 @@ namespace EmberaEngine.Engine.Rendering
                 {
                     RenderSprite renderSprite = sortedSprites[i];
 
-                    Matrix4 model = Matrix4.CreateScale(renderSprite.scale.X, renderSprite.scale.Y, 1f);
+                    Matrix4 model = Matrix4.CreateScale(renderSprite.scale.X / 2, renderSprite.scale.Y / 2, 1f);
                     model *= Matrix4.CreateRotationZ(MathHelper.DegreesToRadians(renderSprite.rotationAngle));
                     model *= Matrix4.CreateTranslation(renderSprite.transform.X, renderSprite.transform.Y, -1f + (0.01f * renderSprite.order));
 

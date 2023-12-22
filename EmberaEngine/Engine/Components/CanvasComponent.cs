@@ -3,6 +3,7 @@ using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
 using EmberaEngine.Engine.Rendering;
+using EmberaEngine.Engine.Utilities;
 
 namespace EmberaEngine.Engine.Components
 {
@@ -23,6 +24,13 @@ namespace EmberaEngine.Engine.Components
 
         private int prevWidth;
         private int prevHeight;
+
+        private float scaledWidth;
+        private float scaledHeight;
+        private float scaledX;
+        private float scaledY;
+
+        public Vector2 innerMousePos;
 
         public Matrix4 OrthoGraphicProjection = Matrix4.Identity;
         public RenderCanvas canvas = new RenderCanvas();
@@ -50,6 +58,13 @@ namespace EmberaEngine.Engine.Components
                 OrthoGraphicProjection = CalculateScaleWithScreen();
                 canvas.Projection = OrthoGraphicProjection;
             }
+            CalculateMouseScaleWithScreen();
+        }
+
+        void CalculateMouseScaleWithScreen()
+        {
+            innerMousePos.X = (((Input.GetMousePos().X) * (scaledWidth - scaledX)) / (Screen.Size.X)) + scaledX;
+            innerMousePos.Y = (((Input.GetMousePos().Y) * (scaledHeight - scaledY)) / (Screen.Size.Y)) + scaledY;
         }
 
         Matrix4 CalculateScaleWithScreen()
@@ -74,7 +89,21 @@ namespace EmberaEngine.Engine.Components
                 scaleHeight = virtualRatio / deviceRatio;
             }
 
-            Matrix4 projection = Graphics.CreateOrthographicCenter(-(scaleWidth * ReferenceWidth/2) + ReferenceWidth/2,  scaleWidth * ReferenceWidth/2 + ReferenceWidth/2, -(scaleHeight * ReferenceHeight/2) + ReferenceHeight/2, scaleHeight * ReferenceHeight/2 + ReferenceHeight/2, 1f, -1f);
+            float left = -(scaleWidth * ReferenceWidth / 2) + ReferenceWidth / 2;
+            float right = scaleWidth * ReferenceWidth / 2 + ReferenceWidth / 2;
+            float bottom = -(scaleHeight * ReferenceHeight / 2) + ReferenceHeight / 2;
+            float top = scaleHeight * ReferenceHeight / 2 + ReferenceHeight / 2;
+
+
+            Matrix4 projection = Graphics.CreateOrthographicCenter(left, right, bottom, top, 1f, -1f);
+
+
+            scaledWidth = right;
+            scaledHeight = bottom;
+            scaledX = left;
+            scaledY = scaleHeight * ReferenceHeight / 2 + ReferenceHeight / 2;
+
+            Console.WriteLine(new Vector4(scaledX, scaledY, scaledWidth, scaledHeight));
 
             return projection;
         }

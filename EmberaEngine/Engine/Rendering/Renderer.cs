@@ -22,7 +22,6 @@ namespace EmberaEngine.Engine.Rendering
 
         public static void BeginFrame()
         {
-            GraphicsState.ErrorCheck();
             Renderer2D.BeginRender();
         }
 

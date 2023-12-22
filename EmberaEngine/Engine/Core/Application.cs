@@ -49,10 +49,16 @@ namespace EmberaEngine.Engine.Core
             window.KeyDown += OnKeyDown;
             window.Resize += OnResize;
             window.TextInput += OnTextInput;
+            window.MouseMove += OnMouseMove;
 
             Renderer.Initialize(appSpec.Width, appSpec.Height);
 
             this.appSpec = appSpec;
+        }
+
+        private void OnMouseMove(OpenTK.Windowing.Common.MouseMoveEventArgs obj)
+        {
+            Input.SetMousePos(obj.Position);
         }
 
         public ImguiAPI? GetImGuiAPI()
@@ -123,6 +129,12 @@ namespace EmberaEngine.Engine.Core
 
                 ImGuiLayer.End();
             }
+
+            bool left = window.MouseState.IsButtonPressed(OpenTK.Windowing.GraphicsLibraryFramework.MouseButton.Left);
+            bool right = window.MouseState.IsButtonPressed(OpenTK.Windowing.GraphicsLibraryFramework.MouseButton.Right);
+            bool middle = window.MouseState.IsButtonPressed(OpenTK.Windowing.GraphicsLibraryFramework.MouseButton.Middle);
+
+            Input.mouseButton = left ? MouseButtonEvent.Left : right ? MouseButtonEvent.Right : middle ? MouseButtonEvent.Middle : MouseButtonEvent.None;
 
             // Updating
 

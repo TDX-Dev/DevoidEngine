@@ -22,3 +22,27 @@ C:\Programming\Embera Engine\EmberaEngine\bin\Debug\net7.0\SharpFont.xml
 C:\Programming\Embera Engine\EmberaEngine\bin\Debug\net7.0\SharpFont.dll.config
 C:\Programming\Embera Engine\EmberaEngine\bin\Debug\net7.0\Engine\Content\Shaders\2D\font.frag
 C:\Programming\Embera Engine\EmberaEngine\bin\Debug\net7.0\Engine\Content\Shaders\2D\font.vert
+D:\Programming\EmberaEngine\EmberaEngine\bin\Debug\net7.0\freetype6.dll
+D:\Programming\EmberaEngine\EmberaEngine\bin\Debug\net7.0\Engine\Content\Assemblies\freetype6.dll
+D:\Programming\EmberaEngine\EmberaEngine\bin\Debug\net7.0\Engine\Content\Shaders\2D\font.frag
+D:\Programming\EmberaEngine\EmberaEngine\bin\Debug\net7.0\Engine\Content\Shaders\2D\font.vert
+D:\Programming\EmberaEngine\EmberaEngine\bin\Debug\net7.0\Engine\Content\Shaders\2D\sprite2d.frag
+D:\Programming\EmberaEngine\EmberaEngine\bin\Debug\net7.0\Engine\Content\Shaders\2D\sprite2d.vert
+D:\Programming\EmberaEngine\EmberaEngine\bin\Debug\net7.0\Engine\ImGui\shaders\GUI.frag
+D:\Programming\EmberaEngine\EmberaEngine\bin\Debug\net7.0\Engine\ImGui\shaders\GUI.vert
+D:\Programming\EmberaEngine\EmberaEngine\bin\Debug\net7.0\EmberaEngine.deps.json
+D:\Programming\EmberaEngine\EmberaEngine\bin\Debug\net7.0\EmberaEngine.dll
+D:\Programming\EmberaEngine\EmberaEngine\bin\Debug\net7.0\EmberaEngine.pdb
+D:\Programming\EmberaEngine\EmberaEngine\bin\Debug\net7.0\SharpFont.dll
+D:\Programming\EmberaEngine\EmberaEngine\bin\Debug\net7.0\SharpFont.xml
+D:\Programming\EmberaEngine\EmberaEngine\bin\Debug\net7.0\SharpFont.dll.config
+D:\Programming\EmberaEngine\EmberaEngine\obj\Debug\net7.0\EmberaEngine.csproj.AssemblyReference.cache
+D:\Programming\EmberaEngine\EmberaEngine\obj\Debug\net7.0\EmberaEngine.GeneratedMSBuildEditorConfig.editorconfig
+D:\Programming\EmberaEngine\EmberaEngine\obj\Debug\net7.0\EmberaEngine.AssemblyInfoInputs.cache
+D:\Programming\EmberaEngine\EmberaEngine\obj\Debug\net7.0\EmberaEngine.AssemblyInfo.cs
+D:\Programming\EmberaEngine\EmberaEngine\obj\Debug\net7.0\EmberaEngine.csproj.CoreCompileInputs.cache
+D:\Programming\EmberaEngine\EmberaEngine\obj\Debug\net7.0\EmberaEngine.csproj.CopyComplete
+D:\Programming\EmberaEngine\EmberaEngine\obj\Debug\net7.0\EmberaEngine.dll
+D:\Programming\EmberaEngine\EmberaEngine\obj\Debug\net7.0\refint\EmberaEngine.dll
+D:\Programming\EmberaEngine\EmberaEngine\obj\Debug\net7.0\EmberaEngine.pdb
+D:\Programming\EmberaEngine\EmberaEngine\obj\Debug\net7.0\ref\EmberaEngine.dll

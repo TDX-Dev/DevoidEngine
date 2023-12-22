@@ -50,5 +50,10 @@ namespace EmberaEngine.Engine.Core
             SwapBuffers();
             base.OnRenderFrame(args);
         }
+
+        protected override void OnMouseMove(MouseMoveEventArgs e)
+        {
+            base.OnMouseMove(e);
+        }
     }
 }

@@ -1348,11 +1348,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Programming\\Embera Engine\\EmberaEngine\\EmberaEngine.csproj",
+      "projectUniqueName": "D:\\Programming\\EmberaEngine\\EmberaEngine\\EmberaEngine.csproj",
       "projectName": "EmberaEngine",
-      "projectPath": "C:\\Programming\\Embera Engine\\EmberaEngine\\EmberaEngine.csproj",
+      "projectPath": "D:\\Programming\\EmberaEngine\\EmberaEngine\\EmberaEngine.csproj",
       "packagesPath": "C:\\Users\\maari\\.nuget\\packages\\",
-      "outputPath": "C:\\Programming\\Embera Engine\\EmberaEngine\\obj\\",
+      "outputPath": "D:\\Programming\\EmberaEngine\\EmberaEngine\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\maari\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -1363,7 +1363,8 @@
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-        "https://api.nuget.org/v3/index.json": {}
+        "https://api.nuget.org/v3/index.json": {},
+        "https://packages.stride3d.net/nuget": {}
       },
       "frameworks": {
         "net7.0": {
@@ -1434,7 +1435,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.304\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.102\\RuntimeIdentifierGraph.json"
       }
     }
   }
