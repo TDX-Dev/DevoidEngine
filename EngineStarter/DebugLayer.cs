@@ -36,13 +36,22 @@ namespace EngineStarter
             mainScreenCanvas.AddComponent<CanvasComponent>().ScaleMode = CanvasScaleMode.ScaleWithScreen;
 
             GameObject playText = scene.addGameObject("PlayText");
-            playText.AddComponent<TextComponent>().Content = "Play";
-            playText.transform.position.X = 400 - 50;
+            ButtonComponent btn = playText.AddComponent<ButtonComponent>();
+            t = playText.AddComponent<TextComponent>();
+            RectTransform r = playText.AddComponent<RectTransform>();
+            r.Position = new OpenTK.Mathematics.Vector2(350, 300);
+            r.Size = new OpenTK.Mathematics.Vector2(64, 32);
+            playText.transform.position.X = 350;
             playText.transform.position.Y = 300;
             playText.transform.scale *= 2;
 
-            GameObject screenText = scene.addGameObject("new");
-            SpriteRenderer sr = screenText.AddComponent<SpriteRenderer>();
+            GameObject spriteObject = scene.addGameObject("testviewer");
+            RectTransform r1 = spriteObject.AddComponent<RectTransform>();
+
+            r1.Position = new OpenTK.Mathematics.Vector2(350, 300);
+            r1.Size = new OpenTK.Mathematics.Vector2(64, 32);
+
+            SpriteRenderer sr = spriteObject.AddComponent<SpriteRenderer>();
             Image image = new EmberaEngine.Engine.Utilities.Image();
             image.LoadPNG("animationExample/tile (1).png");
 
@@ -51,12 +60,11 @@ namespace EngineStarter
             debugTexture.SetWrapMode(EmberaEngine.Engine.Core.TextureWrapMode.ClampToEdge, EmberaEngine.Engine.Core.TextureWrapMode.ClampToEdge);
             debugTexture.TexImage2D<byte>(image.Width, image.Height, EmberaEngine.Engine.Core.PixelInternalFormat.Rgba16f, EmberaEngine.Engine.Core.PixelFormat.Rgba, EmberaEngine.Engine.Core.PixelType.UnsignedByte, image.Pixels);
             debugTexture.GenerateMipmap();
+            sr.SolidColor = new OpenTK.Mathematics.Vector4(0.9f, 0.9f, 0.9f, 0.8f);
 
-            sr.Sprite = debugTexture;
-            sr.SolidColor = new OpenTK.Mathematics.Vector4(0, 1, 0, 0.2f);
-            screenText.transform.position.X = 400 - 50;
-            screenText.transform.position.Y = 300;
-            screenText.transform.scale *= 100;
+            btn.OnButtonPress += () => {
+                t.Content = "CLICKED";
+            };
 
         }
 
@@ -64,6 +72,7 @@ namespace EngineStarter
 
         public override void OnUpdate(float deltaTime)
         {
+            //t.Content = Input.GetMousePos().X + ", " + Input.GetMousePos().Y;
 
             scene.OnUpdate(deltaTime);
         }

@@ -89,3 +89,94 @@ C:\Programming\Embera Engine\EngineStarter\obj\Release\net7.0\EngineStarter.pdb
 C:\Programming\Embera Engine\EngineStarter\obj\Release\net7.0\EngineStarter.genruntimeconfig.cache
 C:\Programming\Embera Engine\EngineStarter\obj\Release\net7.0\ref\EngineStarter.dll
 C:\Programming\Embera Engine\EngineStarter\bin\Release\net7.0\ER.ttf
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\freetype6.dll
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\Engine\Content\Assemblies\freetype6.dll
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\Engine\Content\Shaders\2D\font.frag
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\Engine\Content\Shaders\2D\font.vert
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\Engine\Content\Shaders\2D\sprite2d.frag
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\Engine\Content\Shaders\2D\sprite2d.vert
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\Engine\ImGui\shaders\GUI.frag
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\Engine\ImGui\shaders\GUI.vert
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\animationExample\tile (1).png
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\animationExample\tile (10).png
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\animationExample\tile (11).png
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\animationExample\tile (12).png
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\animationExample\tile (13).png
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\animationExample\tile (14).png
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\animationExample\tile (15).png
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\animationExample\tile (16).png
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\animationExample\tile (17).png
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\animationExample\tile (18).png
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\animationExample\tile (19).png
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\animationExample\tile (2).png
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\animationExample\tile (20).png
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\animationExample\tile (21).png
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\animationExample\tile (22).png
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\animationExample\tile (23).png
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\animationExample\tile (24).png
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\animationExample\tile (3).png
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\animationExample\tile (4).png
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\animationExample\tile (5).png
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\animationExample\tile (6).png
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\animationExample\tile (7).png
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\animationExample\tile (8).png
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\animationExample\tile (9).png
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\bg.png
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\ER.ttf
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\JetBrainsMono-Regular.ttf
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\LD.ttf
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\NOICE.png
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\sprite.png
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\untitled.png
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\EngineStarter.exe
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\EngineStarter.deps.json
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\EngineStarter.runtimeconfig.json
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\EngineStarter.dll
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\EngineStarter.pdb
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\Aether.Physics2D.dll
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\ImGui.NET.dll
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\Microsoft.Win32.SystemEvents.dll
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\OpenTK.Compute.dll
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\OpenTK.Core.dll
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\OpenTK.Graphics.dll
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\OpenTK.Input.dll
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\OpenTK.Mathematics.dll
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\OpenTK.OpenAL.dll
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\OpenTK.Windowing.Common.dll
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\OpenTK.Windowing.Desktop.dll
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\OpenTK.Windowing.GraphicsLibraryFramework.dll
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\SixLabors.Fonts.dll
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\SixLabors.ImageSharp.dll
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\SkiaSharp.dll
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\System.Drawing.Common.dll
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\runtimes\linux-x64\native\libcimgui.so
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\runtimes\osx-universal\native\libcimgui.dylib
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\runtimes\win-x64\native\cimgui.dll
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\runtimes\win-x86\native\cimgui.dll
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\runtimes\win\lib\net7.0\Microsoft.Win32.SystemEvents.dll
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\runtimes\linux-x64\native\libglfw.so.3.3
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\runtimes\osx-arm64\native\libglfw.3.dylib
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\runtimes\osx-x64\native\libglfw.3.dylib
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\runtimes\win-x64\native\glfw3.dll
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\runtimes\win-x86\native\glfw3.dll
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\runtimes\osx\native\libSkiaSharp.dylib
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\runtimes\win-arm64\native\libSkiaSharp.dll
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\runtimes\win-x64\native\libSkiaSharp.dll
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\runtimes\win-x86\native\libSkiaSharp.dll
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\runtimes\win\lib\net7.0\System.Drawing.Common.dll
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\EmberaEngine.dll
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\SharpFont.dll
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\EmberaEngine.pdb
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\SharpFont.xml
+D:\Programming\EmberaEngine\EngineStarter\bin\Release\net7.0\SharpFont.dll.config
+D:\Programming\EmberaEngine\EngineStarter\obj\Release\net7.0\EngineStarter.csproj.AssemblyReference.cache
+D:\Programming\EmberaEngine\EngineStarter\obj\Release\net7.0\EngineStarter.GeneratedMSBuildEditorConfig.editorconfig
+D:\Programming\EmberaEngine\EngineStarter\obj\Release\net7.0\EngineStarter.AssemblyInfoInputs.cache
+D:\Programming\EmberaEngine\EngineStarter\obj\Release\net7.0\EngineStarter.AssemblyInfo.cs
+D:\Programming\EmberaEngine\EngineStarter\obj\Release\net7.0\EngineStarter.csproj.CoreCompileInputs.cache
+D:\Programming\EmberaEngine\EngineStarter\obj\Release\net7.0\EngineStarter.csproj.CopyComplete
+D:\Programming\EmberaEngine\EngineStarter\obj\Release\net7.0\EngineStarter.dll
+D:\Programming\EmberaEngine\EngineStarter\obj\Release\net7.0\refint\EngineStarter.dll
+D:\Programming\EmberaEngine\EngineStarter\obj\Release\net7.0\EngineStarter.pdb
+D:\Programming\EmberaEngine\EngineStarter\obj\Release\net7.0\EngineStarter.genruntimeconfig.cache
+D:\Programming\EmberaEngine\EngineStarter\obj\Release\net7.0\ref\EngineStarter.dll
