@@ -33,6 +33,14 @@ namespace DevoidEngine.Engine.Rendering
         public static CameraData ScreenData;
         private static UIRenderData _uiRenderData;
 
+        public static RenderState renderState = new RenderState()
+        {
+            BlendMode = BlendMode.AlphaBlend,
+            CullMode = CullMode.Back,
+            DepthTest = DepthTest.LessEqual,
+            DepthWrite = false,
+        };
+
         public static void Initialize(int width, int height)
         {
             Console.WriteLine($"Initializing UI Renderer at {width} x {height}");
@@ -68,7 +76,7 @@ namespace DevoidEngine.Engine.Rendering
         {
             Matrix4x4 ortho = Matrix4x4.CreateOrthographicOffCenter(
                 0f, width,
-                0f, height,
+                height, 0f,
                 -1f, 1f
             );
 

@@ -10,9 +10,24 @@ struct PSInput
 cbuffer MATERIAL
 {
     float4 COLOR;
+    int useTexture;
+    int3 pad;
 };
+
+Texture2D MAT_Texture : register(t0);
+SamplerState MAT_TextureSampler : register(s0);
 
 float4 PSMain(PSInput input) : SV_TARGET
 {   
-    return float4(COLOR);
+    float4 finalColor = float4(1,1,1,1);
+    if (useTexture)
+    {
+        finalColor = MAT_Texture.Sample(MAT_TextureSampler, input.UV0);
+    }
+    else
+    {
+        finalColor = COLOR;
+    }
+    return finalColor;
+
 }

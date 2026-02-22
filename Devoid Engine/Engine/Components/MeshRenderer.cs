@@ -10,7 +10,7 @@ namespace DevoidEngine.Engine.Components
         public override string Type => nameof(MeshRenderer);
 
         private Mesh mesh;
-        private MaterialInstance material;
+        public MaterialInstance material;
 
         public override void OnStart()
         {

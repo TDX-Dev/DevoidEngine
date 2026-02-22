@@ -244,11 +244,10 @@ namespace DevoidEngine.Engine.Core
 
         public void OnRender(float dt)
         {
-            for (int i = 0; i < Components.Count; i++)
-            {
-                if (!Components[i].IsInitialized) { continue; }
-                Components[i].OnRender(dt);
-            }
+            //for (int i = 0; i < Components.Count; i++)
+            //{
+            //    Components[i].OnRender(dt);
+            //}
 
 
 
@@ -263,7 +262,9 @@ namespace DevoidEngine.Engine.Core
 
         internal void InvokeCollisionEnter(GameObject other)
         {
-            foreach (var comp in Components)
+            var snapshot = new List<Component>(Components);
+
+            foreach (var comp in snapshot)
             {
                 if (comp is ICollisionListener listener)
                     listener.OnCollisionEnter(other);
@@ -272,7 +273,9 @@ namespace DevoidEngine.Engine.Core
 
         internal void InvokeCollisionStay(GameObject other)
         {
-            foreach (var comp in Components)
+            var snapshot = new List<Component>(Components);
+
+            foreach (var comp in snapshot)
             {
                 if (comp is ICollisionListener listener)
                     listener.OnCollisionStay(other);
@@ -281,7 +284,9 @@ namespace DevoidEngine.Engine.Core
 
         internal void InvokeCollisionExit(GameObject other)
         {
-            foreach (var comp in Components)
+            var snapshot = new List<Component>(Components);
+
+            foreach (var comp in snapshot)
             {
                 if (comp is ICollisionListener listener)
                     listener.OnCollisionExit(other);
@@ -305,18 +310,13 @@ namespace DevoidEngine.Engine.Core
         // This is called when the object is requested to be removed
         public void OnDestroy()
         {
-            for (int i = 0; i < Components.Count; i++)
-            {
-                Components[i].OnDestroy();
-            }
+            var comps = new List<Component>(Components);
 
-            if (children.Count > 0)
-            {
-                for (int i = 0; i < children.Count; i++)
-                {
-                    children[i].OnDestroy();
-                }
-            }
+            foreach (var comp in comps)
+                RemoveComponent(comp);
+
+            foreach (var child in children)
+                child.OnDestroy();
         }
 
     }

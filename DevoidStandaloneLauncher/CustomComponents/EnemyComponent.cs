@@ -1,5 +1,6 @@
 ﻿using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.Physics;
+using DevoidEngine.Engine.Utilities;
 using System.Numerics;
 
 namespace DevoidEngine.Engine.Components
@@ -8,86 +9,137 @@ namespace DevoidEngine.Engine.Components
     {
         public override string Type => nameof(Enemy);
 
-        // ===============================
-        // Health
-        // ===============================
+        public float Health = 200f;
 
-        public float MaxHealth = 100f;
-        private float currentHealth;
+        private bool isDying = false;
+        private float deathTimer = 0f;
+        private const float deathDuration = 2f;
+        public float MoveSpeed = 4f;
 
-        // ===============================
-        // Optional simple movement
-        // ===============================
+        public event Action OnDeath;
 
-        public float MoveSpeed = 3f;
-        private Transform player;
+        private RigidBodyComponent rb;
+        private MeshRenderer meshRenderer;
+        private GameObject player;
+
+        private EnemySpawner spawner;
+
+        public void SetSpawner(EnemySpawner spawnerRef)
+        {
+            spawner = spawnerRef;
+        }
 
         public override void OnStart()
         {
-            currentHealth = MaxHealth;
+            rb = gameObject.GetComponent<RigidBodyComponent>();
+            meshRenderer = gameObject.GetComponent<MeshRenderer>();
 
-            var playerObject = gameObject.Scene.GetGameObject("Player");
-            if (playerObject != null)
-                player = playerObject.transform;
+            player = gameObject.Scene.GetGameObject("Player"); // adjust to your API
         }
 
-        public override void OnFixedUpdate(float fixedDt)
+        public override void OnUpdate(float dt)
         {
-            if (player == null) return;
-
-            var rb = gameObject.GetComponent<RigidBodyComponent>();
-            if (rb == null) return;
-
-            Vector3 direction = player.Position - gameObject.transform.Position;
-            direction.Y = 0;
-
-            if (direction.LengthSquared() > 0.1f)
+            if (isDying)
             {
-                direction = Vector3.Normalize(direction);
+                HandleDeath(dt);
+                return;
+            }
 
-                Vector3 velocity = rb.LinearVelocity;
-                velocity.X = direction.X * MoveSpeed;
-                velocity.Z = direction.Z * MoveSpeed;
+            ChasePlayer();
+        }
 
-                rb.LinearVelocity = velocity;
+        private void HandleDeath(float dt)
+        {
+            deathTimer += dt;
+
+            var euler = gameObject.transform.EulerAngles;
+            euler.Z = MathHelper.Lerp(euler.Z, 90f, dt * 5f);
+            gameObject.transform.EulerAngles = euler;
+
+            if (deathTimer >= deathDuration)
+            {
+                spawner?.NotifyEnemyDied();
+                gameObject.Scene.Destroy(gameObject);
+
             }
         }
 
-        // ===============================
-        // Collision Handling
-        // ===============================
+        private void ChasePlayer()
+        {
+            if (player == null || rb == null)
+                return;
+
+            Vector3 direction =
+                player.transform.Position - gameObject.transform.Position;
+
+            direction.Y = 0f;
+
+            if (direction.LengthSquared() < 0.01f)
+                return;
+
+            direction = Vector3.Normalize(direction);
+
+            // Compute yaw angle (Y-axis rotation)
+            float targetYaw = MathF.Atan2(direction.X, direction.Z);
+
+            // Convert to quaternion (Y-axis only)
+            Quaternion targetRotation = Quaternion.CreateFromAxisAngle(Vector3.UnitY, targetYaw);
+
+            // Apply to rigidbody
+            rb.Rotation = targetRotation;
+
+            rb.LinearVelocity = new Vector3(
+                direction.X * MoveSpeed,
+                rb.LinearVelocity.Y,
+                direction.Z * MoveSpeed
+            );
+        }
 
         public void OnCollisionEnter(GameObject other)
         {
-            Console.WriteLine("Name: " + other.Name);
-            if (other.Name == "Projectile")
-            {
-                TakeDamage(100);
+            if (isDying) return;
 
-                // Destroy the projectile
-                gameObject.OnDestroy();
+            if (other.GetComponent<BulletComponent>() != null)
+            {
+                TakeDamage(25f);
             }
         }
 
-        public void OnCollisionStay(GameObject other) { }
-
-        public void OnCollisionExit(GameObject other) { }
-
-        // ===============================
-        // Damage Logic
-        // ===============================
-
         private void TakeDamage(float amount)
         {
-            currentHealth -= amount;
+            Health -= amount;
 
-            if (currentHealth <= 0f)
+            if (Health <= 0f)
                 Die();
         }
 
         private void Die()
         {
-            gameObject.OnDestroy();
+            if (isDying) return;
+
+            isDying = true;
+            OnDeath?.Invoke();
+
+            // 1️⃣ Remove physics
+            if (rb != null)
+                gameObject.RemoveComponent(rb);
+
+            // 2️⃣ Change color to red
+            if (meshRenderer != null && meshRenderer.material != null)
+            {
+                meshRenderer.material.SetVector4("Albedo", new Vector4(1, 0, 0, 1));
+            }
+
+            // 3️⃣ Disable further collisions
+            gameObject.Enabled = true; // keep rendering
+        }
+
+        public void OnCollisionStay(GameObject other)
+        {
+        }
+
+        public void OnCollisionExit(GameObject other)
+        {
         }
     }
 }

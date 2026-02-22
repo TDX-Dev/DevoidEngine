@@ -19,11 +19,15 @@ namespace DevoidEngine.Engine.Components
         public bool FreezeRotationY = false;
         public bool FreezeRotationZ = false;
 
-        public PhysicsShapeDescription Shape = new PhysicsShapeDescription
+        public PhysicsShapeDescription Shape
         {
-            Type = PhysicsShapeType.Box,
-            Size = new Vector3(1, 1, 1)
-        };
+            get => internalShape;
+            set
+            {
+                internalShape = value;
+                CreateBody();
+            }
+        }
 
         public PhysicsMaterial Material = PhysicsMaterial.Default;
 
@@ -32,6 +36,14 @@ namespace DevoidEngine.Engine.Components
         // ===============================
 
         private IPhysicsBody internalBody;
+
+        private PhysicsShapeDescription internalShape = new PhysicsShapeDescription
+        {
+            Type = PhysicsShapeType.Box,
+            Size = new Vector3(1,1,1)
+        };
+
+        private PhysicsMaterial internalMaterial;
 
         // ===============================
         // Public Physics API
@@ -92,10 +104,19 @@ namespace DevoidEngine.Engine.Components
 
         public override void OnStart()
         {
-            if (Shape.Type == PhysicsShapeType.Box &&
-                Shape.Size == Vector3.Zero)
+            CreateBody();
+        }
+
+        private void CreateBody()
+        {
+            if (internalBody != null)
             {
-                Shape.Size = new Vector3(1, 1, 1);
+                gameObject.Scene.Physics.RemoveBody(internalBody);
+            }
+
+            if (internalShape.Type == PhysicsShapeType.Box && Shape.Size == Vector3.Zero)
+            {
+                internalShape.Size = new Vector3(1, 1, 1);
             }
 
             var desc = new PhysicsBodyDescription

@@ -220,6 +220,8 @@ namespace DevoidEngine.Engine.Core
             {
                 GameObjects[i].OnLateUpdate(dt);
             }
+
+            ProcessDestroyQueue();
         }
 
         public void DoFixedUpdate(float dt)
@@ -282,6 +284,12 @@ namespace DevoidEngine.Engine.Core
                 RemoveCamera((CameraComponent3D)component);
             }
 
+            if (component is IRenderComponent)
+            {
+                Console.WriteLine(component.gameObject.Name);
+                Renderables.Remove((IRenderComponent)component);
+            }
+
             OnComponentRemoved?.Invoke(component);
         }
 
@@ -292,6 +300,26 @@ namespace DevoidEngine.Engine.Core
                 Cameras[i].SetViewportSize((int)width, (int)height);
             }
         }
+
+        private List<GameObject> destroyQueue = new();
+
+        public void Destroy(GameObject obj)
+        {
+            if (!destroyQueue.Contains(obj))
+                destroyQueue.Add(obj);
+        }
+
+        private void ProcessDestroyQueue()
+        {
+            foreach (var obj in destroyQueue)
+            {
+                obj.OnDestroy();
+                GameObjects.Remove(obj);
+            }
+
+            destroyQueue.Clear();
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             // check if already disposed

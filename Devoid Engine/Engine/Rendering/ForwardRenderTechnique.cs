@@ -19,6 +19,8 @@ namespace DevoidEngine.Engine.Rendering
 
         SceneData sceneData;
 
+
+        public RenderState renderStateOverride = RenderState.DefaultRenderState;
         public void Dispose()
         {
 
@@ -67,10 +69,10 @@ namespace DevoidEngine.Engine.Rendering
             UploadSceneData(ctx);
 
             RenderBase.SetupCamera(ctx.cameraData);
-            RenderBase.Execute(ctx.renderItems3D, RenderState.DefaultRenderState);
+            RenderBase.Execute(ctx.renderItems3D, renderStateOverride);
 
-            //RenderBase.SetupCamera(UIRenderer.ScreenData);
-            //RenderBase.Execute(ctx.renderItemsUI, RenderState.DefaultRenderState);
+            RenderBase.SetupCamera(UIRenderer.ScreenData);
+            RenderBase.Execute(ctx.renderItemsUI, UIRenderer.renderState);
 
 
             return finalOutputBuffer.GetRenderTexture(0);

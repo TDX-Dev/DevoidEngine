@@ -8,12 +8,12 @@ namespace DevoidStandaloneLauncher
     {
         static ApplicationSpecification applicationOptions = new ApplicationSpecification()
         {
-            Height = 200,
-            Width = 200,
+            Height = 480,
+            Width = 640,
             graphicsDevice = new DX11GraphicsDevice(),
             forceVsync = true,
 
-            Name = "Test Instance - Devoid"
+            Name = "LockedIn - Devoid"
         };
 
 

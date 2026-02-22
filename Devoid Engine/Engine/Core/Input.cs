@@ -169,6 +169,8 @@ namespace DevoidEngine.Engine.Core
                 if (!mouseDown.Contains(m))
                     mouseReleasedThisFrame.Add(m);
             }
+
+            _snapshotBack = snap;
         }
 
         public static void Publish()

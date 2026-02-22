@@ -6,7 +6,7 @@ using System.Numerics;
 
 namespace DevoidEngine.Engine.Components
 {
-    public class FPSController : Component
+    public class FPSController : Component, ICollisionListener
     {
         public override string Type => nameof(FPSController);
 
@@ -110,49 +110,28 @@ namespace DevoidEngine.Engine.Components
 
             fireTimer = FireRate;
 
-            // Spawn position = camera world position
             Vector3 spawnPosition = cameraPivot != null
                 ? cameraPivot.Position
                 : gameObject.transform.Position;
 
-            // Direction = camera forward
             Quaternion rotation = cameraPivot != null
                 ? cameraPivot.Rotation
                 : rb.Rotation;
 
-            Vector3 forward = Vector3.Normalize(
-                Vector3.Transform(Vector3.UnitZ, rotation)
+            Vector3 forward =
+                Vector3.Normalize(
+                    Vector3.Transform(Vector3.UnitZ, rotation)
+                );
+
+            BulletComponent.Spawn(
+                gameObject.Scene,
+                projectileMesh,
+                spawnPosition + forward * 2f,
+                rotation,
+                ProjectileScale,
+                ProjectileSpeed,
+                ProjectileMass
             );
-
-            // Create projectile object
-            GameObject bullet = gameObject.Scene.addGameObject("Projectile");
-
-            bullet.transform.Position = spawnPosition + forward * 0.6f;
-            bullet.transform.Scale = ProjectileScale;
-
-            // Render
-            var renderer = bullet.AddComponent<MeshRenderer>();
-            renderer.AddMesh(projectileMesh);
-
-            // Physics
-            var body = bullet.AddComponent<RigidBodyComponent>();
-            body.Shape = new PhysicsShapeDescription()
-            {
-                Type = PhysicsShapeType.Sphere,
-                Radius = ProjectileScale.Z,
-                
-                Size = ProjectileScale
-            };
-
-            body.Mass = ProjectileMass;
-            body.Material = new PhysicsMaterial()
-            {
-                Friction = 2f,
-                Restitution = 0.1f
-            };
-
-            // Shoot impulse
-            body.LinearVelocity = forward * ProjectileSpeed;
         }
 
         // ===============================
@@ -276,6 +255,21 @@ namespace DevoidEngine.Engine.Components
             );
 
             return val;
+        }
+
+        public void OnCollisionEnter(GameObject other)
+        {
+            Console.WriteLine("Entered");
+        }
+
+        public void OnCollisionStay(GameObject other)
+        {
+
+        }
+
+        public void OnCollisionExit(GameObject other)
+        {
+            Console.WriteLine("Left");
         }
     }
 }

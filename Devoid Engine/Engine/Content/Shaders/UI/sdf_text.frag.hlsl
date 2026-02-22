@@ -12,12 +12,12 @@ cbuffer MeshData : register(b1)
     float4x4 invModel;
 };
 
-Texture2D fontSDFAtlas : register(t0);
-SamplerState fontSDFAtlasSampler : register(s0);
+Texture2D MAT_fontSDFAtlas : register(t0);
+SamplerState MAT_fontSDFAtlasSampler : register(s0);
 
 float4 PSMain(PSInput input) : SV_TARGET
 {
-    float distance = fontSDFAtlas.Sample(fontSDFAtlasSampler, input.UV0).r;
+    float distance = MAT_fontSDFAtlas.Sample(MAT_fontSDFAtlasSampler, input.UV0).r;
     float smoothing = fwidth(distance);
     float alpha = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance);
     

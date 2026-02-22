@@ -1,5 +1,6 @@
 ﻿using BepuPhysics.Collidables;
 using DevoidEngine.Engine.Core;
+using DevoidEngine.Engine.Physics.Bepu;
 using System.Numerics;
 
 namespace DevoidEngine.Engine.Physics
@@ -20,16 +21,20 @@ namespace DevoidEngine.Engine.Physics
             backend.CollisionDetected += OnBackendCollision;
         }
 
+        private static (IPhysicsBody, IPhysicsBody) NormalizePair(IPhysicsBody a, IPhysicsBody b)
+        {
+            var handleA = ((BepuPhysicsBody)a).Handle.Value;
+            var handleB = ((BepuPhysicsBody)b).Handle.Value;
+
+            return handleA < handleB ? (a, b) : (b, a);
+        }
+
         private void OnBackendCollision(IPhysicsBody a, IPhysicsBody b)
         {
             if (a == null || b == null)
                 return;
 
-            // Normalize pair order to avoid duplicates
-            if (a.GetHashCode() < b.GetHashCode())
-                currentPairs.Add((a, b));
-            else
-                currentPairs.Add((b, a));
+            currentPairs.Add(NormalizePair(a, b));
         }
 
         public void Step(float frameDelta)

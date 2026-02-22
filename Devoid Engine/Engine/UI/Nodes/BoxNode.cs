@@ -1,41 +1,60 @@
-﻿using DevoidEngine.Engine.Rendering;
+﻿using DevoidEngine.Engine.Core;
+using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.UI;
 using DevoidEngine.Engine.UI.Nodes;
 using System.Numerics;
 
-class BoxNode : UINode
+namespace DevoidEngine.Engine.UI.Nodes
 {
-    protected override Vector2 MeasureCore(Vector2 availableSize)
+    public class BoxNode : UINode
     {
-        return Size ?? Vector2.Zero;
-    }
-
-    protected override void ArrangeCore(UITransform finalRect)
-    {
-        Rect = finalRect;
-        //UIRenderer.DrawRect(finalRect, DEBUG_NUM_LOCAL);
-    }
-
-    protected override void RenderCore(List<RenderItem> renderList)
-    {
-        renderList.Add(new RenderItem()
+        public Texture2D Texture
         {
-            Mesh = UISystem.QuadMesh,
-            Material = Material,
-            Model = UISystem.BuildModel(Rect),
-        });
+            get => _texture;
+            set
+            {
+                _texture = value;
+            }
+        }
+
+        Texture2D _texture;
+
+        protected override Vector2 MeasureCore(Vector2 availableSize)
+        {
+            return Size ?? Vector2.Zero;
+        }
+
+        protected override void ArrangeCore(UITransform finalRect)
+        {
+            Rect = finalRect;
+            //UIRenderer.DrawRect(finalRect, DEBUG_NUM_LOCAL);
+        }
+
+        protected override void RenderCore(List<RenderItem> renderList)
+        {
+            renderList.Add(new RenderItem()
+            {
+                Mesh = UISystem.QuadMesh,
+                Material = Material,
+                Model = UISystem.BuildModel(Rect),
+            });
+        }
+
+        protected override void InitializeCore()
+        {
+            Material = UISystem.UIMaterial;
+
+            Vector3 color = new Vector3(
+                (DEBUG_NUM_LOCAL * 16807u % 255) / 255.0f,
+                (DEBUG_NUM_LOCAL * 48271u % 255) / 255.0f,
+                (DEBUG_NUM_LOCAL * 69621u % 255) / 255.0f
+            );
+
+            Material.SetInt("useTexture", _texture != null ? 1 : 0);
+            Material.SetTexture("MAT_Texture", _texture);
+
+            Material.SetVector4("COLOR", new Vector4(color, 1));
+        }
     }
 
-    protected override void InitializeCore()
-    {
-        Material = UISystem.GetMaterial();
-
-        Vector3 color = new Vector3(
-            (DEBUG_NUM_LOCAL * 16807u % 255) / 255.0f,
-            (DEBUG_NUM_LOCAL * 48271u % 255) / 255.0f,
-            (DEBUG_NUM_LOCAL * 69621u % 255) / 255.0f
-        );
-
-        Material.SetVector4("COLOR", new Vector4(color, 1));
-    }
 }

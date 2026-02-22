@@ -66,6 +66,8 @@ namespace DevoidEngine.Engine.Physics.Bepu
             }
         }
 
+
+
         public void Step(float deltaTime)
         {
             simulation.Timestep(deltaTime);
@@ -296,6 +298,9 @@ namespace DevoidEngine.Engine.Physics.Bepu
 
                 bodyToGameObject.Remove(b.Handle);
                 bodyMaterials.Remove(b.Handle);
+            } else
+            {
+                Console.WriteLine("Removing Static bodies not implemented yet.");
             }
         }
 

@@ -22,7 +22,7 @@ namespace DevoidEngine.Engine.Rendering
             DepthTest = DepthTest.LessEqual,
             DepthWrite = true,
             CullMode = CullMode.Back,
-            FillMode = FillMode.Solid,
+            FillMode = FillMode.Wireframe,
             PrimitiveType = PrimitiveType.Triangles,
         };
     }

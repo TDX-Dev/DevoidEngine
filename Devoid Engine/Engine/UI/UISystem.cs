@@ -10,8 +10,17 @@ namespace DevoidEngine.Engine.UI
     {
         public static List<UINode> Roots;
 
-        public static Material UIMaterial;
-        public static Material TextMaterial;
+        public static MaterialInstance UIMaterial
+        {
+            get => new MaterialInstance(uiMaterial);
+        }
+        public static MaterialInstance TextMaterial
+        {
+            get => new MaterialInstance(textMaterial);
+        }
+
+        private static Material uiMaterial;
+        private static Material textMaterial;
 
         public static Mesh QuadMesh;
 
@@ -25,17 +34,14 @@ namespace DevoidEngine.Engine.UI
             QuadMesh = new Mesh();
             QuadMesh.SetVertices(Primitives.GetQuadVertex());
 
-            UIMaterial = new Material(new Shader("Engine/Content/Shaders/UI/basic"));
+            uiMaterial = new Material(new Shader("Engine/Content/Shaders/UI/basic"));
+
+            textMaterial = new Material(new Shader("Engine/Content/Shaders/UI/basic.vert.hlsl", "Engine/Content/Shaders/UI/sdf_text.frag.hlsl"));
 
             for (int i = 0; i < Roots.Count; i++)
             {
                 Roots[i].Initialize();
             }
-        }
-
-        public static MaterialInstance GetMaterial()
-        {
-            return new MaterialInstance(UIMaterial);
         }
 
         public static Matrix4x4 BuildModel(UITransform t)
@@ -44,6 +50,12 @@ namespace DevoidEngine.Engine.UI
                 Matrix4x4.CreateScale(t.size.X, t.size.Y, 1f) *
                 Matrix4x4.CreateTranslation(t.position.X, t.position.Y, 0f);
         }
+
+        public static Matrix4x4 BuildTranslationModel(UITransform t)
+        {
+            return Matrix4x4.CreateTranslation(t.position.X, t.position.Y, 0f);
+        }
+
 
         public static void Update()
         {

@@ -15,7 +15,10 @@ namespace DevoidEngine.Engine.Components
         public virtual void OnFixedUpdate(float dt) { }
         public virtual void OnRender(float dt) { }
 
-        public virtual void OnDestroy() { }
+        public virtual void OnDestroy()
+        {
+
+        }
     }
 }
 

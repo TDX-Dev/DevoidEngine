@@ -39,7 +39,11 @@ namespace DevoidGPU.DX11
 
             SharpDX.Direct3D11.Device.CreateWithSwapChain(
                 SharpDX.Direct3D.DriverType.Hardware,
-                DeviceCreationFlags.BgraSupport | DeviceCreationFlags.Debug,
+                DeviceCreationFlags.BgraSupport
+                #if DEBUG 
+                | DeviceCreationFlags.Debug 
+                #endif
+                ,
                 swapChainDesc,
                 out device,
                 out swapChain

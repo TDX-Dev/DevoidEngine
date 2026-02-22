@@ -40,7 +40,7 @@ namespace DevoidEngine.Engine.Rendering
 
         public static Texture2D Output { get; set; }
 
-        static IRenderTechnique ActiveRenderTechnique;
+        public static IRenderTechnique ActiveRenderTechnique;
 
         // Renderer objects
         static MeshRenderData _meshRenderData;
@@ -141,7 +141,7 @@ namespace DevoidEngine.Engine.Rendering
                 }
 
                 if (item.Mesh != currentMesh) { currentMesh = item.Mesh; }
-
+                if (currentMesh == null) continue;
 
                 UpdatePerObjectData(item.Model);
 

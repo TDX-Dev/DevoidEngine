@@ -21,6 +21,17 @@
             return radians * (180f / PI);
         }
 
+        public static float Lerp(float a, float b, float t)
+        {
+            t = Math.Clamp(t, 0f, 1f);
+            return a + (b - a) * t;
+        }
+
+        public static float LerpUnclamped(float a, float b, float t)
+        {
+            return a + (b - a) * t;
+        }
+
 
     }
 }

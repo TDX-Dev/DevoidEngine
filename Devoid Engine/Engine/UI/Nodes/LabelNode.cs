@@ -15,9 +15,12 @@ namespace DevoidEngine.Engine.UI.Nodes
             }
             set
             {
-                _text = value;
-                _mesh = TextMeshGenerator.Generate(Font, _text, Font.GetScaleForFontSize(Scale));
-                Size = TextMeshGenerator.Measure(Font, Text, Font.GetScaleForFontSize(Scale));
+                RenderThreadDispatcher.QueueLatest("TEXT_MESH_GENERATE_" + GetHashCode(), () =>
+                {
+                    _text = value;
+                    _mesh = TextMeshGenerator.Generate(Font, _text, Font.GetScaleForFontSize(Scale));
+                    Size = TextMeshGenerator.Measure(Font, Text, Font.GetScaleForFontSize(Scale));
+                });
             }
         }
         public FontInternal Font;
@@ -67,12 +70,21 @@ namespace DevoidEngine.Engine.UI.Nodes
 
         protected override void RenderCore(List<RenderItem> renderList)
         {
+            renderList.Add(new RenderItem()
+            {
+                Mesh = _mesh,
+                Material = Material,
+                Model = UISystem.BuildTranslationModel(Rect)
+            });
+
             // Not used — rendering happens in ArrangeCore like BoxNode
         }
 
         protected override void InitializeCore()
         {
-
+            Material = UISystem.TextMaterial;
+            Material.SetTexture("MAT_fontSDFAtlas", Font.Atlas.GPUTexture);
+            
         }
     }
 }
