@@ -14,23 +14,16 @@ namespace DevoidEngine.Engine.Content.Splash
         private float duration = 3f;
         private Scene splashScene;
 
+        public event Action OnSplashEnd;
+
         public override void OnAttach()
         {
             splashScene = SplashScene.CreateSplashScene();
-            SceneManager.Enabled = true;
-            splashScene.Initialize();
-            splashScene.Play();
-        }
-
-        public override void OnUpdate(float deltaTime)
-        {
-            splashScene.OnUpdate(deltaTime);
+            SceneManager.LoadScene(splashScene);
         }
 
         public override void OnRender(float deltaTime)
         {
-            Console.WriteLine("Hey!");
-            splashScene.OnRender(deltaTime);
             timer += deltaTime;
 
             if (timer >= duration)
@@ -41,10 +34,10 @@ namespace DevoidEngine.Engine.Content.Splash
 
         private void TransitionToMainScene()
         {
-
             // Remove splash layer so it doesn't run again
             application.LayerHandler.RemoveLayer(this);
-            SceneManager.Enabled = true;
+
+            OnSplashEnd?.Invoke();
         }
     }
 }

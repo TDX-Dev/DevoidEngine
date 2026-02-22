@@ -1,4 +1,5 @@
-﻿using DevoidEngine.Engine.Core;
+﻿using DevoidEngine.Engine.Content.Splash;
+using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.Rendering;
 using DevoidStandaloneLauncher.Prototypes;
 
@@ -8,34 +9,41 @@ namespace DevoidStandaloneLauncher
     {
         private readonly Scene MainScene = new Scene();
         private readonly Prototype gamePrototype = new CubeSpinForwardRenderer();
+        private readonly SplashLayer splashLayer = new SplashLayer();
+        private bool isInitialized = false;
 
         public override void OnAttach()
         {
-            //SceneManager.LoadScene(MainScene);
+            application.AddLayer(splashLayer);
+            splashLayer.OnSplashEnd += () =>
+            {
+                SceneManager.LoadScene(MainScene);
 
-            //gamePrototype.OnInit(MainScene);
-
-            //MainScene.Play();
+                gamePrototype.OnInit(MainScene);
+                isInitialized = true;
+            };
         }
 
         public override void OnUpdate(float deltaTime)
         {
-
+            if (!isInitialized) return;
             // Game logic uses stable snapshot
-            //gamePrototype.OnUpdate(deltaTime);
+            gamePrototype.OnUpdate(deltaTime);
             //MainScene.OnUpdate(deltaTime);
 
         }
 
         public override void OnRender(float deltaTime)
         {
-            //gamePrototype.OnRender(deltaTime);
+            if (!isInitialized) return;
+            gamePrototype.OnRender(deltaTime);
            // MainScene.OnRender(deltaTime);
 
         }
 
         public override void OnLateRender()
         {
+
             Texture2D renderOutput = RenderBase.Output;
             RenderAPI.RenderToScreen(renderOutput);
 

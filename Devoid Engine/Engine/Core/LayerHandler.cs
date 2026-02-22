@@ -154,7 +154,7 @@ namespace DevoidEngine.Engine.Core
 
         public void RemoveLayer(Layer layer)
         {
-            layers.Add(layer);
+            layers.Remove(layer);
         }
 
     }
