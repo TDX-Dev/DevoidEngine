@@ -14,8 +14,8 @@ namespace DevoidEngine.Engine.Core
 
         public List<GameObject> GameObjects { get; set; }
 
-        public List<CameraComponent3D> Cameras;
-        public List<IRenderComponent> Renderables;
+        public List<CameraComponent3D> Cameras = new List<CameraComponent3D>();
+        public List<IRenderComponent> Renderables = new List<IRenderComponent>();
 
         public PhysicsSystem Physics { get; private set; }
 
@@ -36,9 +36,6 @@ namespace DevoidEngine.Engine.Core
         public void Initialize()
         {
             Physics = new PhysicsSystem(new BepuPhysicsBackend());
-
-            Cameras = new List<CameraComponent3D>();
-            Renderables = new List<IRenderComponent>();
         }
 
         public GameObject addGameObject(string name)

@@ -11,7 +11,7 @@ namespace DevoidEngine.Engine.Components
         public override string Type => nameof(FPSController);
 
         // ===============================
-        // Inspector Fields (Unity-style)
+        // Movement
         // ===============================
 
         public float MoveSpeed = 6f;
@@ -24,7 +24,7 @@ namespace DevoidEngine.Engine.Components
         public float GroundCheckDistance = 5f;
 
         // ===============================
-        // Shooting
+        // Shooting / Ammo
         // ===============================
 
         public float FireRate = 0.05f;
@@ -32,8 +32,34 @@ namespace DevoidEngine.Engine.Components
         public float ProjectileMass = 0.2f;
         public Vector3 ProjectileScale = new Vector3(0.2f);
 
+        public int MaxAmmo = 30;
+        public float ReloadTime = 1.5f;
+
+        public int currentAmmo;
+        public bool isReloading = false;
+        private float reloadTimer = 0f;
         private float fireTimer = 0f;
+
         private Mesh projectileMesh;
+
+        // ===============================
+        // Health + Regen
+        // ===============================
+
+        public float MaxHealth = 100f;
+        public float Health = 100f;
+
+        public float EnterDamage = 15f;
+        public float DamagePerSecond = 25f;
+        public float DamageDelay = 1f;
+
+        public float RegenPerSecond = 10f;
+        public float RegenDelay = 3f;
+
+        private float lastDamageTime = 0f;
+        private float damageTimer = 0f;
+        private bool inDamageZone = false;
+        private bool delayPassed = false;
 
         // ===============================
         // Internal
@@ -58,20 +84,19 @@ namespace DevoidEngine.Engine.Components
             projectileMesh = new Mesh();
             projectileMesh.SetVertices(Primitives.GetCubeVertex());
 
+            currentAmmo = MaxAmmo;
+
             rb = gameObject.GetComponent<RigidBodyComponent>();
             if (rb == null)
                 return;
 
-            // Freeze physics rotation (we rotate manually)
             rb.FreezeRotationX = true;
             rb.FreezeRotationY = true;
             rb.FreezeRotationZ = true;
 
-            // First child = camera pivot (Unity-style hierarchy)
             if (gameObject.children.Count > 0)
                 cameraPivot = gameObject.children[0].transform;
 
-            // Initialize yaw from current rotation
             yaw = MathHelper.RadToDeg(
                 MathF.Atan2(
                     gameObject.transform.Forward.X,
@@ -81,34 +106,53 @@ namespace DevoidEngine.Engine.Components
         }
 
         // ===============================
-        // Variable Update (INPUT ONLY)
+        // Update
         // ===============================
+
+        float totalTime = 0f;
 
         public override void OnUpdate(float dt)
         {
+            totalTime += dt;
             if (rb == null) return;
 
             moveInput = Input.MoveAxis;
             mouseDelta += Input.MouseDelta;
 
             if (Input.JumpPressed)
-            {
                 jumpRequested = true;
-            }
 
             fireTimer -= dt;
 
+            HandleReload(dt);
+
             if (Input.GetMouseDown(MouseButton.Left))
-            {
                 TryShoot();
-            }
+
+            if (Input.GetKey(Keys.E))
+                StartReload();
+
+            HandleDamage(dt);
+            HandleRegen(dt);
         }
+
+        // ===============================
+        // Shooting
+        // ===============================
+
         private void TryShoot()
         {
-            if (fireTimer > 0f)
+            if (fireTimer > 0f || isReloading)
                 return;
 
+            if (currentAmmo <= 0)
+            {
+                StartReload();
+                return;
+            }
+
             fireTimer = FireRate;
+            currentAmmo--;
 
             Vector3 spawnPosition = cameraPivot != null
                 ? cameraPivot.Position
@@ -132,10 +176,87 @@ namespace DevoidEngine.Engine.Components
                 ProjectileSpeed,
                 ProjectileMass
             );
+
+            Console.WriteLine($"Ammo: {currentAmmo}/{MaxAmmo}");
+        }
+
+        private void StartReload()
+        {
+            if (isReloading || currentAmmo == MaxAmmo)
+                return;
+
+            isReloading = true;
+            reloadTimer = ReloadTime;
+            Console.WriteLine("Reloading...");
+        }
+
+        private void HandleReload(float dt)
+        {
+            if (!isReloading)
+                return;
+
+            reloadTimer -= dt;
+
+            if (reloadTimer <= 0f)
+            {
+                isReloading = false;
+                currentAmmo = MaxAmmo;
+                Console.WriteLine("Reload Complete");
+            }
         }
 
         // ===============================
-        // Fixed Update (Physics + Rotation)
+        // Health + Damage
+        // ===============================
+
+        private void HandleDamage(float dt)
+        {
+            if (!inDamageZone)
+                return;
+
+            damageTimer += dt;
+
+            if (!delayPassed && damageTimer >= DamageDelay)
+                delayPassed = true;
+
+            if (delayPassed)
+                ApplyDamage(DamagePerSecond * dt);
+        }
+
+        private void HandleRegen(float dt)
+        {
+            if (inDamageZone)
+                return;
+
+            if (TimeSinceLastDamage() < RegenDelay)
+                return;
+
+            if (Health < MaxHealth)
+            {
+                Health += RegenPerSecond * dt;
+                Health = Math.Min(Health, MaxHealth);
+            }
+        }
+
+        private float TimeSinceLastDamage()
+        {
+            return (float)(totalTime - lastDamageTime);
+        }
+
+        private void ApplyDamage(float amount)
+        {
+            Health -= amount;
+            lastDamageTime = (float)totalTime;
+
+            if (Health <= 0f)
+            {
+                Health = 0f;
+                Console.WriteLine("Player Dead");
+            }
+        }
+
+        // ===============================
+        // Physics
         // ===============================
 
         public override void OnFixedUpdate(float fixedDt)
@@ -148,10 +269,6 @@ namespace DevoidEngine.Engine.Components
             jumpRequested = false;
         }
 
-        // ===============================
-        // Mouse Look (Unity Style)
-        // ===============================
-
         private void HandleRotation()
         {
             yaw += mouseDelta.X * MouseSensitivity;
@@ -159,16 +276,12 @@ namespace DevoidEngine.Engine.Components
 
             pitch = Math.Clamp(pitch, MinPitch, MaxPitch);
 
-            // Rotate body on Y axis
-            Quaternion bodyRotation =
+            rb.Rotation =
                 Quaternion.CreateFromAxisAngle(
                     -Vector3.UnitY,
                     MathHelper.DegToRad(yaw)
                 );
 
-            rb.Rotation = bodyRotation;
-
-            // Rotate camera on X axis
             if (cameraPivot != null)
             {
                 cameraPivot.LocalRotation =
@@ -181,16 +294,11 @@ namespace DevoidEngine.Engine.Components
             mouseDelta = Vector2.Zero;
         }
 
-        // ===============================
-        // Movement (CharacterBody Style)
-        // ===============================
-
         private void HandleMovement(float fixedDt)
         {
             Vector3 forward = Vector3.Transform(Vector3.UnitZ, rb.Rotation);
             Vector3 right = Vector3.Transform(-Vector3.UnitX, rb.Rotation);
 
-            // Flatten to ground plane
             forward.Y = 0;
             right.Y = 0;
 
@@ -213,7 +321,6 @@ namespace DevoidEngine.Engine.Components
                 desiredMove * MoveSpeed;
 
             bool grounded = IsGrounded();
-
             float control = grounded ? 1f : AirControl;
 
             horizontalVelocity = Vector3.Lerp(
@@ -228,7 +335,6 @@ namespace DevoidEngine.Engine.Components
                 horizontalVelocity.Z
             );
 
-            // Jump
             if (jumpRequested && grounded)
             {
                 rb.LinearVelocity = new Vector3(
@@ -239,37 +345,37 @@ namespace DevoidEngine.Engine.Components
             }
         }
 
-        // ===============================
-        // Ground Check
-        // ===============================
-
         private bool IsGrounded()
         {
             Vector3 origin = gameObject.transform.Position;
-            Vector3 direction = -Vector3.UnitY;
 
-            bool val = gameObject.Scene.Physics.Raycast(
-                new Ray(origin, direction),
+            return gameObject.Scene.Physics.Raycast(
+                new Ray(origin, -Vector3.UnitY),
                 GroundCheckDistance,
                 out RaycastHit hit
             );
-
-            return val;
         }
+
+        // ===============================
+        // Collision Events
+        // ===============================
 
         public void OnCollisionEnter(GameObject other)
         {
-            Console.WriteLine("Entered");
+            inDamageZone = true;
+            damageTimer = 0f;
+            delayPassed = false;
+
+            ApplyDamage(EnterDamage);
         }
 
-        public void OnCollisionStay(GameObject other)
-        {
-
-        }
+        public void OnCollisionStay(GameObject other) { }
 
         public void OnCollisionExit(GameObject other)
         {
-            Console.WriteLine("Left");
+            inDamageZone = false;
+            damageTimer = 0f;
+            delayPassed = false;
         }
     }
 }

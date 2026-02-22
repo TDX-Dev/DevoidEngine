@@ -1,4 +1,5 @@
-﻿using OpenTK.Windowing.Desktop;
+﻿using DevoidEngine.Engine.Utilities;
+using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using System.Numerics;
 
@@ -77,6 +78,7 @@ namespace DevoidEngine.Engine.Core
         {
             this.CenterWindow();
             WindowSpecification = windowSpec;
+            WindowUtil.EnableDarkMode(GetWindowPtr());
         }
 
         public void Load()

@@ -25,7 +25,7 @@ namespace DevoidEngine.Engine.Rendering
 
         public void Clear()
         {
-            frameBuffer.ClearColor(new Vector4(0, 0.5f, 0.5f, 1));
+            frameBuffer.ClearColor(new Vector4(0, 0, 0, 1));
             frameBuffer.ClearDepth(1);
         }
 

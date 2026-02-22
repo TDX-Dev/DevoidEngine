@@ -1,4 +1,5 @@
-﻿using DevoidEngine.Engine.Imgui;
+﻿using DevoidEngine.Engine.Content.Scenes;
+using DevoidEngine.Engine.Imgui;
 using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.UI;
 using DevoidEngine.Engine.Utilities;
@@ -101,6 +102,9 @@ namespace DevoidEngine.Engine.Core
             ImGuiRenderer = new ImGuiRenderer(graphicsDevice);
             ImGuiRenderer.Initialize();
             ImGuiRenderer.OnGUI += () => { LayerHandler.OnGUILayers(); };
+
+            SceneManager.LoadScene(SplashScene.CreateSplashScene());
+            
         }
 
         private void OnMouseMove(OpenTK.Windowing.Common.MouseMoveEventArgs obj)
@@ -170,6 +174,8 @@ namespace DevoidEngine.Engine.Core
 
             LayerHandler.RenderLayers((float)deltaTime);
 
+            SceneManager.Render((float)deltaTime);
+
             FramePipeline.ExecuteRenderThread((float)deltaTime);
 
             LayerHandler.LateRenderLayers();
@@ -190,6 +196,8 @@ namespace DevoidEngine.Engine.Core
             LayerHandler.UpdateLayers((float)deltaTime);
 
             UISystem.Update();
+
+            SceneManager.Update((float)deltaTime);
 
             FramePipeline.ExecuteUpdateThread((float)deltaTime);
 

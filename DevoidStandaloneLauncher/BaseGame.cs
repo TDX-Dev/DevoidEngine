@@ -11,26 +11,26 @@ namespace DevoidStandaloneLauncher
 
         public override void OnAttach()
         {
-            SceneManager.LoadScene(MainScene);
+            //SceneManager.LoadScene(MainScene);
 
-            gamePrototype.OnInit(MainScene);
+            //gamePrototype.OnInit(MainScene);
 
-            MainScene.Play();
+            //MainScene.Play();
         }
 
         public override void OnUpdate(float deltaTime)
         {
 
             // Game logic uses stable snapshot
-            gamePrototype.OnUpdate(deltaTime);
-            MainScene.OnUpdate(deltaTime);
+            //gamePrototype.OnUpdate(deltaTime);
+            //MainScene.OnUpdate(deltaTime);
 
         }
 
         public override void OnRender(float deltaTime)
         {
-            gamePrototype.OnRender(deltaTime);
-            MainScene.OnRender(deltaTime);
+            //gamePrototype.OnRender(deltaTime);
+           // MainScene.OnRender(deltaTime);
 
         }
 
@@ -48,7 +48,7 @@ namespace DevoidStandaloneLauncher
             Screen.Size = new System.Numerics.Vector2(width, height);
             Renderer.graphicsDevice.SetViewport(0, 0, width, height);
 
-            MainScene.OnResize(width, height);
+            //MainScene.OnResize(width, height);
         }
 
         // ===============================

@@ -9,16 +9,19 @@
 
         }
 
-        public static void LoadScene(int index)
+        public static void LoadScene(Scene newScene)
         {
 
-        }
+            if (MainScene != null)
+            {
+                MainScene.Destroy();
+                MainScene.Dispose();
+            }
 
-        public static void LoadScene(Scene scene)
-        {
-            MainScene = scene;
+            MainScene = newScene;
 
-            scene.Initialize();
+            MainScene.Initialize();
+            MainScene.Play();
         }
 
         public static void Update(float delta)

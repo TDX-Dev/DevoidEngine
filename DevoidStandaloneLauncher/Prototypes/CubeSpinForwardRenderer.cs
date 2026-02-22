@@ -14,6 +14,8 @@ namespace DevoidStandaloneLauncher.Prototypes
         Scene scene;
         GameObject camera;
         CanvasComponent Canvas;
+        GameObject player;
+        FPSController playerController;
 
         public override void OnInit(Scene main)
         {
@@ -26,7 +28,7 @@ namespace DevoidStandaloneLauncher.Prototypes
             // PLAYER ROOT (Capsule Physics)
             // ===============================
 
-            GameObject player = scene.addGameObject("Player");
+            player = scene.addGameObject("Player");
 
             // Ground top = 0.5 (height 1 centered at 0)
             // Capsule half total height = 1.5
@@ -52,10 +54,10 @@ namespace DevoidStandaloneLauncher.Prototypes
             // FPS CONTROLLER
             // ===============================
 
-            var fps = player.AddComponent<FPSController>();
-            fps.MoveSpeed = 20f;
-            fps.JumpForce = 5;
-            fps.MouseSensitivity = 0.15f;
+            playerController = player.AddComponent<FPSController>();
+            playerController.MoveSpeed = 20f;
+            playerController.JumpForce = 5;
+            playerController.MouseSensitivity = 0.15f;
 
             // ===============================
             // CAMERA PIVOT (Pitch Only)
@@ -285,6 +287,16 @@ namespace DevoidStandaloneLauncher.Prototypes
         int mode = 0;
         public override void OnUpdate(float delta)
         {
+            healthLabel.Text = "Health: " + playerController.Health + "/" + playerController.MaxHealth;
+
+            if (playerController.isReloading)
+            {
+                ammoLabel.Text = "Reloading";
+            } else
+            {
+                ammoLabel.Text = $"Ammo: {playerController.currentAmmo}/{playerController.MaxAmmo}";
+            }
+
             if (Input.GetKeyDown(Keys.R))
             {
                 renderModeLabel.Text = mode == 0 ? "RenderMode: Solid" : "RenderMode: Wireframe";
@@ -295,7 +307,8 @@ namespace DevoidStandaloneLauncher.Prototypes
                     {
                         FillMode = DevoidGPU.FillMode.Solid
                     };
-                } else
+                }
+                else
                 {
                     ((ForwardRenderTechnique)RenderBase.ActiveRenderTechnique).renderStateOverride = new RenderState()
                     {
