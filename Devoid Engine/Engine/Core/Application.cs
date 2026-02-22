@@ -1,4 +1,5 @@
 ﻿using DevoidEngine.Engine.Content.Scenes;
+using DevoidEngine.Engine.Content.Splash;
 using DevoidEngine.Engine.Imgui;
 using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.UI;
@@ -103,7 +104,8 @@ namespace DevoidEngine.Engine.Core
             ImGuiRenderer.Initialize();
             ImGuiRenderer.OnGUI += () => { LayerHandler.OnGUILayers(); };
 
-            SceneManager.LoadScene(SplashScene.CreateSplashScene());
+
+            AddLayer(new SplashLayer());
             
         }
 
@@ -166,8 +168,15 @@ namespace DevoidEngine.Engine.Core
 
         public void AddLayer(Layer layer)
         {
+            layer.application = this;
             LayerHandler.AddLayer(layer);
         }
+
+        public void RemoveLayer(Layer layer)
+        {
+            LayerHandler.RemoveLayer(layer);
+        }
+
         private void OnRenderFrame(double deltaTime)
         {
             ImGuiRenderer.PerFrame((float)deltaTime);

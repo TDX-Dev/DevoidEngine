@@ -2,6 +2,9 @@
 {
     public class Layer
     {
+        // The application to which the layer belongs to.
+        public Application application;
+
         // This method is called when the layer is attached to the application
         public virtual void OnAttach() { }
         // This method is called when the layer is removed from the application

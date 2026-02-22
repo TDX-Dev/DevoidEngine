@@ -2,6 +2,7 @@
 {
     public static class SceneManager
     {
+        public static bool Enabled;
         public static Scene MainScene;
 
         static SceneManager()
@@ -26,11 +27,13 @@
 
         public static void Update(float delta)
         {
+            if (!Enabled) return;
             MainScene?.OnUpdate(delta);
         }
 
         public static void Render(float delta)
         {
+            if (!Enabled) return;
             MainScene?.OnRender(delta);
         }
 
