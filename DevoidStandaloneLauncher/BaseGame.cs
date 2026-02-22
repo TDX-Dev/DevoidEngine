@@ -18,7 +18,6 @@ namespace DevoidStandaloneLauncher
             splashLayer.OnSplashEnd += () =>
             {
                 SceneManager.LoadScene(MainScene);
-
                 gamePrototype.OnInit(MainScene);
                 isInitialized = true;
             };

@@ -2,7 +2,7 @@
 {
     public static class SceneManager
     {
-        public static bool Enabled;
+        public static bool Enabled = true;
         public static Scene MainScene;
 
         static SceneManager()

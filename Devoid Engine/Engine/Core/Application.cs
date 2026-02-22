@@ -103,9 +103,6 @@ namespace DevoidEngine.Engine.Core
             ImGuiRenderer = new ImGuiRenderer(graphicsDevice);
             ImGuiRenderer.Initialize();
             ImGuiRenderer.OnGUI += () => { LayerHandler.OnGUILayers(); };
-
-
-            AddLayer(new SplashLayer());
             
         }
 
