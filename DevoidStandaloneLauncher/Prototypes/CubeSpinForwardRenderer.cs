@@ -271,18 +271,18 @@ namespace DevoidStandaloneLauncher.Prototypes
             mainContainer.Add(healthLabel);
             mainContainer.Add(scoreLabel);
 
-            FlexboxNode crossHair = new FlexboxNode()
-            {
+            //FlexboxNode crossHair = new FlexboxNode()
+            //{
                 
-            };
+            //};
 
-            crossHair.Add(new BoxNode()
-            {
-                Size = new Vector2(30, 30),
-                Texture = Helper.loadImageAsTex("Engine/Content/Textures/crosshair.png", DevoidGPU.TextureFilter.Linear)
-            });
+            //crossHair.Add(new BoxNode()
+            //{
+            //    Size = new Vector2(30, 30),
+            //    Texture = Helper.loadImageAsTex("Engine/Content/Textures/crosshair.png", DevoidGPU.TextureFilter.Linear)
+            //});
 
-            Canvas.Canvas.Add(crossHair);
+            //Canvas.Canvas.Add(crossHair);
             Canvas.Canvas.Add(mainContainer);
         }
 

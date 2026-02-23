@@ -17,6 +17,7 @@ namespace DevoidStandaloneLauncher
         public override void OnAttach()
         {
             SceneManager.LoadScene(SplashScreen);
+            SplashScreen.Play();
         }
 
         void LoadPrototype()

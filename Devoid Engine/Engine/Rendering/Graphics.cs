@@ -20,6 +20,18 @@ namespace DevoidEngine.Engine.Rendering
         // Replace possibly with its own IGPUCommand
         private static ConcurrentQueue<Action> _queue = new ConcurrentQueue<Action>();
 
+        public static GraphicsFence CreateFence()
+        {
+            var fence = new GraphicsFence();
+
+            _queue.Enqueue(() =>
+            {
+                fence.Signal();
+            });
+
+            return fence;
+        }
+
         public static TextureHandle CreateTexture(TextureDescription textureDescription)
         {
             TextureHandle textureHandle = new TextureHandle(++_nextTextureID);
