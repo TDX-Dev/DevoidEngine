@@ -81,6 +81,7 @@ namespace DevoidEngine.Engine.Rendering
             if (ActiveRenderTechnique == null)
                 Console.WriteLine("[Renderer]: Render technique was not set. No Object rendered.");
 
+            Graphics.MainThreadStarted = true;
             Graphics.Execute();
 
             Output = ActiveRenderTechnique?.Render(ctx);

@@ -13,6 +13,7 @@ namespace DevoidEngine.Engine.Rendering
     public static class Graphics
     {
         public static int mainThreadID = -1;
+        public static volatile bool MainThreadStarted = false;
 
         private static uint _nextTextureID = 0;
         private static uint _nextSamplerID = 0;

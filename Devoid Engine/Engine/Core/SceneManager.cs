@@ -27,11 +27,11 @@ namespace DevoidEngine.Engine.Core
             // 3. Initialize (this may enqueue GPU commands)
             CurrentScene.Initialize();
 
-            // 4. Insert GPU fence AFTER initialization
-            var fence = Graphics.CreateFence();
-
-            // 5. Wait until render thread has executed all prior GPU commands
-            fence.Wait();
+            if (Graphics.MainThreadStarted)
+            {
+                var fence = Graphics.CreateFence();
+                fence.Wait();
+            }
         }
 
         public static bool IsSceneLoaded()
