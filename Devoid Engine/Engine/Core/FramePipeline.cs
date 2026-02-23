@@ -41,7 +41,7 @@ namespace DevoidEngine.Engine.Core
             if (!SceneManager.IsSceneLoaded()) return;
 
             var backList = SwapBuffer.Back;
-            Scene scene = SceneManager.MainScene;
+            Scene scene = SceneManager.CurrentScene;
             var cameras = scene.GetComponentsOfType<CameraComponent3D>();
 
             // CRITICAL FIX
@@ -67,6 +67,9 @@ namespace DevoidEngine.Engine.Core
 
         public static void ExecuteRenderThread(float deltaTime)
         {
+            RenderCommandQueue.Execute();
+
+
             List<CameraRenderContext> cameraContextList = SwapBuffer.Front;
 
             // Frame level shader bindings go here

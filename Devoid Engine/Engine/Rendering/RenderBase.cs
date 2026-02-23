@@ -37,6 +37,9 @@ namespace DevoidEngine.Engine.Rendering
 
     public static class RenderBase
     {
+        public static Dictionary<uint, ITexture> _textures = new Dictionary<uint, ITexture>();
+        public static Dictionary<uint, ISampler> _samplers = new Dictionary<uint, ISampler>();
+
 
         public static Texture2D Output { get; set; }
 
@@ -77,6 +80,8 @@ namespace DevoidEngine.Engine.Rendering
         {
             if (ActiveRenderTechnique == null)
                 Console.WriteLine("[Renderer]: Render technique was not set. No Object rendered.");
+
+            Graphics.Execute();
 
             Output = ActiveRenderTechnique?.Render(ctx);
         }

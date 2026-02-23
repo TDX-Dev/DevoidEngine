@@ -1,10 +1,11 @@
 ﻿namespace DevoidGPU
 {
-    public struct Tex2DDescription
+    public struct TextureDescription
     {
         public int Width;
         public int Height;
         public TextureFormat Format;
+        public TextureType Type;
 
         public int MipLevels;
         public bool GenerateMipmaps;

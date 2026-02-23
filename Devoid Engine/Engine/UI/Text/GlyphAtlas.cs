@@ -26,7 +26,7 @@ namespace DevoidEngine.Engine.UI.Text
 
         internal void UploadGPU()
         {
-            GPUTexture = new Texture2D(new DevoidGPU.Tex2DDescription()
+            GPUTexture = new Texture2D(new DevoidGPU.TextureDescription()
             {
                 Format = DevoidGPU.TextureFormat.R8_UNorm,
                 Width = Width,

@@ -31,11 +31,11 @@ namespace DevoidGPU.DX11
 
         private readonly Device device;
         private readonly DeviceContext deviceContext;
-        private Tex2DDescription Description;
+        private TextureDescription Description;
         private Format format;
 
 
-        public DX11Texture2D(Device device, DeviceContext deviceContext, Tex2DDescription texture2DDescription)
+        public DX11Texture2D(Device device, DeviceContext deviceContext, TextureDescription texture2DDescription)
         {
             this.device = device;
             this.deviceContext = deviceContext;

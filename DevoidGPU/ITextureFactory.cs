@@ -2,7 +2,8 @@
 {
     public interface ITextureFactory
     {
-        ITexture2D CreateTexture2D(Tex2DDescription description);
+        ITexture CreateTexture(TextureDescription description);
+        ITexture2D CreateTexture2D(TextureDescription description);
         ITexture3D CreateTexture3D();
         ITextureCube CreateTextureCube();
 

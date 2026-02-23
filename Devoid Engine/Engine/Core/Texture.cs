@@ -5,7 +5,7 @@ namespace DevoidEngine.Engine.Core
 {
     public abstract class Texture
     {
-        protected ISampler _sampler;
+        protected SamplerHandle _sampler;
         protected SamplerDescription _samplerDescription = SamplerDescription.Default;
 
         public int Width { get; protected set; }
@@ -19,8 +19,7 @@ namespace DevoidEngine.Engine.Core
 
         protected void RecreateSampler()
         {
-            _sampler?.Bind(0); // optional cleanup
-            _sampler = Renderer.graphicsDevice.CreateSampler(_samplerDescription);
+            _sampler = Graphics.CreateSampler(_samplerDescription);
         }
 
         public void SetFilter(TextureFilter min, TextureFilter mag)
@@ -45,7 +44,7 @@ namespace DevoidEngine.Engine.Core
 
         public void BindSampler(int slot)
         {
-            _sampler?.Bind(slot);
+            Graphics.BindSampler(_sampler, slot);
         }
     }
 }

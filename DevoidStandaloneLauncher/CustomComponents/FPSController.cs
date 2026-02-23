@@ -284,6 +284,7 @@ namespace DevoidEngine.Engine.Components
 
             if (cameraPivot != null)
             {
+
                 cameraPivot.LocalRotation =
                     Quaternion.CreateFromAxisAngle(
                         -Vector3.UnitX,

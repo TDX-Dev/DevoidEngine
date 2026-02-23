@@ -198,7 +198,7 @@ namespace DevoidEngine.Engine.Imgui
             byte[] managedPixels = new byte[size];
             Marshal.Copy(pixels, managedPixels, 0, size);
 
-            _fontTexture = Renderer.graphicsDevice.TextureFactory.CreateTexture2D(new Tex2DDescription()
+            _fontTexture = Renderer.graphicsDevice.TextureFactory.CreateTexture2D(new TextureDescription()
             {
                 Width = width,
                 Height = height,

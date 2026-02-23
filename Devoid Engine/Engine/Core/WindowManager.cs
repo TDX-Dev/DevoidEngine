@@ -12,11 +12,19 @@ namespace DevoidEngine.Engine.Core
 
     public class WindowManager
     {
+        public int MainThreadID = -1;
+        public int UpdateThreadID = -1;
+
         private readonly List<WindowRunState> windows = new();
         private volatile bool _running = true;
 
         public static WindowManager Instance { get; } = new WindowManager();
         public bool useVsyncLimiter = false;
+
+        public WindowManager()
+        {
+            MainThreadID = Thread.CurrentThread.ManagedThreadId;
+        }
 
         public void RegisterWindow(Window window)
         {
@@ -149,6 +157,10 @@ namespace DevoidEngine.Engine.Core
             };
 
             updateThread.Start();
+
+
+            UpdateThreadID = updateThread.ManagedThreadId;
+
 
             // ---------------- RENDER / EVENT THREAD ----------------
             double lastRenderTime = globalTimer.Elapsed.TotalSeconds;

@@ -31,6 +31,11 @@ namespace DevoidEngine.Engine.Components
             base.OnStart();
         }
 
+        public override void OnDestroy()
+        {
+            UISystem.Roots.Remove(Canvas);
+        }
+
         public override void OnUpdate(float dt)
         {
 

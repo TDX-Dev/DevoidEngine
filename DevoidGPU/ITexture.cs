@@ -19,6 +19,7 @@
         public void Bind(int slot = 0);
         public void UnBind(int slot = 0);
         public void BindMutable(int slot = 0);
+        public void GenerateMipmaps();
     }
 
     public interface ITexture2D : ITexture
@@ -26,7 +27,6 @@
         bool AllowUnorderedView { get; }
         void SetData(byte[] data);
         void SetData<T>(T[] data) where T : unmanaged;
-        void GenerateMipmaps();
     }
     public interface ITexture3D : ITexture { }
     public interface ITextureCube : ITexture { }

@@ -3,7 +3,7 @@
     public static class SceneManager
     {
         public static bool Enabled = true;
-        public static Scene MainScene;
+        public static Scene CurrentScene;
 
         static SceneManager()
         {
@@ -13,33 +13,21 @@
         public static void LoadScene(Scene newScene)
         {
 
-            if (MainScene != null)
+            if (CurrentScene != null)
             {
-                MainScene.Destroy();
-                MainScene.Dispose();
+                CurrentScene.Destroy();
+                CurrentScene.Dispose();
             }
 
-            MainScene = newScene;
+            CurrentScene = newScene;
 
-            MainScene.Initialize();
-            MainScene.Play();
-        }
-
-        public static void Update(float delta)
-        {
-            if (!Enabled) return;
-            MainScene?.OnUpdate(delta);
-        }
-
-        public static void Render(float delta)
-        {
-            if (!Enabled) return;
-            MainScene?.OnRender(delta);
+            CurrentScene.Initialize();
+            //MainScene.Play();
         }
 
         public static bool IsSceneLoaded()
         {
-            return MainScene != null;
+            return CurrentScene != null;
         }
     }
 }

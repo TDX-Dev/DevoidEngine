@@ -69,6 +69,8 @@ namespace DevoidStandaloneLauncher.Prototypes
 
             cameraPivot.transform.LocalPosition = new Vector3(0, 1.4f, 0);
 
+
+
             // ===============================
             // CAMERA
             // ===============================

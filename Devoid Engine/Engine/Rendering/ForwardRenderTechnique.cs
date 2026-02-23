@@ -33,7 +33,10 @@ namespace DevoidEngine.Engine.Rendering
 
             finalOutputBuffer = new Framebuffer();
 
-            finalOutputBuffer.AttachRenderTexture(new Texture2D(new DevoidGPU.Tex2DDescription()
+            Console.WriteLine(Thread.CurrentThread.ManagedThreadId);
+            Console.WriteLine(Graphics.mainThreadID);
+
+            finalOutputBuffer.AttachRenderTexture(new Texture2D(new DevoidGPU.TextureDescription()
             {
                 Width = width,
                 Height = height,
@@ -43,7 +46,7 @@ namespace DevoidEngine.Engine.Rendering
                 IsRenderTarget = true,
                 IsMutable = false,
             }));
-            finalOutputBuffer.AttachDepthTexture(new Texture2D(new DevoidGPU.Tex2DDescription()
+            finalOutputBuffer.AttachDepthTexture(new Texture2D(new DevoidGPU.TextureDescription()
             {
                 Width = width,
                 Height = height,

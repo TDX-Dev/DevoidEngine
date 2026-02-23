@@ -1,5 +1,4 @@
 ﻿using DevoidEngine.Engine.Content.Scenes;
-using DevoidEngine.Engine.Content.Splash;
 using DevoidEngine.Engine.Imgui;
 using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.UI;
@@ -72,6 +71,9 @@ namespace DevoidEngine.Engine.Core
 
             windowManager = new WindowManager();
             windowManager.useVsyncLimiter = AppSpec.forceVsync;
+
+            Graphics.mainThreadID = windowManager.MainThreadID;
+
             MainWindow = new Window(windowSpecification);
 
             Screen.Size = new System.Numerics.Vector2(appSpec.Width, appSpec.Height);
@@ -103,6 +105,7 @@ namespace DevoidEngine.Engine.Core
             ImGuiRenderer = new ImGuiRenderer(graphicsDevice);
             ImGuiRenderer.Initialize();
             ImGuiRenderer.OnGUI += () => { LayerHandler.OnGUILayers(); };
+
             
         }
 
@@ -168,19 +171,11 @@ namespace DevoidEngine.Engine.Core
             layer.application = this;
             LayerHandler.AddLayer(layer);
         }
-
-        public void RemoveLayer(Layer layer)
-        {
-            LayerHandler.RemoveLayer(layer);
-        }
-
         private void OnRenderFrame(double deltaTime)
         {
             ImGuiRenderer.PerFrame((float)deltaTime);
 
             LayerHandler.RenderLayers((float)deltaTime);
-
-            SceneManager.Render((float)deltaTime);
 
             FramePipeline.ExecuteRenderThread((float)deltaTime);
 
@@ -202,8 +197,6 @@ namespace DevoidEngine.Engine.Core
             LayerHandler.UpdateLayers((float)deltaTime);
 
             UISystem.Update();
-
-            SceneManager.Update((float)deltaTime);
 
             FramePipeline.ExecuteUpdateThread((float)deltaTime);
 

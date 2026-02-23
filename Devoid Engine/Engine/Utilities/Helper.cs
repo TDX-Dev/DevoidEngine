@@ -10,7 +10,7 @@ namespace DevoidEngine.Engine.Utilities
             Image image = new Image();
             image.LoadPNGAsFloat(file);
 
-            Texture2D texture = new Texture2D(new Tex2DDescription()
+            Texture2D texture = new Texture2D(new TextureDescription()
             {
                 Width = image.Width,
                 Height = image.Height,

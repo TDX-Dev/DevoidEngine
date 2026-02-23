@@ -55,7 +55,7 @@ namespace DevoidEngine.Engine.Rendering
         {
             RenderOutput = new Framebuffer();
 
-            RenderOutput.AttachRenderTexture(new Texture2D(new Tex2DDescription
+            RenderOutput.AttachRenderTexture(new Texture2D(new TextureDescription
             {
                 Width = width,
                 Height = height,
@@ -63,7 +63,7 @@ namespace DevoidEngine.Engine.Rendering
                 IsRenderTarget = true
             }));
 
-            RenderOutput.AttachDepthTexture(new Texture2D(new Tex2DDescription
+            RenderOutput.AttachDepthTexture(new Texture2D(new TextureDescription
             {
                 Width = width,
                 Height = height,

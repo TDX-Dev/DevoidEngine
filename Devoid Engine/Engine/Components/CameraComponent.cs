@@ -31,7 +31,7 @@ namespace DevoidEngine.Engine.Components
         {
             Camera = new Camera();
             Camera.RenderTarget = new Framebuffer();
-            Camera.RenderTarget.AttachRenderTexture(new Texture2D(new DevoidGPU.Tex2DDescription()
+            Camera.RenderTarget.AttachRenderTexture(new Texture2D(new DevoidGPU.TextureDescription()
             {
                 Width = (int)Screen.Size.X,
                 Height = (int)Screen.Size.Y,
@@ -41,7 +41,7 @@ namespace DevoidEngine.Engine.Components
                 IsRenderTarget = true,
                 IsMutable = false,
             }));
-            Camera.RenderTarget.AttachDepthTexture(new Texture2D(new DevoidGPU.Tex2DDescription()
+            Camera.RenderTarget.AttachDepthTexture(new Texture2D(new DevoidGPU.TextureDescription()
             {
                 Width = (int)Screen.Size.X,
                 Height = (int)Screen.Size.Y,

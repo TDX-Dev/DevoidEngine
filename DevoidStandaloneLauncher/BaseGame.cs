@@ -1,4 +1,4 @@
-﻿using DevoidEngine.Engine.Content.Splash;
+﻿using DevoidEngine.Engine.Content.Scenes;
 using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.Rendering;
 using DevoidStandaloneLauncher.Prototypes;
@@ -7,42 +7,60 @@ namespace DevoidStandaloneLauncher
 {
     internal class BaseGame : Layer
     {
+        private readonly Scene SplashScreen = SplashScene.CreateSplashScene();
         private readonly Scene MainScene = new Scene();
         private readonly Prototype gamePrototype = new CubeSpinForwardRenderer();
-        private readonly SplashLayer splashLayer = new SplashLayer();
-        private bool isInitialized = false;
+
+        private float _timer = 0;
+        private bool _isInitialized = false;
 
         public override void OnAttach()
         {
-            application.AddLayer(splashLayer);
-            splashLayer.OnSplashEnd += () =>
-            {
-                SceneManager.LoadScene(MainScene);
-                gamePrototype.OnInit(MainScene);
-                isInitialized = true;
-            };
+            SceneManager.LoadScene(SplashScreen);
+        }
+
+        void LoadPrototype()
+        {
+            SceneManager.LoadScene(MainScene);
+            gamePrototype.OnInit(MainScene);
+
+            MainScene.Play();
         }
 
         public override void OnUpdate(float deltaTime)
         {
-            if (!isInitialized) return;
-            // Game logic uses stable snapshot
-            gamePrototype.OnUpdate(deltaTime);
-            //MainScene.OnUpdate(deltaTime);
+            if (_isInitialized)
+            {
+                gamePrototype.OnUpdate(deltaTime);
+                MainScene.OnUpdate(deltaTime);
+                return;
+            }
+
+            _timer += deltaTime;
+            SplashScreen.OnUpdate(deltaTime);
+
+            if (_timer >= 2)
+            {
+                _isInitialized = true;
+                LoadPrototype();
+            }
 
         }
 
         public override void OnRender(float deltaTime)
         {
-            if (!isInitialized) return;
-            gamePrototype.OnRender(deltaTime);
-           // MainScene.OnRender(deltaTime);
+            if (_isInitialized)
+            {
+                gamePrototype.OnRender(deltaTime);
+                MainScene.OnRender(deltaTime);
+                return;
+            }
+            SplashScreen.OnRender(deltaTime);
 
         }
 
         public override void OnLateRender()
         {
-
             Texture2D renderOutput = RenderBase.Output;
             RenderAPI.RenderToScreen(renderOutput);
 
@@ -55,7 +73,7 @@ namespace DevoidStandaloneLauncher
             Screen.Size = new System.Numerics.Vector2(width, height);
             Renderer.graphicsDevice.SetViewport(0, 0, width, height);
 
-            //MainScene.OnResize(width, height);
+            MainScene.OnResize(width, height);
         }
 
         // ===============================

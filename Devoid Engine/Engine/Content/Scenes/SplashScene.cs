@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace DevoidEngine.Engine.Content.Scenes
 {
-    class SplashScene 
+    public class SplashScene 
     {
         public static Scene CreateSplashScene()
         {
