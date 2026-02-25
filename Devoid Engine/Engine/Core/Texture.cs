@@ -1,4 +1,5 @@
 ﻿using DevoidEngine.Engine.Rendering;
+using DevoidEngine.Engine.Rendering.GPUResource;
 using DevoidGPU;
 
 namespace DevoidEngine.Engine.Core
@@ -19,7 +20,7 @@ namespace DevoidEngine.Engine.Core
 
         protected void RecreateSampler()
         {
-            _sampler = Graphics.CreateSampler(_samplerDescription);
+            _sampler = Graphics.ResourceManager.SamplerManager.CreateSampler(_samplerDescription);
         }
 
         public void SetFilter(TextureFilter min, TextureFilter mag)
@@ -44,7 +45,7 @@ namespace DevoidEngine.Engine.Core
 
         public void BindSampler(int slot)
         {
-            Graphics.BindSampler(_sampler, slot);
+            Graphics.ResourceManager.SamplerManager.BindSampler(_sampler, slot);
         }
     }
 }

@@ -103,14 +103,14 @@ namespace DevoidEngine.Engine.Rendering
             IInputLayout inputLayout = Renderer.GetInputLayout(mesh, ShaderLibrary.GetShader("Screen/RENDER_SCREEN"));
 
             inputLayout.Bind();
-            mesh.VertexBuffer.Bind();
+            mesh.Bind();
 
             ShaderLibrary.GetShader("Screen/RENDER_SCREEN").Use();
 
             texture.BindSampler(0);
             texture.Bind(0);
 
-            Renderer.graphicsDevice.Draw(mesh.VertexBuffer.VertexCount, 0);
+            Renderer.graphicsDevice.Draw(mesh.GetVertices().Length, 0);
 
             Renderer.graphicsDevice.UnbindAllShaderResources();
 

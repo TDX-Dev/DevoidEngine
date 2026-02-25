@@ -8,11 +8,11 @@ namespace DevoidEngine.Engine.UI.Text
     public class GlyphAtlas
     {
         public Texture2D GPUTexture { get; private set; }
-        public byte[] TextureData { get; private set; }
+        public byte[] TextureData { get; internal set; }
         public int Width { get; private set; }
         public int Height { get; private set; }
 
-        public Dictionary<uint, Vector4> GlyphRectangles { get; private set; }
+        public Dictionary<uint, Vector4> GlyphRectangles { get; internal set; }
 
         private const int Padding = 1;
 

@@ -37,10 +37,6 @@ namespace DevoidEngine.Engine.Rendering
 
     public static class RenderBase
     {
-        public static Dictionary<uint, ITexture> _textures = new Dictionary<uint, ITexture>();
-        public static Dictionary<uint, ISampler> _samplers = new Dictionary<uint, ISampler>();
-
-
         public static Texture2D Output { get; set; }
 
         public static IRenderTechnique ActiveRenderTechnique;
@@ -81,18 +77,15 @@ namespace DevoidEngine.Engine.Rendering
             if (ActiveRenderTechnique == null)
                 Console.WriteLine("[Renderer]: Render technique was not set. No Object rendered.");
 
-            Graphics.MainThreadStarted = true;
-            Graphics.Execute();
-
             Output = ActiveRenderTechnique?.Render(ctx);
         }
 
         public static IInputLayout GetInputLayout(Mesh mesh, Shader shader)
         {
-            var key = (mesh.VertexBuffer.Layout, shader.vShader);
+            var key = (RenderBase._vBuffers[mesh.VertexBuffer.Id].Layout, shader.vShader);
             if (!InputLayoutManager.inputLayoutCache.TryGetValue(key, out var layout))
             {
-                layout = Renderer.graphicsDevice.CreateInputLayout(mesh.VertexBuffer.Layout, shader.vShader);
+                layout = Renderer.graphicsDevice.CreateInputLayout(RenderBase._vBuffers[mesh.VertexBuffer.Id].Layout, shader.vShader);
                 InputLayoutManager.inputLayoutCache[key] = layout;
             }
             return layout;

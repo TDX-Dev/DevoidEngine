@@ -161,7 +161,7 @@ namespace DevoidEngine.Engine.Rendering
         {
             IInputLayout layout = Renderer.GetInputLayout(_quad, shader);
             layout.Bind();
-            _quad.VertexBuffer.Bind();
+            _quad.Bind();
             shader.Use();
         }
 
@@ -173,7 +173,7 @@ namespace DevoidEngine.Engine.Rendering
             _uiRenderBuffer.SetData(_uiRenderData);
 
             PrepareQuadDraw(_basicShader);
-            Renderer.graphicsDevice.Draw(_quad.VertexBuffer.VertexCount, 0);
+            Renderer.graphicsDevice.Draw(_quad.VertexCount, 0);
         }
 
         public static void DrawRect(Matrix4x4 model, int id)
@@ -183,7 +183,7 @@ namespace DevoidEngine.Engine.Rendering
             _uiRenderBuffer.SetData(_uiRenderData);
 
             PrepareQuadDraw(_basicShader);
-            Renderer.graphicsDevice.Draw(_quad.VertexBuffer.VertexCount, 0);
+            Renderer.graphicsDevice.Draw(_quad.VertexCount, 0);
         }
 
         public static void DrawText(UITransform transform, Mesh mesh, Texture2D atlas)
@@ -195,8 +195,7 @@ namespace DevoidEngine.Engine.Rendering
             IInputLayout layout = Renderer.GetInputLayout(mesh, _textShader);
             layout.Bind();
 
-            mesh.VertexBuffer.Bind();
-            mesh.IndexBuffer.Bind();
+            mesh.Bind();
 
             _textShader.Use();
             atlas.Bind(0);

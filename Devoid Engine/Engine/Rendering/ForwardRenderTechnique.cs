@@ -33,9 +33,6 @@ namespace DevoidEngine.Engine.Rendering
 
             finalOutputBuffer = new Framebuffer();
 
-            Console.WriteLine(Thread.CurrentThread.ManagedThreadId);
-            Console.WriteLine(Graphics.mainThreadID);
-
             finalOutputBuffer.AttachRenderTexture(new Texture2D(new DevoidGPU.TextureDescription()
             {
                 Width = width,

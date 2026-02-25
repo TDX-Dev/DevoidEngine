@@ -36,6 +36,12 @@ namespace DevoidEngine.Engine.Core
             SwapBuffer = new AsyncDoubleBuffer<List<CameraRenderContext>>(new List<CameraRenderContext>(), new List<CameraRenderContext>());
         }
 
+        public static void Reset()
+        {
+            SwapBuffer.Front.Clear();
+            SwapBuffer.Back.Clear();
+        }
+
         public static void ExecuteUpdateThread(float deltaTime)
         {
             if (!SceneManager.IsSceneLoaded()) return;
@@ -67,8 +73,9 @@ namespace DevoidEngine.Engine.Core
 
         public static void ExecuteRenderThread(float deltaTime)
         {
-            RenderCommandQueue.Execute();
 
+            Graphics.MainThreadStarted = true;
+            Graphics.Execute();
 
             List<CameraRenderContext> cameraContextList = SwapBuffer.Front;
 

@@ -1,31 +1,46 @@
-﻿using SharpFont;
+﻿using MessagePack;
+using SharpFont;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using System.Numerics;
 
 namespace DevoidEngine.Engine.UI.Text
 {
+    [MessagePackObject]
     public struct GlyphMetric
     {
+        [Key(0)]
         public uint CharCode;
 
         // The position of the glyph in the atlas (UV coordinates usually calculated from this)
+        [Key(1)]
         public int AtlasIndex;
 
         // The size of the actual pixel data inside the tile
+        [Key(2)]
         public int Width;
+        [Key(3)]
         public int Height;
 
         // Positioning logic (Values are normalized to the Atlas Tile Size)
+        [Key(4)]
         public float HorizontalAdvance;
+        [Key(5)]
         public float BearingX;
+        [Key(6)]
         public float BearingY;
-
+        [Key(7)]
         public float OriginalBearingX;
+        [Key(8)]
         public float OriginalBearingY;
 
+        [Key(9)]
         public float U;
+        [Key(10)]
         public float V;
+        [Key(11)]
         public float S;
+        [Key(12)]
         public float T;
     }
 
@@ -34,6 +49,17 @@ namespace DevoidEngine.Engine.UI.Text
         public byte[] Bitmap;
         public int Width;
         public int Height;
+    }
+
+    [MessagePackObject]
+    public class AtlasData
+    {
+        [Key(0)]
+        public Dictionary<uint, Vector4> GlyphRectangles;
+        [Key(1)]
+        public byte[] TextureData;
+        [Key(2)]
+        public Dictionary<uint, GlyphMetric> Metrics;
     }
 
     public class FontInternal
@@ -72,6 +98,8 @@ namespace DevoidEngine.Engine.UI.Text
             LineHeight = face.Size.Metrics.Height.ToSingle() * scaleFactor;
 
             Metrics = new Dictionary<uint, GlyphMetric>();
+            
+
 
             ProcessGlyphs();
         }
@@ -79,16 +107,33 @@ namespace DevoidEngine.Engine.UI.Text
         public void ProcessGlyphs()
         {
             string debugPath = Path.Combine("./DebugFonts/", face.FamilyName);
-
-
-            uint glyphIndex;
-            uint charCode = face.GetFirstChar(out glyphIndex);
+            string loadPath = Path.Combine("./RuntimeContent/FontAtlasData/", face.FamilyName);
 
             float scaleFactor = (float)AtlasTileSize / highResSourceSize;
+            uint charCode = 0;
+
+            uint glyphIndex;
+            charCode = face.GetFirstChar(out glyphIndex);
+
             int highResSpread = (int)(TargetSpread / scaleFactor);
             int highResPadding = highResSpread + 5;
 
             var rawGlyphs = new Dictionary<uint, BitmapData>();
+
+            // ============================================================
+            // 🔁 LOAD FROM DISK (FAST PATH)
+            // ============================================================
+            if (File.Exists(loadPath + ".bin"))
+            {
+                Atlas = new GlyphAtlas(2048, 2048);
+                LoadFromDisk(loadPath + ".bin");
+                Atlas.UploadGPU();
+                return;
+            }
+
+            // ============================================================
+            // 🏗 BUILD FROM SCRATCH (ORIGINAL PATH)
+            // ============================================================
 
             while (glyphIndex != 0)
             {
@@ -96,10 +141,7 @@ namespace DevoidEngine.Engine.UI.Text
                 {
                     var glyphData = GenerateSingleGlyph(charCode, scaleFactor, highResSpread, highResPadding);
                     if (glyphData.Bitmap != null)
-                    {
                         rawGlyphs[charCode] = glyphData;
-                    }
-
                 }
 
                 charCode = face.GetNextChar(charCode, out glyphIndex);
@@ -117,17 +159,40 @@ namespace DevoidEngine.Engine.UI.Text
                     var metric = Metrics[key];
                     metric.AtlasIndex = 0;
 
-                    metric.U = (float)rect.X / Atlas.Width;
-                    metric.V = (float)rect.Y / Atlas.Height;
-
-                    metric.S = (float)(rect.Z + rect.X) / Atlas.Width;
-                    metric.T = (float)(rect.W + rect.Y) / Atlas.Height;
+                    metric.U = rect.X / Atlas.Width;
+                    metric.V = rect.Y / Atlas.Height;
+                    metric.S = (rect.X + rect.Z) / Atlas.Width;
+                    metric.T = (rect.Y + rect.W) / Atlas.Height;
 
                     Metrics[key] = metric;
                 }
             }
 
-            //Atlas.SaveDebug(Path.Combine(debugPath, "debug_atlas.png"));
+            // Optional: Save after building
+            SaveToDisk(loadPath + ".bin");
+        }
+
+        void SaveToDisk(string path)
+        {
+            AtlasData data = new AtlasData()
+            {
+                GlyphRectangles = Atlas.GlyphRectangles,
+                TextureData = Atlas.TextureData,
+                Metrics = Metrics
+            };
+
+            byte[] binData = MessagePackSerializer.Serialize(data);
+            File.WriteAllBytes(path, binData);
+        }
+
+        void LoadFromDisk(string path)
+        {
+            byte[] fileData = File.ReadAllBytes(path);
+            AtlasData data = MessagePackSerializer.Deserialize<AtlasData>(fileData);
+
+            Atlas.TextureData = data.TextureData;
+            Atlas.GlyphRectangles = data.GlyphRectangles;
+            Metrics = data.Metrics;
         }
 
         private BitmapData GenerateSingleGlyph(uint charCode, float scaleFactor, int spread, int padding)

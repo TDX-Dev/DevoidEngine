@@ -283,7 +283,6 @@ namespace DevoidEngine.Engine.Core
 
             if (component is IRenderComponent)
             {
-                Console.WriteLine(component.gameObject.Name);
                 Renderables.Remove((IRenderComponent)component);
             }
 

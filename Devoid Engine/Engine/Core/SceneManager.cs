@@ -19,6 +19,7 @@ namespace DevoidEngine.Engine.Core
             {
                 CurrentScene.Destroy();
                 CurrentScene.Dispose();
+                FramePipeline.Reset();
             }
 
             // 2. Set new scene

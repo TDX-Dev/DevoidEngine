@@ -72,7 +72,7 @@ namespace DevoidEngine.Engine.Core
             windowManager = new WindowManager();
             windowManager.useVsyncLimiter = AppSpec.forceVsync;
 
-            Graphics.mainThreadID = windowManager.MainThreadID;
+            RenderThread.mainThreadID = windowManager.MainThreadID;
 
             MainWindow = new Window(windowSpecification);
 

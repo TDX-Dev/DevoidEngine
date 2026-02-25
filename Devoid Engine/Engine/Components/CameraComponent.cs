@@ -30,33 +30,40 @@ namespace DevoidEngine.Engine.Components
         public CameraComponent3D()
         {
             Camera = new Camera();
-            Camera.RenderTarget = new Framebuffer();
-            Camera.RenderTarget.AttachRenderTexture(new Texture2D(new DevoidGPU.TextureDescription()
-            {
-                Width = (int)Screen.Size.X,
-                Height = (int)Screen.Size.Y,
-                Format = DevoidGPU.TextureFormat.RGBA16_Float,
-                GenerateMipmaps = false,
-                IsDepthStencil = false,
-                IsRenderTarget = true,
-                IsMutable = false,
-            }));
-            Camera.RenderTarget.AttachDepthTexture(new Texture2D(new DevoidGPU.TextureDescription()
-            {
-                Width = (int)Screen.Size.X,
-                Height = (int)Screen.Size.Y,
-                Format = DevoidGPU.TextureFormat.Depth24_Stencil8,
-                GenerateMipmaps = false,
-                IsDepthStencil = true,
-                IsRenderTarget = false,
-                IsMutable = false
-            }));
-
-            UpdateProjection();
         }
 
         public override void OnStart()
         {
+            Camera.RenderTarget = new Framebuffer();
+            Graphics.Enqueue(() =>
+            {
+                Camera.RenderTarget.AttachRenderTexture(new Texture2D(new DevoidGPU.TextureDescription()
+                {
+                    Width = (int)Screen.Size.X,
+                    Height = (int)Screen.Size.Y,
+                    Format = DevoidGPU.TextureFormat.RGBA16_Float,
+                    GenerateMipmaps = false,
+                    IsDepthStencil = false,
+                    IsRenderTarget = true,
+                    IsMutable = false,
+                }));
+            });
+            Graphics.Enqueue(() =>
+            {
+                Camera.RenderTarget.AttachDepthTexture(new Texture2D(new DevoidGPU.TextureDescription()
+                {
+                    Width = (int)Screen.Size.X,
+                    Height = (int)Screen.Size.Y,
+                    Format = DevoidGPU.TextureFormat.Depth24_Stencil8,
+                    GenerateMipmaps = false,
+                    IsDepthStencil = true,
+                    IsRenderTarget = false,
+                    IsMutable = false
+                }));
+            });
+
+            UpdateProjection();
+
 
             //gameObject.Scene.AddCamera(this);
             //if (IsDefault) gameObject.Scene.SetMainCamera(this);

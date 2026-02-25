@@ -40,7 +40,7 @@ namespace DevoidStandaloneLauncher
             _timer += deltaTime;
             SplashScreen.OnUpdate(deltaTime);
 
-            if (_timer >= 2)
+            if (_timer >= 1f)
             {
                 _isInitialized = true;
                 LoadPrototype();

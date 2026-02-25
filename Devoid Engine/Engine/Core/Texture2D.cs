@@ -1,4 +1,5 @@
 ﻿using DevoidEngine.Engine.Rendering;
+using DevoidEngine.Engine.Rendering.GPUResource;
 using DevoidGPU;
 using System.Runtime.InteropServices;
 
@@ -37,50 +38,50 @@ namespace DevoidEngine.Engine.Core
             Width = description.Width;
             Height = description.Height;
 
-            _textureInternal = Graphics.CreateTexture(Description);
+            _textureInternal = Graphics.ResourceManager.TextureManager.CreateTexture(Description);
 
-            _sampler = Graphics.CreateSampler(_samplerDescription);
+            _sampler = Graphics.ResourceManager.SamplerManager.CreateSampler(_samplerDescription);
         }
 
         public override void Bind(int slot = 0,
                                   ShaderStage stage = ShaderStage.Fragment,
                                   BindMode mode = BindMode.ReadOnly)
         {
-            Graphics.BindTexture(_textureInternal, slot, stage, mode);
+            Graphics.ResourceManager.TextureManager.BindTexture(_textureInternal, slot, stage, mode);
 
-            Graphics.BindSampler(_sampler, slot);
+            Graphics.ResourceManager.SamplerManager.BindSampler(_sampler, slot);
         }
 
         public override void UnBind(int slot)
         {
-            Graphics.UnBindTexture(_textureInternal, slot);
+            Graphics.ResourceManager.TextureManager.UnBindTexture(_textureInternal, slot);
         }
 
         public void SetData(byte[] data)
         {
-            Graphics.UploadTextureData2D(_textureInternal, data);
+            Graphics.ResourceManager.TextureManager.UploadTextureData2D(_textureInternal, data);
         }
 
         public void SetData<T>(T[] data) where T : unmanaged
         {
             ReadOnlySpan<T> span = data;
             ReadOnlySpan<byte> byteSpan = MemoryMarshal.AsBytes(span);
-            Graphics.UploadTextureData2D(_textureInternal, byteSpan.ToArray());
+            Graphics.ResourceManager.TextureManager.UploadTextureData2D(_textureInternal, byteSpan.ToArray());
         }
 
         public void GenerateMipmaps()
         {
-            Graphics.GenerateMipmaps(_textureInternal);
+            Graphics.ResourceManager.TextureManager.GenerateMipmaps(_textureInternal);
         }
 
         public ITexture2D GetDeviceTexture()
         {
-            return (ITexture2D)Graphics.GetDeviceTexture(_textureInternal);
+            return (ITexture2D)Graphics.ResourceManager.TextureManager.GetDeviceTexture(_textureInternal);
         }
 
         public void Resize(int width, int height)
         {
-            Graphics.DeleteTexture(_textureInternal);
+            Graphics.ResourceManager.TextureManager.DeleteTexture(_textureInternal);
 
             var desc = Description;
             desc.Width = width;
@@ -89,7 +90,7 @@ namespace DevoidEngine.Engine.Core
             Width = width;
             Height = height;
 
-            _textureInternal = Graphics.CreateTexture(desc);
+            _textureInternal = Graphics.ResourceManager.TextureManager.CreateTexture(desc);
 
 
             Description = desc;

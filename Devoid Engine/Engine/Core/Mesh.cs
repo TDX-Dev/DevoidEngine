@@ -7,7 +7,7 @@ namespace DevoidEngine.Engine.Core
 {
     public class Mesh : IDisposable
     {
-        public IVertexBuffer VertexBuffer { get; private set; }
+        public ResourceHandle VertexBuffer { get; private set; }
         public IIndexBuffer IndexBuffer { get; private set; }
 
         private Vertex[] vertices;
@@ -17,6 +17,8 @@ namespace DevoidEngine.Engine.Core
 
         public Guid Id { get; } = Guid.NewGuid();
         public string Name { get; set; }
+
+        public int VertexCount { get => vertices.Length; }
 
         // State
         public bool IsRenderable { get; set; } = true;
@@ -38,7 +40,10 @@ namespace DevoidEngine.Engine.Core
         {
             if (isDisposed) return;
 
-            VertexBuffer?.Dispose();
+            if (VertexBuffer.Id != 0)
+            {
+                Graphics.DeleteVertexBuffer(VertexBuffer);
+            }
             IndexBuffer?.Dispose();
 
             isDisposed = true;
@@ -50,7 +55,10 @@ namespace DevoidEngine.Engine.Core
 
         public void Bind()
         {
-            VertexBuffer?.Bind();
+            if (VertexBuffer.Id != 0)
+            {
+                Graphics.BindVertexBuffer(VertexBuffer);
+            }
             IndexBuffer?.Bind();
         }
 
@@ -58,7 +66,7 @@ namespace DevoidEngine.Engine.Core
         {
             if (IndexBuffer  == null)
             {
-                Renderer.graphicsDevice.Draw(VertexBuffer.VertexCount, 0);
+                Renderer.graphicsDevice.Draw(vertices.Length, 0);
             } else
             {
                 Renderer.graphicsDevice.DrawIndexed(IndexBuffer.IndexCount, 0, 0);
@@ -71,13 +79,19 @@ namespace DevoidEngine.Engine.Core
             ComputeLocalBounds(vertexArray);
 
 
-            VertexBuffer = Renderer.graphicsDevice.BufferFactory.CreateVertexBuffer(
+            VertexBuffer = Graphics.CreateVertexBuffer(
                 IsStatic ? BufferUsage.Default : BufferUsage.Dynamic,
                 Vertex.VertexInfo,
                 vertexArray.Length
             );
 
-            VertexBuffer.SetData(vertexArray);
+            //Renderer.graphicsDevice.BufferFactory.CreateVertexBuffer(
+            //    IsStatic ? BufferUsage.Default : BufferUsage.Dynamic,
+            //    Vertex.VertexInfo,
+            //    vertexArray.Length
+            //);
+
+            Graphics.SetVertexBufferData(VertexBuffer, vertexArray);
         }
 
         public void SetIndices(int[] indexArray)

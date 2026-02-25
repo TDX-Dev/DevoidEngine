@@ -30,10 +30,10 @@ namespace DevoidEngine.Engine.Rendering
         }
         public static IInputLayout GetInputLayout(Mesh mesh, Shader shader)
         {
-            var key = (mesh.VertexBuffer.Layout, shader.vShader);
+            var key = (RenderBase._vBuffers[mesh.VertexBuffer.Id].Layout, shader.vShader);
             if (!InputLayoutManager.inputLayoutCache.TryGetValue(key, out var layout))
             {
-                layout = graphicsDevice.CreateInputLayout(mesh.VertexBuffer.Layout, shader.vShader);
+                layout = Renderer.graphicsDevice.CreateInputLayout(RenderBase._vBuffers[mesh.VertexBuffer.Id].Layout, shader.vShader);
                 InputLayoutManager.inputLayoutCache[key] = layout;
             }
             return layout;

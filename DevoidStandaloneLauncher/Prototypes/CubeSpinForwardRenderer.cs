@@ -289,7 +289,7 @@ namespace DevoidStandaloneLauncher.Prototypes
         int mode = 0;
         public override void OnUpdate(float delta)
         {
-            healthLabel.Text = "Health: " + playerController.Health + "/" + playerController.MaxHealth;
+            healthLabel.Text = "Health: " + Math.Round(playerController.Health) + "/" + playerController.MaxHealth;
 
             if (playerController.isReloading)
             {

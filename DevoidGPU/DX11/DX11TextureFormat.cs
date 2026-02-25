@@ -49,7 +49,6 @@ namespace DevoidGPU.DX11
 
         internal static int FormatToComponentCount(TextureFormat format)
         {
-            Console.WriteLine(format);
             return format switch
             {
                 TextureFormat.RGBA8_UNorm => 4,
