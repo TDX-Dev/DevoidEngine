@@ -18,7 +18,7 @@ namespace DevoidEngine.Engine.Core
 
         private byte[] defaultBuffer;
 
-        private int materialBufferBindSlot;
+        private int materialBufferBindSlot = -1;
         private int materialBufferSize;
 
         public Material(Shader shader)

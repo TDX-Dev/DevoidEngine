@@ -273,8 +273,7 @@ namespace DevoidEngine.Engine.Core
 
             if (IsPlaying && !_isStarting)
             {
-                component.OnStart();
-                component.IsInitialized = true;
+                component.InternalStart();
             }
         }
 

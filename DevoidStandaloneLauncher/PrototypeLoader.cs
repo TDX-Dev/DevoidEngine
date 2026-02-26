@@ -1,4 +1,5 @@
-﻿using DevoidEngine.Engine.Content.Scenes;
+﻿using DevoidEngine.Engine.Components;
+using DevoidEngine.Engine.Content.Scenes;
 using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.Rendering;
 using DevoidStandaloneLauncher.Prototypes;
@@ -13,11 +14,11 @@ namespace DevoidStandaloneLauncher
     public class PrototypeLoader : Layer
     {
         private float splashTimer = 0;
-        private float splashDuration = 1f;
+        private float splashDuration = 2f;
         private bool prototypeLoaded = false;
         
-        internal Scene CurrentScene = SplashScene.CreateSplashScene();
-        internal Prototype GamePrototype;
+        internal Scene CurrentScene = SplashScene.CreateSplashScene(nameof(PortalTest));
+        internal Prototype GamePrototype = new PortalTest();
 
         public override void OnAttach()
         {
@@ -27,7 +28,6 @@ namespace DevoidStandaloneLauncher
 
         public void LoadPrototype()
         {
-            GamePrototype = new CameraAsTexture();
             GamePrototype.loader = this;
             GamePrototype.OnInit();
         }

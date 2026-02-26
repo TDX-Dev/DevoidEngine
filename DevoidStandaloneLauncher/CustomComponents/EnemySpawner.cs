@@ -1,5 +1,6 @@
 ﻿using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.Physics;
+using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.Utilities;
 using System.Numerics;
 
@@ -17,6 +18,7 @@ namespace DevoidEngine.Engine.Components
         private bool waitingForRespawn = false;
 
         private Mesh enemyMesh;
+        private MaterialInstance enemyMaterial;
 
         public event Action OnDeath;
 
@@ -24,6 +26,9 @@ namespace DevoidEngine.Engine.Components
         {
             enemyMesh = new Mesh();
             enemyMesh.SetVertices(Primitives.GetCubeVertex());
+
+            enemyMaterial = RenderingDefaults.GetMaterial();
+            enemyMaterial.SetVector4("Albedo", new Vector4(0, 0.6f, 0, 1f));
 
             SpawnEnemy();
         }
@@ -65,7 +70,8 @@ namespace DevoidEngine.Engine.Components
 
             enemy.transform.Scale = EnemyScale;
 
-            enemy.AddComponent<MeshRenderer>().AddMesh(enemyMesh);
+            MeshRenderer enemyMR = enemy.AddComponent<MeshRenderer>();
+            enemyMR.AddMesh(enemyMesh);
 
             var rb = enemy.AddComponent<RigidBodyComponent>();
             rb.Shape = new PhysicsShapeDescription()

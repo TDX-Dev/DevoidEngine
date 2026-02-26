@@ -9,7 +9,7 @@ struct PSInput
     float3 WorldPos : TEXCOORD2;
 };
 
-cbuffer Material : register(b0)
+cbuffer Material : register(b2)
 {
     float4 color;
 };

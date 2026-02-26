@@ -1,10 +1,22 @@
 ﻿using DevoidEngine.Engine.Core;
+using System.Diagnostics;
 
 namespace DevoidEngine.Engine.Components
 {
     public abstract partial class Component
     {
         public bool IsInitialized;
+
+        internal void InternalStart()
+        {
+
+            //if (IsInitialized)
+            //    return;
+
+            OnStart();
+            IsInitialized = true;
+        }
+
         public abstract string Type { get; }
         public Component() { }
 

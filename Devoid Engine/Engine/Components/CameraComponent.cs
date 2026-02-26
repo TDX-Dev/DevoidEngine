@@ -34,7 +34,6 @@ namespace DevoidEngine.Engine.Components
 
         public override void OnStart()
         {
-            IsDefault = true;
             Camera.RenderTarget = new Framebuffer();
 
             Camera.RenderTarget.AttachRenderTexture(new Texture2D(new DevoidGPU.TextureDescription()

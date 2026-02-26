@@ -55,7 +55,7 @@ namespace DevoidEngine.Engine.Core
         public void UpdateProjectionMatrix(float aspectRatio)
         {
             _projectionMatrix = Matrix4x4.CreatePerspectiveFieldOfView(FovY, aspectRatio, NearClip, FarClip);
-
+            _projectionMatrix = Renderer.graphicsDevice.AdjustProjectionMatrix(_projectionMatrix);
             Frustum = Frustum.FromMatrix(_viewMatrix * _projectionMatrix);
         }
 

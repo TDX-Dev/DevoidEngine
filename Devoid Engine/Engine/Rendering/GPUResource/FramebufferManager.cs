@@ -31,7 +31,7 @@ namespace DevoidEngine.Engine.Rendering.GPUResource
         {
             RenderThread.Enqueue(() =>
             {
-                _frameBuffers[handle.Id].Bind();
+                Renderer.graphicsDevice.BindFramebuffer(_frameBuffers[handle.Id]);
             });
         }
 

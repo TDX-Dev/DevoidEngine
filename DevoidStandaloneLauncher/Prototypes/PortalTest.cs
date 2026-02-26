@@ -9,7 +9,7 @@ using System.Numerics;
 
 namespace DevoidStandaloneLauncher.Prototypes
 {
-    internal class CameraAsTexture : Prototype
+    internal class PortalTest : Prototype
     {
         Scene scene;
         GameObject camera;
@@ -20,6 +20,7 @@ namespace DevoidStandaloneLauncher.Prototypes
         FontInternal font;
 
         GameObject portalCamera;
+        GameObject cameraFollower;
 
         public override void OnInit()
         {
@@ -109,6 +110,7 @@ namespace DevoidStandaloneLauncher.Prototypes
             camera.SetParent(cameraPivot, false);
             //camera.transform.LocalPosition = new Vector3(0, 2, -20);
 
+            camera.AddComponent<HitMarkerComponent>();
             var camComponent = camera.AddComponent<CameraComponent3D>();
             camComponent.IsDefault = true;
 
@@ -245,10 +247,14 @@ namespace DevoidStandaloneLauncher.Prototypes
             {
                 portalMeshRenderer.material = new MaterialInstance(new Material(new Shader("Engine/Content/Shaders/Testing/portal_render")));
                 portalMeshRenderer.material.SetTexture("MAT_TEX_OVERRIDE", portalCameraComponent.Camera.RenderTarget.GetRenderTexture(0));
-                portalMeshRenderer.material.SetVector4("Albedo", new Vector4(0,0,0,0));
+                portalMeshRenderer.material.SetVector4("Albedo", new Vector4(0, 0, 0, 0));
             });
 
             portalMeshRenderer.AddMesh(mesh);
+
+
+            //cameraFollower = scene.addGameObject("Camera Follow Cube");
+            //cameraFollower.AddComponent<MeshRenderer>().AddMesh(mesh);
 
 
             SetupUI();
@@ -359,8 +365,10 @@ namespace DevoidStandaloneLauncher.Prototypes
         float pos = 0;
         public override void OnUpdate(float delta)
         {
+            //cameraFollower.transform.Position = camera.transform.Position + camera.transform.Forward * 2f;
+
             //Monitor.transform.Position = new Vector3(0, pos, 0);
-            portalCamera.transform.EulerAngles = new Vector3(0, pos * 5, 0);
+            //portalCamera.transform.EulerAngles = new Vector3(0, pos * 5, 0);
             pos += delta;
 
             healthLabel.Text = "Health: " + Math.Round(playerController.Health) + "/" + playerController.MaxHealth;

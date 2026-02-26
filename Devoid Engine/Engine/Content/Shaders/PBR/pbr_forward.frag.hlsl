@@ -18,6 +18,9 @@ cbuffer Material : register(b3)
 #include "../Common/render_constants.hlsl"
 #include "../Common/light_constructs.hlsl"
 
+Texture2D MAT_TEX_OVERRIDE : register(t0);
+SamplerState MAT_TEX_OVERRIDE_SAMPLER : register(s0);
+
 float4 PSMain(PSInput input) : SV_TARGET
 {
     // Normalize interpolated normal
@@ -36,5 +39,5 @@ float4 PSMain(PSInput input) : SV_TARGET
         viewDir,
         albedo);
     
-    return float4(lighting, 1.0);
+    return float4(lighting, 1.0) + MAT_TEX_OVERRIDE.SampleLevel(MAT_TEX_OVERRIDE_SAMPLER, input.UV0, 0);
 }

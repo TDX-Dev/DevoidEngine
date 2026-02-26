@@ -13,7 +13,7 @@ namespace DevoidEngine.Engine.Content.Scenes
 {
     public class SplashScene 
     {
-        public static Scene CreateSplashScene()
+        public static Scene CreateSplashScene(string loadingName = "None")
         {
             Scene scene = new Scene();
 
@@ -36,11 +36,20 @@ namespace DevoidEngine.Engine.Content.Scenes
                 Direction = FlexDirection.Column,
                 Align = AlignItems.Center,
                 Justify = JustifyContent.Center,
-                Layout = new LayoutOptions() { FlexGrowMain = 1 }
+                Layout = new LayoutOptions() { FlexGrowMain = 1 },
             };
 
-            //root.Add(new LabelNode("Powered by", font, 32f));
-            //root.Add(new LabelNode("DEVOID ENGINE", font, 64f));
+            var root1 = new FlexboxNode()
+            {
+                Offset = new System.Numerics.Vector2(10, 10),
+                Direction = FlexDirection.Column,
+                Align = AlignItems.Center,
+                Justify = JustifyContent.Center,
+                Layout = new LayoutOptions() { FlexGrowMain = 1 },
+                ParticipatesInLayout = false
+            };
+
+            root1.Add(new LabelNode($"Currently Loading: {loadingName}", font, 16f));
 
             root.Add(new BoxNode()
             {
@@ -49,6 +58,7 @@ namespace DevoidEngine.Engine.Content.Scenes
             });
 
             canvas.Canvas.Add(root);
+            canvas.Canvas.Add(root1);
 
             // Add splash controller
             //var controllerGO = scene.addGameObject("SplashController");

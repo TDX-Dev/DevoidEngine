@@ -170,7 +170,44 @@ namespace DevoidGPU.DX11
 
                 }
             }
+            //PrintReflectionInfo(reflection);
+        }
 
+        private void PrintReflectionInfo(ShaderReflection reflection)
+        {
+            Console.WriteLine("==== Shader Reflection ====");
+            Console.WriteLine($"Stage: {Type}");
+            Console.WriteLine();
+
+            // Constant Buffers
+            foreach (var cb in ReflectionData.UniformBuffers)
+            {
+                Console.WriteLine($"CBUFFER: {cb.Name}");
+                Console.WriteLine($"  Size     : {cb.Size}");
+                Console.WriteLine($"  BindSlot : b{cb.BindSlot}");
+                Console.WriteLine("  Variables:");
+
+                foreach (var v in cb.Variables)
+                {
+                    Console.WriteLine($"    {v.Name}");
+                    Console.WriteLine($"      Offset : {v.Offset}");
+                    Console.WriteLine($"      Size   : {v.Size}");
+                    Console.WriteLine($"      Type   : {v.Type}");
+                }
+
+                Console.WriteLine();
+            }
+
+            // Textures
+            foreach (var tex in ReflectionData.TextureBindings)
+            {
+                Console.WriteLine($"TEXTURE: {tex.Name}");
+                Console.WriteLine($"  BindSlot : t{tex.BindSlot}");
+                Console.WriteLine($"  Stage    : {tex.Stage}");
+                Console.WriteLine();
+            }
+
+            Console.WriteLine("============================");
         }
 
         private int GetBindSlot(ShaderReflection reflection, string cbName)

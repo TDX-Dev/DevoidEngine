@@ -7,7 +7,7 @@ namespace DevoidGPU
         List<ITexture2D> ColorAttachments { get; }
         ITexture2D DepthAttachment { get; }
 
-        void Bind();
+        //void Bind();
         int Width { get; }
         int Height { get; }
 

@@ -76,8 +76,8 @@ namespace DevoidEngine.Engine.Rendering
         {
             if (ActiveRenderTechnique == null)
                 Console.WriteLine("[Renderer]: Render technique was not set. No Object rendered.");
-
             Output = ActiveRenderTechnique?.Render(ctx);
+            Renderer.graphicsDevice.UnbindAllShaderResources();
             RenderAPI.RenderToBuffer(Output, ctx.cameraTargetSurface);
         }
 
@@ -112,6 +112,7 @@ namespace DevoidEngine.Engine.Rendering
             for (int i = 0; i < items.Count; i++)
             {
                 var item = items[i];
+
 
                 if (item.Material != currentMaterial)
                 {

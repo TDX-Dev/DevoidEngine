@@ -1,5 +1,6 @@
 ﻿using SharpDX.Direct3D11;
 using SharpDX.DXGI;
+using System.Numerics;
 
 namespace DevoidGPU.DX11
 {
@@ -99,10 +100,66 @@ namespace DevoidGPU.DX11
             return TextureManager.Resolve(handle);
         }
 
+        private DX11Texture2D[] _boundPS_SRVs = new DX11Texture2D[16];
+        private DX11Texture2D[] _boundVS_SRVs = new DX11Texture2D[16];
+
+        internal void TrackSRVBind(int slot, DX11Texture2D texture, ShaderStage stage)
+        {
+            if ((stage & ShaderStage.Fragment) != 0)
+                _boundPS_SRVs[slot] = texture;
+
+            if ((stage & ShaderStage.Vertex) != 0)
+                _boundVS_SRVs[slot] = texture;
+        }
+
+        internal void ResolveSRVRTVHazard(DX11Texture2D texture)
+        {
+            for (int i = 0; i < 16; i++)
+            {
+                if (_boundPS_SRVs[i] == texture)
+                {
+                    deviceContext.PixelShader.SetShaderResource(i, null);
+                    _boundPS_SRVs[i] = null;
+                }
+
+                if (_boundVS_SRVs[i] == texture)
+                {
+                    deviceContext.VertexShader.SetShaderResource(i, null);
+                    _boundVS_SRVs[i] = null;
+                }
+            }
+        }
 
 
+        public void BindFramebuffer(IFramebuffer fb)
+        {
+            foreach (var tex in fb.ColorAttachments)
+            {
+                if (tex is DX11Texture2D dxTex)
+                    ResolveSRVRTVHazard(dxTex);
+            }
 
+            var rtvs = new RenderTargetView[fb.ColorAttachments.Count];
+            for (int i = 0; i < fb.ColorAttachments.Count; i++)
+            {
+                if (fb.ColorAttachments[i] != null && fb.ColorAttachments[i] is DX11Texture2D tex2D)
+                    rtvs[i] = tex2D.RenderTargetView;
+            }
 
+            DepthStencilView dsv = null;
+            if (fb.DepthAttachment is DX11Texture2D depthTex)
+                dsv = depthTex.DepthStencilView;
+
+            deviceContext.OutputMerger.SetRenderTargets(dsv, rtvs);
+        }
+
+        public Matrix4x4 AdjustProjectionMatrix(Matrix4x4 projection)
+        {
+            // DX11 uses 0→1 depth range
+            // No Y flip needed
+            // No remapping needed
+            return projection;
+        }
 
         private readonly Dictionary<(BlendMode, bool), BlendState> blendCache = new();
         private readonly Dictionary<(DepthTest, bool), DepthStencilState> depthCache = new();

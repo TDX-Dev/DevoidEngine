@@ -54,6 +54,9 @@ namespace DevoidEngine.Engine.Components
             HealthBarUI.PixelsPerUnit = 200;
             HealthBarUI.RenderMode = CanvasRenderMode.WorldSpace;
 
+            gameObject.GetComponent<MeshRenderer>().material.SetVector4("Albedo", new Vector4(0, 0.7f, 0, 1));
+
+
             player = gameObject.Scene.GetGameObject("Player"); // adjust to your API
         }
 

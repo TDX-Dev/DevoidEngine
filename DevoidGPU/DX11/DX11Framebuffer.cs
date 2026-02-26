@@ -56,18 +56,20 @@ namespace DevoidGPU.DX11
 
         public void Bind()
         {
-            var rtvs = new RenderTargetView[ColorAttachments.Count];
-            for (int i = 0; i < ColorAttachments.Count; i++)
-            {
-                if (ColorAttachments[i] != null && ColorAttachments[i] is DX11Texture2D tex2D)
-                    rtvs[i] = tex2D.RenderTargetView;
-            }
 
-            DepthStencilView dsv = null;
-            if (DepthAttachment is DX11Texture2D depthTex)
-                dsv = depthTex.DepthStencilView;
 
-            deviceContext.OutputMerger.SetRenderTargets(dsv, rtvs);
+            //var rtvs = new RenderTargetView[ColorAttachments.Count];
+            //for (int i = 0; i < ColorAttachments.Count; i++)
+            //{
+            //    if (ColorAttachments[i] != null && ColorAttachments[i] is DX11Texture2D tex2D)
+            //        rtvs[i] = tex2D.RenderTargetView;
+            //}
+
+            //DepthStencilView dsv = null;
+            //if (DepthAttachment is DX11Texture2D depthTex)
+            //    dsv = depthTex.DepthStencilView;
+
+            //deviceContext.OutputMerger.SetRenderTargets(dsv, rtvs);
         }
 
         public void ClearColor(Vector4 color)

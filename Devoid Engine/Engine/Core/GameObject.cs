@@ -188,17 +188,16 @@ namespace DevoidEngine.Engine.Core
 
             for (int i = 0; i < Components.Count; i++)
             {
-                Components[i].OnStart();
-                Components[i].IsInitialized = true;
+                Components[i].InternalStart();
             }
 
-            if (children.Count > 0)
-            {
-                for (int i = 0; i < children.Count; i++)
-                {
-                    children[i].OnStart();
-                }
-            }
+            //if (children.Count > 0)
+            //{
+            //    for (int i = 0; i < children.Count; i++)
+            //    {
+            //        children[i].OnStart();
+            //    }
+            //}
         }
 
         public void OnUpdate(float dt)
@@ -210,13 +209,13 @@ namespace DevoidEngine.Engine.Core
 
 
 
-            if (children.Count > 0)
-            {
-                for (int i = 0; i < children.Count; i++)
-                {
-                    children[i].OnUpdate(dt);
-                }
-            }
+            //if (children.Count > 0)
+            //{
+            //    for (int i = 0; i < children.Count; i++)
+            //    {
+            //        children[i].OnUpdate(dt);
+            //    }
+            //}
         }
 
         public void OnFixedUpdate(float dt)

@@ -239,15 +239,11 @@ namespace DevoidEngine.Engine.Core
 
         ManualResetEventSlim updateStart = new(false);
         ManualResetEventSlim updateDone = new(false);
+        double _currentUpdateStep;
 
         public void RunTicked()
         {
-            const double renderHz = 60.0;
-            const int updatesPerFrame = 6;
-
-            const double updateHz = renderHz * updatesPerFrame;
-            const double updateStep = 1.0 / updateHz;
-            const double renderStep = 1.0 / renderHz;
+            const int updatesPerFrame = 4;
 
             foreach (var wrs in windows)
                 wrs.window.Load();
@@ -265,10 +261,12 @@ namespace DevoidEngine.Engine.Core
                     if (!_running)
                         break;
 
+                    double step = Interlocked.CompareExchange(ref _currentUpdateStep, 0, 0);
+
                     for (int u = 0; u < updatesPerFrame; u++)
                     {
                         for (int i = windows.Count - 1; i >= 0; i--)
-                            windows[i].window.Update(updateStep);
+                            windows[i].window.Update(step);
                     }
 
                     updateDone.Set();
@@ -290,15 +288,21 @@ namespace DevoidEngine.Engine.Core
                 if (windows.Count == 0)
                     break;
 
-                double frameStart = timer.Elapsed.TotalSeconds;
-                double dt = frameStart - lastRenderTime;
-                lastRenderTime = frameStart;
+                double now = timer.Elapsed.TotalSeconds;
+                double dt = now - lastRenderTime;
+                lastRenderTime = now;
+
+                if (dt > 0.25)
+                    dt = 0.25;
+
+                // Split real frame time into 6 equal update steps
+                Interlocked.Exchange(ref _currentUpdateStep, dt / updatesPerFrame);
 
                 // ---- Sync: force 6 updates ----
                 updateDone.Reset();
                 updateStart.Set();
                 updateDone.Wait();
-                // -------------------------------
+                // --------------------------------
 
                 for (int i = windows.Count - 1; i >= 0; i--)
                 {
@@ -317,10 +321,6 @@ namespace DevoidEngine.Engine.Core
                 }
 
                 _running = windows.Count > 0;
-
-                //// Optional frame cap without Sleep
-                //while (timer.Elapsed.TotalSeconds - frameStart < renderStep)
-                //    Thread.SpinWait(10);
             }
 
             _running = false;

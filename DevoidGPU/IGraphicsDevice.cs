@@ -1,4 +1,6 @@
-﻿namespace DevoidGPU
+﻿using System.Numerics;
+
+namespace DevoidGPU
 {
     public interface IGraphicsDevice
     {
@@ -24,9 +26,12 @@
         void SetStencilState(bool enable, CompareFunc compare, int reference, StencilOp stencilFail = StencilOp.Keep, StencilOp depthFail = StencilOp.Keep, StencilOp pass = StencilOp.Keep);
         void SetPrimitiveType(PrimitiveType type);
 
-
+        // Camera's vertical and horizontal axis might be different per gapi.
+        Matrix4x4 AdjustProjectionMatrix(Matrix4x4 projection);
         void DrawIndexed(int indexCount, int startIndexLocation, int baseVertexLocation);
         void Draw(int vertexCount, int startVertex);
+
+        public void BindFramebuffer(IFramebuffer fb);
 
         // Optionally move this to its own factory when similar items are added.
         IInputLayout CreateInputLayout(VertexInfo vertexInfo, IShader vertexShader);
