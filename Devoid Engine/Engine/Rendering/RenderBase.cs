@@ -78,6 +78,7 @@ namespace DevoidEngine.Engine.Rendering
                 Console.WriteLine("[Renderer]: Render technique was not set. No Object rendered.");
 
             Output = ActiveRenderTechnique?.Render(ctx);
+            RenderAPI.RenderToBuffer(Output, ctx.cameraTargetSurface);
         }
 
         public static IInputLayout GetInputLayout(Mesh mesh, Shader shader)
@@ -174,7 +175,6 @@ namespace DevoidEngine.Engine.Rendering
             Renderer.graphicsDevice.SetBlendState(renderState.BlendMode);
             Renderer.graphicsDevice.SetDepthState(renderState.DepthTest, renderState.DepthWrite);
             Renderer.graphicsDevice.SetRasterizerState(renderState.CullMode, renderState.FillMode);
-            Console.WriteLine(renderState.PrimitiveType);
             Renderer.graphicsDevice.SetPrimitiveType(renderState.PrimitiveType);
         }
     }

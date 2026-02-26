@@ -27,7 +27,7 @@ namespace DevoidStandaloneLauncher
 
         public void LoadPrototype()
         {
-            GamePrototype = new CubeSpinForwardRenderer();
+            GamePrototype = new CameraAsTexture();
             GamePrototype.loader = this;
             GamePrototype.OnInit();
         }
@@ -60,7 +60,7 @@ namespace DevoidStandaloneLauncher
 
         public override void OnLateRender()
         {
-            Texture2D renderOutput = RenderBase.Output;
+            Texture2D renderOutput = CurrentScene?.GetMainCamera()?.Camera?.RenderTarget?.GetRenderTexture(0);
             RenderAPI.RenderToScreen(renderOutput);
         }
 

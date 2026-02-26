@@ -236,5 +236,97 @@ namespace DevoidEngine.Engine.Core
             _running = false; 
             updateThread.Join();
         }
+
+        ManualResetEventSlim updateStart = new(false);
+        ManualResetEventSlim updateDone = new(false);
+
+        public void RunTicked()
+        {
+            const double renderHz = 60.0;
+            const int updatesPerFrame = 6;
+
+            const double updateHz = renderHz * updatesPerFrame;
+            const double updateStep = 1.0 / updateHz;
+            const double renderStep = 1.0 / renderHz;
+
+            foreach (var wrs in windows)
+                wrs.window.Load();
+
+            _running = true;
+
+            // ---------------- UPDATE THREAD ----------------
+            Thread updateThread = new Thread(() =>
+            {
+                while (_running)
+                {
+                    updateStart.Wait();
+                    updateStart.Reset();
+
+                    if (!_running)
+                        break;
+
+                    for (int u = 0; u < updatesPerFrame; u++)
+                    {
+                        for (int i = windows.Count - 1; i >= 0; i--)
+                            windows[i].window.Update(updateStep);
+                    }
+
+                    updateDone.Set();
+                }
+            })
+            {
+                IsBackground = true,
+                Name = "Update Thread"
+            };
+
+            updateThread.Start();
+
+            // ---------------- RENDER THREAD ----------------
+            Stopwatch timer = Stopwatch.StartNew();
+            double lastRenderTime = timer.Elapsed.TotalSeconds;
+
+            while (_running)
+            {
+                if (windows.Count == 0)
+                    break;
+
+                double frameStart = timer.Elapsed.TotalSeconds;
+                double dt = frameStart - lastRenderTime;
+                lastRenderTime = frameStart;
+
+                // ---- Sync: force 6 updates ----
+                updateDone.Reset();
+                updateStart.Set();
+                updateDone.Wait();
+                // -------------------------------
+
+                for (int i = windows.Count - 1; i >= 0; i--)
+                {
+                    var window = windows[i].window;
+
+                    window.ProcessEvents();
+
+                    if (window.IsExiting)
+                    {
+                        window.Close();
+                        windows.RemoveAt(i);
+                        continue;
+                    }
+
+                    window.Render(dt);
+                }
+
+                _running = windows.Count > 0;
+
+                //// Optional frame cap without Sleep
+                //while (timer.Elapsed.TotalSeconds - frameStart < renderStep)
+                //    Thread.SpinWait(10);
+            }
+
+            _running = false;
+            updateStart.Set();   // release update thread if waiting
+            updateThread.Join();
+        }
+
     }
 }

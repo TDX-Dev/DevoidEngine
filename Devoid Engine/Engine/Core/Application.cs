@@ -166,7 +166,7 @@ namespace DevoidEngine.Engine.Core
 
         public void Run()
         {
-            windowManager.RunAll();
+            windowManager.RunTicked();
         }
 
         public void AddLayer(Layer layer)
