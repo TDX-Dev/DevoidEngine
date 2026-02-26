@@ -74,12 +74,12 @@ namespace DevoidEngine.Engine.UI.Nodes
 
             ArrangeCore(finalRect);
         }
-        public void Render(List<RenderItem> renderList)
+        public void Render(List<RenderItem> renderList, Matrix4x4 model)
         {
-            RenderCore(renderList);
+            RenderCore(renderList, model);
             for (int i = 0; i < _children.Count; i++)
             {
-                _children[i].Render(renderList);
+                _children[i].Render(renderList, model);
             }
         }
 
@@ -87,7 +87,7 @@ namespace DevoidEngine.Engine.UI.Nodes
         protected abstract void InitializeCore();
         protected abstract Vector2 MeasureCore(Vector2 availableSize);
         protected abstract void ArrangeCore(UITransform finalRect);
-        protected abstract void RenderCore(List<RenderItem> renderList);
+        protected abstract void RenderCore(List<RenderItem> renderList, Matrix4x4 canvasModel);
     }
 
 }

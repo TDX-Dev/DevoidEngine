@@ -16,7 +16,7 @@ namespace DevoidEngine.Engine.UI.Nodes
             base.ArrangeCore(finalRect);
         }
 
-        protected override void RenderCore(List<RenderItem> renderList)
+        protected override void RenderCore(List<RenderItem> renderList, Matrix4x4 canvasModel)
         {
 
         }

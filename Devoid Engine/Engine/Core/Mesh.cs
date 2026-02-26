@@ -7,8 +7,8 @@ namespace DevoidEngine.Engine.Core
 {
     public class Mesh : IDisposable
     {
-        public ResourceHandle VertexBuffer { get; private set; }
-        public IIndexBuffer IndexBuffer { get; private set; }
+        public VertexBuffer VertexBuffer { get; private set; }
+        public IndexBuffer IndexBuffer { get; private set; }
 
         private Vertex[] vertices;
         private int[] indices;
@@ -18,7 +18,7 @@ namespace DevoidEngine.Engine.Core
         public Guid Id { get; } = Guid.NewGuid();
         public string Name { get; set; }
 
-        public int VertexCount { get => vertices.Length; }
+        public int VertexCount { get => VertexBuffer.VertexCount; }
 
         // State
         public bool IsRenderable { get; set; } = true;
@@ -40,10 +40,7 @@ namespace DevoidEngine.Engine.Core
         {
             if (isDisposed) return;
 
-            if (VertexBuffer.Id != 0)
-            {
-                Graphics.DeleteVertexBuffer(VertexBuffer);
-            }
+            VertexBuffer?.Dispose();
             IndexBuffer?.Dispose();
 
             isDisposed = true;
@@ -55,10 +52,7 @@ namespace DevoidEngine.Engine.Core
 
         public void Bind()
         {
-            if (VertexBuffer.Id != 0)
-            {
-                Graphics.BindVertexBuffer(VertexBuffer);
-            }
+            VertexBuffer?.Bind();
             IndexBuffer?.Bind();
         }
 
@@ -79,7 +73,7 @@ namespace DevoidEngine.Engine.Core
             ComputeLocalBounds(vertexArray);
 
 
-            VertexBuffer = Graphics.CreateVertexBuffer(
+            VertexBuffer = new VertexBuffer(
                 IsStatic ? BufferUsage.Default : BufferUsage.Dynamic,
                 Vertex.VertexInfo,
                 vertexArray.Length
@@ -91,16 +85,13 @@ namespace DevoidEngine.Engine.Core
             //    vertexArray.Length
             //);
 
-            Graphics.SetVertexBufferData(VertexBuffer, vertexArray);
+            VertexBuffer.SetData(vertexArray);
         }
 
         public void SetIndices(int[] indexArray)
         {
             indices = indexArray;
-            IndexBuffer = Renderer.graphicsDevice.BufferFactory.CreateIndexBuffer(
-                indexArray.Length,
-                BufferUsage.Default
-            );
+            IndexBuffer = new IndexBuffer(BufferUsage.Default, indexArray.Length);
             IndexBuffer.SetData(indexArray);
         }
 

@@ -30,6 +30,11 @@ namespace DevoidEngine.Engine.Rendering.GPUResource
             return resourceHandle;
         }
 
+        public VertexInfo GetVertexBufferLayout(VertexBufferHandle handle)
+        {
+            return _vertexBuffers[handle.Id].Layout;
+        }
+
         public void SetVertexBufferData<T>(VertexBufferHandle handle, T[] data) where T : struct
         {
             RenderThread.Enqueue(() =>
@@ -48,7 +53,7 @@ namespace DevoidEngine.Engine.Rendering.GPUResource
 
         public void DeleteVertexBuffer(VertexBufferHandle handle)
         {
-            RenderThread.Enqueue(() =>
+            RenderThread.EnqueueDelayedDelete(() =>
             {
                 _vertexBuffers[handle.Id].Dispose();
             });

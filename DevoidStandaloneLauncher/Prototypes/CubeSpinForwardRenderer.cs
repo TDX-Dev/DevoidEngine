@@ -16,6 +16,7 @@ namespace DevoidStandaloneLauncher.Prototypes
         CanvasComponent Canvas;
         GameObject player;
         FPSController playerController;
+        FontInternal font;
 
         public override void OnInit(Scene main)
         {
@@ -59,13 +60,33 @@ namespace DevoidStandaloneLauncher.Prototypes
             playerController.JumpForce = 5;
             playerController.MouseSensitivity = 0.15f;
 
+            playerController.OnDeath += () =>
+            {
+                scene = CreateGameOverScene();
+                baseLayer.MainScene = scene;
+                SceneManager.LoadScene(scene);
+                scene.Play();
+
+                Cursor.SetCursorState(CursorState.Normal);
+            };
+
+            Cursor.SetCursorState(CursorState.Grabbed);
             // ===============================
             // CAMERA PIVOT (Pitch Only)
             // ===============================
 
+            GameObject torch = scene.addGameObject("Torch");
+            LightComponent torchLight = torch.AddComponent<LightComponent>();
+            torchLight.Intensity = 10;
+            torchLight.Radius = 10;
+            torchLight.Color = new Vector4(1, 1, 1, 1);
+
+            torch.SetParent(player, false);
+
             GameObject cameraPivot = scene.addGameObject("CameraPivot");
             cameraPivot.AddComponent<MeshRenderer>().AddMesh(mesh);
             cameraPivot.SetParent(player, false);
+            playerController.SetCameraPivot(cameraPivot.transform);
 
             cameraPivot.transform.LocalPosition = new Vector3(0, 1.4f, 0);
 
@@ -97,18 +118,21 @@ namespace DevoidStandaloneLauncher.Prototypes
             var lightComponent2 = light2.AddComponent<LightComponent>();
             lightComponent2.Intensity = 400;
             lightComponent2.Color = new Vector4(1, 1, 1, 1);
+            lightComponent2.Radius = 100;
             light2.transform.Position = new Vector3(20, 20, -20);
 
             GameObject light3 = scene.addGameObject("Light");
             var lightComponent3 = light3.AddComponent<LightComponent>();
             lightComponent3.Intensity = 400;
             lightComponent3.Color = new Vector4(1, 1, 1, 1);
+            lightComponent3.Radius = 100;
             light3.transform.Position = new Vector3(-20, 20, 20);
 
             GameObject light4 = scene.addGameObject("Light");
             var lightComponent4 = light4.AddComponent<LightComponent>();
             lightComponent4.Intensity = 400;
             lightComponent4.Color = new Vector4(1, 1, 1, 1);
+            lightComponent4.Radius = 100;
             light4.transform.Position = new Vector3(-20, 20, -20);
 
 
@@ -118,7 +142,7 @@ namespace DevoidStandaloneLauncher.Prototypes
 
             GameObject ground = scene.addGameObject("Ground");
             ground.transform.Position = new Vector3(0, 0, 0);
-            ground.transform.Scale = new Vector3(100, 1, 100);
+            ground.transform.Scale = new Vector3(1000, 1, 1000);
 
             var groundRenderer = ground.AddComponent<MeshRenderer>();
             groundRenderer.AddMesh(mesh);
@@ -127,7 +151,7 @@ namespace DevoidStandaloneLauncher.Prototypes
             groundCollider.Shape = new PhysicsShapeDescription()
             {
                 Type = PhysicsShapeType.Box,
-                Size = new Vector3(100, 1, 100)
+                Size = new Vector3(1000, 1, 1000)
             };
 
             groundCollider.Material = new PhysicsMaterial()
@@ -142,8 +166,8 @@ namespace DevoidStandaloneLauncher.Prototypes
 
             //camera.AddComponent<FreeCameraComponent>();
 
-            GameObject spawner = scene.addGameObject("EnemySpawner");
-            EnemySpawner spawnerComp = spawner.AddComponent<EnemySpawner>();
+            //GameObject spawner = scene.addGameObject("EnemySpawner");
+            //EnemySpawner spawnerComp = spawner.AddComponent<EnemySpawner>();
 
 
 
@@ -174,14 +198,15 @@ namespace DevoidStandaloneLauncher.Prototypes
                 Restitution = 0.1f
             };
 
-            Enemy enemyComp = enemy.AddComponent<Enemy>();
-            spawnerComp.OnDeath += () =>
-            {
-                scoreLabel.Text = "Score: " + ++score;
-            };
+            //Enemy enemyComp = enemy.AddComponent<Enemy>();
+            //spawnerComp.OnDeath += () =>
+            //{
+            //    scoreLabel.Text = "Score: " + ++score;
+            //};
 
             GameObject canvasObject = scene.addGameObject("Canvas");
             Canvas = canvasObject.AddComponent<CanvasComponent>();
+            Canvas.RenderMode = CanvasRenderMode.WorldSpace;
 
             SetupUI();
         }
@@ -195,8 +220,8 @@ namespace DevoidStandaloneLauncher.Prototypes
 
         void SetupUI()
         {
-            FontInternal font = FontLibrary.LoadFont("Engine/Content/Fonts/JetBrainsMono-Regular.ttf", 32);
-            //FontInternal font = FontLibrary.LoadFont("C:/Windows/Fonts/HARLOWSI.ttf", 32);
+            font = FontLibrary.LoadFont("Engine/Content/Fonts/JetBrainsMono-Regular.ttf", 32);
+            //font = FontLibrary.LoadFont("C:/Windows/Fonts/HARLOWSI.ttf", 32);
 
             FlexboxNode headerContainer = new FlexboxNode()
             {
@@ -321,6 +346,23 @@ namespace DevoidStandaloneLauncher.Prototypes
 
             // Nothing needed here now.
             // FPSController handles input + movement.
+        }
+
+        public Scene CreateGameOverScene()
+        {
+            Scene scene = new Scene();
+            scene.addGameObject("Camera").AddComponent<CameraComponent3D>();
+            
+            CanvasComponent canvas = scene.addGameObject("GameOverObject").AddComponent<CanvasComponent>();
+
+            LabelNode label = new LabelNode("Game Over!", font, 64)
+            {
+
+            };
+
+            canvas.Canvas.Add(label);
+
+            return scene;
         }
     }
 }

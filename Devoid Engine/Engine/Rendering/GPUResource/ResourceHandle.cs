@@ -6,6 +6,26 @@ using System.Threading.Tasks;
 
 namespace DevoidEngine.Engine.Rendering.GPUResource
 {
+    public readonly struct FrameBufferHandle
+    {
+        public readonly uint Id;
+
+        internal FrameBufferHandle(uint id)
+        {
+            Id = id;
+        }
+    }
+
+    public readonly struct IndexBufferHandle
+    {
+        public readonly uint Id;
+
+        internal IndexBufferHandle(uint id)
+        {
+            Id = id;
+        }
+    }
+
     public readonly struct VertexBufferHandle
     {
         public readonly uint Id;

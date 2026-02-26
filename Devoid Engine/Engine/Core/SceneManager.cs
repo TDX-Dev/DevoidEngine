@@ -19,7 +19,6 @@ namespace DevoidEngine.Engine.Core
             {
                 CurrentScene.Destroy();
                 CurrentScene.Dispose();
-                FramePipeline.Reset();
             }
 
             // 2. Set new scene
@@ -28,11 +27,11 @@ namespace DevoidEngine.Engine.Core
             // 3. Initialize (this may enqueue GPU commands)
             CurrentScene.Initialize();
 
-            if (Graphics.MainThreadStarted)
-            {
-                var fence = Graphics.CreateFence();
-                fence.Wait();
-            }
+            //if (RenderThread.MainThreadStarted)
+            //{
+            //    var fence = Graphics.ResourceManager.CreateFence();
+            //    fence.Wait();
+            //}
         }
 
         public static bool IsSceneLoaded()

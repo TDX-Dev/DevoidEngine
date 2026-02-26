@@ -37,7 +37,6 @@ namespace DevoidEngine.Engine.Core
 
             Width = description.Width;
             Height = description.Height;
-
             _textureInternal = Graphics.ResourceManager.TextureManager.CreateTexture(Description);
 
             _sampler = Graphics.ResourceManager.SamplerManager.CreateSampler(_samplerDescription);
@@ -74,9 +73,14 @@ namespace DevoidEngine.Engine.Core
             Graphics.ResourceManager.TextureManager.GenerateMipmaps(_textureInternal);
         }
 
-        public ITexture2D GetDeviceTexture()
+        internal ITexture2D GetDeviceTexture()
         {
             return (ITexture2D)Graphics.ResourceManager.TextureManager.GetDeviceTexture(_textureInternal);
+        }
+
+        public TextureHandle GetRendererHandle()
+        {
+            return _textureInternal;
         }
 
         public void Resize(int width, int height)

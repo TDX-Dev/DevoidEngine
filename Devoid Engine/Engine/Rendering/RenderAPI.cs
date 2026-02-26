@@ -116,5 +116,29 @@ namespace DevoidEngine.Engine.Rendering
 
         }
 
+        public static void RenderToBuffer(Texture2D texture, Framebuffer destination)
+        {
+            if (texture == null) return;
+            destination.Bind();
+
+            Renderer.graphicsDevice.SetRasterizerState(CullMode.None);
+            Renderer.graphicsDevice.SetPrimitiveType(PrimitiveType.Triangles);
+
+            IInputLayout inputLayout = Renderer.GetInputLayout(mesh, ShaderLibrary.GetShader("Screen/RENDER_SCREEN"));
+
+            inputLayout.Bind();
+            mesh.Bind();
+
+            ShaderLibrary.GetShader("Screen/RENDER_SCREEN").Use();
+
+            texture.BindSampler(0);
+            texture.Bind(0);
+
+            Renderer.graphicsDevice.Draw(mesh.GetVertices().Length, 0);
+
+            Renderer.graphicsDevice.UnbindAllShaderResources();
+
+        }
+
     }
 }

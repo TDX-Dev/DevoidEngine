@@ -8,7 +8,7 @@ namespace DevoidStandaloneLauncher
     internal class BaseGame : Layer
     {
         private readonly Scene SplashScreen = SplashScene.CreateSplashScene();
-        private readonly Scene MainScene = new Scene();
+        public Scene MainScene = new Scene();
         private readonly Prototype gamePrototype = new CubeSpinForwardRenderer();
 
         private float _timer = 0;
@@ -16,6 +16,7 @@ namespace DevoidStandaloneLauncher
 
         public override void OnAttach()
         {
+            gamePrototype.baseLayer = this;
             SceneManager.LoadScene(SplashScreen);
             SplashScreen.Play();
         }
@@ -40,7 +41,7 @@ namespace DevoidStandaloneLauncher
             _timer += deltaTime;
             SplashScreen.OnUpdate(deltaTime);
 
-            if (_timer >= 1f)
+            if (_timer >= 0.5f)
             {
                 _isInitialized = true;
                 LoadPrototype();

@@ -9,6 +9,7 @@ namespace DevoidEngine.Engine.Core
     public class CameraRenderContext
     {
         public CameraData cameraData;
+        public Framebuffer cameraTargetSurface;
 
         public List<RenderItem> renderItems3D = new();
         public List<RenderItem> renderItems2D = new();
@@ -59,6 +60,7 @@ namespace DevoidEngine.Engine.Core
 
                 CameraRenderContext ctx = new CameraRenderContext();
                 ctx.cameraData = cameraComponent.Camera.GetCameraData();
+                ctx.cameraTargetSurface = cameraComponent.Camera.RenderTarget;
 
                 foreach (var renderable in scene.Renderables)
                 {
@@ -74,8 +76,8 @@ namespace DevoidEngine.Engine.Core
         public static void ExecuteRenderThread(float deltaTime)
         {
 
-            Graphics.MainThreadStarted = true;
-            Graphics.Execute();
+            RenderThread.MainThreadStarted = true;
+            RenderThread.Execute();
 
             List<CameraRenderContext> cameraContextList = SwapBuffer.Front;
 
@@ -86,6 +88,8 @@ namespace DevoidEngine.Engine.Core
                 CameraRenderContext ctx = cameraContextList[i];
                 RenderBase.Render(ctx);
             }
+
+            RenderThread.ExecuteFrameEnd();
 
         }
 

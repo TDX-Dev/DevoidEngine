@@ -75,6 +75,8 @@ namespace DevoidEngine.Engine.Components
         private Vector2 mouseDelta;
         private bool jumpRequested;
 
+        public event Action OnDeath;
+
         // ===============================
         // Setup
         // ===============================
@@ -94,15 +96,17 @@ namespace DevoidEngine.Engine.Components
             rb.FreezeRotationY = true;
             rb.FreezeRotationZ = true;
 
-            if (gameObject.children.Count > 0)
-                cameraPivot = gameObject.children[0].transform;
-
             yaw = MathHelper.RadToDeg(
                 MathF.Atan2(
                     gameObject.transform.Forward.X,
                     gameObject.transform.Forward.Z
                 )
             );
+        }
+
+        public void SetCameraPivot(Transform pivot)
+        {
+            cameraPivot = pivot;
         }
 
         // ===============================
@@ -176,8 +180,6 @@ namespace DevoidEngine.Engine.Components
                 ProjectileSpeed,
                 ProjectileMass
             );
-
-            Console.WriteLine($"Ammo: {currentAmmo}/{MaxAmmo}");
         }
 
         private void StartReload()
@@ -187,7 +189,6 @@ namespace DevoidEngine.Engine.Components
 
             isReloading = true;
             reloadTimer = ReloadTime;
-            Console.WriteLine("Reloading...");
         }
 
         private void HandleReload(float dt)
@@ -201,7 +202,6 @@ namespace DevoidEngine.Engine.Components
             {
                 isReloading = false;
                 currentAmmo = MaxAmmo;
-                Console.WriteLine("Reload Complete");
             }
         }
 
@@ -251,7 +251,7 @@ namespace DevoidEngine.Engine.Components
             if (Health <= 0f)
             {
                 Health = 0f;
-                Console.WriteLine("Player Dead");
+                OnDeath?.Invoke();
             }
         }
 

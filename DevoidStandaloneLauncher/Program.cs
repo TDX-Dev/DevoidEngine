@@ -8,8 +8,8 @@ namespace DevoidStandaloneLauncher
     {
         static ApplicationSpecification applicationOptions = new ApplicationSpecification()
         {
-            Height = 480,
-            Width = 640,
+            Height = 720,
+            Width = 1280,
             graphicsDevice = new DX11GraphicsDevice(),
             forceVsync = true,
 
@@ -32,8 +32,6 @@ namespace DevoidStandaloneLauncher
         {
             Console.WriteLine("Initializing Sandbox");
             InitializeEngine();
-
-            baseApplication.MainWindow.CursorState = OpenTK.Windowing.Common.CursorState.Grabbed;
 
             BaseGame baseGame = new BaseGame();
             baseApplication.AddLayer(baseGame);

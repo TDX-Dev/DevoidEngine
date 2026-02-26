@@ -4,6 +4,7 @@ using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.UI;
 using DevoidEngine.Engine.Utilities;
 using DevoidGPU;
+using OpenTK.Windowing.Common;
 
 namespace DevoidEngine.Engine.Core
 {
@@ -100,13 +101,15 @@ namespace DevoidEngine.Engine.Core
             MainWindow.MouseUp += OnMouseInput;
             MainWindow.MouseWheel += OnMouseWheel;
 
+            MainWindow.FocusedChanged += OnWindowFocusChange;
+
             windowManager.RegisterWindow(MainWindow);
 
             ImGuiRenderer = new ImGuiRenderer(graphicsDevice);
             ImGuiRenderer.Initialize();
             ImGuiRenderer.OnGUI += () => { LayerHandler.OnGUILayers(); };
 
-            
+
         }
 
         private void OnMouseMove(OpenTK.Windowing.Common.MouseMoveEventArgs obj)
@@ -173,6 +176,8 @@ namespace DevoidEngine.Engine.Core
         }
         private void OnRenderFrame(double deltaTime)
         {
+            UpdateMainWindowState();
+
             ImGuiRenderer.PerFrame((float)deltaTime);
 
             LayerHandler.RenderLayers((float)deltaTime);
@@ -190,6 +195,7 @@ namespace DevoidEngine.Engine.Core
 
         private void OnUpdateFrame(double deltaTime)
         {
+
             Input.Update();
 
             ImGuiRenderer.UpdateInput();
@@ -203,5 +209,26 @@ namespace DevoidEngine.Engine.Core
             UpdateThreadDispatcher.ExecutePending();
         }
 
+        private void OnWindowFocusChange(FocusedChangedEventArgs obj)
+        {
+            if (obj.IsFocused)
+            {
+                MainWindow.CursorState =
+                    (OpenTK.Windowing.Common.CursorState)Cursor.cursorState;
+            }
+        }
+
+        private void UpdateMainWindowState()
+        {
+            if (Cursor.isDirty && MainWindow.IsFocused)
+            {
+                MainWindow.CursorState =
+                    (OpenTK.Windowing.Common.CursorState)Cursor.cursorState;
+
+                Cursor.isDirty = false;
+            }
+
+        }
     }
 }
+

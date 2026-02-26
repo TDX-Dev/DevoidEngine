@@ -15,12 +15,16 @@ namespace DevoidEngine.Engine.UI.Nodes
             }
             set
             {
-                RenderThreadDispatcher.QueueLatest("TEXT_MESH_GENERATE_" + GetHashCode(), () =>
-                {
-                    _text = value;
-                    _mesh = TextMeshGenerator.Generate(Font, _text, Font.GetScaleForFontSize(Scale));
-                    Size = TextMeshGenerator.Measure(Font, Text, Font.GetScaleForFontSize(Scale));
-                });
+                _text = value;
+
+                var newMesh = TextMeshGenerator.Generate(Font, _text, Font.GetScaleForFontSize(Scale));
+                Size = TextMeshGenerator.Measure(Font, _text, Font.GetScaleForFontSize(Scale));
+
+                var oldMesh = _mesh;
+                _mesh = newMesh;
+
+                if (oldMesh != null)
+                    oldMesh.Dispose(); // this internally defers GPU delete
             }
         }
         public FontInternal Font;
@@ -68,13 +72,16 @@ namespace DevoidEngine.Engine.UI.Nodes
             //);
         }
 
-        protected override void RenderCore(List<RenderItem> renderList)
+        protected override void RenderCore(List<RenderItem> renderList, Matrix4x4 canvasModel)
         {
+            Matrix4x4 local = UISystem.BuildTranslationModel(Rect);
+            Matrix4x4 final = local * canvasModel;
+
             renderList.Add(new RenderItem()
             {
                 Mesh = _mesh,
                 Material = Material,
-                Model = UISystem.BuildTranslationModel(Rect)
+                Model = final
             });
 
             // Not used — rendering happens in ArrangeCore like BoxNode

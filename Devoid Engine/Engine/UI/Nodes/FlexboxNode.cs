@@ -215,7 +215,7 @@ namespace DevoidEngine.Engine.UI.Nodes
 
             //UIRenderer.DrawRect(finalRect, DEBUG_NUM_LOCAL);
         }
-        protected override void RenderCore(List<RenderItem> renderList)
+        protected override void RenderCore(List<RenderItem> renderList, Matrix4x4 canvasModel)
         {
 
         }
