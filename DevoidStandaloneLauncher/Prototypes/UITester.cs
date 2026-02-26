@@ -16,9 +16,9 @@ namespace DevoidStandaloneLauncher.Prototypes
         Material testRenderMat;
         MaterialInstance testRenderMatInstance;
 
-        public override void OnInit(Scene main)
+        public override void OnInit()
         {
-            this.scene = main;
+            this.scene = new Scene();
 
             //UIButton button = new UIButton();
             //button.Setup();

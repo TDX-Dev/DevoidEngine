@@ -174,6 +174,7 @@ namespace DevoidEngine.Engine.Rendering
             Renderer.graphicsDevice.SetBlendState(renderState.BlendMode);
             Renderer.graphicsDevice.SetDepthState(renderState.DepthTest, renderState.DepthWrite);
             Renderer.graphicsDevice.SetRasterizerState(renderState.CullMode, renderState.FillMode);
+            Console.WriteLine(renderState.PrimitiveType);
             Renderer.graphicsDevice.SetPrimitiveType(renderState.PrimitiveType);
         }
     }

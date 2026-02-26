@@ -33,7 +33,7 @@ namespace DevoidStandaloneLauncher
             Console.WriteLine("Initializing Sandbox");
             InitializeEngine();
 
-            BaseGame baseGame = new BaseGame();
+            PrototypeLoader baseGame = new PrototypeLoader();
             baseApplication.AddLayer(baseGame);
 
             baseApplication.Run();

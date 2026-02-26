@@ -35,6 +35,6 @@ float4 PSMain(PSInput input) : SV_TARGET
         normal,
         viewDir,
         albedo);
-
+    
     return float4(lighting, 1.0);
 }

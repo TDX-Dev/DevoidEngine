@@ -16,20 +16,21 @@ struct PSInput
 };
 
 #include "../Common/render_constants.hlsl"
- 
 
+ 
 PSInput VSMain(VSInput input)
 {
     PSInput output;
 
     float4 local = float4(input.Position.xy, 0.0, 1.0);
+
     float4 world = mul(Model, local);
-    float4 clip = mul(Projection, world);
+    float4 view = mul(View, world);
+    float4 clip = mul(Projection, view);
 
     output.Position = clip;
-    output.NDC = clip.xy / clip.w; // ✅ VALID HERE
+    output.NDC = clip.xy / clip.w;
     output.UV0 = input.UV0;
 
     return output;
 }
-

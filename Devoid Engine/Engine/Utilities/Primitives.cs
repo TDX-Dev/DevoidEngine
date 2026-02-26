@@ -99,6 +99,47 @@ namespace DevoidEngine.Engine.Utilities
             };
         }
 
+        public static Vertex[] GetCubeLineVertices()
+        {
+            return new Vertex[]
+            {
+                // Front (+Z)
+                new Vertex(new Vector3(-0.5f, -0.5f,  0.5f)), // 0
+                new Vertex(new Vector3( 0.5f, -0.5f,  0.5f)), // 1
+                new Vertex(new Vector3( 0.5f,  0.5f,  0.5f)), // 2
+                new Vertex(new Vector3(-0.5f,  0.5f,  0.5f)), // 3
+
+                // Back (-Z)
+                new Vertex(new Vector3(-0.5f, -0.5f, -0.5f)), // 4
+                new Vertex(new Vector3( 0.5f, -0.5f, -0.5f)), // 5
+                new Vertex(new Vector3( 0.5f,  0.5f, -0.5f)), // 6
+                new Vertex(new Vector3(-0.5f,  0.5f, -0.5f)), // 7
+            };
+        }
+
+        public static int[] GetCubeLineIndices()
+        {
+            return new int[]
+            {
+                // Front square
+                0, 1,
+                1, 2,
+                2, 3,
+                3, 0,
+
+                // Back square
+                4, 5,
+                5, 6,
+                6, 7,
+                7, 4,
+
+                // Connections
+                0, 4,
+                1, 5,
+                2, 6,
+                3, 7
+            };
+        }
 
 
 

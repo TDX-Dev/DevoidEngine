@@ -19,7 +19,7 @@ namespace DevoidEngine.Engine.Components
         public override string Type => nameof(CanvasComponent);
 
         public CanvasRenderMode RenderMode = CanvasRenderMode.ScreenSpace;
-        public int PixelsPerUnit = 100;
+        public int PixelsPerUnit = 10;
 
         public CanvasNode Canvas = new CanvasNode()
         {
@@ -44,8 +44,21 @@ namespace DevoidEngine.Engine.Components
             }
             else
             {
+                Matrix4x4 flipY = Matrix4x4.CreateScale(1f, -1f, 1f);
+                Matrix4x4 scale = Matrix4x4.CreateScale(1f / PixelsPerUnit);
+
+                // shift UI so center becomes pivot
+                Vector2 canvasSize = Canvas.DesiredSize; // or manually track root size
+                Matrix4x4 centerOffset =
+                    Matrix4x4.CreateTranslation(
+                        -canvasSize.X * 0.5f,
+                        -canvasSize.Y * 0.5f,
+                        0f);
+
                 Matrix4x4 world =
-                    Matrix4x4.CreateScale(1f / PixelsPerUnit) *
+                    centerOffset *
+                    flipY *
+                    scale *
                     gameObject.transform.WorldMatrix;
 
                 Canvas.Render(viewData.renderItems3D, world);
@@ -55,9 +68,6 @@ namespace DevoidEngine.Engine.Components
         public override void OnStart()
         {
             UISystem.Roots.Add(Canvas);
-
-            
-            base.OnStart();
         }
 
         public override void OnDestroy()

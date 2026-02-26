@@ -15,15 +15,21 @@ namespace DevoidStandaloneLauncher.Prototypes
         GameObject camera;
         CanvasComponent Canvas;
         GameObject player;
+        GameObject Monitor;
         FPSController playerController;
         FontInternal font;
 
-        public override void OnInit(Scene main)
+        public override void OnInit()
         {
-            this.scene = main;
-            Mesh mesh = new Mesh();
-            mesh.SetVertices(Primitives.GetCubeVertex());
 
+            this.scene = new Scene();
+            SceneManager.LoadScene(scene);
+            loader.CurrentScene = scene;
+
+            Mesh mesh = new Mesh();
+            //mesh.SetVertices(Primitives.GetIndexedCube());
+            //mesh.SetIndices(Primitives.GetCubeIndices());
+            mesh.SetVertices(Primitives.GetCubeVertex());
 
             // ===============================
             // PLAYER ROOT (Capsule Physics)
@@ -63,7 +69,7 @@ namespace DevoidStandaloneLauncher.Prototypes
             playerController.OnDeath += () =>
             {
                 scene = CreateGameOverScene();
-                baseLayer.MainScene = scene;
+                loader.CurrentScene = scene;
                 SceneManager.LoadScene(scene);
                 scene.Play();
 
@@ -166,20 +172,20 @@ namespace DevoidStandaloneLauncher.Prototypes
 
             //camera.AddComponent<FreeCameraComponent>();
 
-            //GameObject spawner = scene.addGameObject("EnemySpawner");
-            //EnemySpawner spawnerComp = spawner.AddComponent<EnemySpawner>();
+            GameObject spawner = scene.addGameObject("EnemySpawner");
+            EnemySpawner spawnerComp = spawner.AddComponent<EnemySpawner>();
 
 
 
             Vector3 enemyScale = new Vector3(1, 4, 1);
 
-            GameObject enemy = scene.addGameObject("Enemy");
-            enemy.transform.Position = new Vector3(0, 5, 10);
-            enemy.transform.Scale = enemyScale;
+            GameObject rigidbodyObject = scene.addGameObject("RigidbodyOBJECT");
+            rigidbodyObject.transform.Position = new Vector3(0, 5, 10);
+            rigidbodyObject.transform.Scale = enemyScale;
 
-            enemy.AddComponent<MeshRenderer>().AddMesh(mesh);
+            rigidbodyObject.AddComponent<MeshRenderer>().AddMesh(mesh);
 
-            RigidBodyComponent rb = enemy.AddComponent<RigidBodyComponent>();
+            RigidBodyComponent rb = rigidbodyObject.AddComponent<RigidBodyComponent>();
 
             rb.FreezeRotationX = true;
             rb.FreezeRotationZ = true;
@@ -204,11 +210,21 @@ namespace DevoidStandaloneLauncher.Prototypes
             //    scoreLabel.Text = "Score: " + ++score;
             //};
 
+            Monitor = scene.addGameObject("Monitor");
+            Monitor.transform.Position = new Vector3(0, 2, 0);
+            Monitor.AddComponent<MeshRenderer>().AddMesh(mesh);
+
             GameObject canvasObject = scene.addGameObject("Canvas");
+            canvasObject.SetParent(Monitor, false);
+            canvasObject.transform.LocalPosition = new Vector3(0, 0, 1);
+            
             Canvas = canvasObject.AddComponent<CanvasComponent>();
             Canvas.RenderMode = CanvasRenderMode.WorldSpace;
+            Canvas.PixelsPerUnit = 300;
+            
 
             SetupUI();
+            scene.Play();
         }
 
         int score = 0;
@@ -302,7 +318,7 @@ namespace DevoidStandaloneLauncher.Prototypes
             //};
 
             //crossHair.Add(new BoxNode()
-            //{
+            //{ 
             //    Size = new Vector2(30, 30),
             //    Texture = Helper.loadImageAsTex("Engine/Content/Textures/crosshair.png", DevoidGPU.TextureFilter.Linear)
             //});
@@ -312,8 +328,12 @@ namespace DevoidStandaloneLauncher.Prototypes
         }
 
         int mode = 0;
+        float pos = 0;
         public override void OnUpdate(float delta)
         {
+            //Monitor.transform.Position = new Vector3(0, pos, 0);
+            //pos += delta;
+
             healthLabel.Text = "Health: " + Math.Round(playerController.Health) + "/" + playerController.MaxHealth;
 
             if (playerController.isReloading)
@@ -332,14 +352,17 @@ namespace DevoidStandaloneLauncher.Prototypes
                 {
                     ((ForwardRenderTechnique)RenderBase.ActiveRenderTechnique).renderStateOverride = new RenderState()
                     {
-                        FillMode = DevoidGPU.FillMode.Solid
+                        FillMode = DevoidGPU.FillMode.Solid,
+                        BlendMode = DevoidGPU.BlendMode.AlphaBlend
                     };
                 }
                 else
                 {
                     ((ForwardRenderTechnique)RenderBase.ActiveRenderTechnique).renderStateOverride = new RenderState()
                     {
-                        FillMode = DevoidGPU.FillMode.Wireframe
+                        FillMode = DevoidGPU.FillMode.Wireframe,
+                        BlendMode = DevoidGPU.BlendMode.AlphaBlend,
+                        PrimitiveType = DevoidGPU.PrimitiveType.Lines
                     };
                 }
             }

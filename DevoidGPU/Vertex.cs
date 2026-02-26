@@ -21,6 +21,15 @@ namespace DevoidGPU
             new VertexAttribute("TEXCOORD", 1, 2, 14 * sizeof(float))
         );
 
+        public Vertex(Vector3 position)
+        {
+            this.Position = position;
+            this.Normal = Vector3.Zero;
+            this.UV1 = Vector2.Zero;
+            this.Tangent = Vector3.Zero;
+            this.BiTangent = Vector3.Zero;
+            this.UV2 = Vector2.Zero;
+        }
 
         public Vertex(Vector3 position, Vector3 normal, Vector2 texcoord)
         {

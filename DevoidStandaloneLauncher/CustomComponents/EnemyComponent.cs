@@ -1,7 +1,10 @@
 ﻿using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.Physics;
+using DevoidEngine.Engine.UI.Nodes;
+using DevoidEngine.Engine.UI.Text;
 using DevoidEngine.Engine.Utilities;
 using System.Numerics;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace DevoidEngine.Engine.Components
 {
@@ -9,6 +12,7 @@ namespace DevoidEngine.Engine.Components
     {
         public override string Type => nameof(Enemy);
 
+        public float MaxHealth = 200f;
         public float Health = 200f;
 
         private bool isDying = false;
@@ -20,7 +24,10 @@ namespace DevoidEngine.Engine.Components
 
         private RigidBodyComponent rb;
         private MeshRenderer meshRenderer;
+        private CanvasComponent HealthBarUI;
+        private LabelNode HealthBarText;
         private GameObject player;
+        private GameObject HealthBarObject;
 
         private EnemySpawner spawner;
 
@@ -31,14 +38,28 @@ namespace DevoidEngine.Engine.Components
 
         public override void OnStart()
         {
+            Console.WriteLine("Enemy created: " + gameObject.Id);
+
             rb = gameObject.GetComponent<RigidBodyComponent>();
             meshRenderer = gameObject.GetComponent<MeshRenderer>();
+
+            HealthBarObject = gameObject.Scene.addGameObject("HealthBarObject");
+            HealthBarObject.SetParent(gameObject, true);
+            HealthBarObject.transform.LocalPosition = new Vector3(0, 0.7f, 0);
+
+            HealthBarUI = HealthBarObject.AddComponent<CanvasComponent>();
+            FontInternal font = FontLibrary.LoadFont("Engine/Content/Fonts/JetBrainsMono-Regular.ttf", 32);
+            HealthBarText = new LabelNode("Health", font, 32);
+            HealthBarUI.Canvas.Add(HealthBarText);
+            HealthBarUI.PixelsPerUnit = 200;
+            HealthBarUI.RenderMode = CanvasRenderMode.WorldSpace;
 
             player = gameObject.Scene.GetGameObject("Player"); // adjust to your API
         }
 
         public override void OnUpdate(float dt)
         {
+            HealthBarText.Text = $"Health: {Health}/{MaxHealth}";
             if (isDying)
             {
                 HandleDeath(dt);

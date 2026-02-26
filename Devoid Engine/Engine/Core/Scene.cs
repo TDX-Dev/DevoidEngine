@@ -20,6 +20,7 @@ namespace DevoidEngine.Engine.Core
         public PhysicsSystem Physics { get; private set; }
 
         public bool IsPlaying = false;
+        private bool _isStarting = false;
 
         public event Action<Component>? OnComponentAdded;
         public event Action<Component>? OnComponentRemoved;
@@ -174,18 +175,21 @@ namespace DevoidEngine.Engine.Core
                 gameObject.OnDestroy();
             }
         }
-
         public void Play()
         {
+            if (IsPlaying)
+                return;
+
             IsPlaying = true;
+
+            _isStarting = true;
+
             for (int i = 0; i < GameObjects.Count; i++)
             {
                 GameObjects[i].OnStart();
             }
-            foreach (CameraComponent3D camera in Cameras)
-            {
 
-            }
+            _isStarting = false;
         }
 
         public void Pause()
@@ -267,7 +271,7 @@ namespace DevoidEngine.Engine.Core
                 Renderables.Add((IRenderComponent)component);
             }
 
-            if (IsPlaying)
+            if (IsPlaying && !_isStarting)
             {
                 component.OnStart();
                 component.IsInitialized = true;
