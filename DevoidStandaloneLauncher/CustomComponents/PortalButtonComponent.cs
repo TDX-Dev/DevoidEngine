@@ -10,8 +10,8 @@ namespace DevoidEngine.Engine.Components
     {
         public override string Type => nameof(PortalButtonComponent);
 
-        public float PressDepth = 0.1f;
-        public float PressSpeed = 6f;
+        public float PressDepth = 0.35f;
+        public float PressSpeed = 4f;
         public float RequiredMass = 1f;
 
         public bool IsPressed { get; private set; }
@@ -76,7 +76,6 @@ namespace DevoidEngine.Engine.Components
 
         public void OnCollisionStay(GameObject other)
         {
-            Console.WriteLine("Staying!");
         }
     }
 }

@@ -20,7 +20,7 @@ namespace DevoidEngine.Engine.Components
 
         private GameObject _debugObject;
 
-        public bool DebugDraw = true;
+        public bool DebugDraw = false;
 
         public override void OnStart()
         {

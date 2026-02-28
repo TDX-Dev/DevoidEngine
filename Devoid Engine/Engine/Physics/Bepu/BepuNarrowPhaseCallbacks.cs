@@ -26,7 +26,6 @@ namespace DevoidEngine.Engine.Physics.Bepu
 
         public bool AllowContactGeneration(int workerIndex, CollidableReference a, CollidableReference b, ref float speculativeMargin)
         {
-            Backend.ReportCollision(a, b);
             return true;
         }
 
@@ -68,6 +67,8 @@ namespace DevoidEngine.Engine.Physics.Bepu
                     restitution * 10f
                 );
             }
+
+            Backend.ReportCollision(pair.A, pair.B);
 
             return true;
         }

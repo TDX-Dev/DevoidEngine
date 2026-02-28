@@ -31,9 +31,30 @@ namespace DevoidStandaloneLauncher.Prototypes
             scene.Play();
         }
 
+        int mode = 0;
+
         public override void OnUpdate(float delta)
         {
-            
+            if (Input.GetKeyDown(Keys.R))
+            {
+                mode = mode == 0 ? 1 : 0;
+                if (mode == 1)
+                {
+                    ((ForwardRenderTechnique)RenderBase.ActiveRenderTechnique).renderStateOverride = new RenderState()
+                    {
+                        FillMode = DevoidGPU.FillMode.Solid,
+                        BlendMode = DevoidGPU.BlendMode.AlphaBlend
+                    };
+                }
+                else
+                {
+                    ((ForwardRenderTechnique)RenderBase.ActiveRenderTechnique).renderStateOverride = new RenderState()
+                    {
+                        FillMode = DevoidGPU.FillMode.Wireframe,
+                        BlendMode = DevoidGPU.BlendMode.AlphaBlend,
+                    };
+                }
+            }
         }
 
         public void LoadDCC()
@@ -49,6 +70,7 @@ namespace DevoidStandaloneLauncher.Prototypes
                 //player.transform.Position = new Vector3(0, 1.5f, -6f);
 
                 var playerBody = player.AddComponent<RigidBodyComponent>();
+                playerBody.Mass = 100;
                 playerBody.Shape = new PhysicsShapeDescription()
                 {
                     Type = PhysicsShapeType.Capsule,
@@ -60,7 +82,8 @@ namespace DevoidStandaloneLauncher.Prototypes
                 {
                     Friction = 0.8f,
                     Restitution = 0f,
-                    AngularDamping = 10f
+                    AngularDamping = 10f,
+                    LinearDamping = 1
                 };
 
                 FPSController playerController = player.AddComponent<FPSController>();
@@ -81,6 +104,29 @@ namespace DevoidStandaloneLauncher.Prototypes
                 var camComponent = camera.AddComponent<CameraComponent3D>();
                 camComponent.IsDefault = true;
 
+            });
+
+            LevelSpawnRegistry.Register("Collideable_Dynamic", (assimpNode, assimpScene) =>
+            {
+                var go = scene.addGameObject(assimpNode.Name);
+
+                Importer.ApplyTransform(go, assimpNode);
+
+                var mesh = Importer.ConvertMesh(assimpNode, assimpScene);
+                go.AddComponent<MeshRenderer>().AddMesh(mesh);
+
+                var rb = go.AddComponent<RigidBodyComponent>();
+                rb.Mass = 100;
+
+                rb.Shape = new PhysicsShapeDescription()
+                {
+                    Type = PhysicsShapeType.Box,
+                    Size = Importer.GetTransform(assimpNode).Item3 * 2,
+                    //Height = 2,
+                    //Radius = 2
+                };
+
+                Console.WriteLine("Collideable Added");
             });
 
             LevelSpawnRegistry.Register("Collideable_Static", (assimpNode, assimpScene) =>
@@ -169,17 +215,60 @@ namespace DevoidStandaloneLauncher.Prototypes
                     Size = Importer.GetTransform(assimpNode).Item3 * 2
                 };
 
+                collider.Material = new PhysicsMaterial()
+                {
+                    Restitution = 0,
+                    Friction = 1f
+                };
+
 
                 var buttonComp = button.AddComponent<PortalButtonComponent>();
 
                 buttonComp.OnPressed += () =>
                 {
-                    Console.WriteLine("Button Pressed");
+                    scene.GetComponentsOfType<DoorComponent>()[0].Turn();
                 };
 
                 buttonComp.OnReleased += () =>
                 {
-                    Console.WriteLine("Button Released");
+                    scene.GetComponentsOfType<DoorComponent>()[0].Turn();
+                };
+            });
+
+            LevelSpawnRegistry.Register("Trigger_Button1", (assimpNode, assimpScene) =>
+            {
+                GameObject button = scene.addGameObject(assimpNode.Name);
+
+                Importer.ApplyTransform(button, assimpNode);
+
+                var mesh = Importer.ConvertMesh(assimpNode, assimpScene);
+                button.AddComponent<MeshRenderer>().AddMesh(mesh);
+
+                var collider = button.AddComponent<RigidBodyComponent>();
+                collider.StartKinematic = true;
+                collider.Shape = new PhysicsShapeDescription()
+                {
+                    Type = PhysicsShapeType.Box,
+                    Size = new Vector3(3, 3, 1)
+                };
+
+                collider.Material = new PhysicsMaterial()
+                {
+                    Restitution = 0,
+                    Friction = 1f
+                };
+
+
+                var buttonComp = button.AddComponent<PortalButtonComponent>();
+
+                buttonComp.OnPressed += () =>
+                {
+                    scene.GetComponentsOfType<DoorComponent>()[0].Turn();
+                };
+
+                buttonComp.OnReleased += () =>
+                {
+                    scene.GetComponentsOfType<DoorComponent>()[0].Turn();
                 };
             });
 

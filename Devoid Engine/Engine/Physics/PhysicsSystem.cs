@@ -13,6 +13,11 @@ namespace DevoidEngine.Engine.Physics
         // Accumulated during physics substeps (frame-wide)
         private readonly HashSet<(IPhysicsObject, IPhysicsObject)> currentPairs = new();
 
+        private readonly Dictionary<(IPhysicsObject, IPhysicsObject), int> contactStates
+            = new();
+
+        private const int ExitGraceFrames = 1; // 1 frame buffer (industry standard)
+
         // Last frame’s stable contact set
         private HashSet<(IPhysicsObject, IPhysicsObject)> previousPairs = new();
 
@@ -40,33 +45,47 @@ namespace DevoidEngine.Engine.Physics
         // ---------------------------------------------------------
         public void ResolveFrameCollisions()
         {
-            //Console.WriteLine($"Resolve: current={currentPairs.Count}, previous={previousPairs.Count}");
-            // ENTER + STAY
+            // 1️⃣ Mark all existing contacts as seen this frame
             foreach (var pair in currentPairs)
             {
-                if (!previousPairs.Contains(pair))
+                if (!contactStates.ContainsKey(pair))
                 {
+                    // New contact
+                    contactStates[pair] = 0;
                     DispatchEnter(pair);
                 }
                 else
                 {
+                    // Existing contact
+                    contactStates[pair] = 0;
                     DispatchStay(pair);
                 }
             }
 
-            // EXIT
-            foreach (var pair in previousPairs)
+            // 2️⃣ Process missing contacts
+            var toRemove = new List<(IPhysicsObject, IPhysicsObject)>();
+
+            foreach (var kvp in contactStates)
             {
+                var pair = kvp.Key;
+
                 if (!currentPairs.Contains(pair))
                 {
-                    DispatchExit(pair);
+                    contactStates[pair]++;
+
+                    if (contactStates[pair] > ExitGraceFrames)
+                    {
+                        DispatchExit(pair);
+                        toRemove.Add(pair);
+                    }
                 }
             }
 
-            // Move current → previous
-            previousPairs = new HashSet<(IPhysicsObject, IPhysicsObject)>(currentPairs);
+            // 3️⃣ Remove expired contacts
+            foreach (var pair in toRemove)
+                contactStates.Remove(pair);
 
-            // Clear accumulation for next frame
+            // 4️⃣ Clear frame accumulation
             currentPairs.Clear();
         }
 
