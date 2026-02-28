@@ -49,7 +49,11 @@ namespace DevoidEngine.Engine.Rendering.GPUResource
         {
             RenderThread.EnqueueDelayedDelete(() =>
             {
-                _indexBuffers[handle.Id].Dispose();
+                if (_indexBuffers.TryGetValue(handle.Id, out var ib))
+                {
+                    ib.Dispose();
+                    _indexBuffers.Remove(handle.Id);
+                }
             });
         }
 

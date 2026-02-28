@@ -58,6 +58,8 @@ namespace DevoidEngine.Engine.Components
                 IsMutable = false
             }));
 
+            Console.WriteLine(Screen.Size);
+
             UpdateProjection();
 
 
@@ -119,6 +121,8 @@ namespace DevoidEngine.Engine.Components
             height = newHeight;
             Camera.RenderTarget.Resize(width, height);
             UpdateProjection();
+
+            Console.WriteLine(newWidth);
         }
 
         private void UpdateProjection()

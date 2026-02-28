@@ -14,12 +14,16 @@ namespace DevoidEngine.Engine.Physics.Bepu
 
         private BepuPhysicsBackend backend;
 
+        private static int nextId = 1;
+        public int Id { get; }
+
         public BepuPhysicsBody(
             BodyHandle handle,
             Simulation simulation,
             PhysicsMaterial material,
             BepuPhysicsBackend backend)
         {
+            Id = Interlocked.Increment(ref nextId);
             Handle = handle;
             this.simulation = simulation;
             Material = material;
@@ -46,6 +50,7 @@ namespace DevoidEngine.Engine.Physics.Bepu
                 var body = GetBody();
                 body.Pose.Position = value;
                 body.UpdateBounds(); // important if teleporting
+                body.Awake = true;
             }
         }
 
@@ -61,6 +66,7 @@ namespace DevoidEngine.Engine.Physics.Bepu
                 var body = GetBody();
                 body.Pose.Orientation = value;
                 body.UpdateBounds();
+                body.Awake = true;
             }
         }
 

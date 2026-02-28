@@ -25,7 +25,10 @@ namespace DevoidEngine.Engine.Physics.Bepu
             => true;
 
         public bool AllowContactGeneration(int workerIndex, CollidableReference a, CollidableReference b, ref float speculativeMargin)
-            => true;
+        {
+            Backend.ReportCollision(a, b);
+            return true;
+        }
 
         public bool ConfigureContactManifold<TManifold>(
             int workerIndex,
@@ -65,8 +68,6 @@ namespace DevoidEngine.Engine.Physics.Bepu
                     restitution * 10f
                 );
             }
-
-            Backend.ReportCollision(pair.A, pair.B);
 
             return true;
         }

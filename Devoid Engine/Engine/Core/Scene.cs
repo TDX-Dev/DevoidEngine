@@ -246,6 +246,8 @@ namespace DevoidEngine.Engine.Core
         {
             if (!IsPlaying) { return; }
 
+            Physics.ResolveFrameCollisions();
+
             for (int i = 0; i < GameObjects.Count; i++)
             {
                 GameObjects[i].OnRender(dt);

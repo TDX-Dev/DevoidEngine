@@ -15,11 +15,12 @@ namespace DevoidEngine.Engine.Physics
 
 
         IPhysicsBody CreateBody(PhysicsBodyDescription desc, GameObject owner);
-        void CreateStatic(PhysicsStaticDescription desc, GameObject owner);
+        IPhysicsStatic CreateStatic(PhysicsStaticDescription desc, GameObject owner);
         void RemoveBody(IPhysicsBody body);
+        void RemoveStatic(IPhysicsStatic body);
 
         bool Raycast(Ray ray, float maxDistance, out RaycastHit hit);
 
-        event Action<IPhysicsBody, IPhysicsBody> CollisionDetected;
+        event Action<IPhysicsObject, IPhysicsObject> CollisionDetected;
     }
 }

@@ -55,7 +55,11 @@ namespace DevoidEngine.Engine.Rendering.GPUResource
         {
             RenderThread.EnqueueDelayedDelete(() =>
             {
-                _vertexBuffers[handle.Id].Dispose();
+                if (_vertexBuffers.TryGetValue(handle.Id, out var vb))
+                {
+                    vb.Dispose();
+                    _vertexBuffers.Remove(handle.Id);
+                }
             });
         }
 

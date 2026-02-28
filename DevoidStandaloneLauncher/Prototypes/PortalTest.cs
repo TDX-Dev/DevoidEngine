@@ -5,6 +5,7 @@ using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.UI.Nodes;
 using DevoidEngine.Engine.UI.Text;
 using DevoidEngine.Engine.Utilities;
+using DevoidStandaloneLauncher.PrototypeSystems;
 using System.Numerics;
 
 namespace DevoidStandaloneLauncher.Prototypes
@@ -22,6 +23,8 @@ namespace DevoidStandaloneLauncher.Prototypes
         GameObject portalCamera;
         GameObject cameraFollower;
 
+        Mesh mesh;
+
         public override void OnInit()
         {
 
@@ -29,7 +32,7 @@ namespace DevoidStandaloneLauncher.Prototypes
             SceneManager.LoadScene(scene);
             loader.CurrentScene = scene;
 
-            Mesh mesh = new Mesh();
+            mesh = new Mesh();
             //mesh.SetVertices(Primitives.GetIndexedCube());
             //mesh.SetIndices(Primitives.GetCubeIndices());
             mesh.SetVertices(Primitives.GetCubeVertex());
@@ -43,7 +46,7 @@ namespace DevoidStandaloneLauncher.Prototypes
             // Ground top = 0.5 (height 1 centered at 0)
             // Capsule half total height = 1.5
             // So center should be 2.0
-            player.transform.Position = new Vector3(0, 2.0f, 0);
+            player.transform.Position = new Vector3(0, 1.5f, -6f);
 
             var playerBody = player.AddComponent<RigidBodyComponent>();
             playerBody.Shape = new PhysicsShapeDescription()
@@ -85,13 +88,13 @@ namespace DevoidStandaloneLauncher.Prototypes
             // CAMERA PIVOT (Pitch Only)
             // ===============================
 
-            GameObject torch = scene.addGameObject("Torch");
-            LightComponent torchLight = torch.AddComponent<LightComponent>();
-            torchLight.Intensity = 10;
-            torchLight.Radius = 10;
-            torchLight.Color = new Vector4(1, 1, 1, 1);
+            //GameObject torch = scene.addGameObject("Torch");
+            //LightComponent torchLight = torch.AddComponent<LightComponent>();
+            //torchLight.Intensity = 10;
+            //torchLight.Radius = 10;
+            //torchLight.Color = new Vector4(1, 1, 1, 1);
 
-            torch.SetParent(player, false);
+            //torch.SetParent(player, false);
 
             GameObject cameraPivot = scene.addGameObject("CameraPivot");
             cameraPivot.AddComponent<MeshRenderer>().AddMesh(mesh);
@@ -102,6 +105,14 @@ namespace DevoidStandaloneLauncher.Prototypes
 
 
 
+            GameObject light = scene.addGameObject("RoomLight");
+            light.transform.Position = new Vector3(0, 7f, 0);
+
+            var lightComp = light.AddComponent<LightComponent>();
+            lightComp.Intensity = 30;
+            lightComp.Radius = 30;
+            lightComp.Color = new Vector4(1, 1, 1, 1);
+
             // ===============================
             // CAMERA
             // ===============================
@@ -110,123 +121,40 @@ namespace DevoidStandaloneLauncher.Prototypes
             camera.SetParent(cameraPivot, false);
             //camera.transform.LocalPosition = new Vector3(0, 2, -20);
 
-            camera.AddComponent<HitMarkerComponent>();
+            //camera.AddComponent<HitMarkerComponent>();
             var camComponent = camera.AddComponent<CameraComponent3D>();
             camComponent.IsDefault = true;
-
-            // ===============================
-            // LIGHT
-            // ===============================
-
-            GameObject light1 = scene.addGameObject("Light");
-            var lightComponent1 = light1.AddComponent<LightComponent>();
-            lightComponent1.Intensity = 400;
-            lightComponent1.Color = new Vector4(1, 1, 1, 1);
-            lightComponent1.Radius = 100;
-            light1.transform.Position = new Vector3(20, 20, 20);
-
-            GameObject light2 = scene.addGameObject("Light");
-            var lightComponent2 = light2.AddComponent<LightComponent>();
-            lightComponent2.Intensity = 400;
-            lightComponent2.Color = new Vector4(1, 1, 1, 1);
-            lightComponent2.Radius = 100;
-            light2.transform.Position = new Vector3(20, 20, -20);
-
-            GameObject light3 = scene.addGameObject("Light");
-            var lightComponent3 = light3.AddComponent<LightComponent>();
-            lightComponent3.Intensity = 400;
-            lightComponent3.Color = new Vector4(1, 1, 1, 1);
-            lightComponent3.Radius = 100;
-            light3.transform.Position = new Vector3(-20, 20, 20);
-
-            GameObject light4 = scene.addGameObject("Light");
-            var lightComponent4 = light4.AddComponent<LightComponent>();
-            lightComponent4.Intensity = 400;
-            lightComponent4.Color = new Vector4(1, 1, 1, 1);
-            lightComponent4.Radius = 100;
-            light4.transform.Position = new Vector3(-20, 20, -20);
 
 
             // ===============================
             // GROUND
             // ===============================
 
-            GameObject ground = scene.addGameObject("Ground");
-            ground.transform.Position = new Vector3(0, 0, 0);
-            ground.transform.Scale = new Vector3(1000, 1, 1000);
+            //GameObject ground = scene.addGameObject("Ground");
+            //ground.transform.Position = new Vector3(0, 0, 0);
+            //ground.transform.Scale = new Vector3(1000, 1, 1000);
 
-            var groundRenderer = ground.AddComponent<MeshRenderer>();
-            groundRenderer.AddMesh(mesh);
+            //var groundRenderer = ground.AddComponent<MeshRenderer>();
+            //groundRenderer.AddMesh(mesh);
 
-            var groundCollider = ground.AddComponent<StaticCollider>();
-            groundCollider.Shape = new PhysicsShapeDescription()
-            {
-                Type = PhysicsShapeType.Box,
-                Size = new Vector3(1000, 1, 1000)
-            };
-
-            groundCollider.Material = new PhysicsMaterial()
-            {
-                Friction = 1f
-            };
-
-            //GameObject camera = scene.addGameObject("Camera");
-            //camera.transform.LocalPosition = new Vector3(0, 10, -20);
-            //var camComponent = camera.AddComponent<CameraComponent3D>();
-            //camComponent.IsDefault = true;
-
-            //camera.AddComponent<FreeCameraComponent>();
-
-            //GameObject spawner = scene.addGameObject("EnemySpawner");
-            //EnemySpawner spawnerComp = spawner.AddComponent<EnemySpawner>();
-
-
-
-            Vector3 enemyScale = new Vector3(1, 4, 1);
-
-            GameObject rigidbodyObject = scene.addGameObject("RigidbodyOBJECT");
-            rigidbodyObject.transform.Position = new Vector3(0, 5, 10);
-            rigidbodyObject.transform.Scale = enemyScale;
-
-            rigidbodyObject.AddComponent<MeshRenderer>().AddMesh(mesh);
-
-            RigidBodyComponent rb = rigidbodyObject.AddComponent<RigidBodyComponent>();
-
-            rb.FreezeRotationX = true;
-            rb.FreezeRotationZ = true;
-
-            rb.Shape =
-                new PhysicsShapeDescription()
-                {
-                    Type = PhysicsShapeType.Box,
-                    Size = enemyScale
-                };
-
-            rb.Mass = 100;
-            rb.Material = new PhysicsMaterial()
-            {
-                Friction = 2f,
-                Restitution = 0.1f
-            };
-
-            //Enemy enemyComp = enemy.AddComponent<Enemy>();
-            //spawnerComp.OnDeath += () =>
+            //var groundCollider = ground.AddComponent<StaticCollider>();
+            //groundCollider.Shape = new PhysicsShapeDescription()
             //{
-            //    scoreLabel.Text = "Score: " + ++score;
+            //    Type = PhysicsShapeType.Box,
+            //    Size = new Vector3(1000, 1, 1000)
             //};
 
-            Monitor = scene.addGameObject("Monitor");
-            Monitor.transform.Position = new Vector3(0, 20, 0);
-            Monitor.AddComponent<MeshRenderer>().AddMesh(mesh);
+            //groundCollider.Material = new PhysicsMaterial()
+            //{
+            //    Friction = 1f
+            //};
 
             GameObject canvasObject = scene.addGameObject("Canvas");
-            //canvasObject.SetParent(Monitor, false);
+            canvasObject.SetParent(Monitor, false);
             canvasObject.transform.LocalPosition = new Vector3(0, 0, 1);
-
-
-
             Canvas = canvasObject.AddComponent<CanvasComponent>();
-            Canvas.RenderMode = CanvasRenderMode.WorldSpace;
+            Canvas.CameraConstraint = camComponent;
+            Canvas.RenderMode = CanvasRenderMode.ScreenSpace;
             Canvas.PixelsPerUnit = 300;
 
 
@@ -237,9 +165,15 @@ namespace DevoidStandaloneLauncher.Prototypes
 
 
             GameObject portalViewObject = scene.addGameObject("Portal View");
-            portalViewObject.transform.Position = new Vector3(3, 3, 0);
+            portalViewObject.transform.Position = new Vector3(5.998f, 3, 0);
             portalViewObject.transform.Scale = new Vector3(1, 3, 3);
 
+            StaticCollider staticCollider = portalViewObject.AddComponent<StaticCollider>();
+            staticCollider.Shape = new PhysicsShapeDescription()
+            {
+                Type = PhysicsShapeType.Box,
+                Size = new Vector3(1, 3, 3)
+            };
 
             MeshRenderer portalMeshRenderer = portalViewObject.AddComponent<MeshRenderer>();
 
@@ -247,7 +181,7 @@ namespace DevoidStandaloneLauncher.Prototypes
             {
                 portalMeshRenderer.material = new MaterialInstance(new Material(new Shader("Engine/Content/Shaders/Testing/portal_render")));
                 portalMeshRenderer.material.SetTexture("MAT_TEX_OVERRIDE", portalCameraComponent.Camera.RenderTarget.GetRenderTexture(0));
-                portalMeshRenderer.material.SetVector4("Albedo", new Vector4(0, 0, 0, 0));
+                //portalMeshRenderer.material.SetVector4("Albedo", new Vector4(0, 1, 0, 0));
             });
 
             portalMeshRenderer.AddMesh(mesh);
@@ -255,6 +189,10 @@ namespace DevoidStandaloneLauncher.Prototypes
 
             //cameraFollower = scene.addGameObject("Camera Follow Cube");
             //cameraFollower.AddComponent<MeshRenderer>().AddMesh(mesh);
+
+            PChamber1.CreateRoom(scene, new Vector3(0, 4, 0), new Vector3(12, 8, 18));
+
+            SetupDoor();
 
 
             SetupUI();
@@ -267,6 +205,44 @@ namespace DevoidStandaloneLauncher.Prototypes
         LabelNode ammoLabel;
         LabelNode healthLabel;
         LabelNode scoreLabel;
+
+        void SetupDoor()
+        {
+            GameObject hinge = scene.addGameObject("DoorHinge");
+
+            // Position hinge at the hinge edge (left side of door)
+            hinge.transform.Position = new Vector3(-0.5f, 1.5f, 8);
+            // -0.5 because your door width is 1
+
+            // Add kinematic rigidbody to hinge (NOT the mesh)
+            RigidBodyComponent hingeBody = hinge.AddComponent<RigidBodyComponent>();
+            hingeBody.StartKinematic = true;
+            hingeBody.Shape = new PhysicsShapeDescription()
+            {
+                Type = PhysicsShapeType.Box,
+                Size = new Vector3(1, 3, 0.3f)
+            };
+
+            hingeBody.Material = new PhysicsMaterial()
+            {
+                Friction = 1f,
+                Restitution = 0f
+            };
+
+            // Now create the visible door
+            GameObject doorMesh = scene.addGameObject("DoorMesh");
+            doorMesh.SetParent(hinge, false);
+
+            // Offset door mesh so its left edge aligns with hinge
+            doorMesh.transform.LocalPosition = new Vector3(0.5f, 0f, 0f);
+
+            doorMesh.transform.Scale = new Vector3(1, 3, 0.3f);
+
+            doorMesh.AddComponent<MeshRenderer>().AddMesh(mesh);
+
+            // Add your DoorComponent to hinge (not mesh)
+            hinge.AddComponent<DoorComponent>();
+        }
 
         void SetupUI()
         {
@@ -368,7 +344,7 @@ namespace DevoidStandaloneLauncher.Prototypes
             //cameraFollower.transform.Position = camera.transform.Position + camera.transform.Forward * 2f;
 
             //Monitor.transform.Position = new Vector3(0, pos, 0);
-            //portalCamera.transform.EulerAngles = new Vector3(0, pos * 5, 0);
+            portalCamera.transform.EulerAngles = new Vector3(0, pos * 5, 0);
             pos += delta;
 
             healthLabel.Text = "Health: " + Math.Round(playerController.Health) + "/" + playerController.MaxHealth;

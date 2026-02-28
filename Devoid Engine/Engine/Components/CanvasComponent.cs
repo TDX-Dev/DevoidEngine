@@ -18,6 +18,8 @@ namespace DevoidEngine.Engine.Components
     {
         public override string Type => nameof(CanvasComponent);
 
+        public bool isEnabled = true;
+        public CameraComponent3D CameraConstraint;
         public CanvasRenderMode RenderMode = CanvasRenderMode.ScreenSpace;
         public int PixelsPerUnit = 10;
 
@@ -38,8 +40,12 @@ namespace DevoidEngine.Engine.Components
 
         public void Collect(CameraComponent3D camera, CameraRenderContext viewData)
         {
+            if (!isEnabled) return;
             if (RenderMode == CanvasRenderMode.ScreenSpace)
             {
+                if (CameraConstraint != null && CameraConstraint != camera)
+                    return;
+
                 Canvas.Render(viewData.renderItemsUI, Matrix4x4.Identity);
             }
             else

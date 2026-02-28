@@ -1,10 +1,21 @@
-﻿using DevoidGPU;
+﻿using DevoidEngine.Engine.Core;
+using DevoidGPU;
 using System.Numerics;
 
 namespace DevoidEngine.Engine.Utilities
 {
     public static class Primitives
     {
+        public static Mesh Cube
+        {
+            get
+            {
+                Mesh cubeMesh = new Mesh();
+                cubeMesh.SetVertices(GetCubeVertex());
+                return cubeMesh;
+            }
+        }
+
         public static Vertex[] GetScreenQuadVertex()
         {
             return new Vertex[]

@@ -39,5 +39,5 @@ float4 PSMain(PSInput input) : SV_TARGET
         viewDir,
         albedo);
     
-    return float4(lighting, 1.0) + MAT_TEX_OVERRIDE.SampleLevel(MAT_TEX_OVERRIDE_SAMPLER, input.UV0, 0);
+    return float4(lighting, 1);// + MAT_TEX_OVERRIDE.SampleLevel(MAT_TEX_OVERRIDE_SAMPLER, input.UV0, 0);
 }

@@ -21,9 +21,10 @@ namespace DevoidEngine.Engine.Physics.Bepu
         private Dictionary<StaticHandle, PhysicsMaterial> staticMaterials = new Dictionary<StaticHandle, PhysicsMaterial>();
 
         private Dictionary<BodyHandle, IPhysicsBody> bodyWrappers = new();
+        private Dictionary<StaticHandle, IPhysicsStatic> staticWrappers = new();
 
 
-        public event Action<IPhysicsBody, IPhysicsBody> CollisionDetected;
+        public event Action<IPhysicsObject, IPhysicsObject> CollisionDetected;
 
         public void Initialize()
         {
@@ -38,7 +39,7 @@ namespace DevoidEngine.Engine.Physics.Bepu
             simulation = Simulation.Create(
                 bufferPool,
                 callbacks,
-                new BepuPoseIntegratorCallbacks { Gravity = new Vector3(0, -9.81f, 0) },
+                new BepuPoseIntegratorCallbacks { Gravity = new Vector3(0, -19.81f, 0) },
                 new SolveDescription(8, 10),
                 new DefaultTimestepper()
             );
@@ -46,23 +47,26 @@ namespace DevoidEngine.Engine.Physics.Bepu
 
         internal void ReportCollision(CollidableReference a, CollidableReference b)
         {
-            if (a.Mobility == CollidableMobility.Dynamic &&
-                b.Mobility == CollidableMobility.Dynamic)
+            IPhysicsObject objA = Resolve(a);
+            IPhysicsObject objB = Resolve(b);
+
+            if (objA == null || objB == null)
+                return;
+
+            CollisionDetected?.Invoke(objA, objB);
+        }
+
+        private IPhysicsObject Resolve(CollidableReference c)
+        {
+            if (c.Mobility == CollidableMobility.Static)
             {
-
-                if (bodyToGameObject.TryGetValue(a.BodyHandle, out var goA) &&
-                    bodyToGameObject.TryGetValue(b.BodyHandle, out var goB))
-                {
-
-                    var bodyA = simulation.Bodies.GetBodyReference(a.BodyHandle);
-                    var bodyB = simulation.Bodies.GetBodyReference(b.BodyHandle);
-
-                    if (bodyWrappers.TryGetValue(a.BodyHandle, out var wrapperA) &&
-                        bodyWrappers.TryGetValue(b.BodyHandle, out var wrapperB))
-                    {
-                        CollisionDetected?.Invoke(wrapperA, wrapperB);
-                    }
-                }
+                staticWrappers.TryGetValue(c.StaticHandle, out var s);
+                return s;
+            }
+            else
+            {
+                bodyWrappers.TryGetValue(c.BodyHandle, out var b);
+                return b;
             }
         }
 
@@ -82,8 +86,11 @@ namespace DevoidEngine.Engine.Physics.Bepu
                 float linearFactor = MathF.Max(0f, 1f - material.LinearDamping * deltaTime);
                 float angularFactor = MathF.Max(0f, 1f - material.AngularDamping * deltaTime);
 
-                body.Velocity.Linear *= linearFactor;
-                body.Velocity.Angular *= angularFactor;
+                if (!body.Kinematic)
+                {
+                    body.Velocity.Linear *= linearFactor;
+                    body.Velocity.Angular *= angularFactor;
+                }
             }
         }
 
@@ -91,7 +98,7 @@ namespace DevoidEngine.Engine.Physics.Bepu
 
         private PhysicsMaterial LookupMaterial(CollidableReference collidable)
         {
-            if (collidable.Mobility == CollidableMobility.Dynamic)
+            if (collidable.Mobility == CollidableMobility.Dynamic || collidable.Mobility == CollidableMobility.Kinematic)
             {
                 if (bodyMaterials.TryGetValue(collidable.BodyHandle, out var mat))
                     return mat;
@@ -138,6 +145,8 @@ namespace DevoidEngine.Engine.Physics.Bepu
 
 
             BodyHandle handle = simulation.Bodies.Add(bodyDescription);
+            var bodyRef = simulation.Bodies.GetBodyReference(handle);
+            bodyRef.Awake = true;
 
             bodyToGameObject[handle] = owner;
             bodyMaterials[handle] = desc.Material;
@@ -152,18 +161,22 @@ namespace DevoidEngine.Engine.Physics.Bepu
 
 
 
-        public void CreateStatic(PhysicsStaticDescription desc, GameObject owner)
+        public IPhysicsStatic CreateStatic(PhysicsStaticDescription desc, GameObject owner)
         {
             TypedIndex shapeIndex = CreateShapeStatic(desc.Shape);
 
             var pose = new RigidPose(desc.Position, desc.Rotation);
-
             var staticDescription = new StaticDescription(pose, shapeIndex);
 
             StaticHandle handle = simulation.Statics.Add(staticDescription);
 
             staticToGameObject[handle] = owner;
             staticMaterials[handle] = desc.Material;
+
+            var wrapper = new BepuPhysicsStatic(handle, simulation, this);
+            staticWrappers[handle] = wrapper;
+
+            return wrapper;
         }
 
 
@@ -304,6 +317,18 @@ namespace DevoidEngine.Engine.Physics.Bepu
             }
         }
 
+        public void RemoveStatic(IPhysicsStatic s)
+        {
+            if (s is BepuPhysicsStatic b)
+            {
+                staticWrappers.Remove(b.Handle);
+                staticToGameObject.Remove(b.Handle);
+                staticMaterials.Remove(b.Handle);
+            } else
+            {
+                Console.WriteLine("Invalid Static body handle passed to remove static function.");
+            }
+        }
 
         public bool Raycast(Ray ray, float maxDistance, out RaycastHit hit)
         {
@@ -324,7 +349,8 @@ namespace DevoidEngine.Engine.Physics.Bepu
             hit.Point = ray.GetPoint(handler.Distance);
             hit.Normal = handler.Normal;
 
-            if (handler.Collidable.Mobility == CollidableMobility.Dynamic)
+            if (handler.Collidable.Mobility == CollidableMobility.Dynamic ||
+                handler.Collidable.Mobility == CollidableMobility.Kinematic)
             {
                 var bodyHandle = handler.Collidable.BodyHandle;
 

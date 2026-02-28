@@ -160,17 +160,21 @@ namespace DevoidGPU.DX11
 
         public void Dispose()
         {
+            TextureManager.Unregister(handle);
+
             DepthStencilView?.Dispose();
             RenderTargetView?.Dispose();
             ShaderResourceView?.Dispose();
+            UnorderedAccessView?.Dispose();
             Texture?.Dispose();
 
             DepthStencilView = null;
             RenderTargetView = null;
             ShaderResourceView = null;
+            UnorderedAccessView = null;
             Texture = null;
+
             handle = IntPtr.Zero;
-            TextureManager.Unregister(handle);
         }
 
         public void Bind(int slot)

@@ -1,6 +1,4 @@
-﻿using BepuPhysics.Collidables;
-using DevoidEngine.Engine.Core;
-using DevoidEngine.Engine.Physics.Bepu;
+﻿using DevoidEngine.Engine.Core;
 using System.Numerics;
 
 namespace DevoidEngine.Engine.Physics
@@ -9,38 +7,41 @@ namespace DevoidEngine.Engine.Physics
     {
         private readonly IPhysicsBackend backend;
 
-        private Dictionary<IPhysicsBody, GameObject> bodyMap = new();
-        private HashSet<(IPhysicsBody, IPhysicsBody)> currentPairs = new();
-        private HashSet<(IPhysicsBody, IPhysicsBody)> previousPairs = new();
+        // Maps physics objects → game objects
+        private readonly Dictionary<IPhysicsObject, GameObject> objectMap = new();
+
+        // Accumulated during physics substeps (frame-wide)
+        private readonly HashSet<(IPhysicsObject, IPhysicsObject)> currentPairs = new();
+
+        // Last frame’s stable contact set
+        private HashSet<(IPhysicsObject, IPhysicsObject)> previousPairs = new();
 
         public PhysicsSystem(IPhysicsBackend backend)
         {
             this.backend = backend;
             backend.Initialize();
-
             backend.CollisionDetected += OnBackendCollision;
         }
 
-        private static (IPhysicsBody, IPhysicsBody) NormalizePair(IPhysicsBody a, IPhysicsBody b)
+        // ---------------------------------------------------------
+        // Physics Substep (called multiple times per frame)
+        // ---------------------------------------------------------
+        public void Step(float fixedDelta)
         {
-            var handleA = ((BepuPhysicsBody)a).Handle.Value;
-            var handleB = ((BepuPhysicsBody)b).Handle.Value;
+            // Only advance simulation
+            backend.Step(fixedDelta);
 
-            return handleA < handleB ? (a, b) : (b, a);
+            // DO NOT dispatch enter/stay/exit here
+            // We only accumulate contact pairs during substeps
         }
 
-        private void OnBackendCollision(IPhysicsBody a, IPhysicsBody b)
+        // ---------------------------------------------------------
+        // Frame-Level Collision Resolution (call once per frame)
+        // ---------------------------------------------------------
+        public void ResolveFrameCollisions()
         {
-            if (a == null || b == null)
-                return;
-
-            currentPairs.Add(NormalizePair(a, b));
-        }
-
-        public void Step(float frameDelta)
-        {
-            backend.Step(frameDelta);
-
+            //Console.WriteLine($"Resolve: current={currentPairs.Count}, previous={previousPairs.Count}");
+            // ENTER + STAY
             foreach (var pair in currentPairs)
             {
                 if (!previousPairs.Contains(pair))
@@ -53,6 +54,7 @@ namespace DevoidEngine.Engine.Physics
                 }
             }
 
+            // EXIT
             foreach (var pair in previousPairs)
             {
                 if (!currentPairs.Contains(pair))
@@ -61,9 +63,51 @@ namespace DevoidEngine.Engine.Physics
                 }
             }
 
-            previousPairs = new HashSet<(IPhysicsBody, IPhysicsBody)>(currentPairs);
+            // Move current → previous
+            previousPairs = new HashSet<(IPhysicsObject, IPhysicsObject)>(currentPairs);
+
+            // Clear accumulation for next frame
             currentPairs.Clear();
         }
+
+        // ---------------------------------------------------------
+        // Contact Collection (called from backend during substeps)
+        // ---------------------------------------------------------
+        private void OnBackendCollision(IPhysicsObject a, IPhysicsObject b)
+        {
+            if (a == null || b == null)
+                return;
+
+            currentPairs.Add(NormalizePair(a, b));
+        }
+
+        // Stable ordering so (A,B) == (B,A)
+        private static (IPhysicsObject, IPhysicsObject) NormalizePair(
+            IPhysicsObject a,
+            IPhysicsObject b)
+        {
+            //Console.WriteLine("---- NormalizePair ----");
+
+            //Console.WriteLine(
+            //    $"A -> Id:{a.Id} | RefHash:{a.GetHashCode()} | Type:{a.GetType().Name}"
+            //);
+
+            //Console.WriteLine(
+            //    $"B -> Id:{b.Id} | RefHash:{b.GetHashCode()} | Type:{b.GetType().Name}"
+            //);
+
+            //Console.WriteLine(
+            //    $"ReferenceEquals(A,B): {ReferenceEquals(a, b)}"
+            //);
+
+            //Console.WriteLine("------------------------");
+
+            return a.Id < b.Id ? (a, b) : (b, a);
+        }
+
+        // ---------------------------------------------------------
+        // Public API
+        // ---------------------------------------------------------
 
         public bool Raycast(Ray ray, float maxDistance, out RaycastHit hit)
         {
@@ -72,45 +116,58 @@ namespace DevoidEngine.Engine.Physics
 
         public IPhysicsBody CreateBody(PhysicsBodyDescription desc, GameObject owner)
         {
-            IPhysicsBody body = backend.CreateBody(desc, owner);
-            bodyMap[body] = owner;
+            var body = backend.CreateBody(desc, owner);
+            objectMap[body] = owner;
             return body;
         }
 
-        public void CreateStatic(PhysicsStaticDescription desc, GameObject owner)
+        public IPhysicsStatic CreateStatic(PhysicsStaticDescription desc, GameObject owner)
         {
-            backend.CreateStatic(desc, owner);
+            var stat = backend.CreateStatic(desc, owner);
+            objectMap[stat] = owner;
+            return stat;
         }
 
         public void RemoveBody(IPhysicsBody body)
         {
+            objectMap.Remove(body);
             backend.RemoveBody(body);
         }
 
-        private void DispatchEnter((IPhysicsBody, IPhysicsBody) pair)
+        public void RemoveStatic(IPhysicsStatic stat)
         {
-            if (bodyMap.TryGetValue(pair.Item1, out var goA) &&
-                bodyMap.TryGetValue(pair.Item2, out var goB))
+            objectMap.Remove(stat);
+            backend.RemoveStatic(stat);
+        }
+
+        // ---------------------------------------------------------
+        // Dispatch Helpers
+        // ---------------------------------------------------------
+
+        private void DispatchEnter((IPhysicsObject, IPhysicsObject) pair)
+        {
+            if (objectMap.TryGetValue(pair.Item1, out var goA) &&
+                objectMap.TryGetValue(pair.Item2, out var goB))
             {
                 goA.InvokeCollisionEnter(goB);
                 goB.InvokeCollisionEnter(goA);
             }
         }
 
-        private void DispatchStay((IPhysicsBody, IPhysicsBody) pair)
+        private void DispatchStay((IPhysicsObject, IPhysicsObject) pair)
         {
-            if (bodyMap.TryGetValue(pair.Item1, out var goA) &&
-                bodyMap.TryGetValue(pair.Item2, out var goB))
+            if (objectMap.TryGetValue(pair.Item1, out var goA) &&
+                objectMap.TryGetValue(pair.Item2, out var goB))
             {
                 goA.InvokeCollisionStay(goB);
                 goB.InvokeCollisionStay(goA);
             }
         }
 
-        private void DispatchExit((IPhysicsBody, IPhysicsBody) pair)
+        private void DispatchExit((IPhysicsObject, IPhysicsObject) pair)
         {
-            if (bodyMap.TryGetValue(pair.Item1, out var goA) &&
-                bodyMap.TryGetValue(pair.Item2, out var goB))
+            if (objectMap.TryGetValue(pair.Item1, out var goA) &&
+                objectMap.TryGetValue(pair.Item2, out var goB))
             {
                 goA.InvokeCollisionExit(goB);
                 goB.InvokeCollisionExit(goA);

@@ -14,11 +14,11 @@ namespace DevoidStandaloneLauncher
     public class PrototypeLoader : Layer
     {
         private float splashTimer = 0;
-        private float splashDuration = 2f;
+        private float splashDuration = 0.5f;
         private bool prototypeLoaded = false;
         
-        internal Scene CurrentScene = SplashScene.CreateSplashScene(nameof(PortalTest));
-        internal Prototype GamePrototype = new PortalTest();
+        internal Scene CurrentScene = SplashScene.CreateSplashScene(nameof(MeshLoaderPrototype));
+        internal Prototype GamePrototype = new MeshLoaderPrototype();
 
         public override void OnAttach()
         {

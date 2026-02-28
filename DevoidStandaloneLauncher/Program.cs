@@ -12,6 +12,7 @@ namespace DevoidStandaloneLauncher
             Width = 1280,
             graphicsDevice = new DX11GraphicsDevice(),
             forceVsync = true,
+            useImGui = true,
 
             Name = "LockedIn - Devoid"
         };

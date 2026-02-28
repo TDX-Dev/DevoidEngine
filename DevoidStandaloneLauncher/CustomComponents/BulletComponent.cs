@@ -68,8 +68,8 @@ namespace DevoidEngine.Engine.Components
             var body = bullet.AddComponent<RigidBodyComponent>();
             body.Shape = new PhysicsShapeDescription()
             {
-                Type = PhysicsShapeType.Sphere,
-                Radius = scale.Z
+                Type = PhysicsShapeType.Box,
+                Size = scale
             };
 
             body.Mass = mass;

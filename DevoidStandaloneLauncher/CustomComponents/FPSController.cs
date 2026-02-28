@@ -1,5 +1,7 @@
 ﻿using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.Physics;
+using DevoidEngine.Engine.UI.Nodes;
+using DevoidEngine.Engine.UI.Text;
 using DevoidEngine.Engine.Utilities;
 using System;
 using System.Numerics;
@@ -17,7 +19,7 @@ namespace DevoidEngine.Engine.Components
         public float MoveSpeed = 6f;
         public float Acceleration = 20f;
         public float AirControl = 0.3f;
-        public float JumpForce = 10f;
+        public float JumpForce = 100f;
         public float MouseSensitivity = 0.12f;
         public float MinPitch = -89f;
         public float MaxPitch = 89f;
@@ -77,12 +79,34 @@ namespace DevoidEngine.Engine.Components
 
         public event Action OnDeath;
 
+        public float InteractionDistance = 20f;
+
+        public CanvasComponent UICanvas;
+        public LabelNode UIInteractionText;
+
         // ===============================
         // Setup
         // ===============================
 
         public override void OnStart()
         {
+            GameObject canvas = gameObject.Scene.addGameObject("InteractionObject");
+            UICanvas = canvas.AddComponent<CanvasComponent>();
+
+            FlexboxNode ROOT = new FlexboxNode()
+            {
+                Size = new Vector2(200,600),
+                Justify = JustifyContent.Center,
+                Align = AlignItems.End
+            };
+
+            UIInteractionText = new LabelNode("T to interact", FontLibrary.LoadFont("Engine/Content/Fonts/JetBrainsMono-Regular.ttf", 32), 21)
+            {
+
+            };
+            ROOT.Add(UIInteractionText);
+            UICanvas.Canvas.Add(ROOT);
+
             projectileMesh = new Mesh();
             projectileMesh.SetVertices(Primitives.GetCubeVertex());
 
@@ -138,6 +162,41 @@ namespace DevoidEngine.Engine.Components
 
             HandleDamage(dt);
             HandleRegen(dt);
+
+
+            TryInteract();
+                
+        }
+
+        private void TryInteract()
+        {
+            if (cameraPivot == null)
+                return;
+
+            Vector3 origin = cameraPivot.Position;
+
+            Vector3 forward =
+                Vector3.Normalize(
+                    Vector3.Transform(Vector3.UnitZ, cameraPivot.Rotation)
+                );
+
+            if (gameObject.Scene.Physics.Raycast(
+                new Ray(origin + forward, forward),
+                InteractionDistance,
+                out RaycastHit hit))
+            {
+                var door = hit.HitObject?.GetComponent<DoorComponent>();
+
+                if (door != null)
+                {
+                    UICanvas.isEnabled = true;
+                    if (Input.GetKeyDown(Keys.T))
+                        door.Turn();
+                } else
+                {
+                    UICanvas.isEnabled = false;
+                }
+            }
         }
 
         // ===============================
@@ -363,6 +422,9 @@ namespace DevoidEngine.Engine.Components
 
         public void OnCollisionEnter(GameObject other)
         {
+            if (other.Name == "Ground") return;
+            //Console.WriteLine("ENTER");
+
             inDamageZone = true;
             damageTimer = 0f;
             delayPassed = false;
@@ -374,6 +436,7 @@ namespace DevoidEngine.Engine.Components
 
         public void OnCollisionExit(GameObject other)
         {
+            if (other.Name == "Ground") return;
             inDamageZone = false;
             damageTimer = 0f;
             delayPassed = false;

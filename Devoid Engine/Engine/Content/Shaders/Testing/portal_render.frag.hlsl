@@ -13,6 +13,11 @@ struct PSInput
 
 #include "../Common/render_constants.hlsl"
 
+cbuffer Material : register(b2)
+{
+    float4 Albedo;
+}
+
 Texture2D MAT_TEX_OVERRIDE : register(t0);
 SamplerState MAT_TEX_OVERRIDE_SAMPLER : register(s0);
 

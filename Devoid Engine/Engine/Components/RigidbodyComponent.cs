@@ -107,6 +107,26 @@ namespace DevoidEngine.Engine.Components
             CreateBody();
         }
 
+        public void SetKinematic(bool value)
+        {
+            if (internalBody == null)
+                return;
+
+            if (value == internalBody.IsKinematic)
+                return;
+
+            if (value)
+            {
+                internalBody.IsKinematic = true;
+            }
+            else
+            {
+                // Recreate as dynamic (clean way for now)
+                StartKinematic = false;
+                CreateBody();
+            }
+        }
+
         private void CreateBody()
         {
             if (internalBody != null)
