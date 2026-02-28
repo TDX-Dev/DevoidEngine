@@ -76,6 +76,8 @@ namespace DevoidEngine.Engine.Physics.Bepu
         {
             simulation.Timestep(deltaTime);
 
+
+
             foreach (var pair in bodyMaterials)
             {
                 var handle = pair.Key;
@@ -130,7 +132,7 @@ namespace DevoidEngine.Engine.Physics.Bepu
                 bodyDescription = BodyDescription.CreateKinematic(
                     pose,
                     new CollidableDescription(shapeIndex, 0.01f),
-                    new BodyActivityDescription(0.01f)
+                    new BodyActivityDescription(desc.AllowSleep ? 0.01f : -1)
                 );
             }
             else
@@ -139,7 +141,7 @@ namespace DevoidEngine.Engine.Physics.Bepu
                     pose,
                     inertia,
                     new CollidableDescription(shapeIndex, 0.01f),
-                    new BodyActivityDescription(0.01f)
+                    new BodyActivityDescription(desc.AllowSleep ? 0.01f : -1)
                 );
             }
 

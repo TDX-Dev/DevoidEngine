@@ -95,8 +95,20 @@ namespace DevoidEngine.Engine.Components
             }
         }
 
+        public bool AllowSleep
+        {
+            get => allowSleep;
+            set
+            {
+                allowSleep = value;
+                CreateBody();
+            }
+        }
+
         public bool IsKinematic =>
             internalBody != null && internalBody.IsKinematic;
+
+        private bool allowSleep = true;
 
         // ===============================
         // Lifecycle
@@ -146,7 +158,8 @@ namespace DevoidEngine.Engine.Components
                 Mass = Mass,
                 IsKinematic = StartKinematic,
                 Shape = Shape,
-                Material = Material
+                Material = Material,
+                AllowSleep = allowSleep
             };
 
             internalBody = gameObject.Scene.Physics.CreateBody(desc, gameObject);

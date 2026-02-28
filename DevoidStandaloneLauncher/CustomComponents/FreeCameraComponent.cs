@@ -12,7 +12,7 @@ namespace DevoidEngine.Engine.Components
         // ===== SETTINGS =====
         public float MoveSpeed = 8f;
         public float BoostMultiplier = 3f;
-        public float MouseSensitivity = 4f;
+        public float MouseSensitivity = 0.12f;
         public float MinPitch = -89f;
         public float MaxPitch = 89f;
 
@@ -22,56 +22,60 @@ namespace DevoidEngine.Engine.Components
 
         public override void OnStart()
         {
-            // Initialize yaw/pitch from current rotation
-            Vector3 euler = gameObject.transform.EulerAngles;
-            yaw = euler.Y;
-            pitch = euler.X;
+            // Initialize yaw/pitch from current forward
+            Vector3 forward = gameObject.transform.Forward;
+
+            yaw = MathHelper.RadToDeg(
+                MathF.Atan2(forward.X, forward.Z)
+            );
+
+            pitch = MathHelper.RadToDeg(
+                MathF.Asin(forward.Y)
+            );
         }
 
         public override void OnUpdate(float dt)
         {
-            HandleMouseLook(dt);
+            HandleMouseLook();
             HandleMovement(dt);
         }
 
-
-        float time = 0;
         // =========================================
         // Mouse Look
         // =========================================
-        private void HandleMouseLook(float dt)
+        private void HandleMouseLook()
         {
-            time += dt;
-            //yaw += MathF.Sin((float)time * 20f) * 0.5f;
-            yaw -= Input.MouseDelta.X * dt * MouseSensitivity;
-            pitch += Input.MouseDelta.Y * dt * MouseSensitivity;
-            //pitch = 0;
-            //pitch = MathF.Sin((float)time * 20f) * 0.5f;
+            // DO NOT multiply mouse delta by dt
+            yaw -= Input.MouseDelta.X * MouseSensitivity;
+            pitch += Input.MouseDelta.Y * MouseSensitivity;
 
-            Quaternion rotation =
+            pitch = Math.Clamp(pitch, MinPitch, MaxPitch);
+
+            gameObject.transform.Rotation =
                 Quaternion.CreateFromYawPitchRoll(
                     MathHelper.DegToRad(yaw),
                     MathHelper.DegToRad(pitch),
                     0f);
-
-            gameObject.transform.Rotation = rotation;
         }
-
 
         // =========================================
         // Movement
         // =========================================
         private void HandleMovement(float dt)
         {
+            Quaternion rotation = gameObject.transform.Rotation;
+
             Vector3 forward =
                 Vector3.Normalize(
-                    Vector3.Transform(Vector3.UnitZ, gameObject.transform.Rotation));
+                    Vector3.Transform(Vector3.UnitZ, rotation));
 
             Vector3 right =
                 Vector3.Normalize(
-                    Vector3.Cross(forward, Vector3.UnitY));
+                    Vector3.Transform(-Vector3.UnitX, rotation));
 
-            Vector3 up = Vector3.UnitY;
+            Vector3 up =
+                Vector3.Normalize(
+                    Vector3.Transform(Vector3.UnitY, rotation));
 
             Vector3 move = Vector3.Zero;
 
@@ -86,7 +90,6 @@ namespace DevoidEngine.Engine.Components
                 move = Vector3.Normalize(move);
 
             float speed = MoveSpeed;
-
             if (Input.GetKey(Keys.LeftShift))
                 speed *= BoostMultiplier;
 

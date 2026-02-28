@@ -23,6 +23,8 @@ namespace DevoidEngine.Engine.Components
         private Vector3 originalPosition;
         private float currentOffset = 0f;
 
+
+
         public override void OnStart()
         {
             originalPosition = gameObject.transform.LocalPosition;
@@ -40,6 +42,7 @@ namespace DevoidEngine.Engine.Components
 
         public void OnCollisionEnter(GameObject other)
         {
+            //Console.WriteLine("Button Enter!");
             var rb = other.GetComponent<RigidBodyComponent>();
             if (rb == null) return;
 
@@ -57,6 +60,7 @@ namespace DevoidEngine.Engine.Components
 
         public void OnCollisionExit(GameObject other)
         {
+            //Console.WriteLine("Button Exit!");
             var rb = other.GetComponent<RigidBodyComponent>();
             if (rb == null) return;
 

@@ -68,7 +68,11 @@ namespace DevoidEngine.Engine.Physics.Bepu
                 );
             }
 
-            Backend.ReportCollision(pair.A, pair.B);
+            if (manifold.Count > 0)
+            {
+                Backend.ReportCollision(pair.A, pair.B);
+                Console.WriteLine($"Registering Collision A:{pair.A.GetHashCode()} B:{pair.B.GetHashCode()}");
+            }
 
             return true;
         }

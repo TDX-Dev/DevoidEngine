@@ -27,7 +27,6 @@ namespace DevoidEngine.Engine.Components
 
         public void Turn()
         {
-            Console.WriteLine("Turn!");
             if (isTurning)
                 return;
 

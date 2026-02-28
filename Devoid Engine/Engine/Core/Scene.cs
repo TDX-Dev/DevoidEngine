@@ -214,8 +214,10 @@ namespace DevoidEngine.Engine.Core
                 GameObjects[i].OnUpdate(dt);
             }
 
-            DoFixedUpdate(dt);
 
+            Console.WriteLine("Physics Frame Start");
+            DoFixedUpdate(dt);
+            Console.WriteLine("Physics Frame End");
 
             for (int i = 0; i < GameObjects.Count; i++)
             {
