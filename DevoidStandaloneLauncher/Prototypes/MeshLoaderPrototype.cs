@@ -13,34 +13,49 @@ namespace DevoidStandaloneLauncher.Prototypes
     internal class MeshLoaderPrototype : Prototype
     {
         Scene scene;
-
+        FileReloader reloader;
+        string levelPath = "D:/Programming/Devoid Engine/DevoidStandaloneLauncher/LauncherContents/platform_test.fbx";
         public override void OnInit()
         {
-
-            this.scene = new Scene();
-            SceneManager.LoadScene(scene);
-            loader.CurrentScene = scene;
+            LoadDCC();
 
             Mesh mesh = new Mesh();
             mesh.SetVertices(Primitives.GetCubeVertex());
 
-            LoadDCC();
 
+            reloader = new FileReloader(levelPath, () =>
+            {
+                Console.WriteLine("FBX changed. Reloading level...");
+                LoadLevel();
+            });
+            LoadLevel();
 
-            GameObject a = scene.addGameObject("S");
-            a.AddComponent<StaticCollider>();
+        }
 
+        void LoadLevel()
+        {
+            this.scene = new Scene();
+            SceneManager.LoadScene(scene);
+            loader.CurrentScene = scene;
 
-            Importer.LoadModel("LauncherContents/platform_test.fbx");
-
-
+            Importer.LoadModel(levelPath);
             scene.Play();
         }
 
+
         int mode = 0;
+        int mode1 = DebugRenderSystem.AllowDebugDraw ? 1 : 0;
 
         public override void OnUpdate(float delta)
         {
+            reloader?.Consume();
+
+            if (Input.GetKeyDown(Keys.P))
+            {
+                mode1 = mode1 == 0 ? 1 : 0;
+                DebugRenderSystem.AllowDebugDraw = mode1 == 1 ? true : false;
+            }
+
             if (Input.GetKeyDown(Keys.R))
             {
                 mode = mode == 0 ? 1 : 0;

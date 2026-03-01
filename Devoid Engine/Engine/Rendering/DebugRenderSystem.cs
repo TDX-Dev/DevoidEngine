@@ -26,6 +26,7 @@ namespace DevoidEngine.Engine.Rendering
 
         static List<DebugCube> cubes = new();
 
+        public static bool AllowDebugDraw = true;
 
         static DebugRenderSystem()
         {
@@ -59,8 +60,11 @@ namespace DevoidEngine.Engine.Rendering
 
         public static void Render(CameraData cameraData, Framebuffer cameraRenderSurface)
         {
-            if (cubes.Count == 0)
+            if (cubes.Count == 0 || !AllowDebugDraw)
+            {
+                ClearDebugShapes();
                 return;
+            }
 
             cameraRenderSurface.Bind();
 
@@ -80,6 +84,11 @@ namespace DevoidEngine.Engine.Rendering
 
             RenderBase.Execute(renderItems, debugRenderState);
 
+            ClearDebugShapes();
+        }
+
+        public static void ClearDebugShapes()
+        {
             cubes.Clear();
         }
     }

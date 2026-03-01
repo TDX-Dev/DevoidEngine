@@ -31,6 +31,7 @@ namespace DevoidEngine.Engine.Components
             Body.SetKinematic(true);
             Body.LinearVelocity = Vector3.Zero;
             Body.AngularVelocity = Vector3.Zero;
+
         }
 
         public void Drop()
@@ -71,10 +72,11 @@ namespace DevoidEngine.Engine.Components
                     Vector3.Transform(Vector3.UnitZ, pivot.Rotation)
                 );
 
+
             Vector3 targetPos = pivot.Position + forward * HoldDistance;
 
-            Body.Position = targetPos;
-            Body.Rotation = Quaternion.Identity;
+            gameObject.transform.Position = targetPos;
+            gameObject.transform.Rotation = Quaternion.Identity;
         }
     }
 }

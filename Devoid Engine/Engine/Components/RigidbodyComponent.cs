@@ -82,7 +82,9 @@ namespace DevoidEngine.Engine.Components
             set
             {
                 if (internalBody != null)
+                {
                     internalBody.Position = value;
+                }
             }
         }
 
@@ -130,11 +132,11 @@ namespace DevoidEngine.Engine.Components
 
             if (value)
             {
+                StartKinematic = true;
                 internalBody.IsKinematic = true;
             }
             else
             {
-                // Recreate as dynamic (clean way for now)
                 StartKinematic = false;
                 CreateBody();
             }
