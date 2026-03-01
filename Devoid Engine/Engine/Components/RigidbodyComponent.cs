@@ -1,5 +1,6 @@
 ﻿using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.Physics;
+using DevoidEngine.Engine.Rendering;
 using System.Numerics;
 
 namespace DevoidEngine.Engine.Components
@@ -198,6 +199,17 @@ namespace DevoidEngine.Engine.Components
             }
         }
 
+        public override void OnRender(float dt)
+        {
+            Matrix4x4 model = RenderBase.BuildModel(
+                gameObject.transform.Position,
+                Shape.Size,
+                gameObject.transform.Rotation
+            );
+
+            DebugRenderSystem.DrawCube(model);
+        }
+
         public override void OnDestroy()
         {
             internalBody?.Remove();
@@ -232,6 +244,11 @@ namespace DevoidEngine.Engine.Components
         public void SetAngularVelocity(Vector3 velocity)
         {
             AngularVelocity = velocity;
+        }
+
+        public void WakeUp()
+        {
+            internalBody?.WakeUp();
         }
     }
 }

@@ -84,9 +84,22 @@ namespace DevoidEngine.Engine.Components
         public CanvasComponent UICanvas;
         public LabelNode UIInteractionText;
 
+        private PortalCubeComponent heldCube;
+
         // ===============================
         // Setup
         // ===============================
+
+        private Vector2 lastMouseDelta;
+        private Vector2 mouseVelocity;
+
+        public Vector2 GetMouseVelocity() => mouseVelocity;
+        public Transform GetCameraPivot() => cameraPivot;
+        public Vector2 GetMouseDelta() => lastMouseDelta;
+        public Vector3 GetLinearVelocity()
+        {
+            return rb != null ? rb.LinearVelocity : Vector3.Zero;
+        }
 
         public override void OnStart()
         {
@@ -141,6 +154,9 @@ namespace DevoidEngine.Engine.Components
 
         public override void OnUpdate(float dt)
         {
+            lastMouseDelta = Input.MouseDelta;
+            mouseVelocity = lastMouseDelta / dt;
+
             totalTime += dt;
             if (rb == null) return;
 
@@ -180,21 +196,29 @@ namespace DevoidEngine.Engine.Components
                     Vector3.Transform(Vector3.UnitZ, cameraPivot.Rotation)
                 );
 
-            if (gameObject.Scene.Physics.Raycast(
-                new Ray(origin + forward, forward),
-                InteractionDistance,
-                out RaycastHit hit))
+            if (Input.GetKeyDown(Keys.Q))
             {
-                var door = hit.HitObject?.GetComponent<DoorComponent>();
+                // If holding cube -> drop
+                if (heldCube != null)
+                {
+                    heldCube.Drop();
+                    heldCube = null;
+                    return;
+                }
 
-                if (door != null)
+                // Try pickup
+                if (gameObject.Scene.Physics.Raycast(
+                    new Ray(origin + forward, forward),
+                    InteractionDistance,
+                    out RaycastHit hit))
                 {
-                    UICanvas.isEnabled = true;
-                    if (Input.GetKeyDown(Keys.T))
-                        door.Turn();
-                } else
-                {
-                    UICanvas.isEnabled = false;
+                    var cube = hit.HitObject?.GetComponent<PortalCubeComponent>();
+
+                    if (cube != null && !cube.IsHeld)
+                    {
+                        heldCube = cube;
+                        cube.PickUp(this);
+                    }
                 }
             }
         }

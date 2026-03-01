@@ -14,38 +14,47 @@ namespace DevoidEngine.Engine.Components
         private bool isOpen = false;
         private bool isTurning = false;
 
+        private Quaternion closedRotation;
+        private Quaternion openRotation;
+
         private Quaternion startRotation;
         private Quaternion targetRotation;
-        private RigidBodyComponent rigidBody;
+
         private float turnProgress = 0f;
 
         public override void OnStart()
         {
-            startRotation = gameObject.transform.Rotation;
-            //rigidBody = gameObject.ge
+            // Store closed state as initial rotation
+            closedRotation = gameObject.transform.Rotation;
+
+            Quaternion delta =
+                Quaternion.CreateFromAxisAngle(
+                    Vector3.UnitY,
+                    MathF.PI / 180f * OpenAngle
+                );
+
+            openRotation = closedRotation * delta;
         }
 
-        public void Turn()
+        // -----------------------------------------------------
+        // New deterministic Turn method
+        // -----------------------------------------------------
+        public void Turn(bool open)
         {
             if (isTurning)
+                return;
+
+            // If already in requested state → do nothing
+            if (open == isOpen)
                 return;
 
             isTurning = true;
             turnProgress = 0f;
 
             startRotation = gameObject.transform.Rotation;
+            targetRotation = open ? openRotation : closedRotation;
 
-            float angle = isOpen ? -OpenAngle : OpenAngle;
-
-            Quaternion delta =
-                Quaternion.CreateFromAxisAngle(
-                    Vector3.UnitY,
-                    MathF.PI / 180f * angle
-                );
-
-            targetRotation = startRotation * delta;
-
-            isOpen = !isOpen;
+            isOpen = open;
         }
 
         public override void OnUpdate(float dt)
@@ -63,5 +72,8 @@ namespace DevoidEngine.Engine.Components
             if (t >= 1f)
                 isTurning = false;
         }
+
+        // Optional helper
+        public bool IsOpen => isOpen;
     }
 }

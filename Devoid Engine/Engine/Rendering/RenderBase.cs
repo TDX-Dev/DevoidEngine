@@ -79,6 +79,7 @@ namespace DevoidEngine.Engine.Rendering
             Output = ActiveRenderTechnique?.Render(ctx);
             Renderer.graphicsDevice.UnbindAllShaderResources();
             RenderAPI.RenderToBuffer(Output, ctx.cameraTargetSurface);
+            DebugRenderSystem.Render(ctx.cameraData, ctx.cameraTargetSurface);
         }
 
         public static IInputLayout GetInputLayout(Mesh mesh, Shader shader)
@@ -163,12 +164,15 @@ namespace DevoidEngine.Engine.Rendering
             _meshRenderDataBuffer.SetData(_meshRenderData);
         }
 
-        public static Matrix4x4 BuildModel(Vector3 pos, Vector3 scale, Quaternion rot)
+        public static Matrix4x4 BuildModel(
+            Vector3 position,
+            Vector3 scale,
+            Quaternion rotation)
         {
             return
-                Matrix4x4.CreateFromQuaternion(rot) *
                 Matrix4x4.CreateScale(scale) *
-                Matrix4x4.CreateTranslation(pos);
+                Matrix4x4.CreateFromQuaternion(rotation) *
+                Matrix4x4.CreateTranslation(position);
         }
 
         static void ApplyRenderState(RenderState renderState)

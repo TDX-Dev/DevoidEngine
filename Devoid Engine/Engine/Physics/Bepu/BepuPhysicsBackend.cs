@@ -39,8 +39,8 @@ namespace DevoidEngine.Engine.Physics.Bepu
             simulation = Simulation.Create(
                 bufferPool,
                 callbacks,
-                new BepuPoseIntegratorCallbacks { Gravity = new Vector3(0, -19.81f, 0) },
-                new SolveDescription(8, 10),
+                new BepuPoseIntegratorCallbacks { Gravity = new Vector3(0, -9.81f, 0) },
+                new SolveDescription(8, 24),
                 new DefaultTimestepper()
             );
         }
@@ -75,6 +75,27 @@ namespace DevoidEngine.Engine.Physics.Bepu
         public void Step(float deltaTime)
         {
             simulation.Timestep(deltaTime);
+
+
+            var mapping = simulation.NarrowPhase.PairCache.Mapping;
+
+            for (int i = 0; i < mapping.Count; ++i)
+            {
+                ref var pair = ref mapping.Keys[i];
+
+                //var a = Resolve(pair.A);
+                //var b = Resolve(pair.B);
+                var a = pair.A;
+                var b = pair.B;
+
+                if (a != null && b != null)
+                {
+
+                    ReportCollision(a, b);
+                    //Console.WriteLine(a.Id + " " + b.Id + " deltaTime" + DateTime.Now);
+                }
+                    
+            }
 
 
 

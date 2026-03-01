@@ -24,8 +24,8 @@ namespace DevoidEngine.Engine.Components
         public Camera Camera { get; private set; }
 
         private bool isDefault;
-        private int width = 800;
-        private int height = 600;
+        private int width;
+        private int height;
 
         public CameraComponent3D()
         {
@@ -58,7 +58,8 @@ namespace DevoidEngine.Engine.Components
                 IsMutable = false
             }));
 
-            Console.WriteLine(Screen.Size);
+            width = (int)Screen.Size.X;
+            height = (int)Screen.Size.Y;
 
             UpdateProjection();
 
@@ -121,8 +122,6 @@ namespace DevoidEngine.Engine.Components
             height = newHeight;
             Camera.RenderTarget.Resize(width, height);
             UpdateProjection();
-
-            Console.WriteLine(newWidth);
         }
 
         private void UpdateProjection()

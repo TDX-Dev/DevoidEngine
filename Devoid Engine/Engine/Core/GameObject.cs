@@ -243,20 +243,20 @@ namespace DevoidEngine.Engine.Core
 
         public void OnRender(float dt)
         {
-            //for (int i = 0; i < Components.Count; i++)
-            //{
-            //    Components[i].OnRender(dt);
-            //}
-
-
-
-            if (children.Count > 0)
+            for (int i = 0; i < Components.Count; i++)
             {
-                for (int i = 0; i < children.Count; i++)
-                {
-                    children[i].OnRender(dt);
-                }
+                Components[i].OnRender(dt);
             }
+
+
+
+            //if (children.Count > 0)
+            //{
+            //    for (int i = 0; i < children.Count; i++)
+            //    {
+            //        children[i].OnRender(dt);
+            //    }
+            //}
         }
 
         internal void InvokeCollisionEnter(GameObject other)

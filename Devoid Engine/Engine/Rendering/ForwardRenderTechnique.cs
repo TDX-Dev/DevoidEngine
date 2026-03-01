@@ -28,6 +28,7 @@ namespace DevoidEngine.Engine.Rendering
 
         public unsafe void Initialize(int width, int height)
         {
+            Console.WriteLine($"{width}:{height}");
             pointLightBuffer = new StorageBuffer<GPUPointLight>(MAX_POINTLIGHTS, DevoidGPU.BufferUsage.Dynamic, false);
             sceneDataBuffer = new UniformBuffer(Unsafe.SizeOf<SceneData>(), DevoidGPU.BufferUsage.Dynamic);
 

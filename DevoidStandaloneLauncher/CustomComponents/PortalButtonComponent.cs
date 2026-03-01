@@ -36,8 +36,8 @@ namespace DevoidEngine.Engine.Components
 
             currentOffset = MathHelper.Lerp(currentOffset, target, dt * PressSpeed);
 
-            gameObject.transform.LocalPosition =
-                originalPosition + new Vector3(0, currentOffset, 0);
+            //gameObject.transform.LocalPosition =
+            //    originalPosition + new Vector3(0, currentOffset, 0);
         }
 
         public void OnCollisionEnter(GameObject other)
@@ -80,6 +80,7 @@ namespace DevoidEngine.Engine.Components
 
         public void OnCollisionStay(GameObject other)
         {
+
         }
     }
 }

@@ -35,32 +35,45 @@ namespace DevoidEngine.Engine.Components
 
             gameObject.Scene.Physics.CreateStatic(desc, gameObject);
 
-            if (DebugDraw)
-                CreateDebugVisual();
+            //if (DebugDraw)
+            //    CreateDebugVisual();
         }
 
-        private void CreateDebugVisual()
+        //private void CreateDebugVisual()
+        //{
+        //    if (Shape.Type != PhysicsShapeType.Box)
+        //        return;
+
+        //    // Create child object
+        //    _debugObject = gameObject.Scene.addGameObject("StaticCollider_Debug");
+
+        //    _debugObject.transform.Position = gameObject.transform.Position;
+        //    _debugObject.transform.Rotation = gameObject.transform.Rotation;
+        //    _debugObject.transform.Scale = Shape.Size;
+
+        //    // Create cube mesh
+        //    Mesh cubeMesh = new Mesh();
+        //    cubeMesh.SetVertices(Primitives.GetCubeVertex());
+
+        //    // Add MeshRenderer
+        //    var meshRenderer = _debugObject.AddComponent<MeshRenderer>();
+        //    meshRenderer.AddMesh(cubeMesh);
+
+        //    // Optional: assign debug material if needed
+        //    // meshRenderer.SetMaterial(DebugMaterial);
+        //}
+
+        public override void OnRender(float dt)
         {
-            if (Shape.Type != PhysicsShapeType.Box)
-                return;
+            //Matrix4x4 world = gameObject.transform.WorldMatrix;
 
-            // Create child object
-            _debugObject = gameObject.Scene.addGameObject("StaticCollider_Debug");
+            Matrix4x4 model = RenderBase.BuildModel(
+                gameObject.transform.Position,
+                Shape.Size,
+                gameObject.transform.Rotation
+            );
 
-            _debugObject.transform.Position = gameObject.transform.Position;
-            _debugObject.transform.Rotation = gameObject.transform.Rotation;
-            _debugObject.transform.Scale = Shape.Size;
-
-            // Create cube mesh
-            Mesh cubeMesh = new Mesh();
-            cubeMesh.SetVertices(Primitives.GetCubeVertex());
-
-            // Add MeshRenderer
-            var meshRenderer = _debugObject.AddComponent<MeshRenderer>();
-            meshRenderer.AddMesh(cubeMesh);
-
-            // Optional: assign debug material if needed
-            // meshRenderer.SetMaterial(DebugMaterial);
+            DebugRenderSystem.DrawCube(model);
         }
 
         public override void OnUpdate(float dt)

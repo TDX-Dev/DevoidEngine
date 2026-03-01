@@ -25,6 +25,12 @@ namespace DevoidStandaloneLauncher.Prototypes
             mesh.SetVertices(Primitives.GetCubeVertex());
 
             LoadDCC();
+
+
+            GameObject a = scene.addGameObject("S");
+            a.AddComponent<StaticCollider>();
+
+
             Importer.LoadModel("LauncherContents/platform_test.fbx");
 
 
@@ -59,6 +65,58 @@ namespace DevoidStandaloneLauncher.Prototypes
 
         public void LoadDCC()
         {
+            LevelSpawnRegistry.Register("Player_Flycam", (assimpNode, assimpScene) =>
+            {
+                Cursor.SetCursorState(CursorState.Grabbed);
+
+                Console.WriteLine("Added freecam");
+                GameObject camera = scene.addGameObject("Camera");
+
+                camera.transform.Position = Importer.GetTransform(assimpNode).Item1;
+
+                camera.AddComponent<FreeCameraComponent>();
+                var camComponent = camera.AddComponent<CameraComponent3D>();
+                camComponent.IsDefault = true;
+
+            });
+
+
+            LevelSpawnRegistry.Register("Model", (assimpNode, assimpScene) =>
+            {
+                var go = scene.addGameObject(assimpNode.Name);
+
+                Importer.ApplyTransform(go, assimpNode);
+
+                var mesh = Importer.ConvertMesh(assimpNode, assimpScene);
+                go.AddComponent<MeshRenderer>().AddMesh(mesh);
+            });
+
+            LevelSpawnRegistry.Register("Collideable_Static", (assimpNode, assimpScene) =>
+            {
+                var go = scene.addGameObject(assimpNode.Name);
+
+                Importer.ApplyTransform(go, assimpNode);
+
+                var mesh = Importer.ConvertMesh(assimpNode, assimpScene);
+                go.AddComponent<MeshRenderer>().AddMesh(mesh);
+
+                var rb = go.AddComponent<StaticCollider>();
+
+                rb.Shape = new PhysicsShapeDescription()
+                {
+                    Type = PhysicsShapeType.Box,
+                    Size = Importer.GetTransform(assimpNode).Item3 * 2
+                };
+
+                rb.Material = new PhysicsMaterial()
+                {
+                    Friction = 2f
+                };
+
+                Console.WriteLine("Collideable Added");
+            });
+
+
             LevelSpawnRegistry.Register("Player", (assimpNode, assimpScene) =>
             {
 
@@ -70,7 +128,7 @@ namespace DevoidStandaloneLauncher.Prototypes
                 //player.transform.Position = new Vector3(0, 1.5f, -6f);
 
                 var playerBody = player.AddComponent<RigidBodyComponent>();
-                playerBody.Mass = 100;
+                playerBody.Mass = 1000;
                 playerBody.Shape = new PhysicsShapeDescription()
                 {
                     Type = PhysicsShapeType.Capsule,
@@ -87,8 +145,8 @@ namespace DevoidStandaloneLauncher.Prototypes
                 };
 
                 FPSController playerController = player.AddComponent<FPSController>();
-                playerController.MoveSpeed = 20f;
-                playerController.JumpForce = 11f;
+                playerController.MoveSpeed = 10f;
+                playerController.JumpForce = 7f;
                 playerController.MouseSensitivity = 0.15f;
 
                 Cursor.SetCursorState(CursorState.Grabbed);
@@ -101,21 +159,6 @@ namespace DevoidStandaloneLauncher.Prototypes
 
                 GameObject camera = scene.addGameObject("Camera");
                 camera.SetParent(cameraPivot, false);
-                var camComponent = camera.AddComponent<CameraComponent3D>();
-                camComponent.IsDefault = true;
-
-            });
-
-            LevelSpawnRegistry.Register("Player_Flycam", (assimpNode, assimpScene) =>
-            {
-                Cursor.SetCursorState(CursorState.Grabbed);
-
-                Console.WriteLine("Added freecam");
-                GameObject camera = scene.addGameObject("Camera");
-
-                camera.transform.Position = Importer.GetTransform(assimpNode).Item1;
-
-                camera.AddComponent<FreeCameraComponent>();
                 var camComponent = camera.AddComponent<CameraComponent3D>();
                 camComponent.IsDefault = true;
 
@@ -135,83 +178,61 @@ namespace DevoidStandaloneLauncher.Prototypes
 
                 rb.Shape = new PhysicsShapeDescription()
                 {
-                    Type = PhysicsShapeType.Capsule,
+                    Type = PhysicsShapeType.Box,
                     Size = Importer.GetTransform(assimpNode).Item3 * 2,
-                    Height = 2,
-                    Radius = 2
+                    //Height = 2,
+                    //Radius = 2
+                };
+
+                rb.Material = new PhysicsMaterial()
+                {
+                    Friction = 2f
                 };
 
                 Console.WriteLine("Collideable Added");
             });
 
-            //LevelSpawnRegistry.Register("Collideable_Static", (assimpNode, assimpScene) =>
-            //{
-            //    var go = scene.addGameObject(assimpNode.Name);
-
-            //    Importer.ApplyTransform(go, assimpNode);
-
-            //    var mesh = Importer.ConvertMesh(assimpNode, assimpScene);
-            //    go.AddComponent<MeshRenderer>().AddMesh(mesh);
-
-            //    var rb = go.AddComponent<StaticCollider>();
-
-            //    rb.Shape = new PhysicsShapeDescription()
-            //    {
-            //        Type = PhysicsShapeType.Box,
-            //        Size = Importer.GetTransform(assimpNode).Item3 * 2
-            //    };
-
-            //    Console.WriteLine("Collideable Added");
-            //});
-
             LevelSpawnRegistry.Register("Door_Hinged", (assimpNode, assimpScene) =>
             {
-                // 1. Create hinge root
+                // 1️⃣ Create hinge pivot
                 GameObject hinge = scene.addGameObject(assimpNode.Name + "_Hinge");
-
-                // Apply DCC transform to hinge
                 Importer.ApplyTransform(hinge, assimpNode);
 
-                // 2. Add kinematic rigidbody to hinge
-                var hingeBody = hinge.AddComponent<RigidBodyComponent>();
-                hingeBody.StartKinematic = true;
+                Vector3 size = Importer.GetTransform(assimpNode).Item3 * 2;
+                float halfWidth = size.Z * 0.25f; // adjust axis if needed
 
-                hingeBody.Shape = new PhysicsShapeDescription()
+                // 🔥 Move hinge to door edge (important)
+                hinge.transform.Position -=
+                    Vector3.Transform(new Vector3(0f, 0f, halfWidth), hinge.transform.Rotation);
+
+                // 2️⃣ Create door body
+                GameObject door = scene.addGameObject(assimpNode.Name + "_Body");
+                door.SetParent(hinge, false);
+
+                // Door sits centered relative to hinge
+                door.transform.LocalPosition = new Vector3(0f, 0f, halfWidth);
+
+                // 3️⃣ Collider on door
+                var rb = door.AddComponent<RigidBodyComponent>();
+                rb.StartKinematic = true;
+                rb.Shape = new PhysicsShapeDescription()
                 {
                     Type = PhysicsShapeType.Box,
-                    Size = Importer.GetTransform(assimpNode).Item3 * 2
+                    Size = size
                 };
 
-                hingeBody.Material = new PhysicsMaterial()
+                rb.Material = new PhysicsMaterial()
                 {
                     Friction = 1f,
                     Restitution = 0f
                 };
 
-                // 3. Convert imported mesh
-                var doorMeshAsset = Importer.ConvertMesh(assimpNode, assimpScene);
-
-                // 4. Create visible door mesh object
-                GameObject doorMeshGO = scene.addGameObject(assimpNode.Name + "_Mesh");
-                doorMeshGO.SetParent(hinge, false);
-
-                doorMeshGO.transform.LocalPosition = new Vector3(0f, 0f, 0.5f);
-
-                doorMeshGO.AddComponent<MeshRenderer>().AddMesh(doorMeshAsset);
-
-                // 5. Add door behavior to hinge
-                hinge.AddComponent<DoorComponent>();
-            });
-
-            LevelSpawnRegistry.Register("Model", (assimpNode, assimpScene) =>
-            {
-                Console.WriteLine("Text");
-                var go = scene.addGameObject(assimpNode.Name);
-
-                Importer.ApplyTransform(go, assimpNode);
-
+                // 4️⃣ Mesh on door
                 var mesh = Importer.ConvertMesh(assimpNode, assimpScene);
-                go.AddComponent<MeshRenderer>().AddMesh(mesh);
+                door.AddComponent<MeshRenderer>().AddMesh(mesh);
+
+                // 5️⃣ Rotate hinge only
+                hinge.AddComponent<DoorComponent>();
             });
 
             LevelSpawnRegistry.Register("Trigger_Button", (assimpNode, assimpScene) =>
@@ -230,6 +251,11 @@ namespace DevoidStandaloneLauncher.Prototypes
                     Size = Importer.GetTransform(assimpNode).Item3 * 2
                 };
 
+                collider.Material = new PhysicsMaterial()
+                {
+                    Restitution = 0,
+                    Friction = 1f
+                };
 
 
                 //var buttonComp = button.AddComponent<PortalButtonComponent>();
@@ -263,18 +289,50 @@ namespace DevoidStandaloneLauncher.Prototypes
                     Size = new Vector3(3, 3, 1)
                 };
 
+                collider.Material = new PhysicsMaterial()
+                {
+                    Restitution = 0,
+                    Friction = 1f
+                };
+
 
                 var buttonComp = button.AddComponent<PortalButtonComponent>();
 
                 buttonComp.OnPressed += () =>
                 {
-                    scene.GetComponentsOfType<DoorComponent>()[0].Turn();
+                    scene.GetComponentsOfType<DoorComponent>()[0].Turn(true);
                 };
 
                 buttonComp.OnReleased += () =>
                 {
-                    scene.GetComponentsOfType<DoorComponent>()[0].Turn();
+                    scene.GetComponentsOfType<DoorComponent>()[0].Turn(false);
                 };
+            });
+
+            LevelSpawnRegistry.Register("Interactable_Cube", (assimpNode, assimpScene) =>
+            {
+                var go = scene.addGameObject(assimpNode.Name);
+
+                Importer.ApplyTransform(go, assimpNode);
+
+                var mesh = Importer.ConvertMesh(assimpNode, assimpScene);
+                go.AddComponent<MeshRenderer>().AddMesh(mesh);
+
+                var rb = go.AddComponent<RigidBodyComponent>();
+                rb.Mass = 10f;
+                rb.Shape = new PhysicsShapeDescription()
+                {
+                    Type = PhysicsShapeType.Box,
+                    Size = Importer.GetTransform(assimpNode).Item3 * 2
+                };
+
+                rb.Material = new PhysicsMaterial()
+                {
+                    Friction = 2f,
+                    Restitution = 0f
+                };
+
+                go.AddComponent<PortalCubeComponent>();
             });
 
             LevelSpawnRegistry.RegisterLight((assimpNode, assimpLight) =>

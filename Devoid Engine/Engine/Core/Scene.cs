@@ -215,9 +215,9 @@ namespace DevoidEngine.Engine.Core
             }
 
 
-            Console.WriteLine("Physics Frame Start");
+            //Console.WriteLine("Physics Frame Start");
             DoFixedUpdate(dt);
-            Console.WriteLine("Physics Frame End");
+            //Console.WriteLine("Physics Frame End");
 
             for (int i = 0; i < GameObjects.Count; i++)
             {
@@ -239,6 +239,7 @@ namespace DevoidEngine.Engine.Core
                 }
 
                 Physics.Step(fixedDeltaTime);
+                Physics.ResolveFrameCollisions();
 
                 accumulator -= fixedDeltaTime;
             }
@@ -247,8 +248,6 @@ namespace DevoidEngine.Engine.Core
         public void OnRender(float dt)
         {
             if (!IsPlaying) { return; }
-
-            Physics.ResolveFrameCollisions();
 
             for (int i = 0; i < GameObjects.Count; i++)
             {
