@@ -81,6 +81,7 @@ namespace DevoidEngine.Engine.Rendering
 
         void UploadSceneData(CameraRenderContext ctx)
         {
+
             sceneData = new SceneData();
             sceneData.pointLightCount = (uint)ctx.pointLights.Count;
 

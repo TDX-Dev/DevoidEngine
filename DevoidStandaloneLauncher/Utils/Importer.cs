@@ -14,8 +14,9 @@ namespace DevoidStandaloneLauncher.Utils
 
             PostProcessSteps importFlags =
                 PostProcessSteps.Triangulate |
-                PostProcessSteps.GenerateNormals |
                 PostProcessSteps.CalculateTangentSpace |
+                PostProcessSteps.GenerateNormals |
+                PostProcessSteps.GenerateUVCoords |
                 PostProcessSteps.FlipWindingOrder;
 
 
@@ -64,6 +65,10 @@ namespace DevoidStandaloneLauncher.Utils
             List<Vector3> normals = new();
             List<Vector2> uvs = new();
             List<uint> indices = new();
+
+            Console.WriteLine(mesh.HasNormals);
+            Console.WriteLine(mesh.VertexCount);
+            Console.WriteLine(mesh.FaceCount);
 
             for (int i = 0; i < mesh.VertexCount; i++)
             {

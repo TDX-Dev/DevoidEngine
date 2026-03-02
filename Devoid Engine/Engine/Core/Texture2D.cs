@@ -20,7 +20,7 @@ namespace DevoidEngine.Engine.Core
             {
                 Width = 1,
                 Height = 1,
-                Format = TextureFormat.RGBA16_Float,
+                Format = TextureFormat.RGBA32_Float,
                 Type = TextureType.Texture2D,
                 GenerateMipmaps = false,
                 MipLevels = 1,
@@ -28,6 +28,12 @@ namespace DevoidEngine.Engine.Core
                 IsRenderTarget = true,
                 IsMutable = false
             });
+
+            float[] pixel = [
+                1,1,1,1
+            ];
+
+            WhiteTexture.SetData(pixel);
             DefaultSampler = Renderer.graphicsDevice.CreateSampler(SamplerDescription.Default);
         }
 

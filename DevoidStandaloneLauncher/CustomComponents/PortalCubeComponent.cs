@@ -28,9 +28,10 @@ namespace DevoidEngine.Engine.Components
             holder = player;
             IsHeld = true;
 
-            Body.SetKinematic(true);
+            Body.SetKinematic(false); // ensure dynamic
             Body.LinearVelocity = Vector3.Zero;
             Body.AngularVelocity = Vector3.Zero;
+            Body.WakeUp();
 
         }
 
@@ -72,11 +73,25 @@ namespace DevoidEngine.Engine.Components
                     Vector3.Transform(Vector3.UnitZ, pivot.Rotation)
                 );
 
-
             Vector3 targetPos = pivot.Position + forward * HoldDistance;
 
-            gameObject.transform.Position = targetPos;
-            gameObject.transform.Rotation = Quaternion.Identity;
+            Vector3 positionError = targetPos - Body.Position;
+
+            // DIRECT VELOCITY TARGET (not force-based)
+            float followSpeed = 20f;  // increase for tighter feel
+
+            Vector3 targetVelocity = positionError * followSpeed;
+
+            // Smooth toward that velocity
+            float responsiveness = 15f;
+
+            Body.LinearVelocity = Vector3.Lerp(
+                Body.LinearVelocity,
+                targetVelocity,
+                responsiveness * dt
+            );
+
+            Body.AngularVelocity = Vector3.Zero;
         }
     }
 }

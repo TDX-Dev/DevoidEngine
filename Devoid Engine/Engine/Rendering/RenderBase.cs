@@ -156,11 +156,15 @@ namespace DevoidEngine.Engine.Rendering
 
         static void UpdatePerObjectData(Matrix4x4 model)
         {
+            Matrix4x4.Invert(model, out var ModelMatrixInv);
+
             _meshRenderData = new MeshRenderData()
             {
-                ModelMatrix = model
+                ModelMatrix = model,
+                ModelMatrixInv = ModelMatrixInv
             };
-            Matrix4x4.Invert(model, out _meshRenderData.ModelMatrixInv);
+
+
             _meshRenderDataBuffer.SetData(_meshRenderData);
         }
 
