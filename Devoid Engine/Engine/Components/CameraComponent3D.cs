@@ -16,7 +16,7 @@ namespace DevoidEngine.Engine.Components
                 isDefault = value;
                 if (value == true)
                 {
-                    gameObject.Scene.SetMainCamera(this);
+                    gameObject.Scene.SetMainCamera3D(this);
                 }
             }
         }
@@ -67,6 +67,7 @@ namespace DevoidEngine.Engine.Components
 
             UpdateProjection();
             gameObject.Scene.AddCamera3D(this);
+            
             //if (IsDefault) gameObject.Scene.SetMainCamera(this);
         }
 

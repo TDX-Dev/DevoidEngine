@@ -10,6 +10,7 @@ namespace DevoidEngine.Engine.Core
         public List<GameObject> GameObjects { get; private set; }
 
         private bool isPlaying = false;
+        private CameraComponent3D mainCamera;
         private List<Transform3D> transforms;
         private List<CameraComponent3D> cameras;
         private List<IRenderComponent> renderables;
@@ -19,10 +20,26 @@ namespace DevoidEngine.Engine.Core
         {
             GameObjects = new List<GameObject>();
             transforms = new List<Transform3D>();
+            cameras = new List<CameraComponent3D>();
+            renderables = new List<IRenderComponent>();
         }
 
-        public void Play(bool value) => isPlaying = value;
+        public void Play(bool value)
+        {
+            isPlaying = value;
+            if (isPlaying)
+            {
+                Start();
+            }
+        }
 
+        public void Start()
+        {
+            for (int i = 0; i < GameObjects.Count; i++)
+            {
+                GameObjects[i].OnStart();
+            }
+        }
         public void Update(float deltaTime)
         {
             if (!isPlaying) { return; }
@@ -50,14 +67,13 @@ namespace DevoidEngine.Engine.Core
 
         public void Render()
         {
-            float alpha = EngineSingleton.Instance.InterpolationAlpha;
-            uint frameCount = EngineSingleton.Instance.FrameCount;
-            
+           
         }
 
         public GameObject AddGameObject(string name = "GameObject")
         {
             GameObject gameObject = new GameObject();
+            gameObject.Scene = this;
             gameObject.Name = name;
             Transform3D transform = gameObject.AddComponent<Transform3D>();
             gameObject.Transform = transform;
@@ -95,17 +111,40 @@ namespace DevoidEngine.Engine.Core
 
         public void ComponentAdded(Component component)
         {
+            if (component is IRenderComponent renderComponent)
+                renderables.Add(renderComponent);
+
+            if (isPlaying)
+                Start();
+
             OnComponentAdded?.Invoke(component);
         }
 
         public void ComponentRemoved(Component component)
         {
+            if (component is IRenderComponent renderComponent)
+                renderables.Remove(renderComponent);
+
             OnComponentRemoved?.Invoke(component);
         }
 
         public List<IRenderComponent> GetRenderables() => renderables;
         public List<CameraComponent3D> GetCameras3D() => cameras;
+        public CameraComponent3D GetDefaultCamera3D() => mainCamera;
+        public void SetMainCamera3D(CameraComponent3D camera) => mainCamera = camera;
         public void AddCamera3D(CameraComponent3D camera) => cameras.Add(camera);
-        public void RemoveCamera3D(CameraComponent3D camera) => cameras.Remove(camera);
+        public void RemoveCamera3D(CameraComponent3D camera)
+        {
+            if (mainCamera ==  camera) { mainCamera = null; }
+            cameras.Remove(camera);
+        }
+
+        public void ResizeCameras(int width, int height)
+        {
+            for (int i = 0; i <  cameras.Count; i++)
+            {
+                cameras[i].SetViewportSize(width, height);
+            }
+        }
     }
 }

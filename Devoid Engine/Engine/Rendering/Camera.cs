@@ -1,4 +1,5 @@
-﻿using DevoidEngine.Engine.Rendering;
+﻿using DevoidEngine.Engine.Core;
+using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.Utilities;
 using DevoidGPU;
 using System.Numerics;
@@ -39,7 +40,7 @@ namespace DevoidEngine.Engine.Rendering
                 Position = Position,
                 NearClip = NearClip,
                 FarClip = FarClip,
-                ScreenSize = new Vector2(Renderer.Width, Renderer.Height)
+                ScreenSize = Screen.Size
             };
         }
 
@@ -55,7 +56,7 @@ namespace DevoidEngine.Engine.Rendering
         public void UpdateProjectionMatrix(float aspectRatio)
         {
             _projectionMatrix = Matrix4x4.CreatePerspectiveFieldOfView(FovY, aspectRatio, NearClip, FarClip);
-            _projectionMatrix = Renderer.graphicsDevice.AdjustProjectionMatrix(_projectionMatrix);
+            _projectionMatrix = Renderer.GraphicsDevice.AdjustProjectionMatrix(_projectionMatrix);
             Frustum = Frustum.FromMatrix(_viewMatrix * _projectionMatrix);
         }
 

@@ -14,5 +14,8 @@ namespace DevoidEngine.Engine.Rendering
         public Matrix4x4 Model;
         public MaterialInstance Material;
         public RenderState RenderState;
+
+        public bool useClipping;
+        public Vector4 ClipRegion;
     }
 }

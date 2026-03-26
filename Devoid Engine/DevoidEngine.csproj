@@ -15,15 +15,17 @@
   </PropertyGroup>
 
 	<ItemGroup>
+		<None Include="./Engine/Content/**/*.*" CopyToOutputDirectory="PreserveNewest" Visible="true" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<None Include="./runtimes/**" CopyToOutputDirectory="PreserveNewest" Visible="false" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Compile Remove="Engine\Content\**" />
 	  <Compile Remove="Serializing\**" />
 	  <EmbeddedResource Remove="Engine\Content\**" />
 	  <EmbeddedResource Remove="Serializing\**" />
-	  <None Remove="Engine\Content\**" />
 	  <None Remove="Serializing\**" />
 	</ItemGroup>
 

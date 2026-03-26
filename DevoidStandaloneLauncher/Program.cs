@@ -29,6 +29,7 @@ namespace DevoidStandaloneLauncher
             Console.WriteLine("Runtime Started");
             Application application = new Application();
             application.Initialize(applicationSpecification);
+            application.AddLayer(new PrototypeLoader());
             application.Run();
         }
 

@@ -12,6 +12,14 @@ namespace DevoidEngine.Engine.Core
 
         public static void LoadScene(Scene scene)
         {
+            // 1. Destroy old scene
+            //if (CurrentScene != null)
+            //{
+            //    CurrentScene.Destroy();
+            //    CurrentScene.Dispose();
+            //}
+
+            // 2. Set new scene
             CurrentScene = scene;
         }
 

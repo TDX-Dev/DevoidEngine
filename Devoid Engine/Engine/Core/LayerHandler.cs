@@ -69,7 +69,7 @@ namespace DevoidEngine.Engine.Core
             }
         }
 
-        public void LateRenderLayers()
+        public void PostRenderLayers()
         {
             for (int i = 0; i < layers.Count; i++)
             {

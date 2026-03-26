@@ -20,7 +20,7 @@ namespace DevoidEngine.Engine.Rendering
 
         public void Bind()
         {
-            Graphics.ResourceManager.FramebufferManager.BindFramebuffer(_frameBuffer);
+            Renderer.ResourceManager.FramebufferManager.BindFramebuffer(_frameBuffer);
         }
 
         public void Clear()
@@ -28,6 +28,12 @@ namespace DevoidEngine.Engine.Rendering
             Vector4 clearColor = new Vector4(0, 0, 0, 1);
             int clearDepth = 1;
 
+            Renderer.ResourceManager.FramebufferManager.ClearFramebufferColor(_frameBuffer, clearColor);
+            Renderer.ResourceManager.FramebufferManager.ClearFramebufferDepth(_frameBuffer, 1);
+        }
+
+        public void Clear(Vector4 clearColor, int clearDepth = 1)
+        {
             Renderer.ResourceManager.FramebufferManager.ClearFramebufferColor(_frameBuffer, clearColor);
             Renderer.ResourceManager.FramebufferManager.ClearFramebufferDepth(_frameBuffer, 1);
         }

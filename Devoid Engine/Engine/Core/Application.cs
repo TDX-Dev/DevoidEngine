@@ -1,5 +1,6 @@
 ﻿using DevoidEngine.Engine.Components;
 using DevoidEngine.Engine.Rendering;
+using DevoidEngine.Engine.UI;
 using DevoidEngine.Engine.Utilities;
 using DevoidGPU;
 using System.Diagnostics;
@@ -77,15 +78,19 @@ namespace DevoidEngine.Engine.Core
             layerHandler = new LayerHandler();
 
             Renderer.GraphicsDevice = applicationSpecification.graphicsDevice;
+            RenderThread.mainThreadID = Thread.CurrentThread.ManagedThreadId;
 
             frameTimer = new FrameTimer();
 
             targetWindow = new Window(windowSpecification);
             Renderer.GraphicsDevice.Initialize(targetWindow.GetWindowPtr(), presentParameters);
+            Renderer.Initialize(applicationSpecification.Width, applicationSpecification.Height);
+
+            UISystem.Initialize();
+
 
             targetWindow.OnResize += HandleWindowResize;
 
-            targetWindow.Load();
             isRunning = true;
         }
 
@@ -129,6 +134,8 @@ namespace DevoidEngine.Engine.Core
                     targetWindow.Close();
                     isRunning = false;
                 }
+                if (!targetWindow.IsVisible)
+                    targetWindow.IsVisible = true;
 
                 numFrames++;
             }
@@ -137,46 +144,51 @@ namespace DevoidEngine.Engine.Core
 
         void FixedUpdate(float deltaTime)
         {
-
+            layerHandler.FixedUpdateLayers(deltaTime);
         }
 
         void Update(float deltaTime)
         {
-
+            layerHandler.UpdateLayers(deltaTime);
+            UISystem.Update(deltaTime);
         }
 
         void Render()
         {
             layerHandler.RenderLayers();
 
-            if (SceneManager.CurrentScene == null) { return; }
-
-            List<IRenderComponent> renderables = SceneManager.CurrentScene.GetRenderables();
-            List<RenderItem> renderItems = new List<RenderItem>();
-            List<CameraComponent3D> cameraComponents = SceneManager.CurrentScene.GetCameras3D();
-            renderContexts.Clear();
-
-            for (int i = 0; i < cameraComponents.Count; i++)
+            if (SceneManager.CurrentScene != null)
             {
-                var cameraComponent = cameraComponents[i];
+                List<IRenderComponent> renderables = SceneManager.CurrentScene.GetRenderables();
+                List<CameraComponent3D> cameraComponents = SceneManager.CurrentScene.GetCameras3D();
+                Console.WriteLine(cameraComponents.Count);
+                renderContexts.Clear();
 
-                CameraRenderContext ctx = new CameraRenderContext();
-                ctx.cameraData = cameraComponent.Camera.GetCameraData();
-                ctx.cameraTargetSurface = cameraComponent.Camera.RenderTarget;
-
-                foreach (var renderable in renderables)
+                for (int i = 0; i < cameraComponents.Count; i++)
                 {
-                    renderable.Collect(cameraComponent, ctx);
+                    var cameraComponent = cameraComponents[i];
+
+                    CameraRenderContext ctx = new CameraRenderContext();
+                    ctx.cameraData = cameraComponent.Camera.GetCameraData();
+                    ctx.cameraTargetSurface = cameraComponent.Camera.RenderTarget;
+
+                    foreach (var renderable in renderables)
+                    {
+                        renderable.Collect(cameraComponent, ctx);
+                    }
+
+                    renderContexts.Add(ctx);
+
                 }
 
-                renderContexts.Add(ctx);
+                for (int i = 0; i < renderContexts.Count; i++)
+                {
+                    var ctx = renderContexts[i];
+                    Renderer.Render(ctx);
+                }
             }
 
-            for (int i = 0; i < renderContexts.Count; i++)
-            {
-                var ctx = renderContexts[i];
-                Renderer.Render(ctx);
-            }
+            layerHandler.PostRenderLayers();
 
             Renderer.GraphicsDevice.MainSurface.Bind();
             Renderer.GraphicsDevice.MainSurface.Present();
