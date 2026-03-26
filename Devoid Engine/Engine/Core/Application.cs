@@ -1,6 +1,8 @@
-﻿using DevoidEngine.Engine.Rendering;
+﻿using DevoidEngine.Engine.Components;
+using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.Utilities;
 using DevoidGPU;
+using System.Diagnostics;
 using System.Numerics;
 
 namespace DevoidEngine.Engine.Core
@@ -35,12 +37,15 @@ namespace DevoidEngine.Engine.Core
             }
         }
 
-
+        private LayerHandler layerHandler;
         private FrameTimer frameTimer;
         private float targetFramerate = 60f;
         private float targetDeltaTime = 1 / 60f;
         private float deltaTimeAccumulator = 0f;
         private float timeScale = 1.0f;
+        private uint numFrames = 0;
+
+        private List<CameraRenderContext> renderContexts = new List<CameraRenderContext>();
 
         private bool isRunning = false;
         private Window targetWindow;
@@ -68,6 +73,9 @@ namespace DevoidEngine.Engine.Core
                 Windowed = true,
             };
 
+            EngineSingleton EngineSingleton = new EngineSingleton();
+            layerHandler = new LayerHandler();
+
             Renderer.GraphicsDevice = applicationSpecification.graphicsDevice;
 
             frameTimer = new FrameTimer();
@@ -75,16 +83,28 @@ namespace DevoidEngine.Engine.Core
             targetWindow = new Window(windowSpecification);
             Renderer.GraphicsDevice.Initialize(targetWindow.GetWindowPtr(), presentParameters);
 
+            targetWindow.OnResize += HandleWindowResize;
 
             targetWindow.Load();
             isRunning = true;
         }
 
+        public void AddLayer(Layer layer) => layerHandler.AddLayer(layer);
+        public void RemoveLayer(Layer layer) => layerHandler.RemoveLayer(layer);
+
+        private void HandleWindowResize(int width, int height)
+        {
+            layerHandler.ResizeLayers(width, height);
+        }
+
         public void Run()
         {
+            layerHandler.AttachLayers();
             while (isRunning)
             {
                 float deltaTime = (float)frameTimer.GetElapsedSeconds();
+                EngineSingleton.Instance.FrameCount = numFrames;
+
                 targetWindow.ProcessEvents();
 
 
@@ -95,6 +115,11 @@ namespace DevoidEngine.Engine.Core
                     deltaTimeAccumulator -= targetDeltaTime;
                 }
 
+                float alpha = deltaTimeAccumulator / targetDeltaTime;
+                alpha = Math.Clamp(alpha, 0f, 1f);
+                EngineSingleton.Instance.InterpolationAlpha = alpha;
+
+
                 Update(deltaTime * timeScale);
                 Render();
 
@@ -104,7 +129,10 @@ namespace DevoidEngine.Engine.Core
                     targetWindow.Close();
                     isRunning = false;
                 }
+
+                numFrames++;
             }
+            layerHandler.DetachLayers();
         }
 
         void FixedUpdate(float deltaTime)
@@ -119,6 +147,37 @@ namespace DevoidEngine.Engine.Core
 
         void Render()
         {
+            layerHandler.RenderLayers();
+
+            if (SceneManager.CurrentScene == null) { return; }
+
+            List<IRenderComponent> renderables = SceneManager.CurrentScene.GetRenderables();
+            List<RenderItem> renderItems = new List<RenderItem>();
+            List<CameraComponent3D> cameraComponents = SceneManager.CurrentScene.GetCameras3D();
+            renderContexts.Clear();
+
+            for (int i = 0; i < cameraComponents.Count; i++)
+            {
+                var cameraComponent = cameraComponents[i];
+
+                CameraRenderContext ctx = new CameraRenderContext();
+                ctx.cameraData = cameraComponent.Camera.GetCameraData();
+                ctx.cameraTargetSurface = cameraComponent.Camera.RenderTarget;
+
+                foreach (var renderable in renderables)
+                {
+                    renderable.Collect(cameraComponent, ctx);
+                }
+
+                renderContexts.Add(ctx);
+            }
+
+            for (int i = 0; i < renderContexts.Count; i++)
+            {
+                var ctx = renderContexts[i];
+                Renderer.Render(ctx);
+            }
+
             Renderer.GraphicsDevice.MainSurface.Bind();
             Renderer.GraphicsDevice.MainSurface.Present();
         }

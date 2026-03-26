@@ -47,6 +47,8 @@ namespace DevoidEngine.Engine.Core
         public event Action? OnLoad;
         public event Action? OnUnload;
 
+        public event Action<int, int>? OnResize;
+
         public event Action? OnStartFrame;
         public event Action<double>? OnFixedUpdate;
         public event Action<double>? OnUpdateFrame;
@@ -76,6 +78,12 @@ namespace DevoidEngine.Engine.Core
             this.CenterWindow();
             WindowSpecification = windowSpec;
             WindowUtil.EnableDarkMode(GetWindowPtr());
+            this.Resize += Window_Resize;
+        }
+
+        private void Window_Resize(OpenTK.Windowing.Common.ResizeEventArgs obj)
+        {
+            OnResize?.Invoke((int)obj.Width, (int)obj.Height);
         }
 
         public void Load()

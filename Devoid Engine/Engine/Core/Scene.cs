@@ -11,6 +11,8 @@ namespace DevoidEngine.Engine.Core
 
         private bool isPlaying = false;
         private List<Transform3D> transforms;
+        private List<CameraComponent3D> cameras;
+        private List<IRenderComponent> renderables;
 
 
         public Scene()
@@ -34,10 +36,23 @@ namespace DevoidEngine.Engine.Core
         public void FixedUpdate(float deltaTime)
         {
             if (isPlaying) { return; }
-            for (int i = 0; i < GameObjects.Count - 1; i++)
+
+            for (int i = 0; i < transforms.Count; i++)
+            {
+                transforms[i].CapturePrevious();
+            }
+
+            for (int i = 0; i < GameObjects.Count; i++)
             {
                 GameObjects[i].OnFixedUpdate(deltaTime);
             }
+        }
+
+        public void Render()
+        {
+            float alpha = EngineSingleton.Instance.InterpolationAlpha;
+            uint frameCount = EngineSingleton.Instance.FrameCount;
+            
         }
 
         public GameObject AddGameObject(string name = "GameObject")
@@ -87,5 +102,10 @@ namespace DevoidEngine.Engine.Core
         {
             OnComponentRemoved?.Invoke(component);
         }
+
+        public List<IRenderComponent> GetRenderables() => renderables;
+        public List<CameraComponent3D> GetCameras3D() => cameras;
+        public void AddCamera3D(CameraComponent3D camera) => cameras.Add(camera);
+        public void RemoveCamera3D(CameraComponent3D camera) => cameras.Remove(camera);
     }
 }

@@ -18,11 +18,6 @@ namespace DevoidEngine.Engine.Components
         public Transform3D Parent => parent;
         public IReadOnlyList<Transform3D> Children => children;
 
-        public bool Interpolated
-        {
-            get; set;
-        } = true;
-
         // ===============================
         // Local Transform
         // ===============================
@@ -36,11 +31,6 @@ namespace DevoidEngine.Engine.Components
         private Vector3 prevLocalPosition;
         private Quaternion prevLocalRotation;
         private Vector3 prevLocalScale;
-        private Matrix4x4 prevWorldMatrix;
-
-        private Vector3 prevWorldScale;
-        private Quaternion prevWorldRotation;
-        private Vector3 prevWorldPosition;
         // ===============================
 
         // yes i like these designs.
@@ -55,7 +45,7 @@ namespace DevoidEngine.Engine.Components
         public bool hasMoved = false;
 
         private Matrix4x4 interpolatedWorldMatrix;
-        private int interpolatedFrame = -1; // cache guard
+        private uint interpolatedFrame = 0; // cache guard
 
         // ===============================
         // Local Properties
@@ -267,6 +257,55 @@ namespace DevoidEngine.Engine.Components
             }
 
             MarkDirty();
+        }
+
+        internal void CapturePrevious()
+        {
+            prevLocalPosition = localPosition;
+            prevLocalRotation = localRotation;
+            prevLocalScale = localScale;
+        }
+
+        public Matrix4x4 GetGlobalTransformInterpolated(uint frameIndex, float alpha)
+        {
+
+            if (interpolatedFrame == frameIndex)
+                return interpolatedWorldMatrix;
+
+            Matrix4x4 local;
+
+            Vector3 pos = Vector3.Lerp(prevLocalPosition, localPosition, alpha);
+            Quaternion rot = Quaternion.Slerp(prevLocalRotation, localRotation, alpha);
+            Vector3 scale = Vector3.Lerp(prevLocalScale, localScale, alpha);
+
+            local = Matrix4x4.CreateScale(scale) * Matrix4x4.CreateFromQuaternion(rot) * Matrix4x4.CreateTranslation(pos);
+            Matrix4x4 result;
+
+            // i hate life
+            if (parent != null)
+            {
+                Matrix4x4 parentGlobal;
+
+                if (parent.interpolatedFrame == frameIndex)
+                {
+                    parentGlobal = parent.interpolatedWorldMatrix;
+                }
+                else
+                {
+                    parentGlobal = parent.GetGlobalTransformInterpolated(frameIndex, alpha);
+                }
+
+                result = local * parentGlobal;
+            }
+            else
+            {
+                result = local;
+            }
+
+            interpolatedWorldMatrix = result;
+            interpolatedFrame = frameIndex;
+
+            return result;
         }
 
         private void Decompose(Matrix4x4 matrix)

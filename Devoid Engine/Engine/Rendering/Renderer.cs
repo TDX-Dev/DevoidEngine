@@ -1,4 +1,5 @@
-﻿using DevoidEngine.Engine.Rendering.GPUResource;
+﻿using DevoidEngine.Engine.Core;
+using DevoidEngine.Engine.Rendering.GPUResource;
 using DevoidGPU;
 using System;
 using System.Collections.Generic;
@@ -12,8 +13,11 @@ namespace DevoidEngine.Engine.Rendering
     {
         public static IGraphicsDevice GraphicsDevice { get; internal set; }
         internal static ResourceManager ResourceManager = new ResourceManager();
+        internal static InputLayoutCache inputLayoutCache = new InputLayoutCache();
 
-        public static void DrawScene()
+        public static IInputLayout GetInputLayout(Mesh mesh, Shader shader) => inputLayoutCache.Get(GraphicsDevice, mesh.VertexBuffer.GetVertexInfo(), shader.vShader);
+
+        public static void Render(CameraRenderContext cameraRenderContext)
         {
 
         }

@@ -8,6 +8,14 @@ namespace DevoidEngine.Engine.Core
 {
     public class EngineSingleton
     {
+        public uint FrameCount { get; set; } = 0;
+        public float InterpolationAlpha { get; set; } = 0;
+        public bool UseInterpolation = false;
+
+
+
+
+
         public static EngineSingleton Instance { get; private set; }
 
         public EngineSingleton()
