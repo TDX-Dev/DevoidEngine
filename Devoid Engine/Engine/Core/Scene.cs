@@ -115,7 +115,7 @@ namespace DevoidEngine.Engine.Core
                 renderables.Add(renderComponent);
 
             if (isPlaying)
-                Start();
+                component.OnStart();
 
             OnComponentAdded?.Invoke(component);
         }

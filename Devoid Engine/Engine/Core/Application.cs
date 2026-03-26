@@ -76,6 +76,7 @@ namespace DevoidEngine.Engine.Core
 
             EngineSingleton EngineSingleton = new EngineSingleton();
             layerHandler = new LayerHandler();
+            Screen.Size = new Vector2(applicationSpecification.Width, applicationSpecification.Height);
 
             Renderer.GraphicsDevice = applicationSpecification.graphicsDevice;
             RenderThread.mainThreadID = Thread.CurrentThread.ManagedThreadId;
@@ -161,7 +162,6 @@ namespace DevoidEngine.Engine.Core
             {
                 List<IRenderComponent> renderables = SceneManager.CurrentScene.GetRenderables();
                 List<CameraComponent3D> cameraComponents = SceneManager.CurrentScene.GetCameras3D();
-                Console.WriteLine(cameraComponents.Count);
                 renderContexts.Clear();
 
                 for (int i = 0; i < cameraComponents.Count; i++)
