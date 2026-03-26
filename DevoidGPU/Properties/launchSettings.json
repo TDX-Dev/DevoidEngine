@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "DevoidGPU": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}
