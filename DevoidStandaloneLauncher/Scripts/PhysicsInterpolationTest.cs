@@ -25,6 +25,7 @@ namespace DevoidStandaloneLauncher.Scripts
                 timer += dt;
                 var pos = gameObject.Transform.Position;
                 pos.X = (float)Math.Sin(timer * 5) * 5;
+                gameObject.Transform.Position = pos;
             }
         }
 
@@ -35,6 +36,7 @@ namespace DevoidStandaloneLauncher.Scripts
                 timer += dt;
                 var pos = gameObject.Transform.Position;
                 pos.X = (float)Math.Sin(timer * 5) * 5;
+                gameObject.Transform.Position = pos;
             }
         }
 

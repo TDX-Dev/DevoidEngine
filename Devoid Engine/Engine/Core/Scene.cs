@@ -52,7 +52,7 @@ namespace DevoidEngine.Engine.Core
 
         public void FixedUpdate(float deltaTime)
         {
-            if (isPlaying) { return; }
+            if (!isPlaying) { return; }
 
             for (int i = 0; i < transforms.Count; i++)
             {

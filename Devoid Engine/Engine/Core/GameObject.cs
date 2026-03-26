@@ -216,9 +216,6 @@ namespace DevoidEngine.Engine.Core
             {
                 Components[i].OnFixedUpdate(dt);
             }
-
-            foreach (var child in children)
-                child.OnFixedUpdate(dt);
         }
 
         public void OnLateUpdate(float dt)
@@ -227,9 +224,6 @@ namespace DevoidEngine.Engine.Core
             {
                 Components[i].OnLateUpdate(dt);
             }
-
-            foreach (var child in children)
-                child.OnLateUpdate(dt);
         }
 
 

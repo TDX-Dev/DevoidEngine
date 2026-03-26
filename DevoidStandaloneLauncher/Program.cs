@@ -29,6 +29,8 @@ namespace DevoidStandaloneLauncher
             Console.WriteLine("Runtime Started");
             Application application = new Application();
             application.Initialize(applicationSpecification);
+            application.TargetFrameRate = 10;
+            EngineSingleton.Instance.UseInterpolation = true;
             application.AddLayer(new PrototypeLoader());
             application.Run();
         }
