@@ -85,31 +85,6 @@ namespace DevoidEngine.Engine.Core
         }
 
 
-        public void StartFrame()
-        {
-            OnStartFrame?.Invoke();
-        }
-
-        public void EndFrame()
-        {
-            OnEndFrame?.Invoke();
-        }
-
-        public void Update(double deltaTime)
-        {
-            OnUpdateFrame?.Invoke(deltaTime);
-        }
-
-        public void FixedUpdate(double deltaTime)
-        {
-            OnFixedUpdate?.Invoke(deltaTime);
-        }
-
-        public void Render(double deltaTime, float alpha)
-        {
-            OnRenderFrame?.Invoke(deltaTime, alpha);
-        }
-
         public void Close()
         {
             OnUnload?.Invoke();

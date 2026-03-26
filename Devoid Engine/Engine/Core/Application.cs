@@ -57,12 +57,24 @@ namespace DevoidEngine.Engine.Core
                 WindowMinimumSize = new Vector2(100, 100),
                 WindowState = applicationSpecification.useFullscreen ? WindowState.Fullscreen : WindowState.Normal
             };
-            Renderer.GraphicsDevice = applicationSpecification.graphicsDevice;
 
+            PresentationParameters presentParameters = new PresentationParameters()
+            {
+                VSync = applicationSpecification.forceVsync,
+                ColorFormat = TextureFormat.RGBA8_UNorm,
+                BufferCount = 2,
+                BackBufferWidth = applicationSpecification.Width,
+                BackBufferHeight = applicationSpecification.Height,
+                Windowed = true,
+            };
+
+            Renderer.GraphicsDevice = applicationSpecification.graphicsDevice;
 
             frameTimer = new FrameTimer();
 
             targetWindow = new Window(windowSpecification);
+            Renderer.GraphicsDevice.Initialize(targetWindow.GetWindowPtr(), presentParameters);
+
 
             targetWindow.Load();
             isRunning = true;
@@ -107,7 +119,8 @@ namespace DevoidEngine.Engine.Core
 
         void Render()
         {
-
+            Renderer.GraphicsDevice.MainSurface.Bind();
+            Renderer.GraphicsDevice.MainSurface.Present();
         }
 
 

@@ -1,0 +1,429 @@
+﻿using BepuPhysics;
+using BepuPhysics.Collidables;
+using BepuUtilities.Memory;
+using DevoidEngine.Engine.Core;
+using System.Numerics;
+
+namespace DevoidEngine.Engine.Physics.Bepu
+{
+    internal class BepuPhysicsBackend : IPhysicsBackend
+    {
+        private Simulation simulation;
+        private BufferPool bufferPool;
+
+        private Dictionary<BodyHandle, GameObject> bodyToGameObject = new Dictionary<BodyHandle, GameObject>();
+        private Dictionary<StaticHandle, GameObject> staticToGameObject = new Dictionary<StaticHandle, GameObject>();
+
+        private Dictionary<BodyHandle, PhysicsMaterial> bodyMaterials = new Dictionary<BodyHandle, PhysicsMaterial>();
+        private Dictionary<StaticHandle, PhysicsMaterial> staticMaterials = new Dictionary<StaticHandle, PhysicsMaterial>();
+
+        private Dictionary<BodyHandle, IPhysicsBody> bodyWrappers = new();
+        private Dictionary<StaticHandle, IPhysicsStatic> staticWrappers = new();
+
+        private Dictionary<BodyHandle, bool> bodyTriggers = new();
+
+
+        public event Action<IPhysicsObject, IPhysicsObject> CollisionDetected;
+
+        public void Initialize()
+        {
+            bufferPool = new BufferPool();
+
+            var callbacks = new BepuNarrowPhaseCallbacks
+            {
+                MaterialLookup = LookupMaterial,
+                Backend = this
+            };
+
+            simulation = Simulation.Create(
+                bufferPool,
+                callbacks,
+                new BepuPoseIntegratorCallbacks { Gravity = new Vector3(0, -9.81f, 0) },
+                new SolveDescription(8, 24),
+                new DefaultTimestepper()
+            );
+        }
+
+        internal void ReportCollision(CollidableReference a, CollidableReference b)
+        {
+            IPhysicsObject objA = Resolve(a);
+            IPhysicsObject objB = Resolve(b);
+
+            if (objA == null || objB == null)
+                return;
+
+            CollisionDetected?.Invoke(objA, objB);
+        }
+
+        private IPhysicsObject Resolve(CollidableReference c)
+        {
+            if (c.Mobility == CollidableMobility.Static)
+            {
+                staticWrappers.TryGetValue(c.StaticHandle, out var s);
+                return s;
+            }
+            else
+            {
+                bodyWrappers.TryGetValue(c.BodyHandle, out var b);
+                return b;
+            }
+        }
+
+        public bool IsTrigger(CollidableReference c)
+        {
+            if (c.Mobility == CollidableMobility.Dynamic ||
+                c.Mobility == CollidableMobility.Kinematic)
+            {
+                if (bodyTriggers.TryGetValue(c.BodyHandle, out bool trigger))
+                    return trigger;
+            }
+
+            return false;
+        }
+
+
+        public void Step(float deltaTime)
+        {
+            simulation.Timestep(deltaTime);
+
+
+            var mapping = simulation.NarrowPhase.PairCache.Mapping;
+
+            for (int i = 0; i < mapping.Count; ++i)
+            {
+                ref var pair = ref mapping.Keys[i];
+
+                //var a = Resolve(pair.A);
+                //var b = Resolve(pair.B);
+                var a = pair.A;
+                var b = pair.B;
+
+                if (a != null && b != null)
+                {
+
+                    ReportCollision(a, b);
+                    //Console.WriteLine(a.Id + " " + b.Id + " deltaTime" + DateTime.Now);
+                }
+
+            }
+
+
+
+            foreach (var pair in bodyMaterials)
+            {
+                var handle = pair.Key;
+                var material = pair.Value;
+
+                var body = simulation.Bodies.GetBodyReference(handle);
+
+                float linearFactor = MathF.Max(0f, 1f - material.LinearDamping * deltaTime);
+                float angularFactor = MathF.Max(0f, 1f - material.AngularDamping * deltaTime);
+
+                if (!body.Kinematic)
+                {
+                    body.Velocity.Linear *= linearFactor;
+                    body.Velocity.Angular *= angularFactor;
+                }
+            }
+        }
+
+
+
+        private PhysicsMaterial LookupMaterial(CollidableReference collidable)
+        {
+            if (collidable.Mobility == CollidableMobility.Dynamic || collidable.Mobility == CollidableMobility.Kinematic)
+            {
+                if (bodyMaterials.TryGetValue(collidable.BodyHandle, out var mat))
+                    return mat;
+            }
+            else if (collidable.Mobility == CollidableMobility.Static)
+            {
+                if (staticMaterials.TryGetValue(collidable.StaticHandle, out var mat))
+                    return mat;
+            }
+
+            return PhysicsMaterial.Default;
+        }
+
+
+
+        public IPhysicsBody CreateBody(PhysicsBodyDescription desc, GameObject owner)
+        {
+            TypedIndex shapeIndex = CreateShape(
+                desc.Shape,
+                desc.Mass,
+                out BodyInertia inertia);
+
+            var pose = new RigidPose(desc.Position, desc.Rotation);
+
+            BodyDescription bodyDescription;
+
+            if (desc.IsKinematic)
+            {
+                bodyDescription = BodyDescription.CreateKinematic(
+                    pose,
+                    new CollidableDescription(shapeIndex, 0.01f),
+                    new BodyActivityDescription(desc.AllowSleep ? 0.01f : -1)
+                );
+            }
+            else
+            {
+                bodyDescription = BodyDescription.CreateDynamic(
+                    pose,
+                    inertia,
+                    new CollidableDescription(shapeIndex, 0.01f),
+                    new BodyActivityDescription(desc.AllowSleep ? 0.01f : -1)
+                );
+            }
+
+
+            BodyHandle handle = simulation.Bodies.Add(bodyDescription);
+            var bodyRef = simulation.Bodies.GetBodyReference(handle);
+            bodyRef.Awake = true;
+
+            bodyToGameObject[handle] = owner;
+            bodyMaterials[handle] = desc.Material;
+
+            var wrapper = new BepuPhysicsBody(handle, simulation, desc.Material, this);
+
+            bodyWrappers[handle] = wrapper;
+            bodyTriggers[handle] = desc.IsTrigger;
+
+            return wrapper;
+        }
+
+
+
+
+        public IPhysicsStatic CreateStatic(PhysicsStaticDescription desc, GameObject owner)
+        {
+            TypedIndex shapeIndex = CreateShapeStatic(desc.Shape);
+
+            var pose = new RigidPose(desc.Position, desc.Rotation);
+            var staticDescription = new StaticDescription(pose, shapeIndex);
+
+            StaticHandle handle = simulation.Statics.Add(staticDescription);
+
+            staticToGameObject[handle] = owner;
+            staticMaterials[handle] = desc.Material;
+
+            var wrapper = new BepuPhysicsStatic(handle, simulation, this);
+            staticWrappers[handle] = wrapper;
+
+            return wrapper;
+        }
+
+
+
+
+
+        private TypedIndex CreateShape(
+            PhysicsShapeDescription shapeDesc,
+            float mass,
+            out BodyInertia inertia)
+        {
+            switch (shapeDesc.Type)
+            {
+                case PhysicsShapeType.Box:
+                    {
+                        var shape = new Box(
+                            shapeDesc.Size.X,
+                            shapeDesc.Size.Y,
+                            shapeDesc.Size.Z);
+
+                        inertia = shape.ComputeInertia(mass);
+                        return simulation.Shapes.Add(shape);
+                    }
+
+                case PhysicsShapeType.Sphere:
+                    {
+                        var shape = new Sphere(shapeDesc.Radius);
+
+                        inertia = shape.ComputeInertia(mass);
+                        return simulation.Shapes.Add(shape);
+                    }
+
+                case PhysicsShapeType.Capsule:
+                    {
+                        var shape = new Capsule(
+                            shapeDesc.Radius,
+                            shapeDesc.Height);
+
+                        inertia = shape.ComputeInertia(mass);
+                        return simulation.Shapes.Add(shape);
+                    }
+
+                case PhysicsShapeType.ConvexHull:
+                    {
+                        var shape = new ConvexHull(
+                            shapeDesc.Vertices,
+                            bufferPool,
+                            out _);
+
+                        inertia = shape.ComputeInertia(mass);
+                        return simulation.Shapes.Add(shape);
+                    }
+
+                //case PhysicsShapeType.Mesh:
+                //    {
+                //        var shape = new Mesh(
+                //            shapeDesc.Vertices,
+                //            shapeDesc.Indices,
+                //            bufferPool);
+
+                //        // Mesh should NOT be dynamic
+                //        inertia = default;
+                //        return simulation.Shapes.Add(shape);
+                //    }
+
+                default:
+                    throw new NotSupportedException("Shape not supported.");
+            }
+        }
+
+        private TypedIndex CreateShapeStatic(PhysicsShapeDescription shapeDesc)
+        {
+            switch (shapeDesc.Type)
+            {
+                case PhysicsShapeType.Box:
+                    {
+                        var shape = new Box(
+                            shapeDesc.Size.X,
+                            shapeDesc.Size.Y,
+                            shapeDesc.Size.Z);
+
+                        return simulation.Shapes.Add(shape);
+                    }
+
+                case PhysicsShapeType.Sphere:
+                    {
+                        var shape = new Sphere(shapeDesc.Radius);
+                        return simulation.Shapes.Add(shape);
+                    }
+
+                case PhysicsShapeType.Capsule:
+                    {
+                        var shape = new Capsule(
+                            shapeDesc.Radius,
+                            shapeDesc.Height);
+
+                        return simulation.Shapes.Add(shape);
+                    }
+
+                case PhysicsShapeType.ConvexHull:
+                    {
+                        var shape = new ConvexHull(
+                            shapeDesc.Vertices,
+                            bufferPool,
+                            out _);
+
+                        return simulation.Shapes.Add(shape);
+                    }
+
+                case PhysicsShapeType.Mesh:
+                    {
+                        var vertices = shapeDesc.Vertices;
+                        var indices = shapeDesc.Indices;
+
+                        if (vertices == null || indices == null || indices.Length < 3)
+                            throw new Exception("Invalid mesh collider data");
+
+                        int triangleCount = indices.Length / 3;
+
+                        // Allocate triangle buffer
+                        bufferPool.Take<Triangle>(triangleCount, out var triangles);
+
+                        for (int i = 0; i < triangleCount; i++)
+                        {
+                            triangles[i] = new Triangle(
+                                vertices[indices[i * 3 + 0]],
+                                vertices[indices[i * 3 + 1]],
+                                vertices[indices[i * 3 + 2]]
+                            );
+                        }
+
+                        // IMPORTANT: scale handled here
+                        var mesh = new BepuPhysics.Collidables.Mesh(triangles, new Vector3(1, 1, 1), bufferPool);
+
+                        return simulation.Shapes.Add(mesh);
+                    }
+                default:
+                    throw new NotSupportedException("Unsupported static shape type");
+            }
+        }
+
+
+
+        public void RemoveBody(IPhysicsBody body)
+        {
+            if (body is BepuPhysicsBody b)
+            {
+                simulation.Bodies.Remove(b.Handle);
+
+                bodyToGameObject.Remove(b.Handle);
+                bodyMaterials.Remove(b.Handle);
+                bodyTriggers.Remove(b.Handle);   // ADD THIS
+                bodyWrappers.Remove(b.Handle);   // also remove wrapper
+            }
+            else
+            {
+                Console.WriteLine("Removing Static bodies not implemented yet.");
+            }
+        }
+
+        public void RemoveStatic(IPhysicsStatic s)
+        {
+            if (s is BepuPhysicsStatic b)
+            {
+                staticWrappers.Remove(b.Handle);
+                staticToGameObject.Remove(b.Handle);
+                staticMaterials.Remove(b.Handle);
+            }
+            else
+            {
+                Console.WriteLine("Invalid Static body handle passed to remove static function.");
+            }
+        }
+
+        public bool Raycast(Ray ray, float maxDistance, out RaycastHit hit)
+        {
+            hit = default;
+
+            var handler = new RayHitHandler(this);
+
+            simulation.RayCast(
+                ray.Origin,
+                ray.Direction,
+                maxDistance,
+                ref handler);
+
+            if (!handler.Hit)
+                return false;
+
+            hit.Distance = handler.Distance;
+            hit.Point = ray.GetPoint(handler.Distance);
+            hit.Normal = handler.Normal;
+
+            if (handler.Collidable.Mobility == CollidableMobility.Dynamic ||
+                handler.Collidable.Mobility == CollidableMobility.Kinematic)
+            {
+                var bodyHandle = handler.Collidable.BodyHandle;
+
+                if (bodyToGameObject.TryGetValue(bodyHandle, out var go))
+                    hit.HitObject = go;
+            }
+            else if (handler.Collidable.Mobility == CollidableMobility.Static)
+            {
+                var staticHandle = handler.Collidable.StaticHandle;
+
+                if (staticToGameObject.TryGetValue(staticHandle, out var go))
+                    hit.HitObject = go;
+            }
+
+
+            return true;
+        }
+
+    }
+
+}
