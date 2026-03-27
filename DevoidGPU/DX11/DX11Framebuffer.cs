@@ -5,7 +5,7 @@ namespace DevoidGPU.DX11
 {
     public class DX11Framebuffer : IFramebuffer
     {
-        public List<ITexture2D> ColorAttachments { get; set; }
+        public List<ITexture> ColorAttachments { get; set; }
 
         public ITexture2D DepthAttachment { get; set; }
 
@@ -21,7 +21,7 @@ namespace DevoidGPU.DX11
             this.device = device ?? throw new ArgumentNullException(nameof(device));
             this.deviceContext = context ?? throw new ArgumentNullException(nameof(context));
 
-            ColorAttachments = new List<ITexture2D>();
+            ColorAttachments = new List<ITexture>();
         }
 
         public void AddColorAttachment(ITexture2D texture, int index = 0)
@@ -38,6 +38,24 @@ namespace DevoidGPU.DX11
                 Height = texture.Height;
             }
         }
+
+        public void AddColorAttachment(ITextureCube texture, CubeFace faceIndex, int mipLevel, int index = 0)
+        {
+            if (texture == null) throw new ArgumentNullException(nameof(texture));
+            if (!texture.IsRenderTarget)
+                throw new InvalidOperationException("Texture is not render-target capable.");
+            while (ColorAttachments.Count <= index)
+                ColorAttachments.Add(null);
+
+            texture.SetMainFace(faceIndex, mipLevel);
+            ColorAttachments[index] = texture;
+            if (Width != 0 || Height != 0)
+            {
+                Width = texture.Width;
+                Height = texture.Height;
+            }
+        }
+
 
         public void AddDepthAttachment(ITexture2D texture)
         {
@@ -74,11 +92,14 @@ namespace DevoidGPU.DX11
 
         public void ClearColor(Vector4 color)
         {
-            foreach (DX11Texture2D tex in ColorAttachments.Cast<DX11Texture2D>())
+            foreach (ITexture tex in ColorAttachments)
             {
                 if (tex.IsRenderTarget)
                 {
-                    deviceContext.ClearRenderTargetView(tex.RenderTargetView, new SharpDX.Mathematics.Interop.RawColor4(color.X, color.Y, color.Z, color.W));
+                    if (tex is DX11Texture2D tex2D)
+                        deviceContext.ClearRenderTargetView(tex2D.RenderTargetView, new SharpDX.Mathematics.Interop.RawColor4(color.X, color.Y, color.Z, color.W));
+                    if (tex is DX11TextureCube texCube)
+                        deviceContext.ClearRenderTargetView(texCube.RenderTargetView, new SharpDX.Mathematics.Interop.RawColor4(color.X, color.Y, color.Z, color.W));
                 }
             }
         }

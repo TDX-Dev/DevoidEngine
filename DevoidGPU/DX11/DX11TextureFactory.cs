@@ -20,11 +20,17 @@ namespace DevoidGPU.DX11
 
         public ITexture CreateTexture(TextureDescription description)
         {
-            if (description.Type == TextureType.Texture2D)
+            switch (description.Type)
             {
-                return CreateTexture2D(description);
+                case TextureType.Texture2D:
+                    return CreateTexture2D(description);
+                    break;
+                case TextureType.TextureCube:
+                    return CreateTextureCube(description);
+                    break;
+                default:
+                    throw new NotImplementedException("RHI Backend does not implement switch case for other texture types: " + description.Type.ToString());
             }
-            throw new NotImplementedException("RHI Backend does not implement switch case for other texture types: " + description.Type.ToString());
         }
 
         public ITexture3D CreateTexture3D()
@@ -32,9 +38,11 @@ namespace DevoidGPU.DX11
             throw new NotImplementedException();
         }
 
-        public ITextureCube CreateTextureCube()
+        public ITextureCube CreateTextureCube(TextureDescription description)
         {
-            throw new NotImplementedException();
+            DX11TextureCube texture = new DX11TextureCube(device, deviceContext, description);
+            texture.Create();
+            return texture;
         }
     }
 }

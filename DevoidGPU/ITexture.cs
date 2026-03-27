@@ -29,5 +29,9 @@
         void SetData<T>(T[] data) where T : unmanaged;
     }
     public interface ITexture3D : ITexture { }
-    public interface ITextureCube : ITexture { }
+    public interface ITextureCube : ITexture
+    {
+        void SetData(CubeFace face, byte[] data);
+        void SetMainFace(CubeFace face, int mipLevel = 0);
+    }
 }

@@ -8,7 +8,7 @@ using Device = SharpDX.Direct3D11.Device;
 
 namespace DevoidGPU.DX11
 {
-    internal class DX11Texture2D : ITexture2D
+    internal class DX11Texture2D : IDX11Texture, ITexture2D
     {
         private IntPtr handle;
 

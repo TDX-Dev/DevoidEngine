@@ -35,6 +35,7 @@ namespace DevoidGPU
         public void BindTexture(ITexture texture, int slot, ShaderStage stage);
         public void BindTextureMutable(ITexture texture, int slot);
         public void BindFramebuffer(IFramebuffer fb);
+        public void UnbindFramebuffer();
 
         // Optionally move this to its own factory when similar items are added.
         IInputLayout CreateInputLayout(VertexInfo vertexInfo, IShader vertexShader);
