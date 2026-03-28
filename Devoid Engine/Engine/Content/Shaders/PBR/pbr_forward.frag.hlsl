@@ -148,7 +148,7 @@ float4 PSMain(PSInput input) : SV_TARGET
     
     float3 albedoTex = MAT_AlbedoMap.Sample(MAT_AlbedoSampler, uv).rgb;
     //albedoTex = pow(albedoTex, 2.2); // sRGB → linear
-    float metallicTex = MAT_MetallicMap.Sample(MAT_RoughnessSampler, uv).b;
+    float metallicTex = MAT_MetallicMap.Sample(MAT_MetallicSampler, uv).b;
     float roughnessTex = MAT_RoughnessMap.Sample(MAT_RoughnessSampler, uv).g;
     float aoTex = MAT_AOMap.Sample(MAT_AOSampler, uv).r;
     float3 emissiveTex = MAT_EmissiveMap.Sample(MAT_EmissiveSampler, uv).rgb;

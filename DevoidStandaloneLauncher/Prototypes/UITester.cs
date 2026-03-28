@@ -19,10 +19,10 @@ namespace DevoidStandaloneLauncher.Prototypes
         Mesh testRender;
 
         //string levelPath = "D:/Programming/Devoid Engine/DevoidStandaloneLauncher/LauncherContents/crt.fbx";
-        string levelPath = "C:\\Users\\maari\\Downloads\\service_pistol_2k.gltf\\service_pistol_2k.fbx";
+        //string levelPath = "C:\\Users\\maari\\Downloads\\service_pistol_2k.gltf\\service_pistol_2k.fbx";
+        string levelPath = "D:/Programming/Devoid Engine/DevoidStandaloneLauncher/LauncherContents/service_pistol_2k.fbx";
         public override void OnInit()
         {
-            return;
             Input.Map.Bind("LookX", new InputBinding()
             {
                 DeviceType = InputDeviceType.Mouse,
@@ -105,7 +105,7 @@ namespace DevoidStandaloneLauncher.Prototypes
 
             scene.Play(true);
 
-            PBRSpheres.SpawnSphereGrid(scene, new Vector3(0, 0, 5));
+            PBRSpheres.SpawnSphereGrid(scene, new Vector3(0, 5, 5));
 
             if (levelPath != "")
             {

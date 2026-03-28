@@ -3,6 +3,7 @@ using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.UI.Nodes;
 using DevoidEngine.Engine.UI.Text;
 using DevoidEngine.Engine.Utilities;
+using System.Numerics;
 
 namespace DevoidEngine.Engine.Content.Scenes
 {
@@ -46,9 +47,16 @@ namespace DevoidEngine.Engine.Content.Scenes
 
             root1.Add(new LabelNode($"Currently Loading: {loadingName}", font, 16f));
 
+            root.Add(new ContainerNode()
+            {
+                ParticipatesInLayout = false,
+                Color = new Vector4(0,0,0,1),
+                Size = Screen.Size,
+            });
+
             root.Add(new BoxNode()
             {
-                Size = Screen.Size * 0.25f,
+                Size = Screen.Size * 0.35f,
                 Texture = Helper.LoadImageAsTex("Engine/Content/Textures/DevoidLogo.png", DevoidGPU.TextureFilter.Linear)
             });
 

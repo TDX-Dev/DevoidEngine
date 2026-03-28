@@ -114,6 +114,17 @@ namespace DevoidEngine.Engine.UI.Nodes
         }
 
         public IReadOnlyList<UINode> Children => _children;
+
+        public virtual void OnMouseEnter() { }
+        public virtual void OnMouseLeave() { }
+
+        public virtual void OnMouseDown() { }
+        public virtual void OnMouseUp() { }
+
+        public virtual void OnClick() { }
+
+        public virtual void OnFocus() { }
+        public virtual void OnBlur() { }
     }
 
 }

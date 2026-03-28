@@ -414,6 +414,8 @@ namespace DevoidStandaloneLauncher.Utils
                 devoidMaterial.SetFloat("Roughness", 0.5f);
             }
 
+
+
             //Console.WriteLine(assimpMat.BumpScaling);
 
             //if (assimpMat.HasColorSpecular)
@@ -523,6 +525,7 @@ namespace DevoidStandaloneLauncher.Utils
             }
 
             SetWrap(slot.WrapModeU, slot.WrapModeV, tex);
+
 
             // 🔥 STORE IN CACHE
             textureCache[fullPath] = tex;

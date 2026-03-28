@@ -17,7 +17,7 @@ namespace DevoidEngine.Engine.Rendering
         public Vector3 Up { get; private set; } = Vector3.UnitY;
         public Vector3 Right { get; private set; } = Vector3.UnitX;
 
-        public float NearClip { get; set; } = 0.1f;
+        public float NearClip { get; set; } = 0.01f;
         public float FarClip { get; set; } = 1000f;
         public float FovY { get; set; } = MathF.PI / 3f; // default 60°
         public Vector4 ClearColor { get; private set; } = Vector4.One;

@@ -1,4 +1,5 @@
 ﻿using DevoidEngine.Engine.Core;
+using DevoidEngine.Engine.UI;
 using DevoidEngine.Engine.Utilities;
 using SharpFont;
 using System.Runtime.CompilerServices;
@@ -72,6 +73,9 @@ namespace DevoidEngine.Engine.Rendering
             Renderer.SetupCamera(ctx.cameraData);
             Renderer.ExecuteDrawList(ctx.renderItems3D, renderStateOverride);
 
+            Renderer.SetupCamera(UISystem.ScreenData);
+            Renderer.ExecuteDrawList(ctx.renderItemsUI, UISystem.RenderState);
+
 
             return finalOutputBuffer;
         }
@@ -88,9 +92,9 @@ namespace DevoidEngine.Engine.Rendering
 
         void UploadLights(CameraRenderContext ctx)
         {
-            pointLightBuffer.SetData(ctx.pointLights.ToArray(), 0);
+            // Use the existing List overload instead of .ToArray()
+            pointLightBuffer.SetData(ctx.pointLights, ctx.pointLights.Count, 0);
             pointLightBuffer.Bind(RenderBindConstants.PointLightBufferBindSlot, DevoidGPU.ShaderStage.Fragment);
-
         }
 
         public void Resize(int width, int height)
