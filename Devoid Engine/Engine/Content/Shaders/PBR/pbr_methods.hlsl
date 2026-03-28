@@ -46,6 +46,17 @@ float GeometrySmith(float3 N, float3 V, float3 L, float roughness)
 //    return 0.5 / max(GGXV + GGXL, 0.00001);
 //}
 
+float V_SmithGGXCorrelatedFast(float NoV, float NoL, float roughness)
+{
+    float a2 = roughness * roughness;
+    a2 *= a2;
+
+    float GGXV = NoL * sqrt(NoV * NoV * (1.0 - a2) + a2);
+    float GGXL = NoV * sqrt(NoL * NoL * (1.0 - a2) + a2);
+
+    return 0.5 / (GGXV + GGXL);
+}
+
 float V_SmithGGXCorrelatedFast(float N, float V, float L, float roughness)
 {
     float NdotV = max(dot(N, V), 0.0);
@@ -54,14 +65,6 @@ float V_SmithGGXCorrelatedFast(float N, float V, float L, float roughness)
     float a = roughness;
     float GGXV = NdotL * (NdotV * (1.0 - a) + a);
     float GGXL = NdotV * (NdotL * (1.0 - a) + a);
-    return 0.5 / (GGXV + GGXL);
-}
-
-float V_SmithGGXCorrelatedFast(float NoV, float NoL, float roughness)
-{
-    float a = roughness;
-    float GGXV = NoL * (NoV * (1.0 - a) + a);
-    float GGXL = NoV * (NoL * (1.0 - a) + a);
     return 0.5 / (GGXV + GGXL);
 }
 

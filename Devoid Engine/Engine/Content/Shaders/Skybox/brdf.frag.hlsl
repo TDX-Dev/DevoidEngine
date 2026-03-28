@@ -10,7 +10,7 @@
     float3 WorldPos : TEXCOORD3;
 };
 
-#include "../PBR/pbr_methods.hlsl"
+static const float PI = 3.14159265359;
 
 // --- Hammersley ---
 float RadicalInverse_VdC(uint bits)
@@ -54,6 +54,25 @@ float3 ImportanceSampleGGX(float2 Xi, float3 N, float roughness)
     return normalize(sampleVec);
 }
 
+// --- Geometry term (Schlick-GGX) ---
+float GeometrySchlickGGX(float NdotV, float roughness)
+{
+    float a = roughness;
+    float k = (a * a) / 2.0;
+
+    float denom = NdotV * (1.0 - k) + k;
+    return NdotV / denom;
+}
+
+float GeometrySmith(float3 N, float3 V, float3 L, float roughness)
+{
+    float NdotV = saturate(dot(N, V));
+    float NdotL = saturate(dot(N, L));
+    float ggx1 = GeometrySchlickGGX(NdotV, roughness);
+    float ggx2 = GeometrySchlickGGX(NdotL, roughness);
+    return ggx1 * ggx2;
+}
+
 float2 IntegrateBRDF(float NdotV, float roughness)
 {
     float3 V;
@@ -80,10 +99,9 @@ float2 IntegrateBRDF(float NdotV, float roughness)
 
         if (NdotL > 0.0)
         {
-            float Vis = V_SmithGGXCorrelatedFast(NdotV, NdotL, roughness);
-
-            float G_Vis = Vis * VdotH;
-
+            float G = GeometrySmith(N, V, L, roughness);
+            float denom = max(NdotH * NdotV, 0.00001);
+            float G_Vis = (G * VdotH) / denom;
             float Fc = pow(1.0 - VdotH, 5.0);
 
             A += (1.0 - Fc) * G_Vis;
@@ -99,8 +117,13 @@ float2 IntegrateBRDF(float NdotV, float roughness)
 
 float4 PSMain(PSInput input) : SV_Target
 {
-    float NdotV = input.UV0.x;
-    float roughness = input.UV0.y;
+float resolution = 512.0; // or whatever your LUT size is
+
+float2 uv = input.UV0;
+uv = (floor(uv * resolution) + 0.5) / resolution;
+
+float NdotV = uv.x;
+float roughness = uv.y;
 
     float2 brdf = IntegrateBRDF(NdotV, roughness);
 

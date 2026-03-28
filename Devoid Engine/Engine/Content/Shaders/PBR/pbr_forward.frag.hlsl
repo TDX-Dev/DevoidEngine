@@ -101,7 +101,7 @@ float3 ComputeIBL(
     float NdotV = max(dot(N, V), 0.0);
 
     // Fresnel (roughness-aware)
-    float3 F = FresnelSchlick(NdotV, F0);
+    float3 F = FresnelSchlickRoughness(NdotV, F0, roughness);
 
     float3 kS = F;
     float3 kD = (1.0 - kS) * (1.0 - metallic);
@@ -117,8 +117,7 @@ float3 ComputeIBL(
     // --------------------
     float3 R = normalize(reflect(-V, N));
 
-    float MAX_MIP = 4.0;
-
+    float MAX_MIP = 4.0; // PREF_MIPS - 1
     float3 prefiltered = ENV_Prefilter.SampleLevel(
         ENV_Prefilter_Sampler,
         R,
@@ -130,12 +129,11 @@ float3 ComputeIBL(
         float2(NdotV, roughness)
     ).rg;
 
-    float energyFactor = 1.0 / max(brdf.y, 0.001);
-    float3 energyCompensation = 1.0 + F0 * (energyFactor - 1.0);
-
     float3 specular = prefiltered * (F * brdf.x + brdf.y);
-    specular *= energyCompensation;
 
+    // --------------------
+    // Final ambient
+    // --------------------
     return (kD * diffuse + specular) * ao;
 }
 
@@ -169,7 +167,7 @@ float4 PSMain(PSInput input) : SV_TARGET
     float3 F0 = lerp(float3(0.04, 0.04, 0.04), albedo, metallic);
     float3 Lo = 0;
     
-    for (uint p = 0; p < 0; ++p)
+    for (uint p = 0; p < pointLightCount; ++p)
     {
         if (PointLights[p].position.w == 0)
             continue;
@@ -188,22 +186,13 @@ float4 PSMain(PSInput input) : SV_TARGET
         float3 lightColor = PointLights[p].color.rgb * PointLights[p].color.w;
         float3 radiance = lightColor * attenuation;
 
-        //float NDF = DistributionGGX(N, H, roughness);
-        //float G = GeometrySmith(N, V, L, roughness);
-        //float3 F = FresnelSchlick(max(dot(H, V), 0.0), F0);
+        float NDF = DistributionGGX(N, H, roughness);
+        float G = GeometrySmith(N, V, L, roughness);
+        float3 F = FresnelSchlick(max(dot(H, V), 0.0), F0);
 
-        //float3 numerator = NDF * G * F;
-        //float denom = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001;
-        //float3 specular = numerator / denom;
-        
-        
-        float D = DistributionGGX(N, H, roughness);
-        float Vis = V_SmithGGXCorrelatedFast(N, V, L, roughness);
-        
-        float NdotV = max(dot(N, V), 0.0);
-        float3 F = FresnelSchlick(NdotV, F0);
-
-        float3 specular = D * Vis * F;
+        float3 numerator = NDF * G * F;
+        float denom = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001;
+        float3 specular = numerator / denom;
 
         float3 kS = F;
         float3 kD = (1.0 - kS) * (1.0 - metallic);
