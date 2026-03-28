@@ -40,8 +40,30 @@ namespace DevoidEngine.Engine.Rendering
             Renderer.GraphicsDevice.Draw(mesh.GetVertices().Length, 0);
 
             Renderer.GraphicsDevice.UnbindAllShaderResources();
-
         }
+
+        public static void RenderToScreen(TextureCube texture, CubeFace face = CubeFace.PositiveX, int mipLevel = 0)
+        {
+            if (texture == null) return;
+            Renderer.GraphicsDevice.MainSurface.Bind();
+
+            Renderer.GraphicsDevice.SetRasterizerState(CullMode.None);
+            Renderer.GraphicsDevice.SetPrimitiveType(PrimitiveType.Triangles);
+
+            layout.Bind();
+            mesh.Bind();
+
+            ShaderLibrary.GetShader("Screen/RENDER_SCREEN").Use();
+
+            texture.BindSampler(0);
+            texture.Bind(0);
+
+            Renderer.GraphicsDevice.Draw(mesh.GetVertices().Length, 0);
+
+            Renderer.GraphicsDevice.UnbindAllShaderResources();
+        }
+
+
 
         public static void RenderToBuffer(Texture2D texture, Framebuffer destination)
         {
@@ -63,7 +85,6 @@ namespace DevoidEngine.Engine.Rendering
             Renderer.GraphicsDevice.Draw(mesh.GetVertices().Length, 0);
 
             Renderer.GraphicsDevice.UnbindAllShaderResources();
-
         }
 
         public static void RenderToBuffer(MaterialInstance material, Framebuffer destination)

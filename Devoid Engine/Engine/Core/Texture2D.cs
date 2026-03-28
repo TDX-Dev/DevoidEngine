@@ -103,12 +103,12 @@ namespace DevoidEngine.Engine.Core
             return (ITexture2D)Renderer.ResourceManager.TextureManager.GetDeviceTexture(_textureInternal);
         }
 
-        public TextureHandle GetRendererHandle()
+        public override TextureHandle GetRendererHandle()
         {
             return _textureInternal;
         }
 
-        public void Resize(int width, int height)
+        public override void Resize(int width, int height)
         {
             Renderer.ResourceManager.TextureManager.DeleteTexture(_textureInternal);
 

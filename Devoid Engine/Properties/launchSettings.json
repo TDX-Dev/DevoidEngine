@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "DevoidEngine": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

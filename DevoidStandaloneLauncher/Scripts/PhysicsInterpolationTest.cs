@@ -12,6 +12,8 @@ namespace DevoidStandaloneLauncher.Scripts
         public override string Type => nameof(PhysicsInterpolationTest);
 
         public bool isPhysicsMovement = false;
+        public float speed = 5;
+        public float amplitude = 5;
 
         public override void OnStart()
         {
@@ -24,7 +26,7 @@ namespace DevoidStandaloneLauncher.Scripts
             {
                 timer += dt;
                 var pos = gameObject.Transform.Position;
-                pos.X = (float)Math.Sin(timer * 5) * 5;
+                pos.X = (float)Math.Sin(timer * speed) * amplitude;
                 gameObject.Transform.Position = pos;
             }
         }
@@ -35,7 +37,7 @@ namespace DevoidStandaloneLauncher.Scripts
             {
                 timer += dt;
                 var pos = gameObject.Transform.Position;
-                pos.X = (float)Math.Sin(timer * 5) * 5;
+                pos.X = (float)Math.Sin(timer * speed) * amplitude;
                 gameObject.Transform.Position = pos;
             }
         }

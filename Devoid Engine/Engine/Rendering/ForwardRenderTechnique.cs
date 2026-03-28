@@ -64,6 +64,8 @@ namespace DevoidEngine.Engine.Rendering
 
             Renderer.GraphicsDevice.SetViewport(0, 0, (int)Screen.Size.X, (int)Screen.Size.Y);
 
+            Renderer.SkyboxRenderer.Render(ctx);
+
             UploadLights(ctx);
             UploadSceneData(ctx);
 

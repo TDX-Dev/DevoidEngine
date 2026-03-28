@@ -41,6 +41,16 @@ namespace DevoidEngine.Engine.Rendering.GPUResource
             });
         }
 
+        public void UploadTextureDataCube(TextureHandle handle, CubeFace face, byte[] data)
+        {
+
+            RenderThread.Enqueue(() =>
+            {
+                ITextureCube textureInternal = (ITextureCube)_textures[handle.Id];
+                textureInternal.SetData(face, data);
+            });
+        }
+
         public void GenerateMipmaps(TextureHandle handle)
         {
             RenderThread.Enqueue(() =>

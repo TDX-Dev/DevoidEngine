@@ -1,5 +1,6 @@
 ﻿using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.Rendering.GPUResource;
+using DevoidGPU;
 using System.Numerics;
 
 namespace DevoidEngine.Engine.Rendering
@@ -8,13 +9,13 @@ namespace DevoidEngine.Engine.Rendering
     {
         FrameBufferHandle _frameBuffer;
 
-        List<Texture2D> RenderTextures;
+        List<Texture> RenderTextures;
         Texture2D DepthTexture;
 
         public Framebuffer()
         {
             _frameBuffer = Renderer.ResourceManager.FramebufferManager.CreateFramebuffer();
-            RenderTextures = new List<Texture2D>();
+            RenderTextures = new List<Texture>();
 
         }
 
@@ -38,7 +39,7 @@ namespace DevoidEngine.Engine.Rendering
             Renderer.ResourceManager.FramebufferManager.ClearFramebufferDepth(_frameBuffer, 1);
         }
 
-        public Texture2D GetRenderTexture(int index)
+        public Texture GetRenderTexture(int index)
         {
             return RenderTextures[index];
         }
@@ -70,9 +71,28 @@ namespace DevoidEngine.Engine.Rendering
             RenderTextures.Add(texture);
         }
 
+        public void AttachRenderTexture(TextureCube texture, CubeFace face, int mip)
+        {
+            Renderer.ResourceManager.FramebufferManager.AttachRenderTextureCube(_frameBuffer, texture.GetRendererHandle(), face, mip);
+            RenderTextures.Add(texture);
+        }
+
         public void SetRenderTexture(Texture2D texture, int index = 0)
         {
             Renderer.ResourceManager.FramebufferManager.AttachRenderTexture(_frameBuffer, texture.GetRendererHandle(), index);
+            if (index >= RenderTextures.Count)
+            {
+                RenderTextures.Add(texture);
+            }
+            else
+            {
+                RenderTextures[index] = texture;
+            }
+        }
+
+        public void SetRenderTexture(TextureCube texture, CubeFace face, int mip, int index = 0)
+        {
+            Renderer.ResourceManager.FramebufferManager.AttachRenderTextureCube(_frameBuffer, texture.GetRendererHandle(), face, mip, index);
             if (index >= RenderTextures.Count)
             {
                 RenderTextures.Add(texture);

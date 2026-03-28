@@ -62,6 +62,33 @@ namespace DevoidEngine.Engine.Utilities
             return texture;
         }
 
+        public static Texture2D LoadHDRI(string file)
+        {
+            Image image = new Image();
+            image.LoadHDRI(file);
+
+            Texture2D texture = new Texture2D(new TextureDescription()
+            {
+                Width = image.Width,
+                Height = image.Height,
+                Format = TextureFormat.RGBA32_Float,
+                GenerateMipmaps = false,
+                MipLevels = 1,
+                IsDepthStencil = false,
+                IsRenderTarget = false,
+                IsMutable = false
+            });
+
+            texture.SetWrapMode(TextureWrapMode.ClampToEdge, TextureWrapMode.ClampToEdge);
+            texture.SetFilter(TextureFilter.Linear, TextureFilter.Linear);
+
+            texture.SetData<float>(image.PixelHP);
+
+            image.PixelHP = null;
+
+            return texture;
+        }
+
         // ------------------------------------------
         // Data textures (Roughness / Metallic / AO)
         // NO gamma conversion

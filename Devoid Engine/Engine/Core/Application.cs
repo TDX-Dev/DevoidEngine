@@ -100,6 +100,15 @@ namespace DevoidEngine.Engine.Core
 
         private void HandleWindowResize(int width, int height)
         {
+            if (width <= 0 || height <= 0) return;
+
+            // 1. Update global screen size
+            Screen.Size = new Vector2(width, height);
+
+            // 2. Resize renderer / swapchain
+            Renderer.Resize(width, height);
+
+            // 4. Notify layers
             layerHandler.ResizeLayers(width, height);
         }
 

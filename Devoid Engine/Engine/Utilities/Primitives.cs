@@ -16,6 +16,58 @@ namespace DevoidEngine.Engine.Utilities
             }
         }
 
+        public static Vertex[] GetSphereVertices(int latSegments = 32, int lonSegments = 32, float radius = 0.5f)
+        {
+            List<Vertex> vertices = new List<Vertex>();
+
+            for (int lat = 0; lat < latSegments; lat++)
+            {
+                float theta0 = MathF.PI * lat / latSegments;
+                float theta1 = MathF.PI * (lat + 1) / latSegments;
+
+                for (int lon = 0; lon < lonSegments; lon++)
+                {
+                    float phi0 = 2 * MathF.PI * lon / lonSegments;
+                    float phi1 = 2 * MathF.PI * (lon + 1) / lonSegments;
+
+                    Vector3 p00 = Sphere(theta0, phi0) * radius;
+                    Vector3 p10 = Sphere(theta1, phi0) * radius;
+                    Vector3 p01 = Sphere(theta0, phi1) * radius;
+                    Vector3 p11 = Sphere(theta1, phi1) * radius;
+
+                    Vector3 n00 = Vector3.Normalize(p00);
+                    Vector3 n10 = Vector3.Normalize(p10);
+                    Vector3 n01 = Vector3.Normalize(p01);
+                    Vector3 n11 = Vector3.Normalize(p11);
+
+                    Vector2 uv00 = new Vector2(phi0 / (2 * MathF.PI), theta0 / MathF.PI);
+                    Vector2 uv10 = new Vector2(phi0 / (2 * MathF.PI), theta1 / MathF.PI);
+                    Vector2 uv01 = new Vector2(phi1 / (2 * MathF.PI), theta0 / MathF.PI);
+                    Vector2 uv11 = new Vector2(phi1 / (2 * MathF.PI), theta1 / MathF.PI);
+
+                    // Triangle 1
+                    vertices.Add(new Vertex(p00, n00, uv00));
+                    vertices.Add(new Vertex(p10, n10, uv10));
+                    vertices.Add(new Vertex(p11, n11, uv11));
+
+                    // Triangle 2
+                    vertices.Add(new Vertex(p00, n00, uv00));
+                    vertices.Add(new Vertex(p11, n11, uv11));
+                    vertices.Add(new Vertex(p01, n01, uv01));
+                }
+            }
+
+            return vertices.ToArray();
+        }
+
+        private static Vector3 Sphere(float theta, float phi)
+        {
+            float x = MathF.Sin(theta) * MathF.Cos(phi);
+            float y = MathF.Cos(theta);
+            float z = MathF.Sin(theta) * MathF.Sin(phi);
+            return new Vector3(x, y, z);
+        }
+
         public static Vertex[] GetScreenQuadVertex()
         {
             return new Vertex[]

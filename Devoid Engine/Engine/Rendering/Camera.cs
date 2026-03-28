@@ -31,12 +31,16 @@ namespace DevoidEngine.Engine.Rendering
         public CameraData GetCameraData()
         {
             Matrix4x4.Invert(_projectionMatrix, out Matrix4x4 invProjection);
+            Matrix4x4.Invert(_viewMatrix, out Matrix4x4 invView);
+            Matrix4x4.Invert(_viewMatrix * _projectionMatrix, out Matrix4x4 invViewProjection);
 
             return new CameraData
             {
                 View = _viewMatrix,
                 Projection = _projectionMatrix,
                 InverseProjection = invProjection,
+                InverseView = invView,
+                InverseViewProjection = invViewProjection,
                 Position = Position,
                 NearClip = NearClip,
                 FarClip = FarClip,

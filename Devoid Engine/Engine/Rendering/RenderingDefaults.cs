@@ -10,11 +10,10 @@ namespace DevoidEngine.Engine.Rendering
         {
             DefaultMaterial = new Material(ShaderLibrary.GetShader("PBR/ForwardPBR"));
             DefaultMaterial.SetVector4("Albedo", new System.Numerics.Vector4(1, 1, 1, 1));
-            DefaultMaterial.SetFloat("Roughness", 1f);
+            //DefaultMaterial.SetFloat("Roughness", 1f);
+            //DefaultMaterial.SetFloat("Metallic", 0f);
             DefaultMaterial.SetFloat("AO", 1);
-            //DefaultMaterial.SetVector3("EmissiveColor", new System.Numerics.Vector3(1, 1, 1));
-            //DefaultMaterial.SetFloat("EmissiveStrength", 1);
-            DefaultMaterial.SetVector3("SpecularColor", new System.Numerics.Vector3(0.04f));
+            Renderer.SkyboxRenderer.BindIBL(DefaultMaterial);
         }
 
         public static MaterialInstance GetMaterial() => new MaterialInstance(DefaultMaterial);

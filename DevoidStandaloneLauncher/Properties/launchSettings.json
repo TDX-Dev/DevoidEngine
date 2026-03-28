@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "DevoidStandaloneLauncher": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

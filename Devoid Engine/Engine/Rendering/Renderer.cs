@@ -16,6 +16,7 @@ namespace DevoidEngine.Engine.Rendering
     {
         public static IGraphicsDevice GraphicsDevice { get; internal set; }
         public static IRenderTechnique ActiveRenderTechnique;
+        public static SkyboxRenderer SkyboxRenderer;
         public static PostProcessor PostProcessor;
 
         internal static ResourceManager ResourceManager = new ResourceManager();
@@ -36,7 +37,6 @@ namespace DevoidEngine.Engine.Rendering
 
         public unsafe static void Initialize(int width, int height)
         {
-            RenderingDefaults.Initialize();
 
             meshRenderData = new MeshRenderData();
             meshRenderDataBuffer = new UniformBuffer(sizeof(MeshRenderData));
@@ -48,10 +48,16 @@ namespace DevoidEngine.Engine.Rendering
 
             ActiveRenderTechnique?.Initialize(width, height);
 
+            SkyboxRenderer = new SkyboxRenderer();
+            SkyboxRenderer.Initialize();
+
+
+            RenderingDefaults.Initialize();
+
             PostProcessor = new PostProcessor();
             var bloomPass = new BloomPass(width, height);
             var tonemapPass = new TonemapPass(width, height);
-            PostProcessor.AddPass(bloomPass);
+            //PostProcessor.AddPass(bloomPass);
             PostProcessor.AddPass(tonemapPass);
         }
 
@@ -63,7 +69,7 @@ namespace DevoidEngine.Engine.Rendering
             Renderer.GraphicsDevice.UnbindAllShaderResources();
             //DebugRenderSystem.Render(ctx.cameraData, activeFrameBuffer);
 
-            var Output = activeFrameBuffer.GetRenderTexture(0);
+            var Output = (Texture2D)activeFrameBuffer.GetRenderTexture(0);
             Texture2D finalColor = PostProcessor.Run(Output);
             RenderAPI.RenderToBuffer(finalColor, ctx.cameraTargetSurface);
         }
@@ -133,6 +139,13 @@ namespace DevoidEngine.Engine.Rendering
                 currentMesh.Draw();
             }
         }
+
+        public static void Resize(int width, int height)
+        {
+            GraphicsDevice.MainSurface.Resize(width, height);
+            ActiveRenderTechnique?.Resize(width, height);
+            PostProcessor.Resize(width, height);
+        }
         static void UpdatePerObjectData(Matrix4x4 model)
         {
             Matrix4x4.Invert(model, out var ModelMatrixInv);
@@ -156,7 +169,7 @@ namespace DevoidEngine.Engine.Rendering
                     (int)rect.X, (int)rect.Y,
                     (int)rect.Z, (int)rect.W);
         }
-        static void ApplyRenderState(RenderState renderState)
+        public static void ApplyRenderState(RenderState renderState)
         {
             Renderer.GraphicsDevice.SetBlendState(renderState.BlendMode);
             Renderer.GraphicsDevice.SetDepthState(renderState.DepthTest, renderState.DepthWrite);

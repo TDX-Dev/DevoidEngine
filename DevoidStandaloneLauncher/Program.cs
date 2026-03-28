@@ -30,7 +30,7 @@ namespace DevoidStandaloneLauncher
             Application application = new Application();
             application.Initialize(applicationSpecification);
             application.TargetFrameRate = 10;
-            EngineSingleton.Instance.UseInterpolation = true;
+            EngineSingleton.Instance.UseInterpolation = false;
             application.AddLayer(new PrototypeLoader());
             application.Run();
         }

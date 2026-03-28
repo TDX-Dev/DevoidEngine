@@ -27,19 +27,31 @@ namespace DevoidEngine.Engine.Utilities
                 throw new Exception("Unable to identify image format.");
         }
 
-        public void LoadHDRI(string path, bool directPath = false)
+        public void LoadHDRI(string path)
         {
-            using (var stream = File.OpenRead(path))
+            using var stream = File.OpenRead(path);
+
+            var result = ImageResultFloat.FromStream(stream, ColorComponents.RedGreenBlue);
+
+            Width = result.Width;
+            Height = result.Height;
+
+            float[] rgb = result.Data;
+
+            // 🔥 convert RGB → RGBA
+            float[] rgba = new float[Width * Height * 4];
+
+            for (int i = 0, j = 0; i < rgb.Length; i += 3, j += 4)
             {
-                var imageResult = ImageResultFloat.FromStream(stream, ColorComponents.RedGreenBlue);
-
-                this.Width = imageResult.Width;
-                this.Height = imageResult.Height;
-                this.PixelHP = imageResult.Data;
-                this.IsHDR = true;
-
-                this.Pixels = null;
+                rgba[j + 0] = rgb[i + 0];
+                rgba[j + 1] = rgb[i + 1];
+                rgba[j + 2] = rgb[i + 2];
+                rgba[j + 3] = 1.0f; // alpha
             }
+
+            PixelHP = rgba;
+            Pixels = null;
+            IsHDR = true;
         }
 
         public void Load(byte[] data)

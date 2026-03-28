@@ -50,6 +50,8 @@ namespace DevoidEngine.Engine.Core
             Renderer.ResourceManager.SamplerManager.BindSampler(_sampler, slot);
         }
 
+        public abstract TextureHandle GetRendererHandle();
+        public abstract void Resize(int width, int height);
         protected abstract void DisposeTexture();
 
         public void Dispose()

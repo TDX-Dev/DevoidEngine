@@ -63,16 +63,12 @@ namespace DevoidStandaloneLauncher
             {
                 GamePrototype.OnPostRender();
             }
-            Texture2D renderOutput = CurrentScene?.GetDefaultCamera3D()?.Camera?.RenderTarget?.GetRenderTexture(0);
+            Texture2D renderOutput = (Texture2D)CurrentScene?.GetDefaultCamera3D()?.Camera?.RenderTarget?.GetRenderTexture(0);
             RenderAPI.RenderToScreen(renderOutput);
         }
 
         public override void OnResize(int width, int height)
         {
-
-            Screen.Size = new System.Numerics.Vector2(width, height);
-            Renderer.GraphicsDevice.SetViewport(0, 0, width, height);
-
             CurrentScene?.ResizeCameras(width, height);
             if (prototypeLoaded)
             {

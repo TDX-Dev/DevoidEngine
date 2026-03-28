@@ -41,6 +41,19 @@ namespace DevoidEngine.Engine.Rendering.GPUResource
             });
         }
 
+        public void AttachRenderTextureCube(FrameBufferHandle handle, TextureHandle texture, CubeFace faceIndex, int mipLevel = 0, int index = 0)
+        {
+            RenderThread.Enqueue(() =>
+            {
+                _frameBuffers[handle.Id].AddColorAttachment(
+                    (ITextureCube)Renderer.ResourceManager.TextureManager.GetDeviceTexture(texture),
+                    faceIndex,
+                    mipLevel,
+                    index
+                );
+            });
+        }
+
         public void AttachDepthTexture(FrameBufferHandle handle, TextureHandle texture)
         {
             RenderThread.Enqueue(() =>

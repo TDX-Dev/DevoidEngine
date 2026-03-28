@@ -54,14 +54,14 @@ namespace DevoidEngine.Engine.Core
 
             foreach (var tb in reflection.TextureBindings)
             {
-                if (!tb.Name.StartsWith("MAT_", StringComparison.Ordinal))
+                if (!(tb.Name.StartsWith("MAT_", StringComparison.Ordinal) ||
+                      tb.Name.StartsWith("ENV_", StringComparison.Ordinal)))
                     continue;
 
                 if (tb.ResourceType != ShaderResourceType.Texture2D)
                     continue;
 
                 textureBindings[tb.Name] = tb;
-
                 textures[tb.Name] = Texture2D.WhiteTexture;
             }
         }
