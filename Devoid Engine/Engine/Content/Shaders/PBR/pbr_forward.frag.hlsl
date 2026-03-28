@@ -65,6 +65,7 @@ SamplerState MAT_AOSampler : register(s4);
 SamplerState MAT_EmissiveSampler : register(s5);
 
 #include "./pbr_methods.hlsl"
+#include "../Skybox/skybox_constants.hlsl"
 
 float3 GetNormalFromMap(PSInput input)
 {
@@ -107,19 +108,17 @@ float3 ComputeIBL(
 
     // Diffuse IBL
     float3 irradiance = ENV_Irradiance.Sample(ENV_Irradiance_Sampler, N).rgb;
-    float3 diffuse = irradiance * albedo / PI;
+    float3 diffuse = irradiance * albedo;// / PI;
 
     // Specular IBL
     float3 R = normalize(reflect(-V, N));
     //R = normalize(lerp(R, N, roughness * roughness));
-
-    float MAX_MIP = 4.0;
     
     float alpha = max(roughness, 0.045);
     float3 prefiltered = ENV_Prefilter.SampleLevel(
         ENV_Prefilter_Sampler,
         R,
-        alpha * MAX_MIP
+        alpha * MAX_PREFILTER_MIP_LEVEL
     ).rgb;
 
     float2 brdf = ENV_BRDF.Sample(

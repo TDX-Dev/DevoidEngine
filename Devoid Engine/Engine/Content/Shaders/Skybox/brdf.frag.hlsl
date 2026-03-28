@@ -87,45 +87,6 @@ float2 IntegrateBRDF(float NdotV, float roughness)
     return 4.0 * float2(A, B) / SAMPLE_COUNT;
 }
 
-//float2 IntegrateBRDF(float NdotV, float roughness)
-//{
-//    float3 V;
-//    V.x = sqrt(1.0 - NdotV * NdotV);
-//    V.y = 0.0;
-//    V.z = NdotV;
-
-//    float3 N = float3(0.0, 0.0, 1.0);
-
-//    const uint SAMPLE_COUNT = 1024u;
-
-//    float A = 0.0;
-//    float B = 0.0;
-
-//    for (uint i = 0u; i < SAMPLE_COUNT; ++i)
-//    {
-//        float2 Xi = Hammersley(i, SAMPLE_COUNT);
-//        float3 H = ImportanceSampleGGX(Xi, N, roughness);
-//        float3 L = normalize(2.0 * dot(V, H) * H - V);
-
-//        float NoL = saturate(L.z);
-//        float NoH = saturate(H.z);
-//        float VoH = saturate(dot(V, H));
-
-//        if (NoL > 0.0)
-//        {
-//            float G = GeometrySmith(N, V, L, roughness);
-
-//            float G_Vis = (G * VoH) / max(NoH * NdotV, 1e-5);
-
-//            float Fc = pow(1.0 - VoH, 5.0);
-
-//            A += (1.0 - Fc) * G_Vis;
-//            B += Fc * G_Vis;
-//        }
-//    }
-
-//    return float2(A, B) / SAMPLE_COUNT;
-//}
 
 float4 PSMain(PSInput input) : SV_Target
 {

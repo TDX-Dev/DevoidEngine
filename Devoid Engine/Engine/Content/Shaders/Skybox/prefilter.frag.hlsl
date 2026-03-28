@@ -17,8 +17,8 @@ cbuffer Material : register(b3)
 };
 
 static const float PI = 3.14159265359;
-static const float ENV_RESOLUTION = 1024.0;
-static const float MAX_MIP_LEVEL = 4.0;
+
+#include "./skybox_constants.hlsl"
 
 float DistributionGGX(float NdotH, float roughness)
 {
@@ -105,7 +105,7 @@ float4 PSMain(PSInput input) : SV_Target
 
             float mipLevel = Roughness == 0.0 ? 0.0 : 0.5 * log2(saSample / saTexel);
 
-            mipLevel = clamp(mipLevel, 0.0, MAX_MIP_LEVEL);
+            mipLevel = clamp(mipLevel, 0.0, MAX_PREFILTER_MIP_LEVEL);
 
             L.y = -L.y;
             

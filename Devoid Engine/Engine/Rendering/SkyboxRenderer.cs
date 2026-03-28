@@ -40,9 +40,9 @@ namespace DevoidEngine.Engine.Rendering
 
         private const int SKY_SIZE = 1024;
         private const int IRR_SIZE = 32;
-        private const int PREF_SIZE = 128;
+        private const int PREF_SIZE = 256;
         private const int BRDF_SIZE = 512;
-        private const int PREF_MIPS = 5;
+        private const int PREF_MIPS = 8;
 
         private RenderState skyboxRenderState;
 
@@ -123,8 +123,8 @@ namespace DevoidEngine.Engine.Rendering
 
             CreateTextures();
 
-            Texture2D monoStudio = Helper.LoadHDRI("Engine/Content/HDRIs/suburban_garden_4k.hdr");
-            SetPanorama(monoStudio);
+            //Texture2D monoStudio = Helper.LoadHDRI("Engine/Content/HDRIs/monochrome_studio_4k.hdr");
+            //SetPanorama(monoStudio);
         }
 
         public void SetPanorama(Texture2D hdr)

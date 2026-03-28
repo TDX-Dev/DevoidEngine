@@ -1,5 +1,7 @@
 ﻿using DevoidEngine.Engine.Components;
 using DevoidEngine.Engine.Core;
+using DevoidEngine.Engine.InputSystem;
+using DevoidEngine.Engine.InputSystem.InputDevices;
 using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.Utilities;
 using DevoidStandaloneLauncher.Scripts;
@@ -16,10 +18,68 @@ namespace DevoidStandaloneLauncher.Prototypes
 
         Mesh testRender;
 
-        string levelPath = "D:/Programming/Devoid Engine/DevoidStandaloneLauncher/LauncherContents/crt.fbx";
-
+        //string levelPath = "D:/Programming/Devoid Engine/DevoidStandaloneLauncher/LauncherContents/crt.fbx";
+        string levelPath = "C:\\Users\\maari\\Downloads\\service_pistol_2k.gltf\\service_pistol_2k.fbx";
         public override void OnInit()
         {
+            return;
+            Input.Map.Bind("LookX", new InputBinding()
+            {
+                DeviceType = InputDeviceType.Mouse,
+                Control = (ushort)MouseAxis.DeltaX,
+                isClamped = false
+            });
+
+            Input.Map.Bind("LookY", new InputBinding()
+            {
+                DeviceType = InputDeviceType.Mouse,
+                Control = (ushort)MouseAxis.DeltaY,
+                isClamped = false
+            });
+
+            Input.Map.Bind("Forward", new InputBinding()
+            {
+                DeviceType = InputDeviceType.Keyboard,
+                Control = (ushort)Keys.W
+            });
+
+            Input.Map.Bind("Backward", new InputBinding()
+            {
+                DeviceType = InputDeviceType.Keyboard,
+                Control = (ushort)Keys.S
+            });
+
+            Input.Map.Bind("Left", new InputBinding()
+            {
+                DeviceType = InputDeviceType.Keyboard,
+                Control = (ushort)Keys.A
+            });
+
+            Input.Map.Bind("Right", new InputBinding()
+            {
+                DeviceType = InputDeviceType.Keyboard,
+                Control = (ushort)Keys.D
+            });
+
+            Input.Map.Bind("Capture", new InputBinding()
+            {
+                DeviceType = InputDeviceType.Keyboard,
+                Control = (ushort)Keys.G
+            });
+
+            Input.Map.Bind("Up", new InputBinding()
+            {
+                DeviceType = InputDeviceType.Keyboard,
+                Control = (ushort)Keys.Space
+            });
+
+            Input.Map.Bind("Down", new InputBinding()
+            {
+                DeviceType = InputDeviceType.Keyboard,
+                Control = (ushort)Keys.LeftShift
+            });
+
+
             Console.WriteLine("Initialized");
             this.scene = new Scene();
             loader.CurrentScene = scene;
@@ -30,10 +90,10 @@ namespace DevoidStandaloneLauncher.Prototypes
 
 
 
-            camera = scene.AddGameObject("Camera");
-            CameraComponent3D cameraComponent = camera.AddComponent<CameraComponent3D>();
-            cameraComponent.IsDefault = true;
-            camera.Transform.Position = new System.Numerics.Vector3(0, 0, -10);
+            //camera = scene.AddGameObject("Camera");
+            //CameraComponent3D cameraComponent = camera.AddComponent<CameraComponent3D>();
+            //cameraComponent.IsDefault = true;
+            //camera.Transform.Position = new System.Numerics.Vector3(0, 0, -10);
             //camera.Transform.EulerAngles = new System.Numerics.Vector3(32, -47f, 0);
             //camera.Transform.EulerAngles = new System.Numerics.Vector3(-45, 0, 0);
 
@@ -45,6 +105,7 @@ namespace DevoidStandaloneLauncher.Prototypes
 
             scene.Play(true);
 
+            PBRSpheres.SpawnSphereGrid(scene, new Vector3(0, 0, 5));
 
             if (levelPath != "")
             {
@@ -55,9 +116,23 @@ namespace DevoidStandaloneLauncher.Prototypes
 
         void LoadDCC()
         {
+            LevelSpawnRegistry.Register("Player_Flycam", (assimpNode, assimpScene) =>
+            {
+                //Cursor.SetCursorState(CursorState.Grabbed);
+
+                GameObject camera = scene.AddGameObject("Camera");
+
+                camera.Transform.Position = Importer.GetTransform(assimpNode).Item1;
+                camera.Transform.Rotation = Importer.GetTransform(assimpNode).Item2;
+
+                camera.AddComponent<FreeCameraComponent>();
+                var camComponent = camera.AddComponent<CameraComponent3D>();
+                camComponent.IsDefault = true;
+
+            });
+
             LevelSpawnRegistry.RegisterFallBack((assimpNode, assimpScene) =>
             {
-                Console.WriteLine("Loading");
                 if (!assimpNode.HasMeshes)
                     return;
 

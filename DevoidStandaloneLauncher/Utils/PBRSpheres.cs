@@ -63,7 +63,7 @@ namespace DevoidStandaloneLauncher.Utils
             }
         }
 
-        public static void SpawnSphereGrid(Scene scene)
+        public static void SpawnSphereGrid(Scene scene, Vector3 offset)
         {
             Mesh testRender = new Mesh();
             testRender.SetVertices(Primitives.GetSphereVertices(128, 128, 0.75f));
@@ -83,7 +83,7 @@ namespace DevoidStandaloneLauncher.Utils
                         (j - half) * spacing,
                         (half - i) * spacing,
                         0
-                    );
+                    ) + offset;
 
                     MeshRenderer mr = sphereObject.AddComponent<MeshRenderer>();
 

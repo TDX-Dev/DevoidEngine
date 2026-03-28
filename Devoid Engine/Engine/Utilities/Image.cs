@@ -56,11 +56,13 @@ namespace DevoidEngine.Engine.Utilities
 
         public void Load(byte[] data)
         {
-            SixLabors.ImageSharp.Image<Rgba32> image = SixLabors.ImageSharp.Image.Load<Rgba32>(data);
-            this.Width = image.Width;
-            this.Height = image.Height;
+            using var image = SixLabors.ImageSharp.Image.Load<Rgba32>(data);
+
+            Width = image.Width;
+            Height = image.Height;
+
             List<byte> pixels = new List<byte>(4 * image.Width * image.Height);
-            Pixels = new byte[4 * image.Width * image.Height];
+
             image.ProcessPixelRows(accessor =>
             {
                 for (int y = 0; y < image.Height; y++)
@@ -82,11 +84,13 @@ namespace DevoidEngine.Engine.Utilities
 
         public void LoadPNG(string path, bool directPath = false)
         {
-            SixLabors.ImageSharp.Image<Rgba32> image = SixLabors.ImageSharp.Image.Load<Rgba32>(path);
-            this.Width = image.Width;
-            this.Height = image.Height;
+            using var image = SixLabors.ImageSharp.Image.Load<Rgba32>(path);
+
+            Width = image.Width;
+            Height = image.Height;
+
             List<byte> pixels = new List<byte>(4 * image.Width * image.Height);
-            Pixels = new byte[4 * image.Width * image.Height];
+
             image.ProcessPixelRows(accessor =>
             {
                 for (int y = 0; y < image.Height; y++)

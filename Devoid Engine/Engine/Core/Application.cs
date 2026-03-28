@@ -1,4 +1,5 @@
 ﻿using DevoidEngine.Engine.Components;
+using DevoidEngine.Engine.InputSystem;
 using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.UI;
 using DevoidEngine.Engine.Utilities;
@@ -87,6 +88,7 @@ namespace DevoidEngine.Engine.Core
             Renderer.GraphicsDevice.Initialize(targetWindow.GetWindowPtr(), presentParameters);
             Renderer.Initialize(applicationSpecification.Width, applicationSpecification.Height);
 
+            Input.Initialize(targetWindow);
             UISystem.Initialize();
 
 
@@ -120,7 +122,10 @@ namespace DevoidEngine.Engine.Core
                 float deltaTime = (float)frameTimer.GetElapsedSeconds();
                 EngineSingleton.Instance.FrameCount = numFrames;
 
+                RenderThread.Execute();
+
                 targetWindow.ProcessEvents();
+                Input.Update();
 
 
                 deltaTimeAccumulator += deltaTime;
@@ -138,6 +143,9 @@ namespace DevoidEngine.Engine.Core
                 Update(deltaTime * timeScale);
                 Render();
 
+
+                Input.EndFrame();
+                RenderThread.ExecuteFrameEnd();
 
                 if (targetWindow.IsExiting)
                 {
@@ -159,6 +167,12 @@ namespace DevoidEngine.Engine.Core
 
         void Update(float deltaTime)
         {
+            if (Cursor.isDirty)
+            {
+                targetWindow.CursorState = (OpenTK.Windowing.Common.CursorState)Cursor.cursorState;
+                Cursor.isDirty = false;
+            }
+
             layerHandler.UpdateLayers(deltaTime);
             UISystem.Update(deltaTime);
         }
