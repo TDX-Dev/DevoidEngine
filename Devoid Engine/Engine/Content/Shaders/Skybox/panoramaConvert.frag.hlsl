@@ -8,15 +8,13 @@
     float3 WorldspacePosition : TEXCOORD3;
 };
 
-Texture2D MAT_PANORAMA_TEX : register(t0);
-SamplerState MAT_PANORAMA_TEX_SAMPLER : register(s0);
-
-
-
 cbuffer Material : register(b3)
 {
     int Face;
 };
+
+Texture2D MAT_PANORAMA_TEX : register(t0);
+SamplerState MAT_PANORAMA_TEX_SAMPLER : register(s0);
 
 static const float PI = 3.14159265359;
 
@@ -72,6 +70,6 @@ float4 PSMain(PSInput input) : SV_Target
     uv.y = asin(dir.y) / PI + 0.5;
 
     float3 color = MAT_PANORAMA_TEX.Sample(MAT_PANORAMA_TEX_SAMPLER, uv).rgb;
-    return float4(1, 1, 1, 1);
-    //return float4(color, 1);
+    //return float4(1, 1, 1, 1);
+    return float4(color, 1);
 }

@@ -1,7 +1,9 @@
 ﻿using DevoidEngine.Engine.Components;
 using DevoidEngine.Engine.Core;
+using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.Utilities;
 using DevoidStandaloneLauncher.Scripts;
+using DevoidStandaloneLauncher.Utils;
 using System.Numerics;
 
 namespace DevoidStandaloneLauncher.Prototypes
@@ -13,6 +15,8 @@ namespace DevoidStandaloneLauncher.Prototypes
         GameObject cubeObject;
 
         Mesh testRender;
+
+        string levelPath = "D:/Programming/Devoid Engine/DevoidStandaloneLauncher/LauncherContents/crt.fbx";
 
         public override void OnInit()
         {
@@ -33,64 +37,91 @@ namespace DevoidStandaloneLauncher.Prototypes
             //camera.Transform.EulerAngles = new System.Numerics.Vector3(32, -47f, 0);
             //camera.Transform.EulerAngles = new System.Numerics.Vector3(-45, 0, 0);
 
-            //GameObject light = scene.AddGameObject("Light");
-            //var lightComp = light.AddComponent<LightComponent>();
-            //light.Transform.Position = new System.Numerics.Vector3(0, 10, 0);
-            //lightComp.Intensity = 100;
-            //lightComp.Radius = 100;
+            GameObject light = scene.AddGameObject("Light");
+            var lightComp = light.AddComponent<LightComponent>();
+            light.Transform.Position = new System.Numerics.Vector3(0, 5, -10);
+            lightComp.Intensity = 100;
+            lightComp.Radius = 100;
 
             scene.Play(true);
 
 
-            int grid = 5;
-            float spacing = 2f;
-
-            float half = (grid - 1) / 2f;
-
-            for (int i = 0; i < grid; i++)
+            if (levelPath != "")
             {
-                for (int j = 0; j < grid; j++)
-                {
-                    GameObject sphereObject = scene.AddGameObject($"Sphere_{i}_{j}");
-
-                    sphereObject.Transform.Position = new Vector3(
-                        (j - half) * spacing,
-                        (half - i) * spacing,
-                        0
-                    );
-
-                    MeshRenderer mr = sphereObject.AddComponent<MeshRenderer>();
-
-                    float metallic = j / (float)(grid - 1);
-                    float roughness = i / (float)(grid - 1);
-
-                    mr.AddMesh(testRender);
-
-                    mr.material.SetFloat("Metallic", metallic);
-                    mr.material.SetFloat("Roughness", roughness);
-                }
+                LoadDCC();
+                Importer.LoadModel(levelPath);
             }
-
-
-            //cubeObject = scene.AddGameObject("Cube1");
-            //cubeObject.AddComponent<MeshRenderer>().AddMesh(testRender);
-            //cubeObject.Transform.EulerAngles = new System.Numerics.Vector3(0, 45, 0);
-            ////var phyInterp1 = cubeObject.AddComponent<PhysicsInterpolationTest>();
-            ////phyInterp1.isPhysicsMovement = false;
-
-            //GameObject cubeObject1 = scene.AddGameObject("Cube2");
-            //cubeObject1.Transform.Position = new System.Numerics.Vector3(0, 0, -1.454f);
-            //cubeObject1.AddComponent<MeshRenderer>().AddMesh(testRender);
-            //cubeObject1.AddComponent<PhysicsInterpolationTest>().isPhysicsMovement = true;
-
         }
 
-        //public override void OnUpdate(float delta)
-        //{
-        //    var rot = cubeObject.Transform.EulerAngles;
-        //    rot.Y += delta * 15;
-        //    cubeObject.Transform.EulerAngles = rot;
-        //}
+        void LoadDCC()
+        {
+            LevelSpawnRegistry.RegisterFallBack((assimpNode, assimpScene) =>
+            {
+                Console.WriteLine("Loading");
+                if (!assimpNode.HasMeshes)
+                    return;
+
+                var go = scene.AddGameObject(assimpNode.Name);
+
+                Importer.ApplyTransform(go, assimpNode);
+
+                var mesh = Importer.ConvertMesh(assimpNode, assimpScene);
+
+                var mr = go.AddComponent<MeshRenderer>();
+                mr.AddMesh(mesh);
+
+                var material = Importer.ConvertMaterial(assimpNode, assimpScene, levelPath);
+                mr.material = material;
+            });
+
+
+
+            LevelSpawnRegistry.RegisterLight((assimpNode, assimpLight) =>
+            {
+                GameObject lightGO = scene.AddGameObject(assimpNode.Name);
+
+                Importer.ApplyTransform(lightGO, assimpNode);
+
+                var lightComponent = lightGO.AddComponent<LightComponent>();
+
+                switch (assimpLight.LightType)
+                {
+                    case Assimp.LightSourceType.Point:
+                        lightComponent.LightType = LightType.PointLight;
+                        break;
+                    case Assimp.LightSourceType.Directional:
+                        lightComponent.LightType = LightType.DirectionalLight;
+                        break;
+                    case Assimp.LightSourceType.Spot:
+                        lightComponent.LightType = LightType.SpotLight;
+                        break;
+                }
+
+                Vector3 diffuse = new Vector3(assimpLight.ColorDiffuse.X, assimpLight.ColorDiffuse.Y, assimpLight.ColorDiffuse.Z);
+                float intensity = MathF.Max(diffuse.X, MathF.Max(diffuse.Y, diffuse.Z));
+                Vector3 color = intensity > 0.0f ? diffuse / intensity : Vector3.Zero;
+
+                //lightComponent.Color = new Vector4(assimpLight.ColorDiffuse.R, assimpLight.ColorDiffuse.G, assimpLight.ColorDiffuse.B, 1f);
+                lightComponent.Color = new Vector4(color, 1f) * 5;
+
+                lightComponent.Radius = 200f;
+                lightComponent.Intensity = intensity * 15; // your scale
+
+
+                //Console.WriteLine(lightComponent.Intensity);
+                //Console.WriteLine(color);
+
+                ////lightComponent.Color = new Vector4(assimpLight.ColorDiffuse.R, assimpLight.ColorDiffuse.G, assimpLight.ColorDiffuse.B, 1f);
+                //lightComponent.Color = new Vector4(assimpLight.ColorDiffuse, 1f);
+
+                //lightComponent.Radius = 200f;
+                //lightComponent.Intensity = 150f; // your scale
+
+
+
+            });
+        }
+
 
     }
 }

@@ -98,42 +98,43 @@ float3 ComputeIBL(
     float3 F0
 )
 {
-    float NdotV = max(dot(N, V), 0.0);
+    float NdotV = max(dot(N, V), 1e-4);
 
-    // Fresnel (roughness-aware)
     float3 F = FresnelSchlickRoughness(NdotV, F0, roughness);
 
     float3 kS = F;
     float3 kD = (1.0 - kS) * (1.0 - metallic);
 
-    // --------------------
     // Diffuse IBL
-    // --------------------
     float3 irradiance = ENV_Irradiance.Sample(ENV_Irradiance_Sampler, N).rgb;
-    float3 diffuse = irradiance * albedo;
+    float3 diffuse = irradiance * albedo / PI;
 
-    // --------------------
     // Specular IBL
-    // --------------------
     float3 R = normalize(reflect(-V, N));
+    //R = normalize(lerp(R, N, roughness * roughness));
 
-    float MAX_MIP = 4.0; // PREF_MIPS - 1
+    float MAX_MIP = 4.0;
+    
+    float alpha = max(roughness, 0.045);
     float3 prefiltered = ENV_Prefilter.SampleLevel(
         ENV_Prefilter_Sampler,
         R,
-        roughness * MAX_MIP
+        alpha * MAX_MIP
     ).rgb;
 
     float2 brdf = ENV_BRDF.Sample(
         ENV_BRDF_Sampler,
-        float2(NdotV, roughness)
+        float2(NdotV, alpha)
     ).rg;
+    
+    //float2 brdf = float2(1.0, 0.0);
 
     float3 specular = prefiltered * (F * brdf.x + brdf.y);
 
-    // --------------------
-    // Final ambient
-    // --------------------
+    //float energyTerm = max(brdf.x, 0.02);
+    //float3 energyCompensation = 1.0 + F * (1.0 / energyTerm - 1.0);
+    //specular *= energyCompensation;
+
     return (kD * diffuse + specular) * ao;
 }
 

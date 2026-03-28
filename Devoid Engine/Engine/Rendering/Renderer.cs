@@ -57,7 +57,7 @@ namespace DevoidEngine.Engine.Rendering
             PostProcessor = new PostProcessor();
             var bloomPass = new BloomPass(width, height);
             var tonemapPass = new TonemapPass(width, height);
-            //PostProcessor.AddPass(bloomPass);
+            PostProcessor.AddPass(bloomPass);
             PostProcessor.AddPass(tonemapPass);
         }
 

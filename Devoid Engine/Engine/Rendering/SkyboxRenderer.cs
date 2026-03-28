@@ -123,7 +123,7 @@ namespace DevoidEngine.Engine.Rendering
 
             CreateTextures();
 
-            Texture2D monoStudio = Helper.LoadHDRI("Engine/Content/HDRIs/monochrome_studio_4k.hdr");
+            Texture2D monoStudio = Helper.LoadHDRI("Engine/Content/HDRIs/suburban_garden_4k.hdr");
             SetPanorama(monoStudio);
         }
 
@@ -327,6 +327,9 @@ namespace DevoidEngine.Engine.Rendering
         {
             (int, int, int, int) prevViewportSize = Renderer.GraphicsDevice.GetViewport();
             Renderer.GraphicsDevice.SetViewport(0, 0, BRDF_SIZE, BRDF_SIZE);
+            Renderer.GraphicsDevice.SetDepthState(DepthTest.Disabled, false);
+            Renderer.GraphicsDevice.SetRasterizerState(CullMode.None);
+            Renderer.GraphicsDevice.SetBlendState(BlendMode.Opaque);
 
             brdfLutFB.SetRenderTexture(BrdfLutTexture, 0);
             brdfLutFB.Bind();

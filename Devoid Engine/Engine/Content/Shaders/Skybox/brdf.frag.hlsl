@@ -10,7 +10,7 @@
     float3 WorldPos : TEXCOORD3;
 };
 
-static const float PI = 3.14159265359;
+#include "../PBR/pbr_methods.hlsl"
 
 // --- Hammersley ---
 float RadicalInverse_VdC(uint bits)
@@ -32,45 +32,21 @@ float2 Hammersley(uint i, uint N)
 float3 ImportanceSampleGGX(float2 Xi, float3 N, float roughness)
 {
     float a = roughness * roughness;
-
-    float phi = 2.0 * PI * Xi.x;
-    float cosTheta = sqrt((1.0 - Xi.y) / (1.0 + (a * a - 1.0) * Xi.y));
-    float sinTheta = sqrt(1.0 - cosTheta * cosTheta);
-
+    // Sample in spherical coordinates
+    float Phi = 2.0 * PI * Xi.x;
+    float CosTheta = sqrt((1.0 - Xi.y) / (1.0 + (a * a - 1.0) * Xi.y));
+    float SinTheta = sqrt(1.0 - CosTheta * CosTheta);
+    // Construct tangent space vector
     float3 H;
-    H.x = cos(phi) * sinTheta;
-    H.y = sin(phi) * sinTheta;
-    H.z = cosTheta;
-
-    float3 up = abs(N.z) < 0.999 ? float3(0, 0, 1) : float3(0, 1, 0);
-    float3 tangent = normalize(cross(up, N));
-    float3 bitangent = cross(N, tangent);
-
-    float3 sampleVec =
-        tangent * H.x +
-        bitangent * H.y +
-        N * H.z;
-
-    return normalize(sampleVec);
-}
-
-// --- Geometry term (Schlick-GGX) ---
-float GeometrySchlickGGX(float NdotV, float roughness)
-{
-    float a = roughness;
-    float k = (a * a) / 2.0;
-
-    float denom = NdotV * (1.0 - k) + k;
-    return NdotV / denom;
-}
-
-float GeometrySmith(float3 N, float3 V, float3 L, float roughness)
-{
-    float NdotV = saturate(dot(N, V));
-    float NdotL = saturate(dot(N, L));
-    float ggx1 = GeometrySchlickGGX(NdotV, roughness);
-    float ggx2 = GeometrySchlickGGX(NdotL, roughness);
-    return ggx1 * ggx2;
+    H.x = SinTheta * cos(Phi);
+    H.y = SinTheta * sin(Phi);
+    H.z = CosTheta;
+    
+    // Tangent to world space
+    float3 UpVector = abs(N.z) < 0.999 ? float3(0., 0., 1.0) : float3(1.0, 0., 0.);
+    float3 TangentX = normalize(cross(UpVector, N));
+    float3 TangentY = cross(N, TangentX);
+    return TangentX * H.x + TangentY * H.y + N * H.z;
 }
 
 float2 IntegrateBRDF(float NdotV, float roughness)
@@ -91,40 +67,75 @@ float2 IntegrateBRDF(float NdotV, float roughness)
     {
         float2 Xi = Hammersley(i, SAMPLE_COUNT);
         float3 H = ImportanceSampleGGX(Xi, N, roughness);
-        float3 L = normalize(2.0 * dot(V, H) * H - V);
+        float3 L = 2.0 * dot(V, H) * H - V;
+        
+        float NoL = saturate(dot(N, L));
+        float NoH = max(dot(N, H), 1e-5);
+        float VoH = saturate(dot(V, H));
 
-        float NdotL = saturate(L.z);
-        float NdotH = saturate(H.z);
-        float VdotH = saturate(dot(V, H));
-
-        if (NdotL > 0.0)
+        if (NoL > 0.0)
         {
-            float G = GeometrySmith(N, V, L, roughness);
-            float denom = max(NdotH * NdotV, 0.00001);
-            float G_Vis = (G * VdotH) / denom;
-            float Fc = pow(1.0 - VdotH, 5.0);
+            float V_pdf = V_SmithGGXCorrelated(NdotV, NoL, roughness) * VoH * NoL / NoH;
 
-            A += (1.0 - Fc) * G_Vis;
-            B += Fc * G_Vis;
+            float Fc = pow(1.0 - VoH, 5.0);
+
+            A += (1.0 - Fc) * V_pdf;
+            B += Fc * V_pdf;
         }
     }
 
-    A /= SAMPLE_COUNT;
-    B /= SAMPLE_COUNT;
-
-    return float2(A, B);
+    return 4.0 * float2(A, B) / SAMPLE_COUNT;
 }
+
+//float2 IntegrateBRDF(float NdotV, float roughness)
+//{
+//    float3 V;
+//    V.x = sqrt(1.0 - NdotV * NdotV);
+//    V.y = 0.0;
+//    V.z = NdotV;
+
+//    float3 N = float3(0.0, 0.0, 1.0);
+
+//    const uint SAMPLE_COUNT = 1024u;
+
+//    float A = 0.0;
+//    float B = 0.0;
+
+//    for (uint i = 0u; i < SAMPLE_COUNT; ++i)
+//    {
+//        float2 Xi = Hammersley(i, SAMPLE_COUNT);
+//        float3 H = ImportanceSampleGGX(Xi, N, roughness);
+//        float3 L = normalize(2.0 * dot(V, H) * H - V);
+
+//        float NoL = saturate(L.z);
+//        float NoH = saturate(H.z);
+//        float VoH = saturate(dot(V, H));
+
+//        if (NoL > 0.0)
+//        {
+//            float G = GeometrySmith(N, V, L, roughness);
+
+//            float G_Vis = (G * VoH) / max(NoH * NdotV, 1e-5);
+
+//            float Fc = pow(1.0 - VoH, 5.0);
+
+//            A += (1.0 - Fc) * G_Vis;
+//            B += Fc * G_Vis;
+//        }
+//    }
+
+//    return float2(A, B) / SAMPLE_COUNT;
+//}
 
 float4 PSMain(PSInput input) : SV_Target
 {
-float resolution = 512.0; // or whatever your LUT size is
 
-float2 uv = input.UV0;
-uv = (floor(uv * resolution) + 0.5) / resolution;
+    float2 uv = float2(input.UV0.x, 1.0 - input.UV0.y);
 
-float NdotV = uv.x;
-float roughness = uv.y;
-
+    float NdotV = max(uv.x, 1e-4);
+    float roughness = uv.y;
+    roughness = max(roughness, 0.045);
+    
     float2 brdf = IntegrateBRDF(NdotV, roughness);
 
     return float4(brdf, 0.0, 1.0);
