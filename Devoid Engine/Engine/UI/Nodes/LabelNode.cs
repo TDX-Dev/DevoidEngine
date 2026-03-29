@@ -1,6 +1,7 @@
 ﻿using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.UI.Text;
+using DevoidEngine.Engine.UI.Theme;
 using System.Numerics;
 
 namespace DevoidEngine.Engine.UI.Nodes
@@ -53,6 +54,17 @@ namespace DevoidEngine.Engine.UI.Nodes
 
             Layout.FlexGrowMain = 0;
             Layout.FlexGrowCross = 0;
+        }
+
+        protected override void ApplyTheme()
+        {
+            var theme = GetTheme();
+
+            if (theme.HasColor(StyleKeys.FontColor, ThemeType))
+                Color = theme.GetColor(StyleKeys.FontColor, ThemeType);
+
+            if (theme.HasFontSize(StyleKeys.FontSize, ThemeType))
+                FontSize = theme.GetFontSize(StyleKeys.FontSize, ThemeType);
         }
 
         private void UpdateMesh(float widthConstraint)

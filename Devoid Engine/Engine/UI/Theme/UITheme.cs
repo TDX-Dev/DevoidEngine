@@ -157,6 +157,13 @@ namespace DevoidEngine.Engine.UI.Theme
                    data.FontSizes.ContainsKey(name);
         }
 
+        public bool HasConstant(string name, string themeType)
+        {
+            return types.TryGetValue(themeType, out var data)
+                && data.Constants.ContainsKey(name);
+        }
+
+
         public void ClearFontSize(string name, string themeType)
         {
             if (types.TryGetValue(themeType, out var data))

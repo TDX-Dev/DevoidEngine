@@ -1,54 +1,13 @@
 ﻿using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.Rendering;
+using DevoidEngine.Engine.UI.Theme;
 using System.Numerics;
 
 namespace DevoidEngine.Engine.UI.Nodes
 {
     public class ContainerNode : FlexboxNode
     {
-        private Texture2D _texture;
-
         public override string ThemeType => "Panel";
-
-        public Texture2D Texture
-        {
-            get => _texture;
-            set
-            {
-                _texture = value;
-                UpdateMaterial();
-            }
-        }
-
-        public Vector4 Color
-        {
-            get => _color;
-            set
-            {
-                _color = value;
-                UpdateMaterial();
-            }
-        }
-
-        public float Opacity
-        {
-            get => _opacity;
-            set
-            {
-                _opacity = value;
-                UpdateMaterial();
-            }
-        }
-
-        public Vector4 BorderRadius
-        {
-            get => _borderRadius;
-            set
-            {
-                _borderRadius = value;
-                UpdateMaterial();
-            }
-        }
 
 
         public float BorderThickness = 0f;
@@ -62,6 +21,17 @@ namespace DevoidEngine.Engine.UI.Nodes
         {
             Material = UISystem.UIMaterial;
             UpdateMaterial();
+        }
+
+        protected override void ApplyTheme()
+        {
+            var theme = GetTheme();
+
+            if (theme.HasColor(StyleKeys.Background, ThemeType))
+                Color = theme.GetColor(StyleKeys.Background, ThemeType);
+
+            if (theme.HasConstant(StyleKeys.BorderWidth, ThemeType))
+                BorderThickness = theme.GetConstant(StyleKeys.BorderWidth, ThemeType);
         }
 
         private void UpdateMaterial()
