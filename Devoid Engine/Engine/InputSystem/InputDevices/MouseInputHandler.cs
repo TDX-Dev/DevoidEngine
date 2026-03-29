@@ -50,7 +50,8 @@ namespace DevoidEngine.Engine.InputSystem.InputDevices
                         DeviceId = _deviceId,
                         DeviceType = InputDeviceType.Mouse,
                         Control = (ushort)button,
-                        Value = 1f
+                        Value = 1f,
+                        ControlType = ControlType.Bool
                     });
 
                     _previousButtons.Add(button);
@@ -62,7 +63,8 @@ namespace DevoidEngine.Engine.InputSystem.InputDevices
                         DeviceId = _deviceId,
                         DeviceType = InputDeviceType.Mouse,
                         Control = (ushort)button,
-                        Value = 0f
+                        Value = 0f,
+                        ControlType = ControlType.Bool
                     });
 
                     _previousButtons.Remove(button);

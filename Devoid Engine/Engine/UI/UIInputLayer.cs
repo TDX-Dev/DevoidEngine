@@ -3,6 +3,7 @@ using DevoidEngine.Engine.InputSystem.InputDevices;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,42 +12,37 @@ namespace DevoidEngine.Engine.UI
     public class UIInputLayer : IInputLayer
     {
         private Vector2 mouse;
-        private bool dragging;
 
         public bool Handle(InputEvent e)
         {
+            
             if (e.DeviceType != InputDeviceType.Mouse)
                 return false;
 
-            switch ((MouseAxis)e.Control)
+            if (e.ControlType == ControlType.Float)
             {
-                case MouseAxis.X:
-                    mouse.X = e.Value;
-                    break;
+                switch ((MouseAxis)e.Control)
+                {
+                    case MouseAxis.X:
+                        mouse.X = e.Value;
+                        UISystem.MouseMove(mouse);
+                        return true;
 
-                case MouseAxis.Y:
-                    mouse.Y = e.Value;
-                    break;
+                    case MouseAxis.Y:
+                        mouse.Y = e.Value;
+                        UISystem.MouseMove(mouse);
+                        return true;
+                }
+                return false;
             }
 
             if (e.Control == (ushort)MouseButton.Left)
             {
-                if (e.Value == 1f)
-                {
+                if (e.Value > 0)
                     UISystem.MouseDown(mouse);
-                    return true;
-                }
                 else
-                {
                     UISystem.MouseUp(mouse);
-                    return true;
-                }
-            }
 
-            if (e.Control == (ushort)MouseAxis.DeltaX ||
-                e.Control == (ushort)MouseAxis.DeltaY)
-            {
-                UISystem.MouseMove(mouse);
                 return true;
             }
 

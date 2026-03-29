@@ -71,9 +71,10 @@ namespace DevoidEngine.Engine.UI
 
             screenDataBuffer.SetData(ScreenData);
 
-
             foreach (var root in Roots)
                 root.Initialize();
+
+            Input.Router.Push(new UIInputLayer());
         }
 
         public static void AddRoot(UINode node)
@@ -121,13 +122,81 @@ namespace DevoidEngine.Engine.UI
             // -------------------------
             // 3. Interaction pass
             // -------------------------
-            HandleInput();
+            //HandleInput();
         }
 
-        public bool Handle(InputEvent e)
+        public static void MouseMove(Vector2 mouse)
         {
-            // UI handles events here
+            Vector2 mouseDelta = mouse - previousMouse;
+            previousMouse = mouse;
+
+            UINode previousHovered = HoveredNode;
+            HoveredNode = null;
+
+            for (int i = Roots.Count - 1; i >= 0; i--)
+            {
+                HoveredNode = HitTest(Roots[i], mouse);
+                if (HoveredNode != null)
+                    break;
+            }
+
+            if (previousHovered != HoveredNode)
+            {
+                previousHovered?.OnMouseLeave();
+                HoveredNode?.OnMouseEnter();
+            }
+
+            // Drag logic
+            if (PressedNode != null)
+            {
+                if (!isDragging)
+                {
+                    if (Vector2.Distance(mouse, dragStartMouse) > 3f)
+                    {
+                        isDragging = true;
+                        PressedNode.OnDragStart(mouse);
+                    }
+                }
+
+                if (isDragging)
+                {
+                    PressedNode.OnDrag(mouse, mouseDelta);
+                }
+            }
         }
+        public static void MouseDown(Vector2 mouse)
+        {
+            PressedNode = HoveredNode;
+            dragStartMouse = mouse;
+            isDragging = false;
+
+            if (PressedNode != null)
+            {
+                SetFocus(PressedNode);
+                PressedNode.OnMouseDown();
+            }
+        }
+        public static void MouseUp(Vector2 mouse)
+        {
+            if (PressedNode == null)
+                return;
+
+            if (isDragging)
+            {
+                PressedNode.OnDragEnd(mouse);
+            }
+
+            PressedNode.OnMouseUp();
+
+            if (!isDragging && HoveredNode == PressedNode)
+            {
+                PressedNode.OnClick();
+            }
+
+            PressedNode = null;
+            isDragging = false;
+        }
+
 
         private static void HandleInput()
         {
@@ -230,6 +299,8 @@ namespace DevoidEngine.Engine.UI
                 return null;
 
             var rect = node.Rect;
+            if (node.Rect == null)
+                return null;
 
             if (position.X >= rect.position.X &&
                 position.X <= rect.position.X + rect.size.X &&

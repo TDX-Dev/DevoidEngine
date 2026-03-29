@@ -6,5 +6,6 @@
         public InputDeviceType DeviceType; // NOT DeviceId
         public ushort Control;
         public float Value;
+        public ControlType ControlType;
     }
 }

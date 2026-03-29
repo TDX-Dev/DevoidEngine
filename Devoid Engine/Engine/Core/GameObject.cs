@@ -59,7 +59,7 @@ namespace DevoidEngine.Engine.Core
             return _component;
         }
 
-        public T GetComponent<T>() where T : Component, new()
+        public T GetComponent<T>() where T : Component
         {
             for (int i = 0; i < Components.Count; i++)
             {
@@ -136,6 +136,22 @@ namespace DevoidEngine.Engine.Core
             {
                 CollectComponentsRecursive(child, list);
             }
+        }
+
+        public T GetParentComponent<T>() where T : Component
+        {
+            GameObject current = parentObject;
+
+            while (current != null)
+            {
+                var comp = current.GetComponent<T>();
+                if (comp != null)
+                    return comp;
+
+                current = current.parentObject;
+            }
+
+            return null;
         }
 
 

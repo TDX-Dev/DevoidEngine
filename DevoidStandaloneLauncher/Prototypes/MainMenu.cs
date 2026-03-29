@@ -36,6 +36,7 @@ namespace DevoidStandaloneLauncher.Prototypes
             lightComp.Radius = 100;
 
             CanvasComponent canvas = camera.AddComponent<CanvasComponent>();
+            camera.AddComponent<ButtonComponent>();
 
             ContainerNode buttonContainer = new ContainerNode()
             {
