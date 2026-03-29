@@ -79,6 +79,13 @@ namespace DevoidEngine.Engine.Utilities
             D = d;
         }
 
+        public static Plane FromPointNormal(Vector3 point, Vector3 normal)
+        {
+            normal = Vector3.Normalize(normal);
+            float d = -Vector3.Dot(normal, point);
+            return new Plane(normal, d);
+        }
+
         public Plane(float a, float b, float c, float d)
         {
             Vector3 n = new Vector3(a, b, c);

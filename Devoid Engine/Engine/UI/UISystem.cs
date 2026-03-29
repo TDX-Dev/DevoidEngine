@@ -1,12 +1,14 @@
 ﻿using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.InputSystem;
 using DevoidEngine.Engine.InputSystem.InputDevices;
+using DevoidEngine.Engine.Physics;
 using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.UI.Nodes;
 using DevoidEngine.Engine.Utilities;
 using DevoidGPU;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using Plane = DevoidEngine.Engine.Utilities.Plane;
 
 namespace DevoidEngine.Engine.UI
 {
@@ -17,6 +19,9 @@ namespace DevoidEngine.Engine.UI
         public static UINode FocusedNode { get; private set; }
         public static UINode HoveredNode { get; private set; }
         public static UINode PressedNode { get; private set; }
+
+        public static float OrderEpsilon = 0.001f;
+        public static bool DebugDraw = false;
 
         private static Material uiMaterial;
         private static Material textMaterial;
@@ -107,22 +112,132 @@ namespace DevoidEngine.Engine.UI
             // -------------------------
             foreach (var root in Roots)
             {
-                root.Update(deltaTime);
+
+                if (root.RenderMode == CanvasRenderMode.ScreenSpace)
+                {
+                    root.Measure(screen);
+                    root.Arrange(new UITransform(Vector2.Zero, screen));
+                }
+                else
+                {
+                    Vector2 canvasSize = root.DesiredSize;
+
+                    root.Measure(canvasSize);
+                    root.Arrange(new UITransform(Vector2.Zero, canvasSize));
+                }
             }
 
             // -------------------------
             // 2. Layout pass
             // -------------------------
-            foreach (var root in Roots)
-            {
-                root.Measure(screen);
-                root.Arrange(new UITransform(Vector2.Zero, screen));
-            }
+            //foreach (var root in Roots)
+            //{
+            //    root.Measure(screen);
+            //    root.Arrange(new UITransform(Vector2.Zero, screen));
+            //}
 
             // -------------------------
             // 3. Interaction pass
             // -------------------------
             //HandleInput();
+        }
+
+        static bool TryProjectMouseToCanvas(
+            CanvasNode canvas,
+            Vector2 mouse,
+            out Vector2 canvasPos)
+        {
+            canvasPos = default;
+
+            Vector2 size = canvas.DesiredSize;
+
+            Matrix4x4 canvasMatrix = canvas.GetWorldCanvasMatrix();
+
+            if (DebugDraw)
+            {
+                Vector3 bl = Vector3.Transform(new Vector3(0, 0, 0), canvasMatrix);
+                Vector3 br = Vector3.Transform(new Vector3(size.X, 0, 0), canvasMatrix);
+                Vector3 tl = Vector3.Transform(new Vector3(0, size.Y, 0), canvasMatrix);
+                Vector3 tr = Vector3.Transform(new Vector3(size.X, size.Y, 0), canvasMatrix);
+
+                DrawMarker(bl);
+                DrawMarker(br);
+                DrawMarker(tl);
+                DrawMarker(tr);
+            }
+
+            Ray ray = BuildMouseRay(mouse);
+
+            Vector3 normal = Vector3.Normalize(
+                Vector3.TransformNormal(Vector3.UnitZ, canvasMatrix)
+            );
+
+            Vector3 point = Vector3.Transform(Vector3.Zero, canvasMatrix);
+
+            Plane plane = new Plane(
+                normal,
+                -Vector3.Dot(normal, point)
+            );
+
+            if (!RayPlane(ray, plane, out Vector3 hit))
+                return false;
+
+            if (DebugDraw)
+            {
+                DrawMarker(hit);
+            }
+
+            if (!Matrix4x4.Invert(canvasMatrix, out Matrix4x4 inv))
+                return false;
+
+            Vector3 local = Vector3.Transform(hit, inv);
+
+            if (local.X < 0 || local.X > size.X ||
+                local.Y < 0 || local.Y > size.Y)
+                return false;
+
+            canvasPos = new Vector2(local.X, local.Y);
+
+            return true;
+        }
+
+        public static void DrawMarker(Vector3 pos)
+        {
+            Matrix4x4 m =
+                Matrix4x4.CreateScale(0.05f) *
+                Matrix4x4.CreateTranslation(pos);
+
+            DebugRenderSystem.DrawCube(m);
+        }
+
+        public static void DrawRay(Vector3 origin, Vector3 dir, float length)
+        {
+            Vector3 center = origin + dir * length * 0.5f;
+
+            Matrix4x4 model =
+                Matrix4x4.CreateScale(0.01f, 0.01f, length) *
+                Matrix4x4.CreateWorld(center, dir, Vector3.UnitY);
+
+            DebugRenderSystem.DrawCube(model);
+        }
+
+        static bool RayPlane(Ray ray, Plane plane, out Vector3 hit)
+        {
+            hit = default;
+
+            float denom = Vector3.Dot(plane.Normal, ray.Direction);
+
+            if (MathF.Abs(denom) < 0.0001f)
+                return false;
+
+            float t = -(Vector3.Dot(plane.Normal, ray.Origin) + plane.D) / denom;
+
+            if (t < 0)
+                return false;
+
+            hit = ray.Origin + ray.Direction * t;
+
+            return true;
         }
 
         public static void MouseMove(Vector2 mouse)
@@ -135,7 +250,22 @@ namespace DevoidEngine.Engine.UI
 
             for (int i = Roots.Count - 1; i >= 0; i--)
             {
-                HoveredNode = HitTest(Roots[i], mouse);
+                CanvasNode canvas = Roots[i];
+
+                Vector2 pos;
+
+                if (canvas.RenderMode == CanvasRenderMode.ScreenSpace)
+                {
+                    pos = mouse;
+                }
+                else
+                {
+                    if (!TryProjectMouseToCanvas(canvas, mouse, out pos))
+                        continue;
+                }
+
+                HoveredNode = HitTest(canvas, pos);
+
                 if (HoveredNode != null)
                     break;
             }
@@ -201,6 +331,37 @@ namespace DevoidEngine.Engine.UI
             isDragging = false;
         }
 
+        static Ray BuildMouseRay(Vector2 mouse)
+        {
+            var cam = SceneManager.CurrentScene.GetDefaultCamera3D().Camera;
+
+            Vector2 screen = Screen.Size;
+
+            float x = (2f * mouse.X) / screen.X - 1f;
+            float y = 1f - (2f * mouse.Y) / screen.Y;
+
+            Vector4 nearClip = new Vector4(x, y, 0f, 1f);
+            Vector4 farClip = new Vector4(x, y, 1f, 1f);
+
+            Matrix4x4 invProj = cam.GetInverseProjectionMatrix();
+            Matrix4x4 invView = cam.GetInverseViewMatrix();
+
+            Vector4 nearView = Vector4.Transform(nearClip, invProj);
+            Vector4 farView = Vector4.Transform(farClip, invProj);
+
+            nearView /= nearView.W;
+            farView /= farView.W;
+
+            Vector4 nearWorld = Vector4.Transform(nearView, invView);
+            Vector4 farWorld = Vector4.Transform(farView, invView);
+
+            Vector3 origin = new Vector3(nearWorld.X, nearWorld.Y, nearWorld.Z);
+            Vector3 dir = Vector3.Normalize(
+                new Vector3(farWorld.X, farWorld.Y, farWorld.Z) - origin
+            );
+
+            return new Ray(origin, dir);
+        }
 
         private static void HandleInput()
         {

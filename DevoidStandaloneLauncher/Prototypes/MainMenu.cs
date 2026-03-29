@@ -111,34 +111,6 @@ namespace DevoidStandaloneLauncher.Prototypes
             lightComp.Intensity = 100;
             lightComp.Radius = 100;
 
-            GameObject canvasObject = scene.AddGameObject("Canvas Object");
-            CanvasComponent canvas = canvasObject.AddComponent<CanvasComponent>();
-
-            GameObject ContainerObject = scene.AddGameObject("Container Object");
-            ContainerObject.SetParent(canvasObject);
-
-            var ContainerComponent = ContainerObject.AddComponent<ContainerComponent>();
-            ContainerComponent.Padding = Padding.GetAll(15);
-            ContainerComponent.Color = new Vector4(0, 0, 0, 0.3f);
-            ContainerComponent.Align = AlignItems.Stretch;
-
-            List<string> buttonNames = ["Play", "Options", "Credits", "Quit"];
-            List<Action> buttonActions = [
-                () => {loader.SwitchPrototype(new UITester()); },
-                () => {},
-                () => {},
-                () => {loader.Application.Quit(); }
-            ];
-
-            for (int i = 0; i < 4; i++)
-            {
-                GameObject buttonObject = scene.AddGameObject("Button Object");
-                buttonObject.SetParent(ContainerObject);
-                var buttonComponent = buttonObject.AddComponent<ButtonComponent>();
-                buttonComponent.Text = buttonNames[i];
-                buttonComponent.OnClick += buttonActions[i];
-            }
-
 
             //ContainerComponent.Align = AlignItems.Start;
 
@@ -210,8 +182,60 @@ namespace DevoidStandaloneLauncher.Prototypes
                 camera.Transform.Rotation = Importer.GetTransform(assimpNode).Item2;
 
                 camera.AddComponent<MenuCameraPanComponent>();
+                //camera.AddComponent<FreeCameraComponent>();
                 var camComponent = camera.AddComponent<CameraComponent3D>();
                 camComponent.IsDefault = true;
+
+            });
+
+            LevelSpawnRegistry.Register("MM_Anchor", (assimpNode, assimpScene) =>
+            {
+                GameObject canvasObject = scene.AddGameObject("Canvas Object");
+                CanvasComponent canvas = canvasObject.AddComponent<CanvasComponent>();
+                canvas.RenderMode = CanvasRenderMode.WorldSpace;
+                canvas.CanvasSize = new Vector2(1920, 1080);
+                canvasObject.Transform.Position = Importer.GetTransform(assimpNode).Item1;
+                canvasObject.Transform.Rotation = Importer.GetTransform(assimpNode).Item2;
+
+                GameObject ContainerObject = scene.AddGameObject("Container Object");
+                ContainerObject.SetParent(canvasObject);
+
+                var ContainerComponent = ContainerObject.AddComponent<ContainerComponent>();
+                ContainerComponent.Padding = Padding.GetAll(15);
+                ContainerComponent.Color = new Vector4(0, 0, 0, 0);
+                ContainerComponent.BorderThickness = 0;
+                ContainerComponent.Align = AlignItems.Stretch;
+
+                //GameObject ContainerObjectBorder = scene.AddGameObject("Container Object");
+                //ContainerObjectBorder.SetParent(canvasObject);
+
+                //var ContainerBorderComponent = ContainerObject.AddComponent<ContainerComponent>();
+                //ContainerBorderComponent.Padding = Padding.GetAll(15);
+                //ContainerBorderComponent.Color = new Vector4(0, 0, 0, 0);
+                //ContainerBorderComponent.BorderThickness = 3;
+                //ContainerBorderComponent.Align = AlignItems.Stretch;
+
+                List<string> buttonNames = ["Play", "Options", "Credits", "Quit"];
+                List<Action> buttonActions = [
+                    () => {loader.SwitchPrototype(new UITester());Console.WriteLine("Play Clicked"); },
+                () => {},
+                () => {},
+                () => {loader.Application.Quit(); }
+            ];
+
+                for (int i = 0; i < 4; i++)
+                {
+                    GameObject buttonObject = scene.AddGameObject("Button Object");
+                    buttonObject.SetParent(ContainerObject);
+                    var buttonComponent = buttonObject.AddComponent<ButtonComponent>();
+                    buttonComponent.Text = buttonNames[i];
+                    buttonComponent.OnClick += buttonActions[i];
+                    buttonComponent.BaseColor = new Vector4(0, 0, 0, 0);
+                    buttonComponent.OnHoverColor = new Vector4(1,1,1,1);
+                    buttonComponent.OnClickColor = new Vector4(0, 0, 0, 0);
+                    buttonComponent.BorderThickness = 2;
+                    buttonComponent.OnHoverTextColor = new Vector4(0, 0, 0, 1);
+                }
 
             });
 

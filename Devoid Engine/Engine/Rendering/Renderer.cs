@@ -89,6 +89,9 @@ namespace DevoidEngine.Engine.Rendering
             RenderUI(ctx.renderItemsUI);
 
             Framebuffer activeFrameBuffer = ActiveRenderTechnique?.Render(ctx);
+
+            DebugRenderSystem.Render(ctx.cameraData, activeFrameBuffer);
+
             Renderer.GraphicsDevice.UnbindAllShaderResources();
             //DebugRenderSystem.Render(ctx.cameraData, activeFrameBuffer);
 

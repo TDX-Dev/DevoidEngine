@@ -11,8 +11,12 @@
 cbuffer MATERIAL : register(b3)
 {
     float4 COLOR;
-    float4 CORNER_RADIUS; // TL TR BR BL (pixels)
+    float4 CORNER_RADIUS; // TL TR BR BL
     float2 RECT_SIZE;
+
+    float BORDER_THICKNESS;
+    float4 BORDER_COLOR;
+
     int useTexture;
     int _pad;
 };
@@ -30,41 +34,68 @@ float sdRoundRect(float2 p, float2 halfSize, float r)
 
 float4 PSMain(PSInput input) : SV_TARGET
 {
-    float4 finalColor;
+    float4 fillColor;
 
     if (useTexture)
-        finalColor = MAT_Texture.Sample(MAT_TextureSampler, input.UV0);
+        fillColor = MAT_Texture.Sample(MAT_TextureSampler, input.UV0);
     else
-        finalColor = COLOR;
+        fillColor = COLOR;
 
     float2 halfSize = RECT_SIZE * 0.5;
     float2 p = input.LocalPos;
-    
-    finalColor.a = finalColor.a * COLOR.a;
 
-    // clamp radii so they can't exceed rectangle
+    // clamp radii
     float maxRadius = min(halfSize.x, halfSize.y);
     float4 r = min(CORNER_RADIUS, maxRadius);
 
-    // choose radius based on quadrant
     float radius;
 
     if (p.x < 0 && p.y > 0)
-        radius = r.x; // TL
+        radius = r.x;
     else if (p.x > 0 && p.y > 0)
-        radius = r.y; // TR
+        radius = r.y;
     else if (p.x > 0 && p.y < 0)
-        radius = r.z; // BR
+        radius = r.z;
     else
-        radius = r.w; // BL
+        radius = r.w;
+    
+    if (BORDER_THICKNESS <= 0.0001)
+    {
+        float dist = sdRoundRect(p, halfSize, radius);
 
-    float dist = sdRoundRect(p, halfSize, radius);
+        float aa = fwidth(dist);
+        float alpha = smoothstep(aa, -aa, dist);
 
-    // anti-aliasing
-    float aa = fwidth(dist);
-    float alpha = smoothstep(aa, -aa, dist);
+        fillColor.a *= alpha;
 
-    finalColor.a *= alpha;
+        if (fillColor.a <= 0.001)
+            discard;
+
+        return fillColor;
+    }
+
+    // OUTER SHAPE
+    float distOuter = sdRoundRect(p, halfSize, radius);
+
+    // INNER SHAPE
+    float innerRadius = max(radius - BORDER_THICKNESS, 0);
+    float distInner = sdRoundRect(p, halfSize - BORDER_THICKNESS, innerRadius);
+
+    float aa = fwidth(distOuter);
+
+    float outerAlpha = smoothstep(aa, -aa, distOuter);
+    float innerAlpha = smoothstep(aa, -aa, distInner);
+
+    float borderMask = outerAlpha * (1 - innerAlpha);
+
+    float fillMask = innerAlpha;
+
+    float4 finalColor = 0;
+
+    finalColor += fillColor * fillMask;
+    finalColor += BORDER_COLOR * borderMask;
+
+    finalColor.a = max(finalColor.a, BORDER_COLOR.a * borderMask);
 
     if (finalColor.a <= 0.001)
         discard;

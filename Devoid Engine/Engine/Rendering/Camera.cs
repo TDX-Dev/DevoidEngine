@@ -24,23 +24,24 @@ namespace DevoidEngine.Engine.Rendering
 
         private Matrix4x4 _viewMatrix = Matrix4x4.Identity;
         private Matrix4x4 _projectionMatrix = Matrix4x4.Identity;
+        private Matrix4x4 _invProjectionMatrix = Matrix4x4.Identity;
+        private Matrix4x4 _invViewMatrix = Matrix4x4.Identity;
+        private Matrix4x4 _invViewProjectionMatrix = Matrix4x4.Identity;
+       
 
 
 
         // --- Data for GPU ---
         public CameraData GetCameraData()
         {
-            Matrix4x4.Invert(_projectionMatrix, out Matrix4x4 invProjection);
-            Matrix4x4.Invert(_viewMatrix, out Matrix4x4 invView);
-            Matrix4x4.Invert(_viewMatrix * _projectionMatrix, out Matrix4x4 invViewProjection);
 
             return new CameraData
             {
                 View = _viewMatrix,
                 Projection = _projectionMatrix,
-                InverseProjection = invProjection,
-                InverseView = invView,
-                InverseViewProjection = invViewProjection,
+                InverseProjection = _invProjectionMatrix,
+                InverseView = _invViewMatrix,
+                InverseViewProjection = _invViewProjectionMatrix,
                 Position = Position,
                 NearClip = NearClip,
                 FarClip = FarClip,
@@ -57,10 +58,17 @@ namespace DevoidEngine.Engine.Rendering
         public void SetViewMatrix(Matrix4x4 view) => _viewMatrix = view;
         public Matrix4x4 GetViewMatrix() => _viewMatrix;
 
+        public Matrix4x4 GetInverseProjectionMatrix() => _invProjectionMatrix;
+        public Matrix4x4 GetInverseViewMatrix() => _invViewMatrix;
+        public Matrix4x4 GetInverseViewProjectionMatrix() => _invViewProjectionMatrix;
+
         public void UpdateProjectionMatrix(float aspectRatio)
         {
             _projectionMatrix = Matrix4x4.CreatePerspectiveFieldOfView(FovY, aspectRatio, NearClip, FarClip);
             _projectionMatrix = Renderer.GraphicsDevice.AdjustProjectionMatrix(_projectionMatrix);
+
+            Matrix4x4.Invert(_projectionMatrix, out _invProjectionMatrix);
+
             Frustum = Frustum.FromMatrix(_viewMatrix * _projectionMatrix);
         }
 
@@ -72,6 +80,9 @@ namespace DevoidEngine.Engine.Rendering
             Right = Vector3.Normalize(Vector3.Cross(Front, Up));
 
             _viewMatrix = Matrix4x4.CreateLookAt(Position, Position + Front, Up);
+
+            Matrix4x4.Invert(_viewMatrix, out _invViewMatrix);
+            Matrix4x4.Invert(_viewMatrix * _projectionMatrix, out _invViewProjectionMatrix);
 
             //Frustum = Frustum.FromMatrix(_projectionMatrix * _viewMatrix);
             Frustum = Frustum.FromMatrix(_viewMatrix * _projectionMatrix);

@@ -76,6 +76,8 @@ namespace DevoidEngine.Engine.UI.Nodes
             Material.SetVector4("COLOR", final);
             Material.SetVector2("RECT_SIZE", Rect?.size ?? Vector2.One);
             Material.SetVector4("CORNER_RADIUS", _borderRadius);
+            Material.SetVector4("BORDER_COLOR", BorderColor);
+            Material.SetFloat("BORDER_THICKNESS", BorderThickness);
 
         }
 
@@ -93,9 +95,12 @@ namespace DevoidEngine.Engine.UI.Nodes
                 Matrix4x4.CreateScale(size.X, size.Y, 1f) *
                 Matrix4x4.CreateTranslation(pivotOffset.X, pivotOffset.Y, 0f) *
                 Matrix4x4.CreateRotationZ(Rotation) *
-                Matrix4x4.CreateTranslation(centerPos.X, centerPos.Y, order * 0.001f);
+                Matrix4x4.CreateTranslation(centerPos.X, centerPos.Y, 0f);
 
-            Matrix4x4 final = model * canvasModel;
+            Matrix4x4 final =
+                model *
+                canvasModel *
+                Matrix4x4.CreateTranslation(0, 0, order * UISystem.OrderEpsilon);
 
             renderList.Add(new RenderItem()
             {

@@ -17,7 +17,7 @@ namespace DevoidEngine.Engine.UI.Nodes
 
         public bool BlockInput = false;
         public UITransform Rect { get; protected set; }
-        public Vector2 DesiredSize { get; private set; }
+        public Vector2 DesiredSize { get; set; }
         public LayoutOptions Layout { get; set; } = new LayoutOptions();
         public MaterialInstance Material { get; set; }
 

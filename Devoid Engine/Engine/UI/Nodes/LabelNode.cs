@@ -79,8 +79,7 @@ namespace DevoidEngine.Engine.UI.Nodes
             if (Font == null)
                 return Vector2.Zero;
 
-            //float widthConstraint = availableSize.X;
-            float widthConstraint = Math.Min(availableSize.X, Rect?.size.X ?? availableSize.X);
+            float widthConstraint = availableSize.X;
 
             if ((_meshDirty || _lastWidthConstraint != widthConstraint) && !string.IsNullOrEmpty(_text))
             {
@@ -99,7 +98,11 @@ namespace DevoidEngine.Engine.UI.Nodes
                 opts
             );
 
-            textSize.Y = Math.Max((Font.Ascender - Font.Descender) * Font.GetScaleForFontSize(Scale), textSize.Y);
+            textSize.Y = Math.Max(
+                (Font.Ascender - Font.Descender) * Font.GetScaleForFontSize(Scale),
+                textSize.Y
+            );
+
             return textSize;
         }
 
@@ -131,19 +134,21 @@ namespace DevoidEngine.Engine.UI.Nodes
             pos.X = MathF.Round(pos.X);
             pos.Y = MathF.Round(pos.Y);
 
-            //Matrix4x4 model =
-            //    Matrix4x4.CreateTranslation(pos.X, pos.Y, 0);
+            Matrix4x4 local =
+                UISystem.BuildTranslationModel(new UITransform(pos, Rect.size)) *
+                Matrix4x4.CreateTranslation(Pivot.X, Pivot.Y, 0) *
+                Matrix4x4.CreateRotationX(Rotation);
 
-            Matrix4x4 local = UISystem.BuildTranslationModel(new UITransform(pos, Rect.size)) * Matrix4x4.CreateTranslation(0, 0, order * 0.001f);
-            local *= Matrix4x4.CreateTranslation(Pivot.X, Pivot.Y, 0) * Matrix4x4.CreateRotationX(Rotation);
-            Matrix4x4 final = local * canvasModel;
+            Matrix4x4 final =
+                local *
+                canvasModel *
+                Matrix4x4.CreateTranslation(0, 0, order * UISystem.OrderEpsilon);
 
             RenderItem renderItem = new RenderItem()
             {
                 Mesh = _mesh,
                 Material = Material,
                 Model = final,
-
             };
 
             if (UIScissorStack.HasClip)

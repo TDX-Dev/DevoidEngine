@@ -15,7 +15,7 @@ namespace DevoidEngine.Engine.Components
             set
             {
                 justify = value;
-                if (IsInitialized)
+                if (container != null)
                     container.Justify = justify;
             }
         }
@@ -26,7 +26,7 @@ namespace DevoidEngine.Engine.Components
             set
             {
                 alignItems = value;
-                if (IsInitialized)
+                if (container != null)
                     container.Align = alignItems;
             }
         }
@@ -37,7 +37,7 @@ namespace DevoidEngine.Engine.Components
             set
             {
                 padding = value;
-                if (IsInitialized)
+                if (container != null)
                     container.Padding = padding;
             }
         }
@@ -48,8 +48,21 @@ namespace DevoidEngine.Engine.Components
             set
             {
                 color = value;
-                if (IsInitialized)
+                if (container != null)
                     container.Color = color;
+            }
+        }
+
+        public float BorderThickness
+        {
+            get => borderThickness;
+            set
+            {
+                borderThickness = value;
+                if (container != null)
+                {
+                    container.BorderThickness = borderThickness;
+                }
             }
         }
 
@@ -58,6 +71,8 @@ namespace DevoidEngine.Engine.Components
         private AlignItems alignItems = AlignItems.Start;
         private Padding padding = Padding.GetAll(0);
         private Vector4 color = Vector4.Zero;
+        private Vector4 borderColor = Vector4.Zero;
+        private float borderThickness = 0;
 
         protected override UINode BuildNode()
         {
@@ -66,16 +81,16 @@ namespace DevoidEngine.Engine.Components
                 ParticipatesInLayout = false,
                 Offset = new Vector2(50, 250),
                 Direction = FlexDirection.Column,
-                Color = color,
-                Justify = justify,
-                Align = alignItems,
-                Padding = padding,
+                Color = Vector4.One,
                 Gap = 10,
-                Layout =
-                {
-                    FlexGrowMain = 0
-                }
             };
+
+            // apply stored values AFTER creation
+            //container.Color = color;
+            container.Justify = justify;
+            container.Align = alignItems;
+            container.Padding = padding;
+            container.BorderThickness = borderThickness;
 
             return container;
         }

@@ -9,9 +9,24 @@ namespace DevoidEngine.Engine.Components
     {
         public override string Type => nameof(ButtonComponent);
 
-        public Vector4 BaseColor = new Vector4(0.2f, 0.2f, 0.2f, 1f);
+        private Vector4 baseColor = new Vector4(0.2f, 0.2f, 0.2f, 1f);
         public Vector4 OnClickColor = new Vector4(0.35f, 0.35f, 0.35f, 1f);
         public Vector4 OnHoverColor = new Vector4(0.4f, 0.4f, 0.4f, 1f);
+
+        public Vector4 OnHoverTextColor = Vector4.One;
+
+        public Vector4 BaseColor
+        {
+            get => baseColor;
+            set
+            {
+                baseColor = value;
+                if (container != null)
+                {
+                    container.Color = baseColor;
+                }
+            }
+        }
 
         public string Text
         {
@@ -19,8 +34,22 @@ namespace DevoidEngine.Engine.Components
             set
             {
                 text = value;
-                if (IsInitialized)
+
+                if (label != null)
                     label.Text = value;
+            }
+        }
+
+        public float BorderThickness
+        {
+            get => buttonBorderThickness;
+            set
+            {
+                buttonBorderThickness = value;
+                if (container != null)
+                {
+                    container.BorderThickness = value * btnScale;
+                }
             }
         }
 
@@ -31,17 +60,21 @@ namespace DevoidEngine.Engine.Components
         private ContainerNode container;
         private LabelNode label;
         private string text = "Button";
+        private float btnScale = 3;
+        private float buttonBorderThickness = 0;
 
         protected override UINode BuildNode()
         {
             container = new ContainerNode()
             {
-                Size = new Vector2(200, 40),
+                Size = new Vector2(200, 40) * btnScale,
                 Color = BaseColor,
                 BlockInput = true,
                 Justify = JustifyContent.Start,
                 Align = AlignItems.Center,
-                Padding = Padding.GetAll(5),
+                Padding = Padding.GetAll(5 * btnScale),
+                BorderColor = new Vector4(1,1,1,1),
+                //BorderRadius = new Vector4(10) * btnScale,
                 Layout =
                 {
                     //FlexGrowMain = 1
@@ -53,7 +86,7 @@ namespace DevoidEngine.Engine.Components
                 32
             );
 
-            label = new LabelNode(text, font, 20f)
+            label = new LabelNode(text, font, 20f * btnScale)
             {
                 //LayoutOptions = new TextLayoutOptions()
                 //{
@@ -88,12 +121,14 @@ namespace DevoidEngine.Engine.Components
             container.OnNodeMouseEnter = () =>
             {
                 container.Color = OnHoverColor;
+                label.Color = OnHoverTextColor;
                 isHovering = true;
             };
 
             container.OnNodeMouseLeave = () =>
             {
                 container.Color = BaseColor;
+                label.Color = Vector4.One;
                 isHovering = false;
             };
 

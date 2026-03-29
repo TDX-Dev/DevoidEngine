@@ -24,10 +24,32 @@ namespace DevoidEngine.Engine.Components
                 Canvas.RenderMode = value;
             }
         }
-        public int PixelsPerUnit = 10;
+        public int PixelsPerUnit
+        {
+            get => pixelsperunit;
+            set
+            {
+                pixelsperunit = value;
+                Canvas.PixelsPerUnit = value;
+            }
+        }
+
+        public Vector2 CanvasSize
+        {
+            get => canvasSize;
+            set
+            {
+                canvasSize = value;
+                if (IsInitialized)
+                    Canvas.Size = canvasSize;
+            }
+        }
+
         public int Order = 0;
 
         private CanvasRenderMode renderMode = CanvasRenderMode.ScreenSpace;
+        private int pixelsperunit = 300;
+        private Vector2 canvasSize = Screen.Size;
 
         public CanvasNode Canvas = new CanvasNode()
         {
@@ -61,7 +83,7 @@ namespace DevoidEngine.Engine.Components
                 Matrix4x4 scale = Matrix4x4.CreateScale(1f / PixelsPerUnit);
 
                 // shift UI so center becomes pivot
-                Vector2 canvasSize = Canvas.DesiredSize; // or manually track root size
+                Vector2 canvasSize = Canvas.Size.GetValueOrDefault(); // or manually track root size
                 Matrix4x4 centerOffset =
                     Matrix4x4.CreateTranslation(
                         -canvasSize.X * 0.5f,
@@ -80,8 +102,10 @@ namespace DevoidEngine.Engine.Components
 
         public override void OnStart()
         {
-            UISystem.AddRoot(Canvas);
             Canvas.RenderMode = renderMode;
+            Canvas.PixelsPerUnit = pixelsperunit;
+            Canvas.Size = canvasSize;
+            UISystem.AddRoot(Canvas);
         }
 
         public override void OnDestroy()
@@ -92,7 +116,13 @@ namespace DevoidEngine.Engine.Components
 
         public override void OnUpdate(float dt)
         {
-
+            Canvas.WorldMatrix = gameObject.Transform.WorldMatrix;
+            Canvas.WorldPosition = gameObject.Transform.Position;
+            Canvas.WorldForward = gameObject.Transform.Forward;
+            if (renderMode == CanvasRenderMode.WorldSpace)
+            {
+                Canvas.Size = canvasSize;
+            }
         }
 
     }
