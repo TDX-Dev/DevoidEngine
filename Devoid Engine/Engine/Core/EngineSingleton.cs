@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DevoidEngine.Engine.Audio;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,6 +12,8 @@ namespace DevoidEngine.Engine.Core
         public uint FrameCount { get; set; } = 0;
         public float InterpolationAlpha { get; set; } = 0;
         public bool UseInterpolation = false;
+
+        public AudioSystem AudioSystem { get; set; }
 
 
 

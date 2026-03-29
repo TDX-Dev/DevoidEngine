@@ -1,4 +1,6 @@
-﻿using DevoidEngine.Engine.Components;
+﻿using DevoidEngine.Engine.Audio;
+using DevoidEngine.Engine.Audio.SoLoud;
+using DevoidEngine.Engine.Components;
 using DevoidEngine.Engine.InputSystem;
 using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.UI;
@@ -79,6 +81,9 @@ namespace DevoidEngine.Engine.Core
             };
 
             EngineSingleton EngineSingleton = new EngineSingleton();
+
+            EngineSingleton.Instance.AudioSystem = new AudioSystem(new SoLoudAudioBackend());
+
             layerHandler = new LayerHandler();
             Screen.Size = new Vector2(applicationSpecification.Width, applicationSpecification.Height);
 
@@ -144,6 +149,7 @@ namespace DevoidEngine.Engine.Core
 
                 targetWindow.ProcessEvents();
                 Input.Update();
+                EngineSingleton.Instance.AudioSystem.Update();
 
 
                 deltaTimeAccumulator += deltaTime;

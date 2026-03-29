@@ -79,7 +79,7 @@ namespace DevoidEngine.Engine.Components
             container = new ContainerNode()
             {
                 ParticipatesInLayout = false,
-                Offset = new Vector2(50, 250),
+                Offset = new Vector2(50, 350),
                 Direction = FlexDirection.Column,
                 Color = Vector4.One,
                 Gap = 10,

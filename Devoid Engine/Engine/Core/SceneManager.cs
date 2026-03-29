@@ -17,9 +17,9 @@ namespace DevoidEngine.Engine.Core
             {
                 //CurrentScene.Destroy();
                 CurrentScene.Dispose();
-                Console.WriteLine("Scene Disposed");
             }
 
+            scene.Audio = EngineSingleton.Instance.AudioSystem;
             // 2. Set new scene
             CurrentScene = scene;
         }

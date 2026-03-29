@@ -1,4 +1,5 @@
-﻿using DevoidEngine.Engine.Components;
+﻿using DevoidEngine.Engine.Audio;
+using DevoidEngine.Engine.Components;
 
 namespace DevoidEngine.Engine.Core
 {
@@ -9,11 +10,16 @@ namespace DevoidEngine.Engine.Core
 
         public List<GameObject> GameObjects { get; private set; }
 
+        public AudioSystem Audio;
+
+
         private bool isPlaying = false;
         private CameraComponent3D mainCamera;
         private List<Transform3D> transforms;
         private List<CameraComponent3D> cameras;
         private List<IRenderComponent> renderables;
+
+
 
 
         public Scene()
@@ -124,6 +130,7 @@ namespace DevoidEngine.Engine.Core
         {
             if (component is IRenderComponent renderComponent)
                 renderables.Remove(renderComponent);
+
 
             OnComponentRemoved?.Invoke(component);
         }

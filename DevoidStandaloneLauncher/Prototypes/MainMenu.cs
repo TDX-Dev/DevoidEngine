@@ -4,10 +4,12 @@ using DevoidEngine.Engine.InputSystem;
 using DevoidEngine.Engine.InputSystem.InputDevices;
 using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.UI.Nodes;
+using DevoidEngine.Engine.UI.Text;
 using DevoidEngine.Engine.Utilities;
 using DevoidStandaloneLauncher.Scripts;
 using DevoidStandaloneLauncher.Utils;
 using System.Numerics;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace DevoidStandaloneLauncher.Prototypes
 {
@@ -18,6 +20,8 @@ namespace DevoidStandaloneLauncher.Prototypes
         GameObject cubeObject;
 
         string levelPath = "D:/Programming/Devoid Engine/DevoidStandaloneLauncher/LauncherContents/main_menu.fbx";
+
+        Version engineVer = new Version(0, 4, 5);
 
         void ConfigureInput()
         {
@@ -117,33 +121,32 @@ namespace DevoidStandaloneLauncher.Prototypes
 
             //camera.AddComponent<ButtonComponent>();
 
-            //ContainerNode buttonContainer = new ContainerNode()
-            //{
-            //    ParticipatesInLayout = false,
-            //    Color = Helper.RGBANormalize(new Vector4(34, 40, 49, 255)),
-            //    Size = new Vector2(300, 400),
-            //    Offset = new Vector2(50, 275),
-            //    Padding = new Padding()
-            //    {
-            //        Top = 10,
-            //        Bottom = 10,
-            //        Left = 10,
-            //        Right = 10,
-            //    }
-            //};
+            GameObject canvasObject = scene.AddGameObject("EngineInfo");
+            var canvasComponent = canvasObject.AddComponent<CanvasComponent>();
 
-            //ContainerNode innterButtonContainer = new ContainerNode()
-            //{
-            //    Color = Helper.RGBANormalize(new Vector4(57, 62, 70, 255)),
-            //    Offset = new Vector2(50, 275),
-            //    Layout = new LayoutOptions()
-            //    {
-            //        FlexGrowMain = 1
-            //    }
-            //};
+            string EngineInfo = $"Devoid Engine Ver. {engineVer.ToString()}";
 
-            //buttonContainer.Add(innterButtonContainer);
-            //canvas.Canvas.Add(buttonContainer);
+            ContainerNode engineInfo = new ContainerNode()
+            {
+                ParticipatesInLayout = false,
+                Color = new Vector4(0,0,0,0),
+                Padding = Padding.GetAll(10)
+            };
+
+            var font = FontLibrary.LoadFont(
+                "Engine/Content/Fonts/JetBrainsMono-Regular.ttf",
+                32
+            );
+
+            LabelNode label = new LabelNode(EngineInfo, font, 20)
+            {
+
+            };
+
+            engineInfo.Add(label);
+
+            canvasComponent.Canvas.Add(engineInfo);
+
 
             scene.Play(true);
             
@@ -190,6 +193,12 @@ namespace DevoidStandaloneLauncher.Prototypes
 
             LevelSpawnRegistry.Register("MM_Anchor", (assimpNode, assimpScene) =>
             {
+                GameObject musicObject = scene.AddGameObject("MusicObject");
+                var musicComponent = musicObject.AddComponent<AudioSourceComponent3D>();
+                musicComponent.AudioPath = "D:/Programming/Devoid Engine/DevoidStandaloneLauncher/LauncherContents/daisy_1.mp3";
+                musicComponent.PlayOnStart = true;
+                musicComponent.Play();
+
                 GameObject canvasObject = scene.AddGameObject("Canvas Object");
                 CanvasComponent canvas = canvasObject.AddComponent<CanvasComponent>();
                 canvas.RenderMode = CanvasRenderMode.WorldSpace;
@@ -217,7 +226,7 @@ namespace DevoidStandaloneLauncher.Prototypes
 
                 List<string> buttonNames = ["Play", "Options", "Credits", "Quit"];
                 List<Action> buttonActions = [
-                    () => {loader.SwitchPrototype(new UITester());Console.WriteLine("Play Clicked"); },
+                    () => {Importer.ClearCaches(); loader.SwitchPrototype(new UITester());},
                 () => {},
                 () => {},
                 () => {loader.Application.Quit(); }
@@ -236,6 +245,28 @@ namespace DevoidStandaloneLauncher.Prototypes
                     buttonComponent.BorderThickness = 2;
                     buttonComponent.OnHoverTextColor = new Vector4(0, 0, 0, 1);
                 }
+
+                ContainerNode titleContainer = new ContainerNode()
+                {
+                    ParticipatesInLayout = false,
+                    Offset = new Vector2(50, 100),
+                    Color = new Vector4(0, 0, 0, 0),
+                    Padding = Padding.GetAll(10)
+                };
+
+                var font = FontLibrary.LoadFont(
+                    "Engine/Content/Fonts/JetBrainsMono-Regular.ttf",
+                    32
+                );
+
+                LabelNode gameTitle = new LabelNode("Daisy", font, 160)
+                {
+
+                };
+
+                titleContainer.Add(gameTitle);
+
+                canvas.Canvas.Add(titleContainer);
 
             });
 

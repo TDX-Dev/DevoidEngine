@@ -108,6 +108,9 @@ namespace DevoidStandaloneLauncher.Prototypes
             lightComp.Intensity = 100;
             lightComp.Radius = 100;
 
+            GameObject skybox = scene.AddGameObject("Skybox");
+            var skyboxComp = skybox.AddComponent<SkyboxComponent>();
+
             scene.Play(true);
 
             PBRSpheres.SpawnSphereGrid(scene, new Vector3(0, 5, 5));

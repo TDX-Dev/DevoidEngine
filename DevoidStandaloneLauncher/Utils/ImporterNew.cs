@@ -546,6 +546,13 @@ namespace DevoidStandaloneLauncher.Utils
             return scene.Materials[mesh.MaterialIndex];
         }
 
+        public static void ClearCaches()
+        {
+            meshCache.Clear();
+            materialCache.Clear();
+            textureCache.Clear();
+        }
+
         public static void ApplyTransform(GameObject go, Node node)
         {
             Matrix4x4 matrix = Matrix4x4.Transpose(node.Transform);

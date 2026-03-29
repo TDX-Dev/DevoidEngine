@@ -316,8 +316,6 @@ namespace DevoidEngine.Engine.Core
             foreach (var comp in comps)
             {
                 RemoveComponent(comp);
-                comp.OnDestroy();
-                Console.WriteLine(comp);
             }
 
             foreach (var child in children)
