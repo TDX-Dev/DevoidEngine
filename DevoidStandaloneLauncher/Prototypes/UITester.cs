@@ -3,6 +3,7 @@ using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.InputSystem;
 using DevoidEngine.Engine.InputSystem.InputDevices;
 using DevoidEngine.Engine.Rendering;
+using DevoidEngine.Engine.UI.Nodes;
 using DevoidEngine.Engine.Utilities;
 using DevoidStandaloneLauncher.Scripts;
 using DevoidStandaloneLauncher.Utils;
@@ -112,6 +113,19 @@ namespace DevoidStandaloneLauncher.Prototypes
                 LoadDCC();
                 Importer.LoadModel(levelPath);
             }
+
+
+            //CanvasComponent canvas = camera.AddComponent<CanvasComponent>();
+
+            //ContainerNode buttonContainer = new ContainerNode()
+            //{
+            //    ParticipatesInLayout = false,
+            //    Color = Helper.RGBANormalize(new Vector4(34, 40, 49, 255)),
+            //    Size = new Vector2(300, 400),
+            //    Offset = new Vector2(50, 275)
+            //};
+
+            //canvas.Canvas.Add(buttonContainer);
         }
 
         void LoadDCC()
@@ -120,7 +134,7 @@ namespace DevoidStandaloneLauncher.Prototypes
             {
                 //Cursor.SetCursorState(CursorState.Grabbed);
 
-                GameObject camera = scene.AddGameObject("Camera");
+                camera = scene.AddGameObject("Camera");
 
                 camera.Transform.Position = Importer.GetTransform(assimpNode).Item1;
                 camera.Transform.Rotation = Importer.GetTransform(assimpNode).Item2;

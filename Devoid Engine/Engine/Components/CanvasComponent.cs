@@ -72,12 +72,15 @@ namespace DevoidEngine.Engine.Components
 
         public override void OnStart()
         {
-            UISystem.Roots.Add(Canvas);
+            UISystem.AddRoot(Canvas);
         }
 
         public override void OnDestroy()
         {
-            UISystem.Roots.Remove(Canvas);
+            UISystem.RemoveRoot(Canvas);
+            Canvas.Dispose();
+
+            Console.WriteLine("Disposed Canvas");
         }
 
         public override void OnUpdate(float dt)

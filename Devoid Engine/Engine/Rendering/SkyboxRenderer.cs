@@ -124,8 +124,8 @@ namespace DevoidEngine.Engine.Rendering
 
             CreateTextures();
 
-            Texture2D monoStudio = Helper.LoadHDRI("Engine/Content/HDRIs/monochrome_studio.hdr");
-            SetPanorama(monoStudio);
+            //Texture2D monoStudio = Helper.LoadHDRI("Engine/Content/HDRIs/monochrome_studio.hdr");
+            //SetPanorama(monoStudio);
         }
 
         public void SetPanorama(Texture2D hdr)

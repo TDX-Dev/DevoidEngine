@@ -298,7 +298,11 @@ namespace DevoidEngine.Engine.Core
             var comps = new List<Component>(Components);
 
             foreach (var comp in comps)
+            {
                 RemoveComponent(comp);
+                comp.OnDestroy();
+                Console.WriteLine(comp);
+            }
 
             foreach (var child in children)
                 child.OnDestroy();

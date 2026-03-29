@@ -128,6 +128,14 @@ namespace DevoidEngine.Engine.Core
             OnComponentRemoved?.Invoke(component);
         }
 
+        public void Dispose()
+        {
+            for (int i = 0; i < GameObjects.Count;  i++)
+            {
+                GameObjects[i].OnDestroy();
+            }
+        }
+
         public List<IRenderComponent> GetRenderables() => renderables;
         public List<CameraComponent3D> GetCameras3D() => cameras;
         public CameraComponent3D GetDefaultCamera3D() => mainCamera;

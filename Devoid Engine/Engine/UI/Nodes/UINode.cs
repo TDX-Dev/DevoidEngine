@@ -115,6 +115,10 @@ namespace DevoidEngine.Engine.UI.Nodes
 
         public IReadOnlyList<UINode> Children => _children;
 
+        public virtual void OnDragStart(Vector2 mouse) { }
+        public virtual void OnDrag(Vector2 mouse, Vector2 delta) { }
+        public virtual void OnDragEnd(Vector2 mouse) { }
+
         public virtual void OnMouseEnter() { }
         public virtual void OnMouseLeave() { }
 

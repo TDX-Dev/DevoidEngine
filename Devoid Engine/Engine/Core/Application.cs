@@ -110,7 +110,7 @@ namespace DevoidEngine.Engine.Core
             // 2. Resize renderer / swapchain
             Renderer.Resize(width, height);
 
-            UISystem.Resize(width, height);
+            //UISystem.Resize(width, height);
 
             // 4. Notify layers
             layerHandler.ResizeLayers(width, height);

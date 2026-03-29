@@ -1,6 +1,7 @@
 ﻿using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.Rendering.GPUResource;
 using DevoidEngine.Engine.Rendering.PostProcessing;
+using DevoidEngine.Engine.UI;
 using DevoidGPU;
 using SharpDX.DXGI;
 using System;
@@ -26,6 +27,9 @@ namespace DevoidEngine.Engine.Rendering
         static UniformBuffer meshRenderDataBuffer;
         static UniformBuffer cameraDataBuffer;
 
+        static Framebuffer UIFramebuffer;
+        static Texture2D UIRenderOutput;
+
         public static IInputLayout GetInputLayout(Mesh mesh, Shader shader) => inputLayoutCache.Get(GraphicsDevice, mesh.VertexBuffer.GetVertexInfo(), shader.vShader);
 
         public static void SetupCamera(CameraData cameraData)
@@ -42,6 +46,22 @@ namespace DevoidEngine.Engine.Rendering
             meshRenderDataBuffer = new UniformBuffer(sizeof(MeshRenderData));
 
             cameraDataBuffer = new UniformBuffer(sizeof(CameraData));
+
+            UIFramebuffer = new Framebuffer();
+
+            UIRenderOutput = new Texture2D(new TextureDescription()
+            {
+                Width = width,
+                Height = height,
+                Format = TextureFormat.RGBA8_UNorm,
+                GenerateMipmaps = false,
+                MipLevels = 1,
+                IsDepthStencil = false,
+                IsRenderTarget = true,
+                Type = TextureType.Texture2D,
+            });
+
+            UIFramebuffer.SetRenderTexture(UIRenderOutput, 0);
 
             // TESTING
             ActiveRenderTechnique = new ForwardRenderTechnique();
@@ -65,13 +85,28 @@ namespace DevoidEngine.Engine.Rendering
         {
             if (ActiveRenderTechnique == null)
                 Console.WriteLine("[Renderer]: Render technique was not set. No Object rendered.");
+
+            RenderUI(ctx.renderItemsUI);
+
             Framebuffer activeFrameBuffer = ActiveRenderTechnique?.Render(ctx);
             Renderer.GraphicsDevice.UnbindAllShaderResources();
             //DebugRenderSystem.Render(ctx.cameraData, activeFrameBuffer);
 
             var Output = (Texture2D)activeFrameBuffer.GetRenderTexture(0);
             Texture2D finalColor = PostProcessor.Run(Output);
+
+            
+
             RenderAPI.RenderToBuffer(finalColor, ctx.cameraTargetSurface);
+            RenderAPI.RenderToBuffer(UIRenderOutput, ctx.cameraTargetSurface);
+        }
+
+        public static void RenderUI(List<RenderItem> renderItems)
+        {
+            UIFramebuffer.Bind();
+            UIFramebuffer.Clear(Vector4.Zero);
+            Renderer.SetupCamera(UISystem.ScreenData);
+            Renderer.ExecuteDrawList(renderItems, UISystem.RenderState);
         }
 
         public static void ExecuteDrawList(List<RenderItem> items, RenderState renderState)
@@ -143,6 +178,7 @@ namespace DevoidEngine.Engine.Rendering
         public static void Resize(int width, int height)
         {
             GraphicsDevice.MainSurface.Resize(width, height);
+            UIFramebuffer.Resize(width, height);
             ActiveRenderTechnique?.Resize(width, height);
             PostProcessor.Resize(width, height);
         }

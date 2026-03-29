@@ -73,9 +73,6 @@ namespace DevoidEngine.Engine.Rendering
             Renderer.SetupCamera(ctx.cameraData);
             Renderer.ExecuteDrawList(ctx.renderItems3D, renderStateOverride);
 
-            Renderer.SetupCamera(UISystem.ScreenData);
-            Renderer.ExecuteDrawList(ctx.renderItemsUI, UISystem.RenderState);
-
 
             return finalOutputBuffer;
         }

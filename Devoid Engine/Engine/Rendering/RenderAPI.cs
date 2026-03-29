@@ -73,6 +73,7 @@ namespace DevoidEngine.Engine.Rendering
             Renderer.GraphicsDevice.SetRasterizerState(CullMode.None);
             Renderer.GraphicsDevice.SetPrimitiveType(PrimitiveType.Triangles);
             Renderer.GraphicsDevice.SetDepthState(DepthTest.Disabled, false);
+            Renderer.GraphicsDevice.SetBlendState(BlendMode.AlphaBlend);
 
             layout.Bind();
             mesh.Bind();

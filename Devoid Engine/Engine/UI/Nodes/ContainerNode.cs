@@ -60,6 +60,8 @@ namespace DevoidEngine.Engine.UI.Nodes
         {
             Material = UISystem.UIMaterial;
             UpdateMaterial();
+
+            BlockInput = true;
         }
 
         private void UpdateMaterial()
@@ -78,29 +80,6 @@ namespace DevoidEngine.Engine.UI.Nodes
             Material.SetVector4("CORNER_RADIUS", _borderRadius);
 
         }
-
-        //protected override Vector2 MeasureCore(Vector2 availableSize)
-        //{
-        //    return Size ?? Vector2.Zero;
-        //}
-
-        //protected override void ArrangeCore(UITransform finalRect)
-        //{
-        //    Rect = finalRect;
-        //}
-
-        //protected override void RenderCore(List<RenderItem> renderList, Matrix4x4 canvasModel, int order)
-        //{
-        //    Matrix4x4 local = Matrix4x4.CreateRotationZ(Rotation) * UISystem.BuildModel(Rect) * Matrix4x4.CreateTranslation(0, 0, order * 0.001f);
-        //    Matrix4x4 final = local * canvasModel;
-
-        //    renderList.Add(new RenderItem()
-        //    {
-        //        Mesh = UISystem.QuadMesh,
-        //        Material = Material,
-        //        Model = final
-        //    });
-        //}
 
         protected override void RenderCore(List<RenderItem> renderList, Matrix4x4 canvasModel, int order)
         {
@@ -132,6 +111,11 @@ namespace DevoidEngine.Engine.UI.Nodes
         protected override void UpdateCore(float deltaTime)
         {
 
+        }
+
+        public override void OnDrag(Vector2 mouse, Vector2 delta)
+        {
+            Offset += delta;
         }
     }
 }

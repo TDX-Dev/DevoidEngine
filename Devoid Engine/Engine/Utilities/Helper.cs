@@ -6,6 +6,8 @@ namespace DevoidEngine.Engine.Utilities
 {
     public static class Helper
     {
+        public static Vector4 RGBANormalize(Vector4 color) => color / 255;
+
         private static float SRGBToLinear(float v)
         {
             if (v <= 0.04045f)

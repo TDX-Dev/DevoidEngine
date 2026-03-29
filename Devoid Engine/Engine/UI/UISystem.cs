@@ -29,6 +29,10 @@ namespace DevoidEngine.Engine.UI
         public static CameraData ScreenData;
         private static IUniformBuffer screenDataBuffer;
 
+        private static Vector2 previousMouse;
+        private static bool isDragging;
+        private static Vector2 dragStartMouse;
+
         public static RenderState RenderState = new RenderState()
         {
             BlendMode = BlendMode.AlphaBlend,
@@ -66,6 +70,7 @@ namespace DevoidEngine.Engine.UI
                     Marshal.SizeOf<CameraData>(), BufferUsage.Dynamic);
 
             screenDataBuffer.SetData(ScreenData);
+
 
             foreach (var root in Roots)
                 root.Initialize();
@@ -119,14 +124,18 @@ namespace DevoidEngine.Engine.UI
             HandleInput();
         }
 
+        public bool Handle(InputEvent e)
+        {
+            // UI handles events here
+        }
+
         private static void HandleInput()
         {
-            Vector2 mouse = Input.State.Get(InputDeviceType.Mouse, 0) != 0
-                ? Vector2.Zero
-                : Vector2.Zero;
+            Vector2 mouse = InputBackendMousePosition();
+            Vector2 mouseDelta = mouse - previousMouse;
+            previousMouse = mouse;
 
-            mouse = InputBackendMousePosition();
-
+            UINode previousHovered = HoveredNode;
             HoveredNode = null;
 
             for (int i = Roots.Count - 1; i >= 0; i--)
@@ -136,13 +145,21 @@ namespace DevoidEngine.Engine.UI
                     break;
             }
 
-            bool mouseDown = Input.GetActionDown("MouseLeft");
-            bool mouseHeld = Input.GetAction("MouseLeft") > 0;
+            if (previousHovered != HoveredNode)
+            {
+                previousHovered?.OnMouseLeave();
+                HoveredNode?.OnMouseEnter();
+            }
 
-            // Mouse press
+            bool mouseDown = Input.State.GetDown(InputDeviceType.Mouse, (ushort)MouseButton.Left);
+            bool mouseHeld = Input.State.Get(InputDeviceType.Mouse, (ushort)MouseButton.Left) > 0;
+
+            // Press
             if (mouseDown)
             {
                 PressedNode = HoveredNode;
+                dragStartMouse = mouse;
+                isDragging = false;
 
                 if (PressedNode != null)
                 {
@@ -151,17 +168,41 @@ namespace DevoidEngine.Engine.UI
                 }
             }
 
-            // Mouse release
+            // Drag detection
+            if (mouseHeld && PressedNode != null)
+            {
+                if (!isDragging)
+                {
+                    if (Vector2.Distance(mouse, dragStartMouse) > 3f)
+                    {
+                        isDragging = true;
+                        PressedNode.OnDragStart(mouse);
+                    }
+                }
+
+                if (isDragging)
+                {
+                    PressedNode.OnDrag(mouse, mouseDelta);
+                }
+            }
+
+            // Release
             if (!mouseHeld && PressedNode != null)
             {
+                if (isDragging)
+                {
+                    PressedNode.OnDragEnd(mouse);
+                }
+
                 PressedNode.OnMouseUp();
 
-                if (HoveredNode == PressedNode)
+                if (!isDragging && HoveredNode == PressedNode)
                 {
                     PressedNode.OnClick();
                 }
 
                 PressedNode = null;
+                isDragging = false;
             }
         }
 
