@@ -26,14 +26,16 @@ namespace DevoidEngine.Engine.Components
 
             if (parentUI != null)
             {
+                Console.WriteLine(parentUI + " Found");
                 parentUI.Root.Add(Root);
                 return;
             }
 
-            var canvas = gameObject.GetParentComponent<CanvasComponent>();
+            var canvas = gameObject.GetParentComponent<CanvasComponent>() ?? gameObject.GetComponent<CanvasComponent>();
 
             if (canvas != null)
             {
+                Console.WriteLine(canvas + " Canvas Found");
                 canvas.Canvas.Add(Root);
                 return;
             }

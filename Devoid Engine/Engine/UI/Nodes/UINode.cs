@@ -38,6 +38,12 @@ namespace DevoidEngine.Engine.UI.Nodes
 
         public bool ParticipatesInLayout = true;
 
+        public Action OnNodeMouseDown;
+        public Action OnNodeMouseUp;
+        public Action OnNodeMouseEnter;
+        public Action OnNodeMouseLeave;
+        public Action OnNodeMouseHeld;
+
         public void Add(UINode child)
         {
             _children.Add(child);
@@ -119,11 +125,12 @@ namespace DevoidEngine.Engine.UI.Nodes
         public virtual void OnDrag(Vector2 mouse, Vector2 delta) { }
         public virtual void OnDragEnd(Vector2 mouse) { }
 
-        public virtual void OnMouseEnter() { }
-        public virtual void OnMouseLeave() { }
+        public virtual void OnMouseEnter() => OnNodeMouseEnter?.Invoke();
+        public virtual void OnMouseLeave() => OnNodeMouseLeave?.Invoke();
+        public virtual void OnMouseHeld() => OnNodeMouseHeld?.Invoke();
 
-        public virtual void OnMouseDown() { }
-        public virtual void OnMouseUp() { }
+        public virtual void OnMouseDown() => OnNodeMouseDown?.Invoke();
+        public virtual void OnMouseUp() => OnNodeMouseUp?.Invoke();
 
         public virtual void OnClick() { }
 

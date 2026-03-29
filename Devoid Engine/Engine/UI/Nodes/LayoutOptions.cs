@@ -9,6 +9,10 @@
 
         public float Horizontal => Left + Right;
         public float Vertical => Top + Bottom;
+
+        public static Padding GetAll(float val) => new Padding { Left = val, Right = val, Top = val, Bottom = val };
+        public static Padding GetVertical(float val) => new Padding { Top = val, Bottom = val };
+        public static Padding GetHorizontal(float val) => new Padding { Left = val, Right = val };
     }
 
     public class LayoutOptions

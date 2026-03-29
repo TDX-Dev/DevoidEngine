@@ -63,13 +63,13 @@ namespace DevoidEngine.Engine.Core
         {
             for (int i = 0; i < Components.Count; i++)
             {
-                if (typeof(T) == Components[i].GetType())
-                {
-                    return (T)Components[i];
-                }
+                if (Components[i] is T t)
+                    return t;
             }
+
             return null;
         }
+
         public Component GetComponent(Type type)
         {
             foreach (var comp in Components)

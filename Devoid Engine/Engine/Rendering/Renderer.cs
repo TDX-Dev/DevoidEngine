@@ -181,6 +181,7 @@ namespace DevoidEngine.Engine.Rendering
             UIFramebuffer.Resize(width, height);
             ActiveRenderTechnique?.Resize(width, height);
             PostProcessor.Resize(width, height);
+            UISystem.Resize(width, height);
         }
         static void UpdatePerObjectData(Matrix4x4 model)
         {

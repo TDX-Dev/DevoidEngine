@@ -1,6 +1,6 @@
 ﻿namespace DevoidStandaloneLauncher.Prototypes
 {
-    internal class Prototype
+    public class Prototype
     {
         public PrototypeLoader loader;
         public virtual void OnInit() { }

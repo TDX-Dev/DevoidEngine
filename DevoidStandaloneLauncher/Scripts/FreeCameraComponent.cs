@@ -107,8 +107,6 @@ namespace DevoidStandaloneLauncher.Scripts
                 move = Vector3.Normalize(move);
 
             float speed = MoveSpeed;
-            if (Input.GetKey(Keys.LeftShift))
-                speed *= BoostMultiplier;
 
             gameObject.Transform.Position += move * speed * dt;
         }

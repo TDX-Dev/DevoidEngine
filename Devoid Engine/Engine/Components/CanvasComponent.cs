@@ -79,8 +79,6 @@ namespace DevoidEngine.Engine.Components
         {
             UISystem.RemoveRoot(Canvas);
             Canvas.Dispose();
-
-            Console.WriteLine("Disposed Canvas");
         }
 
         public override void OnUpdate(float dt)

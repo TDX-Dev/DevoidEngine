@@ -26,14 +26,13 @@ namespace DevoidEngine.Engine.UI
                     case MouseAxis.X:
                         mouse.X = e.Value;
                         UISystem.MouseMove(mouse);
-                        return true;
+                        return false;
 
                     case MouseAxis.Y:
                         mouse.Y = e.Value;
                         UISystem.MouseMove(mouse);
-                        return true;
+                        return false;
                 }
-                return false;
             }
 
             if (e.Control == (ushort)MouseButton.Left)

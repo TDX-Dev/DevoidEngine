@@ -60,8 +60,6 @@ namespace DevoidEngine.Engine.UI.Nodes
         {
             Material = UISystem.UIMaterial;
             UpdateMaterial();
-
-            BlockInput = true;
         }
 
         private void UpdateMaterial()
@@ -108,14 +106,19 @@ namespace DevoidEngine.Engine.UI.Nodes
             //DebugRenderSystem.DrawRectUI(model);
         }
 
-        protected override void UpdateCore(float deltaTime)
-        {
+        //protected override void UpdateCore(float deltaTime)
+        //{
 
-        }
+        //}
 
-        public override void OnDrag(Vector2 mouse, Vector2 delta)
-        {
-            Offset += delta;
-        }
+        //public override void OnMouseDown()
+        //{
+        //    OnMouse
+        //}
+
+        //public override void OnDrag(Vector2 mouse, Vector2 delta)
+        //{
+        //    Offset += delta;
+        //}
     }
 }

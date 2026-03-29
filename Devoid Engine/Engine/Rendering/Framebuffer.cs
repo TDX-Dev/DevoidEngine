@@ -56,7 +56,7 @@ namespace DevoidEngine.Engine.Rendering
             for (int i = 0; i < RenderTextures.Count; i++)
             {
                 RenderTextures[i].Resize(width, height);
-                Renderer.ResourceManager.FramebufferManager.AttachRenderTexture(_frameBuffer, RenderTextures[i].GetRendererHandle());
+                Renderer.ResourceManager.FramebufferManager.AttachRenderTexture(_frameBuffer, RenderTextures[i].GetRendererHandle(), i);
             }
             if (DepthTexture != null)
             {

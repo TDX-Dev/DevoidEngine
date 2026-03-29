@@ -50,6 +50,9 @@ namespace DevoidEngine.Engine.Core
         private List<CameraRenderContext> renderContexts = new List<CameraRenderContext>();
 
         private bool isRunning = false;
+        private bool isResizePending = false;
+        public int pendingWidth;
+        public int pendingHeight;
         private Window targetWindow;
 
         public void Initialize(ApplicationSpecification applicationSpecification)
@@ -97,23 +100,36 @@ namespace DevoidEngine.Engine.Core
             isRunning = true;
         }
 
-        public void AddLayer(Layer layer) => layerHandler.AddLayer(layer);
+        public void AddLayer(Layer layer)
+        {
+            layer.Application = this;
+            layerHandler.AddLayer(layer);
+        }
         public void RemoveLayer(Layer layer) => layerHandler.RemoveLayer(layer);
 
         private void HandleWindowResize(int width, int height)
         {
             if (width <= 0 || height <= 0) return;
 
-            // 1. Update global screen size
+            pendingWidth = width;
+            pendingHeight = height;
+            isResizePending = true;
+        }
+
+        private void Resize()
+        {
+            if (!isResizePending) return;
+            int width = pendingWidth;
+            int height = pendingHeight;
             Screen.Size = new Vector2(width, height);
-
-            // 2. Resize renderer / swapchain
             Renderer.Resize(width, height);
-
-            //UISystem.Resize(width, height);
-
-            // 4. Notify layers
             layerHandler.ResizeLayers(width, height);
+            isResizePending = false;
+        }
+
+        public void Quit()
+        {
+            targetWindow.Close();
         }
 
         public void Run()
@@ -149,6 +165,7 @@ namespace DevoidEngine.Engine.Core
                 Input.EndFrame();
                 RenderThread.ExecuteFrameEnd();
 
+
                 if (targetWindow.IsExiting)
                 {
                     targetWindow.Close();
@@ -156,6 +173,7 @@ namespace DevoidEngine.Engine.Core
                 }
                 if (!targetWindow.IsVisible)
                     targetWindow.IsVisible = true;
+                Resize();
 
                 numFrames++;
             }

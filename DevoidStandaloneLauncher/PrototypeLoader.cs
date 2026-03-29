@@ -26,6 +26,27 @@ namespace DevoidStandaloneLauncher
             GamePrototype.OnInit();
         }
 
+        public void SwitchPrototype(Prototype newPrototype)
+        {
+            // stop old scene
+            CurrentScene?.Play(false);
+
+            // create fresh scene
+            CurrentScene = new Scene();
+
+            // reset splash timer if needed
+            splashTimer = 0f;
+
+            // replace prototype
+            GamePrototype = newPrototype;
+            GamePrototype.loader = this;
+
+            prototypeLoaded = false;
+
+            GamePrototype.OnInit();
+            prototypeLoaded = true;
+        }
+
 
         public override void OnUpdate(float deltaTime)
         {

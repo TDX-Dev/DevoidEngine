@@ -22,7 +22,8 @@ namespace DevoidStandaloneLauncher.Prototypes
         //string levelPath = "D:/Programming/Devoid Engine/DevoidStandaloneLauncher/LauncherContents/crt.fbx";
         //string levelPath = "C:\\Users\\maari\\Downloads\\service_pistol_2k.gltf\\service_pistol_2k.fbx";
         string levelPath = "D:/Programming/Devoid Engine/DevoidStandaloneLauncher/LauncherContents/service_pistol_2k.fbx";
-        public override void OnInit()
+        
+        void LoadInput()
         {
             Input.Map.Bind("LookX", new InputBinding()
             {
@@ -79,12 +80,15 @@ namespace DevoidStandaloneLauncher.Prototypes
                 DeviceType = InputDeviceType.Keyboard,
                 Control = (ushort)Keys.LeftShift
             });
+        }
+        public override void OnInit()
+        {
 
 
             Console.WriteLine("Initialized");
             this.scene = new Scene();
             loader.CurrentScene = scene;
-            SceneManager.CurrentScene = scene;
+            SceneManager.LoadScene(scene);
 
             testRender = new Mesh();
             testRender.SetVertices(Primitives.GetSphereVertices(128, 128, 0.75f));

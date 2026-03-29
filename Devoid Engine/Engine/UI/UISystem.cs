@@ -156,6 +156,10 @@ namespace DevoidEngine.Engine.UI
                         isDragging = true;
                         PressedNode.OnDragStart(mouse);
                     }
+                    else
+                    {
+                        PressedNode.OnMouseHeld();   // ← add this
+                    }
                 }
 
                 if (isDragging)
