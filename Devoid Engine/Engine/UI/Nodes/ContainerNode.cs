@@ -8,6 +8,8 @@ namespace DevoidEngine.Engine.UI.Nodes
     {
         private Texture2D _texture;
 
+        public override string ThemeType => "Panel";
+
         public Texture2D Texture
         {
             get => _texture;

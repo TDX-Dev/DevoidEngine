@@ -9,6 +9,8 @@ namespace DevoidEngine.Engine.UI.Nodes
     {
         public TextLayoutOptions LayoutOptions = TextLayoutOptions.Default;
 
+        public override string ThemeType => "Label";
+
         public string Text
         {
             get

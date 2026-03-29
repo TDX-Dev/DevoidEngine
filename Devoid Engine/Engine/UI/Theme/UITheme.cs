@@ -11,6 +11,8 @@ namespace DevoidEngine.Engine.UI.Theme
 {
     public class UITheme
     {
+        public event Action ThemeChanged;
+
         private Dictionary<string, ThemeTypeData> types = new();
         private Dictionary<string, string> typeVariations = new();
 
@@ -34,24 +36,56 @@ namespace DevoidEngine.Engine.UI.Theme
         {
             var data = GetOrCreateType(themeType);
             data.Colors[name] = color;
+
+
+            ThemeChanged?.Invoke();
         }
 
         public void SetConstant(string name, string themeType, int constant)
         {
             var data = GetOrCreateType(themeType);
             data.Constants[name] = constant;
+
+
+            ThemeChanged?.Invoke();
         }
 
         public void SetFont(string name, string themeType, FontInternal font)
         {
             var data = GetOrCreateType(themeType);
             data.Fonts[name] = font;
+
+
+            ThemeChanged?.Invoke();
         }
+
+        public void SetFontSize(string name, string themeType, int fontSize)
+        {
+            var data = GetOrCreateType(themeType);
+            data.FontSizes[name] = fontSize;
+
+            ThemeChanged?.Invoke();
+        }
+
 
         public void SetStyleBox(string name, string themeType, StyleBox stylebox)
         {
             var data = GetOrCreateType(themeType);
             data.StyleBoxes[name] = stylebox;
+
+
+            ThemeChanged?.Invoke();
+        }
+
+        public int GetFontSize(string name, string themeType)
+        {
+            if (types.TryGetValue(themeType, out var data) &&
+                data.FontSizes.TryGetValue(name, out var size))
+            {
+                return size;
+            }
+
+            return 0;
         }
 
         public StyleBox GetStyleBox(string name, string themeType)
@@ -91,6 +125,9 @@ namespace DevoidEngine.Engine.UI.Theme
         {
             if (types.TryGetValue(themeType, out var data))
                 data.Colors.Remove(name);
+
+
+            ThemeChanged?.Invoke();
         }
 
         public void RenameColor(string oldName, string name, string themeType)
@@ -103,6 +140,9 @@ namespace DevoidEngine.Engine.UI.Theme
 
             data.Colors.Remove(oldName);
             data.Colors[name] = value;
+
+
+            ThemeChanged?.Invoke();
         }
 
         public bool HasColor(string name, string themeType)
@@ -111,9 +151,26 @@ namespace DevoidEngine.Engine.UI.Theme
                 && data.Colors.ContainsKey(name);
         }
 
+        public bool HasFontSize(string name, string themeType)
+        {
+            return types.TryGetValue(themeType, out var data) &&
+                   data.FontSizes.ContainsKey(name);
+        }
+
+        public void ClearFontSize(string name, string themeType)
+        {
+            if (types.TryGetValue(themeType, out var data))
+                data.FontSizes.Remove(name);
+
+            ThemeChanged?.Invoke();
+        }
+
         public void SetTypeVariation(string themeType, string baseType)
         {
             typeVariations[themeType] = baseType;
+
+
+            ThemeChanged?.Invoke();
         }
 
         public bool IsTypeVariation(string themeType, string baseType)
@@ -137,7 +194,13 @@ namespace DevoidEngine.Engine.UI.Theme
 
                 foreach (var kv in src.Fonts)
                     dst.Fonts[kv.Key] = kv.Value;
+
+                foreach (var kv in src.FontSizes)
+                    dst.FontSizes[kv.Key] = kv.Value;
             }
+
+
+            ThemeChanged?.Invoke();
         }
     }
 }

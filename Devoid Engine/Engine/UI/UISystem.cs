@@ -4,6 +4,7 @@ using DevoidEngine.Engine.InputSystem.InputDevices;
 using DevoidEngine.Engine.Physics;
 using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.UI.Nodes;
+using DevoidEngine.Engine.UI.Theme;
 using DevoidEngine.Engine.Utilities;
 using DevoidGPU;
 using System.Numerics;
@@ -14,6 +15,8 @@ namespace DevoidEngine.Engine.UI
 {
     public static class UISystem
     {
+        public static UITheme DefaultTheme;
+
         public static List<CanvasNode> Roots = new();
 
         public static UINode FocusedNode { get; private set; }
@@ -54,6 +57,8 @@ namespace DevoidEngine.Engine.UI
 
         public static void Initialize()
         {
+            InitializeDefaultTheme();
+
             QuadMesh = new Mesh();
             QuadMesh.SetVertices(Primitives.GetQuadVertex());
 
@@ -80,6 +85,44 @@ namespace DevoidEngine.Engine.UI
                 root.Initialize();
 
             Input.Router.Push(new UIInputLayer());
+        }
+
+        public static void InitializeDefaultTheme()
+        {
+            DefaultTheme = new UITheme();
+
+            // Label styling
+            DefaultTheme.SetColor(
+                StyleKeys.FontColor,
+                "Label",
+                new Vector4(1, 1, 1, 1)
+            );
+
+            DefaultTheme.SetFontSize(
+                StyleKeys.FontSize,
+                "Label",
+                16
+            );
+
+            // Panel styling
+            DefaultTheme.SetConstant(
+                StyleKeys.BorderWidth,
+                "Panel",
+                2
+            );
+
+            //// Button styleboxes
+            //DefaultTheme.SetStylebox(
+            //    StyleKeys.Normal,
+            //    "Button",
+            //    CreateButtonNormal()
+            //);
+
+            //DefaultTheme.SetStylebox(
+            //    StyleKeys.Hover,
+            //    "Button",
+            //    CreateButtonHover()
+            //);
         }
 
         public static void AddRoot(CanvasNode node)

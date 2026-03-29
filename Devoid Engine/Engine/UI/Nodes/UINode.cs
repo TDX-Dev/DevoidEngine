@@ -1,5 +1,6 @@
 ﻿using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.Rendering;
+using DevoidEngine.Engine.UI.Theme;
 using System.Numerics;
 
 namespace DevoidEngine.Engine.UI.Nodes
@@ -16,6 +17,11 @@ namespace DevoidEngine.Engine.UI.Nodes
         }
 
         public bool BlockInput = false;
+
+        public virtual string ThemeType => "Control";
+        public UINode Parent => _parent;
+        public IReadOnlyList<UINode> Children => _children;
+
         public UITransform Rect { get; protected set; }
         public Vector2 DesiredSize { get; set; }
         public LayoutOptions Layout { get; set; } = new LayoutOptions();
@@ -24,8 +30,11 @@ namespace DevoidEngine.Engine.UI.Nodes
         public bool Visible = true;
         public bool Interactable = true;
 
-        internal List<UINode> _children = new();
+        public UITheme Theme;
+        private UITheme cachedTheme;
 
+        internal UINode _parent;
+        internal List<UINode> _children = new();
 
 
         // Size intent
@@ -44,16 +53,48 @@ namespace DevoidEngine.Engine.UI.Nodes
         public Action OnNodeMouseLeave;
         public Action OnNodeMouseHeld;
 
+        public UITheme GetTheme()
+        {
+            if (Theme != null)
+                return Theme;
+
+            if (Parent != null)
+                return Parent.GetTheme();
+
+            return UISystem.DefaultTheme;
+        }
+
         public void Add(UINode child)
         {
+            child._parent = this;
             _children.Add(child);
             child.Initialize();
         }
 
         public void Initialize()
         {
+            RegisterTheme();
             InitializeCore();
+            ApplyTheme();
         }
+
+        void RegisterTheme()
+        {
+            cachedTheme = GetTheme();
+
+            if (cachedTheme != null)
+                cachedTheme.ThemeChanged += OnThemeChanged;
+        }
+
+        void OnThemeChanged()
+        {
+            ApplyTheme();
+
+            for (int i = 0; i < _children.Count; i++)
+                _children[i].OnThemeChanged();
+        }
+
+        protected virtual void ApplyTheme() { }
 
         // ENTRY POINT
         public Vector2 Measure(Vector2 availableSize)
@@ -118,8 +159,6 @@ namespace DevoidEngine.Engine.UI.Nodes
             }
             _children.Clear();
         }
-
-        public IReadOnlyList<UINode> Children => _children;
 
         public virtual void OnDragStart(Vector2 mouse) { }
         public virtual void OnDrag(Vector2 mouse, Vector2 delta) { }
