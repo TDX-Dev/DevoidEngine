@@ -3,8 +3,16 @@ using System.Numerics;
 
 namespace DevoidEngine.Engine.UI.Nodes
 {
+    public enum CanvasRenderMode
+    {
+        ScreenSpace,
+        WorldSpace
+    }
+
     public class CanvasNode : FlexboxNode
     {
+        public CanvasRenderMode RenderMode;
+
         protected override Vector2 MeasureCore(Vector2 availableSize)
         {
             base.MeasureCore(availableSize);

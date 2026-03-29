@@ -6,11 +6,6 @@ using System.Numerics;
 
 namespace DevoidEngine.Engine.Components
 {
-    public enum CanvasRenderMode
-    {
-        ScreenSpace,
-        WorldSpace
-    }
 
     public class CanvasComponent : Component, IRenderComponent
     {
@@ -18,16 +13,29 @@ namespace DevoidEngine.Engine.Components
 
         public bool isEnabled = true;
         public CameraComponent3D CameraConstraint;
-        public CanvasRenderMode RenderMode = CanvasRenderMode.ScreenSpace;
+        public CanvasRenderMode RenderMode
+        {
+            get => renderMode;
+            set
+            {
+                renderMode = value;
+
+                // its stored in canvas node for input projection.
+                Canvas.RenderMode = value;
+            }
+        }
         public int PixelsPerUnit = 10;
         public int Order = 0;
+
+        private CanvasRenderMode renderMode = CanvasRenderMode.ScreenSpace;
 
         public CanvasNode Canvas = new CanvasNode()
         {
             Direction = FlexDirection.Row,
             Align = AlignItems.Center,
-            Justify = JustifyContent.Center
+            Justify = JustifyContent.Center,
         };
+
 
         public Matrix4x4 GetCanvasModelMatrix()
         {
@@ -73,6 +81,7 @@ namespace DevoidEngine.Engine.Components
         public override void OnStart()
         {
             UISystem.AddRoot(Canvas);
+            Canvas.RenderMode = renderMode;
         }
 
         public override void OnDestroy()

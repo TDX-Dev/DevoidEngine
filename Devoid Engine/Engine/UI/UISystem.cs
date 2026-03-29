@@ -12,7 +12,7 @@ namespace DevoidEngine.Engine.UI
 {
     public static class UISystem
     {
-        public static List<UINode> Roots = new();
+        public static List<CanvasNode> Roots = new();
 
         public static UINode FocusedNode { get; private set; }
         public static UINode HoveredNode { get; private set; }
@@ -77,13 +77,13 @@ namespace DevoidEngine.Engine.UI
             Input.Router.Push(new UIInputLayer());
         }
 
-        public static void AddRoot(UINode node)
+        public static void AddRoot(CanvasNode node)
         {
             Roots.Add(node);
             node.Initialize();
         }
 
-        public static void RemoveRoot(UINode node)
+        public static void RemoveRoot(CanvasNode node)
         {
             Roots.Remove(node);
         }

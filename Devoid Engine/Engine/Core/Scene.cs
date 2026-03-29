@@ -130,10 +130,15 @@ namespace DevoidEngine.Engine.Core
 
         public void Dispose()
         {
-            for (int i = 0; i < GameObjects.Count;  i++)
+            for (int i = 0; i < GameObjects.Count; i++)
             {
                 GameObjects[i].OnDestroy();
             }
+
+            GameObjects.Clear();
+            transforms.Clear();
+            cameras.Clear();
+            renderables.Clear();
         }
 
         public List<IRenderComponent> GetRenderables() => renderables;
