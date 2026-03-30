@@ -56,21 +56,14 @@ float DashPattern(float2 p, float2 halfSize)
     float dx = halfSize.x - abs(p.x);
     float dy = halfSize.y - abs(p.y);
 
-    // choose nearest edge
     if (dx < dy)
-    {
-        // vertical edge → dash along Y
-        coord = p.y;
-    }
+        coord = p.y; // vertical edge
     else
-    {
-        // horizontal edge → dash along X
-        coord = p.x;
-    }
+        coord = p.x; // horizontal edge
 
     float period = DASH_SIZE + GAP_SIZE;
 
-    float m = fmod(abs(coord), period);
+    float m = frac(coord / period) * period;
 
     return step(m, DASH_SIZE);
 }

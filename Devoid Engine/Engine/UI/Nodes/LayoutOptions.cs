@@ -15,25 +15,17 @@
         public static Padding GetHorizontal(float val) => new Padding { Left = val, Right = val };
     }
 
-    public enum FlexWrap
-    {
-        NoWrap,
-        Wrap
-    }
-
     public class LayoutOptions
     {
         public float FlexGrowMain;
         public float FlexGrowCross;
         public float FlexBasis;
-        public FlexWrap Wrap;
 
         public static readonly LayoutOptions Default = new LayoutOptions
         {
             FlexGrowMain = 1,
             FlexGrowCross = 1,
-            FlexBasis = 0,
-            Wrap = FlexWrap.NoWrap
+            FlexBasis = 0
         };
     }
 }

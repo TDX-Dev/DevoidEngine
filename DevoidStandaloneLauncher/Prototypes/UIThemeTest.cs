@@ -52,11 +52,16 @@ namespace DevoidStandaloneLauncher.Prototypes
 
             FlexboxNode leftInnerContainer = new FlexboxNode()
             {
+                Gap = 10,
+                Padding = Padding.GetAll(10),
+                Direction = FlexDirection.Column,
                 Layout = new LayoutOptions()
                 {
                     FlexGrowMain = 0.2f,
                 }
             };
+
+            AddAlterBoxes(leftInnerContainer, false, 2);
 
             FlexboxNode rightInnerContainer = new FlexboxNode()
             {
@@ -75,6 +80,7 @@ namespace DevoidStandaloneLauncher.Prototypes
                 Align = AlignItems.Center,
                 Gap = 10,
                 Padding = Padding.GetAll(10),
+                Wrap = FlexWrap.Wrap,
                 Layout = new LayoutOptions()
                 {
                     FlexGrowMain = 0.3f
@@ -83,13 +89,16 @@ namespace DevoidStandaloneLauncher.Prototypes
 
             FlexboxNode rightInnerInnerContainer2 = new FlexboxNode()
             {
+                Padding = Padding.GetAll(10),
+                Gap = 10,
                 Layout = new LayoutOptions()
                 {
                     FlexGrowMain = 0.7f
                 }
             };
 
-            AddContainerList(rightInnerInnerContainer1);
+            AddContainerList(rightInnerInnerContainer1, 5);
+            AddFlexboxList(rightInnerInnerContainer2);
 
             rightInnerContainer.Add(rightInnerInnerContainer1);
             rightInnerContainer.Add(rightInnerInnerContainer2);
@@ -100,8 +109,64 @@ namespace DevoidStandaloneLauncher.Prototypes
             canvas.Canvas.Add(bodyContainer);
         }
 
+        // Dk what to call this.
+        void AddAlterBoxes(UINode node, bool inv, int depth = 0)
+        {
+            FlexboxNode rightInnerInnerContainer1 = new FlexboxNode()
+            {
+                Padding = Padding.GetAll(10),
+                Gap = 10,
+                Direction = FlexDirection.Column,
+                Layout = new LayoutOptions()
+                {
+                    FlexGrowMain = inv ? 0.7f : 0.3f
+                }
+            };
 
-        void AddContainerList(UINode node)
+            FlexboxNode rightInnerInnerContainer2 = new FlexboxNode()
+            {
+                Padding = Padding.GetAll(10),
+                Gap = 10,
+                Direction = FlexDirection.Column,
+                Layout = new LayoutOptions()
+                {
+                    FlexGrowMain = inv ? 0.3f : 0.7f
+                }
+            };
+
+            node.Add(rightInnerInnerContainer1);
+            node.Add(rightInnerInnerContainer2);
+
+            if (depth == 0)
+                return;
+
+            AddAlterBoxes(rightInnerInnerContainer1, !inv, depth - 1);
+            AddAlterBoxes(rightInnerInnerContainer2, inv, depth - 1);
+        }
+
+        void AddFlexboxList(UINode node, int n = 4)
+        {
+            for (int i = 0; i < n; i++)
+            {
+                FlexboxNode rightInnerInnerContainer2 = new FlexboxNode()
+                {
+                    Padding = Padding.GetAll(10),
+                    Gap = 10,
+                    Direction = FlexDirection.Column,
+                    Layout = new LayoutOptions()
+                    {
+                        FlexGrowMain = 0.7f
+                    }
+                };
+
+                AddAlterBoxes(rightInnerInnerContainer2, i % 2 == 0, 2);
+
+                node.Add(rightInnerInnerContainer2);
+            }
+        }
+
+
+        void AddContainerList(UINode node, int n = 5, float grow = 1)
         {
             var font = FontLibrary.LoadFont(
                 "Engine/Content/Fonts/JetBrainsMono-Regular.ttf",
@@ -112,7 +177,7 @@ namespace DevoidStandaloneLauncher.Prototypes
 
             foreach (var kv in DebugMutedColors)
             {
-                if (i++ >= 10)
+                if (i++ >= n)
                     break;
 
                 var container = new ContainerNode()
@@ -120,13 +185,14 @@ namespace DevoidStandaloneLauncher.Prototypes
                     Padding = Padding.GetAll(20),
                     Layout = new LayoutOptions()
                     {
-                        FlexGrowMain = 1,
+                        FlexGrowMain = grow,
                     }
                 };
 
                 container.AddColorOverride(StyleKeys.Background, kv.Value);
+                container.AddConstantOverride(StyleKeys.BorderRadius, new Vector4(20));
 
-                var label = new LabelNode(kv.Key, font, 26);
+                var label = new LabelNode(kv.Key, font, 20);
 
                 label.AddColorOverride(StyleKeys.FontColor, GetReadableTextColor(kv.Value));
 
@@ -138,17 +204,15 @@ namespace DevoidStandaloneLauncher.Prototypes
 
         public static Vector4 GetReadableTextColor(Vector4 background)
         {
-            // Perceived luminance (sRGB)
             float luminance =
                 (0.299f * background.X) +
                 (0.587f * background.Y) +
                 (0.114f * background.Z);
 
-            // Threshold ~0.5 works well for UI
             if (luminance > 0.5f)
-                return new Vector4(0f, 0f, 0f, 1f); // dark text
+                return new Vector4(0f, 0f, 0f, 1f);
             else
-                return new Vector4(1f, 1f, 1f, 1f); // light text
+                return new Vector4(1f, 1f, 1f, 1f);
         }
 
         public static readonly Dictionary<string, Vector4> DebugMutedColors = new()
