@@ -25,22 +25,13 @@ namespace DevoidEngine.Engine.UI.Nodes
             }
         }
 
-        public Vector4 Color
-        {
-            get => _color;
-            set
-            {
-                _color = value;
-                UpdateMaterial();
-            }
-        }
-
         public FontInternal Font;
         public float Scale = 1f;
 
         private Vector2 _measuredTextSize;
         private Mesh _mesh;
         private string _text;
+        private int _fontSize;
         private Vector4 _color = new Vector4(1, 1, 1, 1);
         bool _meshDirty = true;
 
@@ -61,10 +52,10 @@ namespace DevoidEngine.Engine.UI.Nodes
             var theme = GetTheme();
 
             if (theme.HasColor(StyleKeys.FontColor, ThemeType))
-                Color = theme.GetColor(StyleKeys.FontColor, ThemeType);
+                _color = theme.GetColor(StyleKeys.FontColor, ThemeType);
 
             if (theme.HasFontSize(StyleKeys.FontSize, ThemeType))
-                FontSize = theme.GetFontSize(StyleKeys.FontSize, ThemeType);
+                _fontSize = theme.GetFontSize(StyleKeys.FontSize, ThemeType);
         }
 
         private void UpdateMesh(float widthConstraint)
@@ -203,7 +194,7 @@ namespace DevoidEngine.Engine.UI.Nodes
         void UpdateMaterial()
         {
             Material?.SetTexture("MAT_fontSDFAtlas", Font.Atlas.GPUTexture);
-            Material?.SetVector4("COLOR", Color);
+            Material?.SetVector4("COLOR", _color);
         }
         //float rainbowTime = 0f;
         protected override void UpdateCore(float deltaTime)

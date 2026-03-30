@@ -28,11 +28,13 @@ namespace DevoidEngine.Engine.UI
 
         private static Material uiMaterial;
         private static Material textMaterial;
+        private static Material debugUIRectMaterial;
 
         public static Mesh QuadMesh;
 
         public static MaterialInstance UIMaterial => new MaterialInstance(uiMaterial);
         public static MaterialInstance TextMaterial => new MaterialInstance(textMaterial);
+        public static MaterialInstance DebugMaterial => new MaterialInstance(debugUIRectMaterial);
 
         public static CameraData ScreenData;
         private static IUniformBuffer screenDataBuffer;
@@ -65,6 +67,17 @@ namespace DevoidEngine.Engine.UI
             uiMaterial = new Material(
                 new Shader("Engine/Content/Shaders/UI/basic")
             );
+
+            debugUIRectMaterial = new Material(
+                new Shader("Engine/Content/Shaders/UI/debugUI")
+            );
+
+            debugUIRectMaterial.SetVector4("COLOR", new Vector4(1,1,1, 0.01f));
+            debugUIRectMaterial.SetVector4("BORDER_COLOR", new Vector4(1,1,1, 0.2f));
+            debugUIRectMaterial.SetFloat("BORDER_THICKNESS", 1.5f);
+            debugUIRectMaterial.SetFloat("DASH_SIZE", 6);
+            debugUIRectMaterial.SetFloat("GAP_SIZE", 4);
+            debugUIRectMaterial.SetInt("DEBUG_DASHED", 1);
 
             textMaterial = new Material(
                 new Shader(
@@ -108,8 +121,23 @@ namespace DevoidEngine.Engine.UI
             DefaultTheme.SetConstant(
                 StyleKeys.BorderWidth,
                 "Panel",
-                2
+                5
             );
+
+
+            DefaultTheme.SetColor(
+                StyleKeys.BorderColor,
+                "Panel",
+                new Vector4(1, 1, 1, 1)
+            );
+
+            DefaultTheme.SetColor(
+                StyleKeys.Background,
+                "Panel",
+                new Vector4(1,1,1,0.6f)
+            );
+
+            //DefaultTheme.SetConstant(StyleKeys.BorderRadius, "Panel", new Vector4(5, 5, 5, 5));
 
             //// Button styleboxes
             //DefaultTheme.SetStylebox(
@@ -150,9 +178,6 @@ namespace DevoidEngine.Engine.UI
         {
             Vector2 screen = Screen.Size;
 
-            // -------------------------
-            // 1. Update logic
-            // -------------------------
             foreach (var root in Roots)
             {
 
@@ -163,26 +188,13 @@ namespace DevoidEngine.Engine.UI
                 }
                 else
                 {
+                    root.Measure(new Vector2(float.PositiveInfinity));
+
                     Vector2 canvasSize = root.DesiredSize;
 
-                    root.Measure(canvasSize);
                     root.Arrange(new UITransform(Vector2.Zero, canvasSize));
                 }
             }
-
-            // -------------------------
-            // 2. Layout pass
-            // -------------------------
-            //foreach (var root in Roots)
-            //{
-            //    root.Measure(screen);
-            //    root.Arrange(new UITransform(Vector2.Zero, screen));
-            //}
-
-            // -------------------------
-            // 3. Interaction pass
-            // -------------------------
-            //HandleInput();
         }
 
         static bool TryProjectMouseToCanvas(

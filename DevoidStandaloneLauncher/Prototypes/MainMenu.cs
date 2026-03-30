@@ -129,7 +129,6 @@ namespace DevoidStandaloneLauncher.Prototypes
             ContainerNode engineInfo = new ContainerNode()
             {
                 ParticipatesInLayout = false,
-                Color = new Vector4(0,0,0,0),
                 Padding = Padding.GetAll(10)
             };
 
@@ -210,9 +209,6 @@ namespace DevoidStandaloneLauncher.Prototypes
                 ContainerObject.SetParent(canvasObject);
 
                 var ContainerComponent = ContainerObject.AddComponent<ContainerComponent>();
-                ContainerComponent.Padding = Padding.GetAll(15);
-                ContainerComponent.Color = new Vector4(0, 0, 0, 0);
-                ContainerComponent.BorderThickness = 0;
                 ContainerComponent.Align = AlignItems.Stretch;
 
                 //GameObject ContainerObjectBorder = scene.AddGameObject("Container Object");
@@ -239,19 +235,18 @@ namespace DevoidStandaloneLauncher.Prototypes
                     var buttonComponent = buttonObject.AddComponent<ButtonComponent>();
                     buttonComponent.Text = buttonNames[i];
                     buttonComponent.OnClick += buttonActions[i];
-                    buttonComponent.BaseColor = new Vector4(0, 0, 0, 0);
-                    buttonComponent.OnHoverColor = new Vector4(1,1,1,1);
-                    buttonComponent.OnClickColor = new Vector4(0, 0, 0, 0);
-                    buttonComponent.BorderThickness = 2;
-                    buttonComponent.OnHoverTextColor = new Vector4(0, 0, 0, 1);
+                    //buttonComponent.BaseColor = new Vector4(0, 0, 0, 0);
+                    //buttonComponent.OnHoverColor = new Vector4(1,1,1,1);
+                    //buttonComponent.OnClickColor = new Vector4(0, 0, 0, 0);
+                    //buttonComponent.BorderThickness = 2;
+                    //buttonComponent.OnHoverTextColor = new Vector4(0, 0, 0, 1);
                 }
 
                 ContainerNode titleContainer = new ContainerNode()
                 {
                     ParticipatesInLayout = false,
                     Offset = new Vector2(50, 100),
-                    Color = new Vector4(0, 0, 0, 0),
-                    Padding = Padding.GetAll(10)
+                    Padding = Padding.GetAll(10),
                 };
 
                 var font = FontLibrary.LoadFont(

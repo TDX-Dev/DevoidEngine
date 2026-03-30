@@ -93,6 +93,9 @@ namespace DevoidEngine.Engine.Core
         }
 
         #region SETTERS
+
+        public void SetInt(string name, int value)
+            => Write(name, value);
         public void SetFloat(string name, float value)
         {
             Write(name, value);

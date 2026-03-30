@@ -29,6 +29,7 @@ namespace DevoidEngine.Engine.UI.Nodes
 
         public bool Visible = true;
         public bool Interactable = true;
+        private bool _materialDirty = true;
 
         public UITheme Theme;
         private UITheme cachedTheme;
@@ -95,6 +96,7 @@ namespace DevoidEngine.Engine.UI.Nodes
         }
 
         protected virtual void ApplyTheme() { }
+        protected virtual void UpdateMaterial() { }
 
         // ENTRY POINT
         public Vector2 Measure(Vector2 availableSize)
@@ -114,18 +116,45 @@ namespace DevoidEngine.Engine.UI.Nodes
             return desired;
         }
 
+        //public void Arrange(UITransform finalRect)
+        //{
+        //    if (!Visible)
+        //        return;
+
+        //    Vector2 size = finalRect.size;
+
+        //    // if size was not explicitly set, use measured size
+        //    if (!Size.HasValue)
+        //        size = DesiredSize;
+
+        //    Rect = new UITransform(finalRect.position, size);
+
+        //    ArrangeCore(Rect);
+        //}
+
         public void Arrange(UITransform finalRect)
         {
-            Rect = finalRect;
-
             if (!Visible)
                 return;
 
-            ArrangeCore(finalRect);
+            Vector2 size = finalRect.size;
+
+            if (Size.HasValue)
+                size = Size.Value;
+
+            Rect = new UITransform(finalRect.position, size);
+
+            ArrangeCore(Rect);
         }
+
         public virtual void Render(List<RenderItem> renderList, Matrix4x4 model, int order)
         {
             if (!Visible) return;
+            if (_materialDirty)
+            {
+                UpdateMaterial();
+                _materialDirty = false;
+            }
             RenderCore(renderList, model, ++order);
             for (int i = 0; i < _children.Count; i++)
             {

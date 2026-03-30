@@ -31,40 +31,8 @@ namespace DevoidEngine.Engine.Components
             }
         }
 
-        public Padding Padding
-        {
-            get => padding;
-            set
-            {
-                padding = value;
-                if (container != null)
-                    container.Padding = padding;
-            }
-        }
 
-        public Vector4 Color
-        {
-            get => color;
-            set
-            {
-                color = value;
-                if (container != null)
-                    container.Color = color;
-            }
-        }
 
-        public float BorderThickness
-        {
-            get => borderThickness;
-            set
-            {
-                borderThickness = value;
-                if (container != null)
-                {
-                    container.BorderThickness = borderThickness;
-                }
-            }
-        }
 
         private ContainerNode container;
         private JustifyContent justify = JustifyContent.Start;
@@ -81,7 +49,6 @@ namespace DevoidEngine.Engine.Components
                 ParticipatesInLayout = false,
                 Offset = new Vector2(50, 350),
                 Direction = FlexDirection.Column,
-                Color = Vector4.One,
                 Gap = 10,
             };
 
@@ -90,7 +57,6 @@ namespace DevoidEngine.Engine.Components
             container.Justify = justify;
             container.Align = alignItems;
             container.Padding = padding;
-            container.BorderThickness = borderThickness;
 
             return container;
         }

@@ -61,7 +61,7 @@ namespace DevoidEngine.Engine.Rendering
         {
 
             finalOutputBuffer.Bind();
-            finalOutputBuffer.Clear(new System.Numerics.Vector4(1, 1, 1, 1));
+            finalOutputBuffer.Clear();
 
             Renderer.GraphicsDevice.SetViewport(0, 0, (int)Screen.Size.X, (int)Screen.Size.Y);
 

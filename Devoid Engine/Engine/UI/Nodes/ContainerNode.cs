@@ -1,6 +1,7 @@
 ﻿using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.UI.Theme;
+using DevoidEngine.Engine.UI.Theme.Styleboxes;
 using System.Numerics;
 
 namespace DevoidEngine.Engine.UI.Nodes
@@ -10,17 +11,14 @@ namespace DevoidEngine.Engine.UI.Nodes
         public override string ThemeType => "Panel";
 
 
-        public float BorderThickness = 0f;
-        public Vector4 BorderColor = new Vector4(0, 0, 0, 1);
-
-        private Vector4 _color = new Vector4(1, 1, 1, 1);
-        private float _opacity = 1f;
-        private Vector4 _borderRadius = new Vector4(0, 0, 0, 0);
+        private Vector4 _background;
+        private float _borderWidth;
+        private Vector4 _borderColor;
+        private Vector4 _borderRadius;
 
         protected override void InitializeCore()
         {
             Material = UISystem.UIMaterial;
-            UpdateMaterial();
         }
 
         protected override void ApplyTheme()
@@ -28,28 +26,36 @@ namespace DevoidEngine.Engine.UI.Nodes
             var theme = GetTheme();
 
             if (theme.HasColor(StyleKeys.Background, ThemeType))
-                Color = theme.GetColor(StyleKeys.Background, ThemeType);
+                _background = theme.GetColor(StyleKeys.Background, ThemeType);
 
             if (theme.HasConstant(StyleKeys.BorderWidth, ThemeType))
-                BorderThickness = theme.GetConstant(StyleKeys.BorderWidth, ThemeType);
+                _borderWidth = theme.GetConstant<int>(StyleKeys.BorderWidth, ThemeType);
+
+            if (theme.HasConstant(StyleKeys.BorderRadius, ThemeType))
+                _borderRadius = theme.GetConstant<Vector4>(StyleKeys.BorderRadius, ThemeType);
+
+            if (theme.HasColor(StyleKeys.BorderColor, ThemeType))
+                _borderColor = theme.GetColor(StyleKeys.BorderColor, ThemeType);
+
+            UpdateMaterial();
         }
 
-        private void UpdateMaterial()
+        protected override void UpdateMaterial()
         {
             if (Material == null)
                 return;
 
-            Material.SetInt("useTexture", _texture != null ? 1 : 0);
-            Material.SetTexture("MAT_Texture", _texture);
-
-            Vector4 final = _color;
-            final.W *= _opacity;
-
-            Material.SetVector4("COLOR", final);
             Material.SetVector2("RECT_SIZE", Rect?.size ?? Vector2.One);
+
+            Material.SetInt("useTexture", 0);
+            //Material.SetTexture("MAT_Texture", _texture);
+
+            Material.SetVector4("COLOR", _background);
+            Material.SetFloat("BORDER_THICKNESS", _borderWidth);
+            Material.SetVector4("BORDER_COLOR", _borderColor);
             Material.SetVector4("CORNER_RADIUS", _borderRadius);
-            Material.SetVector4("BORDER_COLOR", BorderColor);
-            Material.SetFloat("BORDER_THICKNESS", BorderThickness);
+
+            Console.WriteLine(_background);
 
         }
 
@@ -82,20 +88,5 @@ namespace DevoidEngine.Engine.UI.Nodes
             });
             //DebugRenderSystem.DrawRectUI(model);
         }
-
-        //protected override void UpdateCore(float deltaTime)
-        //{
-
-        //}
-
-        //public override void OnMouseDown()
-        //{
-        //    OnMouse
-        //}
-
-        //public override void OnDrag(Vector2 mouse, Vector2 delta)
-        //{
-        //    Offset += delta;
-        //}
     }
 }

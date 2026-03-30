@@ -11,8 +11,8 @@ namespace DevoidStandaloneLauncher
         private float splashDuration = 1f;
         private bool prototypeLoaded = false;
 
-        internal Scene CurrentScene = SplashScene.CreateSplashScene(nameof(MainMenu));
-        internal Prototype GamePrototype = new MainMenu();
+        internal Scene CurrentScene = SplashScene.CreateSplashScene(nameof(UIThemeTest));
+        internal Prototype GamePrototype = new UIThemeTest();
 
         public override void OnAttach()
         {

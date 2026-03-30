@@ -1,4 +1,5 @@
-﻿using DevoidEngine.Engine.Rendering;
+﻿using DevoidEngine.Engine.Core;
+using DevoidEngine.Engine.Rendering;
 using System.Numerics;
 
 namespace DevoidEngine.Engine.UI.Nodes
@@ -10,6 +11,8 @@ namespace DevoidEngine.Engine.UI.Nodes
         public AlignItems Align = AlignItems.Stretch;
         public Padding Padding;
         public float Gap = 0f;
+
+        private MaterialInstance debugMaterial;
 
         protected override Vector2 MeasureCore(Vector2 availableSize)
         {
@@ -49,6 +52,16 @@ namespace DevoidEngine.Engine.UI.Nodes
                 contentSize.X + Padding.Left + Padding.Right,
                 contentSize.Y + Padding.Top + Padding.Bottom
             );
+
+            //Vector2 desired = new Vector2(
+            //    contentSize.X + Padding.Left + Padding.Right,
+            //    contentSize.Y + Padding.Top + Padding.Bottom
+            //);
+
+            //desired.X = Math.Min(desired.X, availableSize.X);
+            //desired.Y = Math.Min(desired.Y, availableSize.Y);
+
+            //return desired;
         }
 
         protected override void ArrangeCore(UITransform finalRect)
@@ -231,17 +244,35 @@ namespace DevoidEngine.Engine.UI.Nodes
                     child.Arrange(new UITransform(pos, size));
                 }
             }
-
-            //UIRenderer.DrawRect(finalRect, DEBUG_NUM_LOCAL);
         }
         protected override void RenderCore(List<RenderItem> renderList, Matrix4x4 canvasModel, int order)
         {
+            Vector2 size = Rect.size;
+            Vector2 pos = Rect.position;
 
+            Vector2 pivotOffset = (Pivot - new Vector2(0.5f)) * size;
+
+            Vector2 centerPos = pos + size * 0.5f;
+
+            Matrix4x4 model =
+                Matrix4x4.CreateScale(size.X, size.Y, 1f) *
+                Matrix4x4.CreateTranslation(pivotOffset.X, pivotOffset.Y, 0f) *
+                Matrix4x4.CreateRotationZ(Rotation) *
+                Matrix4x4.CreateTranslation(centerPos.X, centerPos.Y, 0f);
+
+            Matrix4x4 final =
+                model *
+                canvasModel *
+                Matrix4x4.CreateTranslation(0, 0, order * UISystem.OrderEpsilon);
+
+            debugMaterial.SetVector2("RECT_SIZE", size);
+
+            DebugRenderSystem.DrawRectUI(model, debugMaterial);
         }
 
         protected override void InitializeCore()
         {
-
+            debugMaterial = UISystem.DebugMaterial;
         }
 
         protected override void UpdateCore(float deltaTime)

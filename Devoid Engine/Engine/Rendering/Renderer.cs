@@ -93,12 +93,11 @@ namespace DevoidEngine.Engine.Rendering
             DebugRenderSystem.Render(ctx.cameraData, activeFrameBuffer);
 
             Renderer.GraphicsDevice.UnbindAllShaderResources();
-            //DebugRenderSystem.Render(ctx.cameraData, activeFrameBuffer);
 
             var Output = (Texture2D)activeFrameBuffer.GetRenderTexture(0);
             Texture2D finalColor = PostProcessor.Run(Output);
 
-            
+
 
             RenderAPI.RenderToBuffer(finalColor, ctx.cameraTargetSurface);
             RenderAPI.RenderToBuffer(UIRenderOutput, ctx.cameraTargetSurface);
@@ -108,6 +107,7 @@ namespace DevoidEngine.Engine.Rendering
         {
             UIFramebuffer.Bind();
             UIFramebuffer.Clear(Vector4.Zero);
+            GraphicsDevice.SetViewport(0, 0, (int)Screen.Size.X, (int)Screen.Size.Y);
             Renderer.SetupCamera(UISystem.ScreenData);
             Renderer.ExecuteDrawList(renderItems, UISystem.RenderState);
         }

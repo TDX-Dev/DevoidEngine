@@ -41,7 +41,7 @@ namespace DevoidEngine.Engine.UI.Theme
             ThemeChanged?.Invoke();
         }
 
-        public void SetConstant(string name, string themeType, int constant)
+        public void SetConstant<T>(string name, string themeType, T constant)
         {
             var data = GetOrCreateType(themeType);
             data.Constants[name] = constant;
@@ -110,15 +110,15 @@ namespace DevoidEngine.Engine.UI.Theme
             return Vector4.One;
         }
 
-        public int GetConstant(string name, string themeType)
+        public T GetConstant<T>(string name, string themeType)
         {
             if (types.TryGetValue(themeType, out var data) &&
                 data.Constants.TryGetValue(name, out var value))
             {
-                return value;
+                return (T)value;
             }
 
-            return 0;
+            return default;
         }
 
         public void ClearColor(string name, string themeType)

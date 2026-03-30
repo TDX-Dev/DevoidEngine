@@ -50,7 +50,6 @@ namespace DevoidEngine.Engine.Content.Scenes
             root.Add(new ContainerNode()
             {
                 ParticipatesInLayout = false,
-                Color = new Vector4(0,0,0,1),
                 Size = Screen.Size,
             });
 

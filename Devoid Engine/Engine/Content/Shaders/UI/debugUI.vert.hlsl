@@ -21,18 +21,19 @@ struct PSInput
 cbuffer MATERIAL : register(b3)
 {
     float4 COLOR;
-    float4 CORNER_RADIUS; // TL TR BR BL
-    float2 RECT_SIZE;
-
-    float BORDER_THICKNESS;
+    float4 CORNER_RADIUS;
     float4 BORDER_COLOR;
 
+    float2 RECT_SIZE;
+    float BORDER_THICKNESS;
+    float DASH_SIZE;
+
+    float GAP_SIZE;
+    int DEBUG_DASHED;
     int useTexture;
-    int _pad;
+    float _pad;
 };
 
-
- 
 PSInput VSMain(VSInput input)
 {
     PSInput output;
@@ -47,7 +48,6 @@ PSInput VSMain(VSInput input)
     output.NDC = clip.xy / clip.w;
     output.UV0 = input.UV0;
 
-    // convert quad (-0.5..0.5) or (0..1) to rect space
     output.LocalPos = input.UV0 * RECT_SIZE - RECT_SIZE * 0.5;
 
     return output;
