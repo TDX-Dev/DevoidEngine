@@ -49,8 +49,6 @@ namespace DevoidEngine.Engine.UI.Nodes
             Material.SetVector4("BORDER_COLOR", _borderColor);
             Material.SetVector4("CORNER_RADIUS", _borderRadius);
 
-            Console.WriteLine(_background);
-
         }
 
         protected override void RenderCore(List<RenderItem> renderList, Matrix4x4 canvasModel, int order)

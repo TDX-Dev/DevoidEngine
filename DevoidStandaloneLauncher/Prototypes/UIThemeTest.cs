@@ -183,6 +183,7 @@ namespace DevoidStandaloneLauncher.Prototypes
                 var container = new ContainerNode()
                 {
                     Padding = Padding.GetAll(20),
+                    Size = new Vector2(100, 100),
                     Layout = new LayoutOptions()
                     {
                         FlexGrowMain = grow,
@@ -196,7 +197,7 @@ namespace DevoidStandaloneLauncher.Prototypes
 
                 label.AddColorOverride(StyleKeys.FontColor, GetReadableTextColor(kv.Value));
 
-                container.Add(label);
+                //container.Add(label);
 
                 node.Add(container);
             }

@@ -33,8 +33,13 @@ namespace DevoidEngine.Engine.UI.Nodes
 
         protected override Vector2 MeasureCore(Vector2 availableSize)
         {
-            float availableMainAxisSize = FlexboxTools.Main(availableSize, Direction);
-            float availableCrossAxisSize = FlexboxTools.Cross(availableSize, Direction);
+            Vector2 innerAvailableSize = new Vector2(
+                Math.Max(0, availableSize.X - Padding.Horizontal),
+                Math.Max(0, availableSize.Y - Padding.Vertical)
+            );
+
+            float availableMainAxisSize = FlexboxTools.Main(innerAvailableSize, Direction);
+            float availableCrossAxisSize = FlexboxTools.Cross(innerAvailableSize, Direction);
 
             float maxLineMainSize = 0f;
             float totalCrossSize = 0f;
@@ -52,24 +57,27 @@ namespace DevoidEngine.Engine.UI.Nodes
 
                 totalVisibleChildren++;
 
-                Vector2 childAvailableSize = new Vector2(
-                    Math.Max(0, availableSize.X - Padding.Horizontal),
-                    Math.Max(0, availableSize.Y - Padding.Vertical)
-                );
-
-                Vector2 childSize = child.Measure(childAvailableSize);
+                Vector2 childSize = child.Measure(innerAvailableSize);
 
                 float basis =
                     child.Layout.FlexBasis > 0f
                     ? child.Layout.FlexBasis
                     : FlexboxTools.Main(childSize, Direction);
 
-                float childMainAxisSize = basis;
+                float childMainAxisSize = Math.Clamp(
+                    basis,
+                    FlexboxTools.Main(child.MinSize, Direction),
+                    FlexboxTools.Main(child.MaxSize, Direction)
+                );
                 float childCrossAxisSize = FlexboxTools.Cross(childSize, Direction);
+
+                float needed = childMainAxisSize;
+                if (currentLineCount > 0)
+                    needed += Gap;
 
                 if (Wrap == FlexWrap.Wrap &&
                     currentLineCount > 0 &&
-                    currentLineMainSize + Gap + childMainAxisSize > availableMainAxisSize)
+                    currentLineMainSize + needed > availableMainAxisSize)
                 {
                     maxLineMainSize = Math.Max(maxLineMainSize, currentLineMainSize);
                     totalCrossSize += currentLineCrossSize;
@@ -117,76 +125,8 @@ namespace DevoidEngine.Engine.UI.Nodes
                 contentSize.Y + Padding.Vertical
             );
 
-            desired.X = Math.Min(desired.X, availableSize.X);
-            desired.Y = Math.Min(desired.Y, availableSize.Y);
-
             return desired;
         }
-
-        //protected override Vector2 MeasureCore(Vector2 availableSize)
-        //{
-        //    float availableMainAxisSize = FlexboxTools.Main(availableSize, Direction);
-
-        //    float maximumCrossAxisSize = 0f;
-        //    float totalMainAxisSize = 0f;
-
-        //    int count = 0;
-
-        //    foreach (var child in _children)
-        //    {
-        //        if (!child.Visible || !child.Interactable)
-        //            continue;
-
-        //        Vector2 childAvailableSize = new Vector2(
-        //            Math.Max(0, availableSize.X - Padding.Horizontal),
-        //            Math.Max(0, availableSize.Y - Padding.Vertical)
-        //        );
-
-        //        Vector2 childSize = child.Measure(childAvailableSize);
-
-        //        float basis =
-        //            child.Layout.FlexBasis > 0
-        //            ? child.Layout.FlexBasis
-        //            : FlexboxTools.Main(childSize, Direction);
-
-        //        float childMainAxisSize = basis;
-        //        float childCrossAxisSize = FlexboxTools.Cross(childSize, Direction);
-
-        //        totalMainAxisSize += childMainAxisSize;
-        //        maximumCrossAxisSize = Math.Max(maximumCrossAxisSize, childCrossAxisSize);
-        //        count++;
-        //    }
-
-        //    if (count > 1)
-        //        totalMainAxisSize += Gap * (count - 1);
-
-        //    Vector2 contentSize = FlexboxTools.FromMainCross(totalMainAxisSize, maximumCrossAxisSize, Direction);
-
-        //    //return new Vector2(
-        //    //    contentSize.X + Padding.Left + Padding.Right,
-        //    //    contentSize.Y + Padding.Top + Padding.Bottom
-        //    //);
-
-        //    Vector2 desired = new Vector2(
-        //        contentSize.X + Padding.Horizontal,
-        //        contentSize.Y + Padding.Vertical
-        //    );
-
-        //    desired.X = Math.Min(desired.X, availableSize.X);
-        //    desired.Y = Math.Min(desired.Y, availableSize.Y);
-
-        //    return desired;
-
-        //    //Vector2 desired = new Vector2(
-        //    //    contentSize.X + Padding.Left + Padding.Right,
-        //    //    contentSize.Y + Padding.Top + Padding.Bottom
-        //    //);
-
-        //    //desired.X = Math.Min(desired.X, availableSize.X);
-        //    //desired.Y = Math.Min(desired.Y, availableSize.Y);
-
-        //    //return desired;
-        //}
 
         protected override void ArrangeCore(UITransform finalRect)
         {
@@ -197,119 +137,147 @@ namespace DevoidEngine.Engine.UI.Nodes
         }
 
         void ArrangeWrapped(UITransform finalRect)
-{
-    Rect = finalRect;
-
-    Vector2 contentPos = new Vector2(
-        finalRect.position.X + Padding.Left,
-        finalRect.position.Y + Padding.Top
-    );
-
-    Vector2 contentSize = new Vector2(
-        Math.Max(0, finalRect.size.X - Padding.Left - Padding.Right),
-        Math.Max(0, finalRect.size.Y - Padding.Top - Padding.Bottom)
-    );
-
-    float containerMain = FlexboxTools.Main(contentSize, Direction);
-
-    List<UINode> children = _children.Where(x => x.Visible && x.ParticipatesInLayout).ToList();
-
-    List<FlexLine> lines = new();
-
-    float lineMain = 0;
-    float lineCross = 0;
-    int lineStart = 0;
-    int lineCount = 0;
-
-    for (int i = 0; i < children.Count; i++)
-    {
-        var child = children[i];
-
-        float basis =
-            child.Layout.FlexBasis > 0f
-            ? child.Layout.FlexBasis
-            : FlexboxTools.Main(child.DesiredSize, Direction);
-
-        float cross = FlexboxTools.Cross(child.DesiredSize, Direction);
-
-        float needed = basis;
-        if (lineCount > 0) needed += Gap;
-
-        if (lineCount > 0 && lineMain + needed > containerMain)
         {
-            lines.Add(new FlexLine
+            Rect = finalRect;
+
+            Vector2 contentPos = new Vector2(
+                finalRect.position.X + Padding.Left,
+                finalRect.position.Y + Padding.Top
+            );
+
+            Vector2 contentSize = new Vector2(
+                Math.Max(0, finalRect.size.X - Padding.Left - Padding.Right),
+                Math.Max(0, finalRect.size.Y - Padding.Top - Padding.Bottom)
+            );
+
+            float containerMain = FlexboxTools.Main(contentSize, Direction);
+            float containerCross = FlexboxTools.Cross(contentSize, Direction);
+
+            List<UINode> children = _children
+                .Where(x => x.Visible && x.ParticipatesInLayout)
+                .ToList();
+
+            // Re-measure children with the final resolved width
+            Vector2 childAvailable =
+                FlexboxTools.FromMainCross(containerMain, containerCross, Direction);
+
+            foreach (var child in children)
+                child.Measure(childAvailable);
+
+            List<FlexLine> lines = new();
+
+            float lineMain = 0f;
+            float lineCross = 0f;
+            int lineStart = 0;
+            int lineCount = 0;
+
+            for (int i = 0; i < children.Count; i++)
             {
-                startIndex = lineStart,
-                count = lineCount,
-                mainSize = lineMain,
-                crossSize = lineCross
-            });
+                var child = children[i];
 
-            lineStart = i;
-            lineMain = 0;
-            lineCross = 0;
-            lineCount = 0;
-        }
+                float basis =
+                    child.Layout.FlexBasis > 0f
+                    ? child.Layout.FlexBasis
+                    : FlexboxTools.Main(child.DesiredSize, Direction);
 
-        if (lineCount > 0)
-            lineMain += Gap;
-
-        lineMain += basis;
-        lineCross = Math.Max(lineCross, cross);
-        lineCount++;
-    }
-
-    if (lineCount > 0)
-    {
-        lines.Add(new FlexLine
-        {
-            startIndex = lineStart,
-            count = lineCount,
-            mainSize = lineMain,
-            crossSize = lineCross
-        });
-    }
-
-    float crossCursor = 0;
-
-    foreach (var line in lines)
-    {
-        float cursor = 0;
-
-        for (int i = 0; i < line.count; i++)
-        {
-            var child = children[line.startIndex + i];
-
-            float mainSize =
-                child.Layout.FlexBasis > 0f
-                ? child.Layout.FlexBasis
-                : FlexboxTools.Main(child.DesiredSize, Direction);
-
-            float crossSize =
-                Align == AlignItems.Stretch
-                ? line.crossSize
-                : Math.Min(
-                    FlexboxTools.Cross(child.DesiredSize, Direction),
-                    line.crossSize
+                basis = Math.Clamp(
+                    basis,
+                    FlexboxTools.Main(child.MinSize, Direction),
+                    FlexboxTools.Main(child.MaxSize, Direction)
                 );
 
-            float crossOffset = FlexboxTools.ComputeCrossOffset(Align, line.crossSize, crossSize);
+                float cross = Math.Clamp(
+                    FlexboxTools.Cross(child.DesiredSize, Direction),
+                    FlexboxTools.Cross(child.MinSize, Direction),
+                    FlexboxTools.Cross(child.MaxSize, Direction)
+                );
 
-            Vector2 pos = contentPos +
-                FlexboxTools.FromMainCross(cursor, crossCursor + crossOffset, Direction);
+                float needed = basis;
+                if (lineCount > 0)
+                    needed += Gap;
 
-            Vector2 size =
-                FlexboxTools.FromMainCross(mainSize, crossSize, Direction);
+                if (lineCount > 0 && lineMain + needed > containerMain)
+                {
+                    lines.Add(new FlexLine
+                    {
+                        startIndex = lineStart,
+                        count = lineCount,
+                        mainSize = lineMain,
+                        crossSize = lineCross
+                    });
 
-            child.Arrange(new UITransform(pos, size));
+                    lineStart = i;
+                    lineMain = 0f;
+                    lineCross = 0f;
+                    lineCount = 0;
+                }
 
-            cursor += mainSize + Gap;
+                if (lineCount > 0)
+                    lineMain += Gap;
+
+                lineMain += basis;
+                lineCross = Math.Max(lineCross, cross);
+                lineCount++;
+            }
+
+            if (lineCount > 0)
+            {
+                lines.Add(new FlexLine
+                {
+                    startIndex = lineStart,
+                    count = lineCount,
+                    mainSize = lineMain,
+                    crossSize = lineCross
+                });
+            }
+
+            float crossCursor = 0f;
+
+            foreach (var line in lines)
+            {
+                float cursor = 0f;
+
+                for (int i = 0; i < line.count; i++)
+                {
+                    var child = children[line.startIndex + i];
+
+                    float mainSize =
+                        child.Layout.FlexBasis > 0f
+                        ? child.Layout.FlexBasis
+                        : FlexboxTools.Main(child.DesiredSize, Direction);
+
+                    mainSize = Math.Clamp(
+                        mainSize,
+                        FlexboxTools.Main(child.MinSize, Direction),
+                        FlexboxTools.Main(child.MaxSize, Direction)
+                    );
+
+                    float crossSize =
+                        Align == AlignItems.Stretch
+                        ? line.crossSize
+                        : Math.Clamp(
+                            FlexboxTools.Cross(child.DesiredSize, Direction),
+                            FlexboxTools.Cross(child.MinSize, Direction),
+                            line.crossSize
+                        );
+
+                    float crossOffset =
+                        FlexboxTools.ComputeCrossOffset(Align, line.crossSize, crossSize);
+
+                    Vector2 pos = contentPos +
+                        FlexboxTools.FromMainCross(cursor, crossCursor + crossOffset, Direction);
+
+                    Vector2 size =
+                        FlexboxTools.FromMainCross(mainSize, crossSize, Direction);
+
+                    child.Arrange(new UITransform(pos, size));
+
+                    cursor += mainSize + Gap;
+                }
+
+                crossCursor += line.crossSize + Gap;
+            }
         }
-
-        crossCursor += line.crossSize + Gap;
-    }
-}
-
         protected void ArrangeSingleLine(UITransform finalRect)
         {
             Rect = finalRect;
