@@ -37,11 +37,14 @@ namespace DevoidStandaloneLauncher.Prototypes
 
             FlexboxNode bodyContainer = new FlexboxNode()
             {
-                Size = Screen.Size,
+                Align = AlignItems.Stretch,
+                Justify = JustifyContent.Start,
+                Gap = 10,
+                Padding = Padding.GetAll(10),
                 Layout = new LayoutOptions()
                 {
                     FlexGrowMain = 1,
-                    FlexGrowCross = 1,
+                    FlexGrowCross = 1
                 }
             };
 
@@ -49,24 +52,66 @@ namespace DevoidStandaloneLauncher.Prototypes
             {
                 Layout = new LayoutOptions()
                 {
-                    FlexGrowMain = 1,
-                    FlexGrowCross = 1,
+                    FlexGrowMain = 0.2f,
                 }
             };
 
             FlexboxNode rightInnerContainer = new FlexboxNode()
             {
+                Direction = FlexDirection.Column,
+                Gap = 10,
+                Padding = Padding.GetAll(10),
                 Layout = new LayoutOptions()
                 {
-                    FlexGrowMain = 1,
-                    FlexGrowCross = 1,
+                    FlexGrowMain = 0.8f,
                 }
             };
+
+            FlexboxNode rightInnerInnerContainer1 = new FlexboxNode()
+            {
+                Justify = JustifyContent.SpaceEvenly,
+                Align = AlignItems.Center,
+                Gap = 10,
+                Padding = Padding.GetAll(10),
+                Layout = new LayoutOptions()
+                {
+                    FlexGrowMain = 0.3f
+                }
+            };
+
+            FlexboxNode rightInnerInnerContainer2 = new FlexboxNode()
+            {
+                Layout = new LayoutOptions()
+                {
+                    FlexGrowMain = 0.7f
+                }
+            };
+
+            AddContainerList(rightInnerInnerContainer1);
+
+            rightInnerContainer.Add(rightInnerInnerContainer1);
+            rightInnerContainer.Add(rightInnerInnerContainer2);
+
             bodyContainer.Add(leftInnerContainer);
             bodyContainer.Add(rightInnerContainer);
 
             canvas.Canvas.Add(bodyContainer);
         }
 
+
+        void AddContainerList(UINode node)
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                node.Add(new ContainerNode()
+                {
+                    Layout = new LayoutOptions()
+                    {
+                        FlexGrowMain = 1,
+                        FlexGrowCross = 1
+                    }
+                });
+            }
+        }
     }
 }

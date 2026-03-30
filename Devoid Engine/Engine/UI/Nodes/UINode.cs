@@ -132,17 +132,29 @@ namespace DevoidEngine.Engine.UI.Nodes
         //    ArrangeCore(Rect);
         //}
 
+        //public void Arrange(UITransform finalRect)
+        //{
+        //    if (!Visible)
+        //        return;
+
+        //    Vector2 size = finalRect.size;
+
+        //    if (Size.HasValue)
+        //        size = Size.Value;
+
+        //    Rect = new UITransform(finalRect.position, size);
+
+        //    Console.Write(size);
+
+        //    ArrangeCore(Rect);
+        //}
+
         public void Arrange(UITransform finalRect)
         {
             if (!Visible)
                 return;
 
-            Vector2 size = finalRect.size;
-
-            if (Size.HasValue)
-                size = Size.Value;
-
-            Rect = new UITransform(finalRect.position, size);
+            Rect = finalRect;
 
             ArrangeCore(Rect);
         }

@@ -19,8 +19,7 @@ namespace DevoidEngine.Engine.UI.Nodes
 
         protected override Vector2 MeasureCore(Vector2 availableSize)
         {
-            base.MeasureCore(availableSize);
-            return availableSize;
+            return base.MeasureCore(availableSize);
         }
 
         protected override void ArrangeCore(UITransform finalRect)
