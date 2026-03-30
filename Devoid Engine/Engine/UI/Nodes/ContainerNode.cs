@@ -53,8 +53,8 @@ namespace DevoidEngine.Engine.UI.Nodes
 
         protected override void RenderCore(List<RenderItem> renderList, Matrix4x4 canvasModel, int order)
         {
-            Vector2 size = Rect.size;
-            Vector2 pos = Rect.position;
+            Vector2 size = Rect?.size ?? Vector2.One;
+            Vector2 pos = Rect?.position ?? Vector2.One;
 
             // convert pivot (0–1) → pixels
             Vector2 pivotOffset = (Pivot - new Vector2(0.5f)) * size;
