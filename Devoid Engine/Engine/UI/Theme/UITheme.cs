@@ -88,12 +88,29 @@ namespace DevoidEngine.Engine.UI.Theme
             return 0;
         }
 
-        public StyleBox GetStyleBox(string name, string themeType)
+        public FontInternal GetFont(string name, string themeType)
         {
             if (types.TryGetValue(themeType, out var data) &&
-                data.StyleBoxes.TryGetValue(name, out var style))
+                data.Fonts.TryGetValue(name, out var font))
             {
-                return style;
+                return font;
+            }
+
+            return null;
+        }
+
+        public StyleBox GetStyleBox(string name, string themeType)
+        {
+            if (!TryGetTypeChain(themeType, out var chain))
+                return null;
+
+            foreach (var type in chain)
+            {
+                if (types.TryGetValue(type, out var data) &&
+                    data.StyleBoxes.TryGetValue(name, out var style))
+                {
+                    return style;
+                }
             }
 
             return null;
@@ -101,10 +118,16 @@ namespace DevoidEngine.Engine.UI.Theme
 
         public Vector4 GetColor(string name, string themeType)
         {
-            if (types.TryGetValue(themeType, out var data) &&
-                data.Colors.TryGetValue(name, out var color))
+            if (!TryGetTypeChain(themeType, out var chain))
+                return Vector4.One;
+
+            foreach (var type in chain)
             {
-                return color;
+                if (types.TryGetValue(type, out var data) &&
+                    data.Colors.TryGetValue(name, out var color))
+                {
+                    return color;
+                }
             }
 
             return Vector4.One;
@@ -112,10 +135,16 @@ namespace DevoidEngine.Engine.UI.Theme
 
         public T GetConstant<T>(string name, string themeType)
         {
-            if (types.TryGetValue(themeType, out var data) &&
-                data.Constants.TryGetValue(name, out var value))
+            if (!TryGetTypeChain(themeType, out var chain))
+                return default;
+
+            foreach (var type in chain)
             {
-                return (T)value;
+                if (types.TryGetValue(type, out var data) &&
+                    data.Constants.TryGetValue(name, out var value))
+                {
+                    return (T)value;
+                }
             }
 
             return default;
@@ -208,6 +237,26 @@ namespace DevoidEngine.Engine.UI.Theme
 
 
             ThemeChanged?.Invoke();
+        }
+
+        private bool TryGetTypeChain(string themeType, out IEnumerable<string> chain)
+        {
+            List<string> result = new();
+
+            string current = themeType;
+
+            while (!string.IsNullOrEmpty(current))
+            {
+                result.Add(current);
+
+                if (!typeVariations.TryGetValue(current, out var baseType))
+                    break;
+
+                current = baseType;
+            }
+
+            chain = result;
+            return result.Count > 0;
         }
     }
 }

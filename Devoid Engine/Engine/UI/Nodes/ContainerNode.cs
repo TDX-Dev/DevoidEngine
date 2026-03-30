@@ -23,19 +23,13 @@ namespace DevoidEngine.Engine.UI.Nodes
 
         protected override void ApplyTheme()
         {
-            var theme = GetTheme();
+            _background = GetColor(StyleKeys.Background);
 
-            if (theme.HasColor(StyleKeys.Background, ThemeType))
-                _background = theme.GetColor(StyleKeys.Background, ThemeType);
+            _borderWidth = GetConstant<int>(StyleKeys.BorderWidth);
 
-            if (theme.HasConstant(StyleKeys.BorderWidth, ThemeType))
-                _borderWidth = theme.GetConstant<int>(StyleKeys.BorderWidth, ThemeType);
+            _borderRadius = GetConstant<Vector4>(StyleKeys.BorderRadius);
 
-            if (theme.HasConstant(StyleKeys.BorderRadius, ThemeType))
-                _borderRadius = theme.GetConstant<Vector4>(StyleKeys.BorderRadius, ThemeType);
-
-            if (theme.HasColor(StyleKeys.BorderColor, ThemeType))
-                _borderColor = theme.GetColor(StyleKeys.BorderColor, ThemeType);
+            _borderColor = GetColor(StyleKeys.BorderColor);
 
             UpdateMaterial();
         }

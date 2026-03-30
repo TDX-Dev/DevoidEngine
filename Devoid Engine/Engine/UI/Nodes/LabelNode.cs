@@ -49,13 +49,8 @@ namespace DevoidEngine.Engine.UI.Nodes
 
         protected override void ApplyTheme()
         {
-            var theme = GetTheme();
-
-            if (theme.HasColor(StyleKeys.FontColor, ThemeType))
-                _color = theme.GetColor(StyleKeys.FontColor, ThemeType);
-
-            if (theme.HasFontSize(StyleKeys.FontSize, ThemeType))
-                _fontSize = theme.GetFontSize(StyleKeys.FontSize, ThemeType);
+            _color = GetColor(StyleKeys.FontColor);
+            _fontSize = GetFontSize(StyleKeys.FontSize);
         }
 
         private void UpdateMesh(float widthConstraint)
