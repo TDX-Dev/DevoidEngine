@@ -13,7 +13,7 @@ using System.Numerics;
 
 namespace DevoidStandaloneLauncher.Prototypes
 {
-    internal class UIThemeTest : Prototype
+    internal class UIThemeTest1 : Prototype
     {
         Scene scene;
         GameObject camera;

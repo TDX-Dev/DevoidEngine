@@ -20,8 +20,6 @@ namespace DevoidEngine.Engine.UI.Nodes
 
     public class FlexboxNode : UINode
     {
-
-
         public FlexDirection Direction = FlexDirection.Row;
         public JustifyContent Justify = JustifyContent.Start;
         public AlignItems Align = AlignItems.Stretch;
@@ -30,6 +28,19 @@ namespace DevoidEngine.Engine.UI.Nodes
         public float Gap = 0f;
 
         private MaterialInstance debugMaterial;
+
+        private List<UINode> GetLayoutChildren()
+        {
+            List<UINode> children = new List<UINode>();
+
+            foreach (var child in _children)
+            {
+                if (child.Visible && child.ParticipatesInLayout)
+                    children.Add(child);
+            }
+
+            return children;
+        }
 
         protected override Vector2 MeasureCore(Vector2 availableSize)
         {
@@ -40,7 +51,6 @@ namespace DevoidEngine.Engine.UI.Nodes
 
             float availableMainAxisSize = FlexboxTools.Main(innerAvailableSize, Direction);
             bool constrainedMain = availableMainAxisSize > 0f;
-            float availableCrossAxisSize = FlexboxTools.Cross(innerAvailableSize, Direction);
 
             float maxLineMainSize = 0f;
             float totalCrossSize = 0f;
@@ -49,32 +59,24 @@ namespace DevoidEngine.Engine.UI.Nodes
             float currentLineCrossSize = 0f;
             int currentLineCount = 0;
 
-            int totalVisibleChildren = 0;
-
             foreach (var child in _children)
             {
                 if (!child.Visible || !child.ParticipatesInLayout)
                     continue;
 
-                totalVisibleChildren++;
-
                 Vector2 childSize = child.Measure(innerAvailableSize);
 
-                float basis =
-                    child.Layout.FlexBasis > 0f
+                float childMainMin = FlexboxTools.Main(child.MinSize, Direction);
+                float childMainMax = FlexboxTools.Main(child.MaxSize, Direction);
+                float childCrossSize = FlexboxTools.Cross(childSize, Direction);
+
+                float basis = child.Layout.FlexBasis > 0f
                     ? child.Layout.FlexBasis
                     : FlexboxTools.Main(childSize, Direction);
 
-                float childMainAxisSize = Math.Clamp(
-                    basis,
-                    FlexboxTools.Main(child.MinSize, Direction),
-                    FlexboxTools.Main(child.MaxSize, Direction)
-                );
-                float childCrossAxisSize = FlexboxTools.Cross(childSize, Direction);
+                float childMainAxisSize = Math.Clamp(basis, childMainMin, childMainMax);
 
-                float needed = childMainAxisSize;
-                if (currentLineCount > 0)
-                    needed += Gap;
+                float needed = childMainAxisSize + (currentLineCount > 0 ? Gap : 0f);
 
                 if (Wrap == FlexWrap.Wrap &&
                     constrainedMain &&
@@ -95,7 +97,7 @@ namespace DevoidEngine.Engine.UI.Nodes
                     currentLineMainSize += Gap;
 
                 currentLineMainSize += childMainAxisSize;
-                currentLineCrossSize = Math.Max(currentLineCrossSize, childCrossAxisSize);
+                currentLineCrossSize = Math.Max(currentLineCrossSize, childCrossSize);
                 currentLineCount++;
             }
 
@@ -105,29 +107,15 @@ namespace DevoidEngine.Engine.UI.Nodes
                 totalCrossSize += currentLineCrossSize;
             }
 
-            float contentMainSize;
-            float contentCrossSize;
+            float contentMainSize = Wrap == FlexWrap.Wrap ? maxLineMainSize : currentLineMainSize;
+            float contentCrossSize = Wrap == FlexWrap.Wrap ? totalCrossSize : currentLineCrossSize;
 
-            if (Wrap == FlexWrap.Wrap)
-            {
-                contentMainSize = maxLineMainSize;
-                contentCrossSize = totalCrossSize;
-            }
-            else
-            {
-                contentMainSize = currentLineMainSize;
-                contentCrossSize = currentLineCrossSize;
-            }
+            Vector2 contentSize = FlexboxTools.FromMainCross(contentMainSize, contentCrossSize, Direction);
 
-            Vector2 contentSize =
-                FlexboxTools.FromMainCross(contentMainSize, contentCrossSize, Direction);
-
-            Vector2 desired = new Vector2(
+            return new Vector2(
                 contentSize.X + Padding.Horizontal,
                 contentSize.Y + Padding.Vertical
             );
-
-            return desired;
         }
 
         protected override void ArrangeCore(UITransform finalRect)
@@ -155,34 +143,22 @@ namespace DevoidEngine.Engine.UI.Nodes
             float containerMain = FlexboxTools.Main(contentSize, Direction);
             float containerCross = FlexboxTools.Cross(contentSize, Direction);
 
-            List<UINode> children = _children
-                .Where(x => x.Visible && x.ParticipatesInLayout)
-                .ToList();
-
-            Vector2 childAvailable =
-                FlexboxTools.FromMainCross(containerMain, containerCross, Direction);
-
-            foreach (var child in children)
-                child.Measure(childAvailable);
-
-            List<FlexLine> lines = new();
-
-            float lineMain = 0f;
-            float lineCross = 0f;
-            int lineStart = 0;
-            int lineCount = 0;
-
+            List<UINode> children = GetLayoutChildren();
             int count = children.Count;
 
-            Span<float> resolvedMainSizes =
-                count <= 64 ? stackalloc float[count] : new float[count];
+            Vector2 childAvailable = FlexboxTools.FromMainCross(containerMain, containerCross, Direction);
+
+            for (int i = 0; i < count; i++)
+                children[i].Measure(childAvailable);
+
+            Span<float> resolvedMainSizes = count <= 64 ? stackalloc float[count] : new float[count];
+            Span<float> resolvedCrossSizes = count <= 64 ? stackalloc float[count] : new float[count];
 
             for (int i = 0; i < count; i++)
             {
                 var child = children[i];
 
-                float basis =
-                    child.Layout.FlexBasis > 0f
+                float basis = child.Layout.FlexBasis > 0f
                     ? child.Layout.FlexBasis
                     : FlexboxTools.Main(child.DesiredSize, Direction);
 
@@ -191,21 +167,24 @@ namespace DevoidEngine.Engine.UI.Nodes
                     FlexboxTools.Main(child.MinSize, Direction),
                     FlexboxTools.Main(child.MaxSize, Direction)
                 );
-            }
 
-            for (int i = 0; i < children.Count; i++)
-            {
-                var child = children[i];
-
-                float cross = Math.Clamp(
+                resolvedCrossSizes[i] = Math.Clamp(
                     FlexboxTools.Cross(child.DesiredSize, Direction),
                     FlexboxTools.Cross(child.MinSize, Direction),
                     FlexboxTools.Cross(child.MaxSize, Direction)
                 );
+            }
 
-                float needed = resolvedMainSizes[i];
-                if (lineCount > 0)
-                    needed += Gap;
+            List<FlexLine> lines = new List<FlexLine>();
+
+            float lineMain = 0f;
+            float lineCross = 0f;
+            int lineStart = 0;
+            int lineCount = 0;
+
+            for (int i = 0; i < count; i++)
+            {
+                float needed = resolvedMainSizes[i] + (lineCount > 0 ? Gap : 0f);
 
                 if (lineCount > 0 && lineMain + needed > containerMain)
                 {
@@ -227,7 +206,7 @@ namespace DevoidEngine.Engine.UI.Nodes
                     lineMain += Gap;
 
                 lineMain += resolvedMainSizes[i];
-                lineCross = Math.Max(lineCross, cross);
+                lineCross = Math.Max(lineCross, resolvedCrossSizes[i]);
                 lineCount++;
             }
 
@@ -242,19 +221,6 @@ namespace DevoidEngine.Engine.UI.Nodes
                 });
             }
 
-            // ---- PATCH: compute actual wrapped cross size ----
-            float totalCross = 0f;
-
-            for (int i = 0; i < lines.Count; i++)
-            {
-                totalCross += lines[i].crossSize;
-                if (i > 0)
-                    totalCross += Gap;
-            }
-
-            containerCross = Math.Max(containerCross, totalCross);
-            // --------------------------------------------------
-
             float crossCursor = 0f;
 
             foreach (var line in lines)
@@ -265,31 +231,25 @@ namespace DevoidEngine.Engine.UI.Nodes
                 {
                     var child = children[line.startIndex + i];
 
-                    float mainSize = resolvedMainSizes[line.startIndex + i];
-
-                    mainSize = Math.Clamp(
-                        mainSize,
+                    float mainSize = Math.Clamp(
+                        resolvedMainSizes[line.startIndex + i],
                         FlexboxTools.Main(child.MinSize, Direction),
                         FlexboxTools.Main(child.MaxSize, Direction)
                     );
 
                     float crossSize =
                         Align == AlignItems.Stretch
-                        ? line.crossSize
-                        : Math.Clamp(
-                            FlexboxTools.Cross(child.DesiredSize, Direction),
-                            FlexboxTools.Cross(child.MinSize, Direction),
-                            line.crossSize
-                        );
+                            ? line.crossSize
+                            : Math.Clamp(
+                                resolvedCrossSizes[line.startIndex + i],
+                                FlexboxTools.Cross(child.MinSize, Direction),
+                                line.crossSize
+                            );
 
-                    float crossOffset =
-                        FlexboxTools.ComputeCrossOffset(Align, line.crossSize, crossSize);
+                    float crossOffset = FlexboxTools.ComputeCrossOffset(Align, line.crossSize, crossSize);
 
-                    Vector2 pos = contentPos +
-                        FlexboxTools.FromMainCross(cursor, crossCursor + crossOffset, Direction);
-
-                    Vector2 size =
-                        FlexboxTools.FromMainCross(mainSize, crossSize, Direction);
+                    Vector2 pos = contentPos + FlexboxTools.FromMainCross(cursor, crossCursor + crossOffset, Direction);
+                    Vector2 size = FlexboxTools.FromMainCross(mainSize, crossSize, Direction);
 
                     child.Arrange(new UITransform(pos, size));
 
@@ -299,6 +259,7 @@ namespace DevoidEngine.Engine.UI.Nodes
                 crossCursor += line.crossSize + Gap;
             }
         }
+
         protected void ArrangeSingleLine(UITransform finalRect)
         {
             Rect = finalRect;
@@ -316,71 +277,43 @@ namespace DevoidEngine.Engine.UI.Nodes
             float containerMain = FlexboxTools.Main(contentSize, Direction);
             float containerCross = FlexboxTools.Cross(contentSize, Direction);
 
-            List<UINode> children = _children.Where(x => x.Visible && x.ParticipatesInLayout).ToList();
+            List<UINode> children = GetLayoutChildren();
+            int count = children.Count;
 
-            float totalGap = Math.Max(0, Gap * (children.Count - 1));
+            float totalGap = Math.Max(0, Gap * (count - 1));
             float remainingSpace = containerMain - totalGap;
 
-            // from my limited newly acquired knowledge of stackalloc, lets give it a go!
-            Span<float> resolvedMainSizes = children.Count <= 64 ? stackalloc float[children.Count] : new float[children.Count];
-            Span<bool> frozenItems = children.Count <= 64 ? stackalloc bool[children.Count] : new bool[children.Count];
+            Span<float> resolvedMainSizes = count <= 64 ? stackalloc float[count] : new float[count];
+            Span<bool> frozenItems = count <= 64 ? stackalloc bool[count] : new bool[count];
 
-            for (int i = 0; i < children.Count; i++)
+            for (int i = 0; i < count; i++)
             {
                 var child = children[i];
 
-                //float intrinsic = Math.Clamp(
-                //    FlexboxTools.Main(child.DesiredSize, Direction),
-                //    FlexboxTools.Main(child.MinSize, Direction),
-                //    Math.Min(
-                //        FlexboxTools.Main(child.MaxSize, Direction),
-                //        containerMain
-                //    )
-                //);
-
-                float basis =
-                    child.Layout.FlexBasis > 0f
+                float basis = child.Layout.FlexBasis > 0f
                     ? child.Layout.FlexBasis
                     : FlexboxTools.Main(child.DesiredSize, Direction);
 
-                float intrinsic = Math.Clamp(
-                    basis,
-                    FlexboxTools.Main(child.MinSize, Direction),
-                    Math.Min(
-                        FlexboxTools.Main(child.MaxSize, Direction),
-                        containerMain
-                    )
-                );
+                float minSize = FlexboxTools.Main(child.MinSize, Direction);
+                float maxSize = Math.Min(FlexboxTools.Main(child.MaxSize, Direction), containerMain);
+
+                float intrinsic = Math.Clamp(basis, minSize, maxSize);
 
                 resolvedMainSizes[i] = intrinsic;
                 remainingSpace -= intrinsic;
 
                 if (child.Layout.FlexGrowMain <= 0f)
-                {
                     frozenItems[i] = true;
-                }
-
             }
 
-            //if (resolvedMainSizes.Length > 0)
-            //{
-            //    Console.WriteLine($"child resolvedMainSize: {resolvedMainSizes[0]}");
-            //}
-
-            //remainingSpace -= totalGap;
-
-
-            // here we compute the sizes for each child based on its flexGrow and redistribute
             while (remainingSpace > 0f)
             {
                 float totalGrow = 0f;
 
-                for (int i = 0; i < children.Count; i++)
+                for (int i = 0; i < count; i++)
                 {
                     if (!frozenItems[i])
-                    {
                         totalGrow += children[i].Layout.FlexGrowMain;
-                    }
                 }
 
                 if (totalGrow <= 0f)
@@ -388,21 +321,18 @@ namespace DevoidEngine.Engine.UI.Nodes
 
                 bool anyFrozenThisPass = false;
 
-                for (int i = 0; i < children.Count; i++)
+                for (int i = 0; i < count; i++)
                 {
-                    if (frozenItems[i]) { continue; }
+                    if (frozenItems[i])
+                        continue;
 
                     var child = children[i];
-
 
                     float minSize = FlexboxTools.Main(child.MinSize, Direction);
                     float maxSize = FlexboxTools.Main(child.MaxSize, Direction);
 
-
                     float growDelta = remainingSpace * (child.Layout.FlexGrowMain / totalGrow);
-
                     float proposed = resolvedMainSizes[i] + growDelta;
-
                     float clamped = Math.Clamp(proposed, minSize, maxSize);
 
                     if (Math.Abs(proposed - clamped) > 0.0001f)
@@ -412,57 +342,43 @@ namespace DevoidEngine.Engine.UI.Nodes
                         frozenItems[i] = true;
                         anyFrozenThisPass = true;
                     }
-
                 }
 
-
-                if (!anyFrozenThisPass) break;
+                if (!anyFrozenThisPass)
+                    break;
             }
 
             float finalGrow = 0f;
-            for (int i = 0; i < children.Count; i++)
+            for (int i = 0; i < count; i++)
             {
                 if (!frozenItems[i])
-                {
                     finalGrow += children[i].Layout.FlexGrowMain;
-                }
             }
 
             if (finalGrow > 0f && remainingSpace > 0f)
             {
-                for (int i = 0; i < children.Count; i++)
+                for (int i = 0; i < count; i++)
                 {
                     if (frozenItems[i])
                         continue;
 
                     float growDelta = remainingSpace * (children[i].Layout.FlexGrowMain / finalGrow);
-
                     resolvedMainSizes[i] += growDelta;
                 }
             }
 
             if (remainingSpace < 0f)
             {
-                // We need a fresh array because items that don't grow might still be allowed to shrink.
-                Span<bool> shrinkFrozenItems = children.Count <= 64 ? stackalloc bool[children.Count] : new bool[children.Count];
-
-                // If you add a FlexShrinkMain property to your Layout struct later, 
-                // you would freeze items with 0 shrink here:
-                // for (int i = 0; i < children.Count; i++) {
-                //     if (children[i].Layout.FlexShrinkMain <= 0f) shrinkFrozenItems[i] = true;
-                // }
+                Span<bool> shrinkFrozenItems = count <= 64 ? stackalloc bool[count] : new bool[count];
 
                 while (remainingSpace < 0f)
                 {
                     float totalShrinkWeight = 0f;
 
-                    for (int i = 0; i < children.Count; i++)
+                    for (int i = 0; i < count; i++)
                     {
                         if (!shrinkFrozenItems[i])
-                        {
-                            // In the W3C standard, shrink weight is multiplied by the base size.
                             totalShrinkWeight += resolvedMainSizes[i];
-                        }
                     }
 
                     if (totalShrinkWeight <= 0f)
@@ -470,84 +386,78 @@ namespace DevoidEngine.Engine.UI.Nodes
 
                     bool anyFrozenThisPass = false;
 
-                    for (int i = 0; i < children.Count; i++)
+                    for (int i = 0; i < count; i++)
                     {
-                        if (shrinkFrozenItems[i]) continue;
+                        if (shrinkFrozenItems[i])
+                            continue;
 
                         var child = children[i];
                         float minSize = FlexboxTools.Main(child.MinSize, Direction);
 
                         float shrinkWeight = resolvedMainSizes[i];
-                        // Calculate how much of the negative space this element absorbs
                         float shrinkDelta = remainingSpace * (shrinkWeight / totalShrinkWeight);
 
-                        float proposed = resolvedMainSizes[i] + shrinkDelta; // remainingSpace is negative
+                        float proposed = resolvedMainSizes[i] + shrinkDelta;
                         float clamped = Math.Max(proposed, minSize);
 
                         if (Math.Abs(proposed - clamped) > 0.0001f)
                         {
-                            // Adjust remaining space (makes it less negative)
                             remainingSpace -= (clamped - resolvedMainSizes[i]);
                             resolvedMainSizes[i] = clamped;
-                            shrinkFrozenItems[i] = true; // Hit min size, freeze it
+                            shrinkFrozenItems[i] = true;
                             anyFrozenThisPass = true;
                         }
                     }
 
-                    if (!anyFrozenThisPass) break;
+                    if (!anyFrozenThisPass)
+                        break;
                 }
 
-                // Handle any leftover sub-pixel negative space
                 float finalShrinkWeight = 0f;
-                for (int i = 0; i < children.Count; i++)
+                for (int i = 0; i < count; i++)
                 {
-                    if (!shrinkFrozenItems[i]) finalShrinkWeight += resolvedMainSizes[i];
+                    if (!shrinkFrozenItems[i])
+                        finalShrinkWeight += resolvedMainSizes[i];
                 }
 
                 if (finalShrinkWeight > 0f && remainingSpace < 0f)
                 {
-                    for (int i = 0; i < children.Count; i++)
+                    for (int i = 0; i < count; i++)
                     {
-                        if (shrinkFrozenItems[i]) continue;
+                        if (shrinkFrozenItems[i])
+                            continue;
+
                         float shrinkDelta = remainingSpace * (resolvedMainSizes[i] / finalShrinkWeight);
                         resolvedMainSizes[i] += shrinkDelta;
                     }
                 }
             }
 
-
             float usedMain = 0f;
-            for (int i = 0; i < children.Count; i++)
-            {
+            for (int i = 0; i < count; i++)
                 usedMain += resolvedMainSizes[i];
-            }
+
             float freeSpace = Math.Max(0f, containerMain - usedMain - totalGap);
-            float cursor = 0f;
-            float gap = Gap;
+
+            float cursor;
+            float gap;
 
             FlexboxTools.ComputeJustify(
                 Justify,
                 freeSpace,
-                children.Count,
+                count,
                 Gap,
                 out cursor,
                 out gap
             );
 
-            for (int i = 0; i < children.Count; i++)
+            for (int i = 0; i < count; i++)
             {
                 var child = children[i];
 
                 float mainSize = resolvedMainSizes[i];
-                //float crossSize = Align == AlignItems.Stretch
-                //    ? containerCross
-                //    : Math.Min(
-                //        FlexboxTools.Cross(child.DesiredSize, Direction),
-                //        containerCross
-                //    );
 
                 float crossSize;
-
                 if (Align == AlignItems.Stretch || child.Layout.FlexGrowCross > 0f)
                 {
                     crossSize = containerCross;
@@ -562,20 +472,12 @@ namespace DevoidEngine.Engine.UI.Nodes
 
                 float crossOffset = FlexboxTools.ComputeCrossOffset(Align, containerCross, crossSize);
 
-                //Vector2 pos = contentPos + FlexboxTools.FromMainCross(cursor, crossOffset, Direction);
-                //Vector2 size = FlexboxTools.FromMainCross(mainSize, crossSize, Direction);
-
-                //child.Arrange(new UITransform(pos, size));
-
                 Vector2 size = FlexboxTools.FromMainCross(mainSize, crossSize, Direction);
-
-                // --- CRITICAL FIX ---
                 child.Measure(size);
-                // --------------------
 
                 Vector2 pos = contentPos + FlexboxTools.FromMainCross(cursor, crossOffset, Direction);
-
                 child.Arrange(new UITransform(pos, size));
+
                 cursor += mainSize + gap;
             }
 
@@ -585,20 +487,18 @@ namespace DevoidEngine.Engine.UI.Nodes
                 {
                     var child = _children[i];
                     Vector2 size = child.Size ?? child.DesiredSize;
-
                     Vector2 pos = contentPos + child.Offset;
-
                     child.Arrange(new UITransform(pos, size));
                 }
             }
         }
+
         protected override void RenderCore(List<RenderItem> renderList, Matrix4x4 canvasModel, int order)
         {
             Vector2 size = Rect.size;
             Vector2 pos = Rect.position;
 
             Vector2 pivotOffset = (Pivot - new Vector2(0.5f)) * size;
-
             Vector2 centerPos = pos + size * 0.5f;
 
             Matrix4x4 model =
@@ -606,11 +506,6 @@ namespace DevoidEngine.Engine.UI.Nodes
                 Matrix4x4.CreateTranslation(pivotOffset.X, pivotOffset.Y, 0f) *
                 Matrix4x4.CreateRotationZ(Rotation) *
                 Matrix4x4.CreateTranslation(centerPos.X, centerPos.Y, 0f);
-
-            Matrix4x4 final =
-                model *
-                canvasModel *
-                Matrix4x4.CreateTranslation(0, 0, order * UISystem.OrderEpsilon);
 
             debugMaterial.SetVector2("RECT_SIZE", size);
 
@@ -624,7 +519,6 @@ namespace DevoidEngine.Engine.UI.Nodes
 
         protected override void UpdateCore(float deltaTime)
         {
-
         }
     }
 }
