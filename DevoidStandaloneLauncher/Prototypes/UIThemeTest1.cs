@@ -3,6 +3,7 @@ using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.InputSystem;
 using DevoidEngine.Engine.InputSystem.InputDevices;
 using DevoidEngine.Engine.Rendering;
+using DevoidEngine.Engine.UI;
 using DevoidEngine.Engine.UI.Nodes;
 using DevoidEngine.Engine.UI.Text;
 using DevoidEngine.Engine.UI.Theme;
@@ -252,7 +253,7 @@ namespace DevoidStandaloneLauncher.Prototypes
                 }
             };
 
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 10; i++)
             {
                 ContainerNode baseContainer = new ContainerNode()
                 {
@@ -275,7 +276,7 @@ namespace DevoidStandaloneLauncher.Prototypes
                     {
                         FlexGrowCross = 1,
                         FlexGrowMain = 1
-                    }
+                    },
                 };
 
                 thumbnail.AddStyleBoxOverride(StyleKeys.Normal, new StyleBoxFlat()
@@ -284,7 +285,10 @@ namespace DevoidStandaloneLauncher.Prototypes
                     BorderRadius = new Vector4(5)
                 });
 
-                LabelNode thumbnailLabel = new LabelNode("Thumbnail");
+                LabelNode thumbnailLabel = new LabelNode("Thumbnail")
+                {
+
+                };
 
                 baseContainer.Add(thumbnail);
                 baseContainer.Add(thumbnailLabel);

@@ -13,7 +13,7 @@ namespace DevoidEngine.Engine.UI.Nodes
         public int DEBUG_NUM_LOCAL = 0;
         static int DEBUG_NUM_STATIC = 0;
 
-
+        public bool AnimateLayout = true;
         public bool BlockInput = false;
         public bool Visible = true;
         public bool Interactable = true;
@@ -27,6 +27,7 @@ namespace DevoidEngine.Engine.UI.Nodes
 
 
         public UITransform Rect { get; protected set; }
+        public UITransform VisualRect { get; protected set; }
         public Vector2 DesiredSize { get; set; }
 
         public LayoutOptions Layout { get; set; } = new LayoutOptions();
@@ -41,7 +42,6 @@ namespace DevoidEngine.Engine.UI.Nodes
 
 
         public MaterialInstance Material { get; set; }
-
 
         public UITheme Theme;
         private UITheme cachedTheme;
@@ -294,6 +294,9 @@ namespace DevoidEngine.Engine.UI.Nodes
 
             Rect = finalRect;
 
+            if (VisualRect == null)
+                VisualRect = finalRect;
+
             ArrangeCore(Rect);
         }
 
@@ -317,13 +320,36 @@ namespace DevoidEngine.Engine.UI.Nodes
             }
         }
 
-        public void Update(float deltaTime)
+        public void Update(float dt)
         {
-            UpdateCore(deltaTime);
+            if (VisualRect == null)
+                return;
+
+            if (AnimateLayout)
+            {
+                float speed = 25f;
+
+                VisualRect.position = Vector2.Lerp(
+                    VisualRect.position,
+                    Rect.position,
+                    1 - MathF.Exp(-speed * dt)
+                );
+
+                VisualRect.size = Vector2.Lerp(
+                    VisualRect.size,
+                    Rect.size,
+                    1 - MathF.Exp(-speed * dt)
+                );
+            } else
+            {
+                VisualRect = Rect;
+            }
+
+                UpdateCore(dt);
 
             for (int i = 0; i < _children.Count; i++)
             {
-                _children[i].Update(deltaTime);
+                _children[i].Update(dt);
             }
         }
 

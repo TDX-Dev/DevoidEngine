@@ -143,6 +143,8 @@ namespace DevoidEngine.Engine.UI
                     root.Measure(canvasSize);
                     root.Arrange(new UITransform(Vector2.Zero, canvasSize));
                 }
+
+                root.Update(deltaTime);
             }
         }
 

@@ -139,7 +139,7 @@ namespace DevoidEngine.Engine.UI.Nodes
             if (Font == null || string.IsNullOrEmpty(Text) || _mesh == null)
                 return;
 
-            Vector2 pos = Rect.position;
+            Vector2 pos = VisualRect.position;
 
             pos.X = MathF.Round(pos.X);
             pos.Y = MathF.Round(pos.Y);
@@ -208,7 +208,7 @@ namespace DevoidEngine.Engine.UI.Nodes
 
             //float hue = rainbowTime % 1f; // keep hue in [0,1]
 
-            //Color = HSVtoRGB(hue, 1f, 1f);
+            //Color = HSVtoRGB(hue, 1f, 1f);'
         }
 
         Vector4 HSVtoRGB(float h, float s, float v)
