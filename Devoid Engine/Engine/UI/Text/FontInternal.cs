@@ -124,9 +124,6 @@ namespace DevoidEngine.Engine.UI.Text
 
             var rawGlyphs = new Dictionary<uint, BitmapData>();
 
-            // ============================================================
-            // 🔁 LOAD FROM DISK (FAST PATH)
-            // ============================================================
             if (File.Exists(loadPath + ".bin"))
             {
                 Atlas = new GlyphAtlas((int)AtlasSize.X, (int)AtlasSize.Y);
@@ -134,10 +131,6 @@ namespace DevoidEngine.Engine.UI.Text
                 Atlas.UploadGPU();
                 return;
             }
-
-            // ============================================================
-            // 🏗 BUILD FROM SCRATCH (ORIGINAL PATH)
-            // ============================================================
 
             while (glyphIndex != 0)
             {
@@ -172,7 +165,6 @@ namespace DevoidEngine.Engine.UI.Text
                 }
             }
 
-            // Optional: Save after building
             SaveToDisk(loadPath + ".bin");
         }
 

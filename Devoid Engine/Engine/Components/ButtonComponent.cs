@@ -35,16 +35,8 @@ namespace DevoidEngine.Engine.Components
         {
             container = new ContainerNode()
             {
-                Size = new Vector2(200, 40) * btnScale,
+                Size = new Vector2(200, 200),
                 BlockInput = true,
-                Justify = JustifyContent.Start,
-                Align = AlignItems.Center,
-                Padding = Padding.GetAll(5 * btnScale),
-                //BorderRadius = new Vector4(10) * btnScale,
-                Layout =
-                {
-                    //FlexGrowMain = 1
-                }
             };
 
             var font = FontLibrary.LoadFont(
@@ -63,27 +55,12 @@ namespace DevoidEngine.Engine.Components
                 OnClick?.Invoke();
             };
 
-            // released
-            container.OnNodeMouseUp = () =>
+            return new BoxNode()
             {
-
+                Size = new Vector2(500, 500),
+                Color = new Vector4(1,1,1,1),
+                BlockInput = true,
             };
-
-            container.OnNodeMouseHeld = () =>
-            {
-            };
-
-            container.OnNodeMouseEnter = () =>
-            {
-
-            };
-
-            container.OnNodeMouseLeave = () =>
-            {
-
-            };
-
-            return container;
         }
     }
 }

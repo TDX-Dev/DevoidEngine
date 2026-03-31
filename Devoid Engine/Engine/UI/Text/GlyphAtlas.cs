@@ -61,7 +61,7 @@ namespace DevoidEngine.Engine.UI.Text
                 if (currentX + data.Width + Padding > Width)
                 {
                     currentX = Padding;
-                    currentY += currentRowHeight + Padding; // 🔑 accumulate, don’t reset
+                    currentY += currentRowHeight + Padding;
                     currentRowHeight = 0;
                 }
                 if (currentY + data.Height + Padding > Height)
@@ -83,19 +83,15 @@ namespace DevoidEngine.Engine.UI.Text
         {
             for (int y = 0; y < h; y++)
             {
-                // Optimization: Block copy is faster than pixel-by-pixel for simple byte arrays
-                // Calculate source offset and destination offset
                 int srcOffset = y * w;
                 int destOffset = (destY + y) * Width + destX;
 
-                // Copy the row
                 Array.Copy(glyphData, srcOffset, TextureData, destOffset, w);
             }
         }
 
         public void SaveDebug(string path)
         {
-            // We still save as RGBA png because most OS viewers can't open raw R8 images
             using (Image<L8> img = new Image<L8>(Width, Height))
             {
                 img.ProcessPixelRows(accessor =>
@@ -106,7 +102,6 @@ namespace DevoidEngine.Engine.UI.Text
                         int rowOffset = y * Width;
                         for (int x = 0; x < Width; x++)
                         {
-                            // L8 is a struct wrapping a single byte
                             row[x] = new L8(TextureData[rowOffset + x]);
                         }
                     }

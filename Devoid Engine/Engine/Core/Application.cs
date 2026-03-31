@@ -1,6 +1,7 @@
 ﻿using DevoidEngine.Engine.Audio;
 using DevoidEngine.Engine.Audio.SoLoud;
 using DevoidEngine.Engine.Components;
+using DevoidEngine.Engine.Imgui;
 using DevoidEngine.Engine.InputSystem;
 using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.UI;
@@ -50,6 +51,8 @@ namespace DevoidEngine.Engine.Core
         private uint numFrames = 0;
 
         private List<CameraRenderContext> renderContexts = new List<CameraRenderContext>();
+
+        private ImGuiRenderer imGuiRenderer;
 
         private bool isRunning = false;
         private bool isResizePending = false;
@@ -101,6 +104,10 @@ namespace DevoidEngine.Engine.Core
 
 
             targetWindow.OnResize += HandleWindowResize;
+
+            //imGuiRenderer = new ImGuiRenderer(Renderer.GraphicsDevice);
+            //imGuiRenderer.Initialize();
+            //imGuiRenderer.OnGUI += () => { layerHandler.OnGUILayers(); };
 
             isRunning = true;
         }
@@ -167,7 +174,7 @@ namespace DevoidEngine.Engine.Core
                 Update(deltaTime * timeScale);
                 Render();
 
-
+                //imGuiRenderer.PerFrame(deltaTime);
                 Input.EndFrame();
                 RenderThread.ExecuteFrameEnd();
 

@@ -31,6 +31,8 @@ namespace DevoidEngine.Engine.UI.Nodes
 
             _borderColor = GetColor(StyleKeys.BorderColor);
 
+
+
             UpdateMaterial();
         }
 

@@ -4,6 +4,7 @@ using DevoidEngine.Engine.InputSystem.InputDevices;
 using DevoidEngine.Engine.Physics;
 using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.UI.Nodes;
+using DevoidEngine.Engine.UI.Text;
 using DevoidEngine.Engine.UI.Theme;
 using DevoidEngine.Engine.Utilities;
 using DevoidGPU;
@@ -24,7 +25,7 @@ namespace DevoidEngine.Engine.UI
         public static UINode PressedNode { get; private set; }
 
         public static float OrderEpsilon = 0.001f;
-        public static bool DebugDraw = false;
+        public static bool DebugDraw = true;
 
         private static Material uiMaterial;
         private static Material textMaterial;
@@ -39,6 +40,7 @@ namespace DevoidEngine.Engine.UI
         public static CameraData ScreenData;
         private static IUniformBuffer screenDataBuffer;
 
+        public static Vector2 mousePosition;
         private static Vector2 previousMouse;
         private static bool isDragging;
         private static Vector2 dragStartMouse;
@@ -102,7 +104,30 @@ namespace DevoidEngine.Engine.UI
 
         public static void InitializeDefaultTheme()
         {
+            var font = FontLibrary.LoadFont(
+                "Engine/Content/Fonts/JetBrainsMono-Regular.ttf",
+                32
+            );
+
             DefaultTheme = new UITheme();
+
+            DefaultTheme.SetFont(
+                StyleKeys.Font,
+                "DropdownHeader",
+                font
+            );
+
+            DefaultTheme.SetFont(
+                StyleKeys.Font,
+                "Button",
+                font
+            );
+
+            DefaultTheme.SetFont(
+                StyleKeys.Font,
+                "Panel",
+                font
+            );
 
             // Label styling
             DefaultTheme.SetColor(
@@ -121,7 +146,7 @@ namespace DevoidEngine.Engine.UI
             DefaultTheme.SetConstant(
                 StyleKeys.BorderWidth,
                 "Panel",
-                5
+                0
             );
 
 
@@ -132,10 +157,117 @@ namespace DevoidEngine.Engine.UI
             );
 
             DefaultTheme.SetColor(
+                StyleKeys.FontColor,
+                "Panel",
+                new Vector4(0,0,1, 1)
+            );
+
+            DefaultTheme.SetColor(
                 StyleKeys.Background,
                 "Panel",
-                new Vector4(1,1,1,0.6f)
+                new Vector4(1,1,1,0.4f)
             );
+
+            DefaultTheme.SetColor(
+                StyleKeys.Background,
+                "SliderTrack",
+                new Vector4(0.1f, 0.1f, 0.1f, 1)
+            );
+
+            DefaultTheme.SetConstant(
+                StyleKeys.BorderWidth,
+                "SliderTrack",
+                0
+            );
+
+            DefaultTheme.SetConstant(
+                StyleKeys.BorderRadius,
+                "SliderTrack",
+                new Vector4(20)
+            );
+
+            DefaultTheme.SetColor(
+                StyleKeys.Background,
+                "SliderThumb",
+                new Vector4(1, 1, 1, 0.5f)
+            );
+
+            DefaultTheme.SetConstant(
+                StyleKeys.BorderWidth,
+                "SliderThumb",
+                3
+            );
+
+            DefaultTheme.SetConstant(
+                StyleKeys.BorderRadius,
+                "SliderThumb",
+                new Vector4(20)
+            );
+
+            DefaultTheme.SetColor(
+                StyleKeys.Background,
+                "CheckboxInner",
+                new Vector4(1,1,1,1)
+            );
+
+            DefaultTheme.SetColor(
+                StyleKeys.Background,
+                "CheckboxOuter",
+                new Vector4(0.1f, 0.1f, 0.1f, 1)
+            );
+
+            DefaultTheme.SetConstant(
+                StyleKeys.BorderRadius,
+                "CheckboxInner",
+                new Vector4(20)
+            );
+
+            DefaultTheme.SetConstant(
+                StyleKeys.BorderRadius,
+                "CheckboxOuter",
+                new Vector4(20)
+            );
+
+            DefaultTheme.SetColor(
+                StyleKeys.Background,
+                "DropdownHeader",
+                new Vector4(0.1f, 0.1f, 0.1f, 1)
+            );
+
+            DefaultTheme.SetColor(
+                StyleKeys.Background,
+                "DropdownItem",
+                new Vector4(0.1f, 0.1f, 0.1f, 1)
+            );
+
+            DefaultTheme.SetColor(
+                StyleKeys.Background,
+                "DropdownItem",
+                new Vector4(0.1f, 0.1f, 0.1f, 0.5f)
+            );
+
+            DefaultTheme.SetColor(
+                StyleKeys.Background,
+                "Button",
+                new Vector4(0.25f, 0.25f, 0.25f, 1f)
+            );
+
+            DefaultTheme.SetColor(
+                StyleKeys.Background,
+                "ButtonHover",
+                new Vector4(0.4f, 0.4f, 0.4f, 1f)
+            );
+
+            DefaultTheme.SetColor(
+                StyleKeys.Background,
+                "ButtonPressed",
+                new Vector4(0.35f, 0.35f, 0.35f, 1f)
+            );
+
+            DefaultTheme.SetTypeVariation("DropdownItem", "Panel");
+            DefaultTheme.SetTypeVariation("DropdownHeader", "Panel");
+            DefaultTheme.SetTypeVariation("Dropdown", "Panel");
+            DefaultTheme.SetTypeVariation("Label", "Panel");
 
             //DefaultTheme.SetConstant(StyleKeys.BorderRadius, "Panel", new Vector4(5, 5, 5, 5));
 
@@ -188,10 +320,10 @@ namespace DevoidEngine.Engine.UI
                 }
                 else
                 {
-                    root.Measure(new Vector2(float.PositiveInfinity));
+                    //root.Measure(new Vector2(float.PositiveInfinity));
 
                     Vector2 canvasSize = root.DesiredSize;
-
+                    root.Measure(canvasSize);
                     root.Arrange(new UITransform(Vector2.Zero, canvasSize));
                 }
             }
@@ -352,6 +484,8 @@ namespace DevoidEngine.Engine.UI
                     PressedNode.OnDrag(mouse, mouseDelta);
                 }
             }
+
+            mousePosition = mouse;
         }
         public static void MouseDown(Vector2 mouse)
         {

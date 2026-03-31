@@ -20,7 +20,7 @@ namespace DevoidEngine.Engine.UI.Nodes
         public bool ParticipatesInLayout = true;
 
         private bool _materialDirty = true;
-
+        private bool _initialized = false;
 
         internal UINode _parent;
         internal List<UINode> _children = new();
@@ -75,7 +75,15 @@ namespace DevoidEngine.Engine.UI.Nodes
         {
             child._parent = this;
             _children.Add(child);
-            child.Initialize();
+
+            // if this node is already initialized, initialize the child immediately
+            if (_initialized)
+                child.Initialize();
+        }
+
+        public void Remove(UINode child)
+        {
+            _children.Remove(child);
         }
 
         public void Clear()
@@ -91,9 +99,17 @@ namespace DevoidEngine.Engine.UI.Nodes
 
         public void Initialize()
         {
+            if (_initialized)
+                return;
+
+            _initialized = true;
+
             RegisterTheme();
             InitializeCore();
             ApplyTheme();
+
+            for (int i = 0; i < _children.Count; i++)
+                _children[i].Initialize();
         }
 
         void RegisterTheme()
@@ -127,17 +143,25 @@ namespace DevoidEngine.Engine.UI.Nodes
         protected virtual void ApplyTheme() { }
         protected virtual void UpdateMaterial() { }
 
+        //public Vector4 GetColor(string name)
+        //{
+        //    if (colorOverrides.TryGetValue(name, out var value))
+        //        return value;
+
+        //    var theme = GetTheme();
+
+        //    if (theme.HasColor(name, ThemeType))
+        //        return theme.GetColor(name, ThemeType);
+
+        //    return Vector4.One;
+        //}
+
         public Vector4 GetColor(string name)
         {
             if (colorOverrides.TryGetValue(name, out var value))
                 return value;
 
-            var theme = GetTheme();
-
-            if (theme.HasColor(name, ThemeType))
-                return theme.GetColor(name, ThemeType);
-
-            return Vector4.One;
+            return GetTheme().GetColor(name, ThemeType);
         }
 
         public T GetConstant<T>(string name)

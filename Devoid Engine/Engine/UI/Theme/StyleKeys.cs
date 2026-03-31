@@ -13,6 +13,7 @@ namespace DevoidEngine.Engine.UI.Theme
         public const string BorderColor = "border_color";
         public const string BorderRadius = "border_radius";
 
+        public const string Font = "font";
         public const string FontColor = "font_color";
         public const string FontSize = "font_size";
 

@@ -294,8 +294,15 @@ namespace DevoidEngine.Engine.UI.Nodes
                     ? child.Layout.FlexBasis
                     : FlexboxTools.Main(child.DesiredSize, Direction);
 
+                //float minSize = FlexboxTools.Main(child.MinSize, Direction);
+                //float maxSize = Math.Min(FlexboxTools.Main(child.MaxSize, Direction), containerMain);
+
+                //float intrinsic = Math.Clamp(basis, minSize, maxSize);
+
                 float minSize = FlexboxTools.Main(child.MinSize, Direction);
-                float maxSize = Math.Min(FlexboxTools.Main(child.MaxSize, Direction), containerMain);
+
+                float rawMax = FlexboxTools.Main(child.MaxSize, Direction);
+                float maxSize = rawMax > 0f ? rawMax : float.PositiveInfinity;
 
                 float intrinsic = Math.Clamp(basis, minSize, maxSize);
 

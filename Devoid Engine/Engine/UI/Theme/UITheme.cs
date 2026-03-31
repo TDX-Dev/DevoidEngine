@@ -90,10 +90,16 @@ namespace DevoidEngine.Engine.UI.Theme
 
         public FontInternal GetFont(string name, string themeType)
         {
-            if (types.TryGetValue(themeType, out var data) &&
-                data.Fonts.TryGetValue(name, out var font))
+            if (!TryGetTypeChain(themeType, out var chain))
+                return null;
+
+            foreach (var type in chain)
             {
-                return font;
+                if (types.TryGetValue(type, out var data) &&
+                    data.Fonts.TryGetValue(name, out var font))
+                {
+                    return font;
+                }
             }
 
             return null;

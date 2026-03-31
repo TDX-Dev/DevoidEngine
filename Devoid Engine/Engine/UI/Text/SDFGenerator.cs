@@ -15,7 +15,7 @@
             float[] grid = new float[paddedW * paddedH];
 
             // Initialize grid
-            // FIX: Lower INF from 1e9f to 1e7f to prevent float precision errors (tearing)
+            // FIX: Lower INF from 1e9f to 1e7f to prevent float precision errors
             const float INF = 1e7f;
             for (int i = 0; i < grid.Length; i++) grid[i] = INF;
 
@@ -31,15 +31,14 @@
                 }
             }
 
-            // 2. Compute Signed Distance
-            // Outside
+
             float[] distOut = PerformEDT(grid, paddedW, paddedH);
 
-            // Inside (Invert logic)
+
             for (int i = 0; i < grid.Length; i++) grid[i] = (distOut[i] == 0) ? INF : 0f;
             float[] distIn = PerformEDT(grid, paddedW, paddedH);
 
-            // 3. Combine & Normalize
+
             float[] highResSDF = new float[paddedW * paddedH];
             for (int i = 0; i < highResSDF.Length; i++)
             {
@@ -54,7 +53,7 @@
             int outW = (int)(paddedW * scale);
             int outH = (int)(paddedH * scale);
 
-            // Safety check for 0 dimensions
+
             outW = Math.Max(1, outW);
             outH = Math.Max(1, outH);
 

@@ -192,7 +192,6 @@ namespace DevoidEngine.Engine.UI.Text
                 }
             }
 
-            // -------- PIXEL SNAP FIX (single offset) --------
 
             float snapX = MathF.Round(startX) - startX;
             float snapY = MathF.Round(startY) - startY;
@@ -208,7 +207,6 @@ namespace DevoidEngine.Engine.UI.Text
                 vertices[i] = new Vertex(pos, vert.Normal, vert.UV1, vert.Tangent, vert.BiTangent);
             }
 
-            // -----------------------------------------------
 
             Mesh mesh = new Mesh();
             mesh.SetVertices(vertices.ToArray());
