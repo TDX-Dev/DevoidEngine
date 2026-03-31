@@ -46,6 +46,8 @@ namespace DevoidEngine.Engine.UI.Nodes
         public UITheme Theme;
         private UITheme cachedTheme;
 
+        public UIState State;
+
         Dictionary<string, Vector4> colorOverrides = new();
         Dictionary<string, object> constantOverrides = new();
         Dictionary<string, FontInternal> fontOverrides = new();
