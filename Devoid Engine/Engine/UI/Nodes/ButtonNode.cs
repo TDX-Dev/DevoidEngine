@@ -67,12 +67,13 @@ namespace DevoidEngine.Engine.UI.Nodes
 
         void UpdateState()
         {
+            State = UIState.Normal;
+
+            if (hovered)
+                State |= UIState.Hover;
+
             if (pressed)
-                currentThemeType = "ButtonPressed";
-            else if (hovered)
-                currentThemeType = "ButtonHover";
-            else
-                currentThemeType = "Button";
+                State |= UIState.Pressed;
 
             ApplyTheme();
         }

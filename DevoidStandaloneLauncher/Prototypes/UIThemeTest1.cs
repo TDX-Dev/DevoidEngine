@@ -6,6 +6,7 @@ using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.UI.Nodes;
 using DevoidEngine.Engine.UI.Text;
 using DevoidEngine.Engine.UI.Theme;
+using DevoidEngine.Engine.UI.Theme.Styleboxes;
 using DevoidEngine.Engine.Utilities;
 using DevoidStandaloneLauncher.Scripts;
 using DevoidStandaloneLauncher.Utils;
@@ -128,6 +129,7 @@ namespace DevoidStandaloneLauncher.Prototypes
 
             leftInnerContainer.Add(button);
             leftInnerContainer.Add(dropdown);
+            AddThumbnails(leftInnerContainer);
 
             FlexboxNode rightInnerContainer = new FlexboxNode()
             {
@@ -160,8 +162,14 @@ namespace DevoidStandaloneLauncher.Prototypes
                 }
             };
 
+            SplitterNode splitter1 = new SplitterNode();
+            splitter1.Target = rightInnerInnerContainer1;
+            splitter1.Vertical = true;
+            splitter1.MinSize = new Vector2(0, 6);
+            splitter1.MaxSize = new Vector2(float.PositiveInfinity, 6);
 
             rightInnerContainer.Add(rightInnerInnerContainer1);
+            rightInnerContainer.Add(splitter1);
             rightInnerContainer.Add(rightInnerInnerContainer2);
 
             dropdown.OnSelectionChanged = (int e) =>
@@ -206,7 +214,13 @@ namespace DevoidStandaloneLauncher.Prototypes
                 flex2.Layout.FlexGrowMain = 1 - e;
             };
 
+            SplitterNode splitter = new SplitterNode();
+            splitter.Target = leftInnerContainer;
+            splitter.MinSize = new Vector2(6, 0);
+            splitter.MaxSize = new Vector2(6, float.PositiveInfinity);
+
             bodyContainer.Add(leftInnerContainer);
+            bodyContainer.Add(splitter);
             bodyContainer.Add(rightInnerContainer);
 
             canvas.Canvas.Add(bodyContainer);
@@ -222,6 +236,62 @@ namespace DevoidStandaloneLauncher.Prototypes
         public override void OnRender()
         {
             //DebugRenderSystem.DrawCube(Vector3.One, Vector3.Zero, Matrix4x4.Identity);
+        }
+
+        void AddThumbnails(UINode node)
+        {
+            FlexboxNode mainContainer = new FlexboxNode()
+            {
+                Wrap = FlexWrap.Wrap,
+                Gap = 10,
+                Padding = Padding.GetAll(10),
+                Layout = new LayoutOptions()
+                {
+                    FlexGrowCross = 1,
+                    FlexGrowMain = 1
+                }
+            };
+
+            for (int i = 0; i < 5; i++)
+            {
+                ContainerNode baseContainer = new ContainerNode()
+                {
+                    MinSize = new Vector2(100, 100),
+                    Padding = Padding.GetAll(5),
+                    Gap = 10,
+                    Direction = FlexDirection.Column
+                };
+
+                baseContainer.AddStyleBoxOverride(StyleKeys.Normal, new StyleBoxFlat()
+                {
+                    BackgroundColor = new Vector4(1, 1, 1, 0.2f),
+                    BorderRadius = new Vector4(5)
+                });
+
+                ContainerNode thumbnail = new ContainerNode()
+                {
+                    MinSize = new Vector2(100, 100),
+                    Layout = new LayoutOptions()
+                    {
+                        FlexGrowCross = 1,
+                        FlexGrowMain = 1
+                    }
+                };
+
+                thumbnail.AddStyleBoxOverride(StyleKeys.Normal, new StyleBoxFlat()
+                {
+                    BackgroundColor = MutedColors.GetRandom(),
+                    BorderRadius = new Vector4(5)
+                });
+
+                LabelNode thumbnailLabel = new LabelNode("Thumbnail");
+
+                baseContainer.Add(thumbnail);
+                baseContainer.Add(thumbnailLabel);
+                mainContainer.Add(baseContainer);
+            }
+
+            node.Add(mainContainer);
         }
 
         void AddFlexboxList(UINode node, int n = 4)

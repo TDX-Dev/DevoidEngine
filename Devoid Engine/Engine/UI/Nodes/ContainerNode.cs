@@ -23,16 +23,23 @@ namespace DevoidEngine.Engine.UI.Nodes
 
         protected override void ApplyTheme()
         {
-            _background = GetColor(StyleKeys.Background);
+            //_background = GetColor(StyleKeys.Background);
 
-            _borderWidth = GetConstant<int>(StyleKeys.BorderWidth);
+            //_borderWidth = GetConstant<int>(StyleKeys.BorderWidth);
 
-            _borderRadius = GetConstant<Vector4>(StyleKeys.BorderRadius);
+            //_borderRadius = GetConstant<Vector4>(StyleKeys.BorderRadius);
 
-            _borderColor = GetColor(StyleKeys.BorderColor);
+            //_borderColor = GetColor(StyleKeys.BorderColor);
 
+            var style = GetStateStyleBox();
 
-
+            if (style is StyleBoxFlat flat)
+            {
+                _background = flat.BackgroundColor;
+                _borderWidth = flat.BorderWidth;
+                _borderColor = flat.BorderColor;
+                _borderRadius = flat.BorderRadius;
+            }
             UpdateMaterial();
         }
 

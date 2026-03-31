@@ -61,7 +61,7 @@ namespace DevoidEngine.Engine.UI
 
         public static void Initialize()
         {
-            DefaultTheme = ThemeDefaults.InitializeVisualStudioTheme();
+            DefaultTheme = ThemeDefaults.InitializeDefaultTheme();
 
             QuadMesh = new Mesh();
             QuadMesh.SetVertices(Primitives.GetQuadVertex());

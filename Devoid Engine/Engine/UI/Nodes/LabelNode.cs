@@ -37,7 +37,17 @@ namespace DevoidEngine.Engine.UI.Nodes
 
         private float _lastWidthConstraint = float.PositiveInfinity;
 
-        public LabelNode(string text, FontInternal font, float scale = 1f)
+        public LabelNode(string text, float scale = 16f)
+        {
+            Font = GetFont(StyleKeys.Font);
+            Scale = scale;
+            Text = text;
+
+            Layout.FlexGrowMain = 0;
+            Layout.FlexGrowCross = 0;
+        }
+
+        public LabelNode(string text, FontInternal font, float scale = 16f)
         {
             Font = font;
             Scale = scale;

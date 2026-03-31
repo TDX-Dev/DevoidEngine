@@ -1,4 +1,5 @@
 ﻿using DevoidEngine.Engine.Utilities;
+using OpenTK.Windowing.Common.Input;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using System.Numerics;
@@ -117,6 +118,20 @@ namespace DevoidEngine.Engine.Core
             }
         }
 
+        public static MouseCursor ConvertCursorShape(CursorShape shape)
+        {
+            switch (shape)
+            {
+                case CursorShape.Arrow:
+                    return MouseCursor.Default;
+                    break;
+                case CursorShape.ResizeEW:
+                    return MouseCursor.ResizeEW;
+                    break;
+                default:
+                    return MouseCursor.Default;
+            }
+        }
         public List<MonitorResolution> GetSupportedResolutions(int monitorIdx = 0)
         {
             var videoModes = Monitors.GetMonitors()[monitorIdx].SupportedVideoModes;

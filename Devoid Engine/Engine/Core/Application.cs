@@ -7,6 +7,7 @@ using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.UI;
 using DevoidEngine.Engine.Utilities;
 using DevoidGPU;
+using OpenTK.Windowing.Common.Input;
 using System.Diagnostics;
 using System.Numerics;
 
@@ -200,11 +201,7 @@ namespace DevoidEngine.Engine.Core
 
         void Update(float deltaTime)
         {
-            if (Cursor.isDirty)
-            {
-                targetWindow.CursorState = (OpenTK.Windowing.Common.CursorState)Cursor.cursorState;
-                Cursor.isDirty = false;
-            }
+            UpdateCursor();
 
             layerHandler.UpdateLayers(deltaTime);
             UISystem.Update(deltaTime);
@@ -250,6 +247,22 @@ namespace DevoidEngine.Engine.Core
             Renderer.GraphicsDevice.MainSurface.Present();
         }
 
+        void UpdateCursor()
+        {
+            if (Cursor.stateDirty)
+            {
+                targetWindow.CursorState =
+                    (OpenTK.Windowing.Common.CursorState)Cursor.cursorState;
 
+                Cursor.stateDirty = false;
+            }
+
+            if (Cursor.shapeDirty)
+            {
+                targetWindow.Cursor = Window.ConvertCursorShape(Cursor.cursorShape);
+
+                Cursor.shapeDirty = false;
+            }
+        }
     }
 }

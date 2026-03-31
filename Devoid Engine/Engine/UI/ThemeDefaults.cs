@@ -1,5 +1,6 @@
 ﻿using DevoidEngine.Engine.UI.Text;
 using DevoidEngine.Engine.UI.Theme;
+using DevoidEngine.Engine.UI.Theme.Styleboxes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,167 +19,169 @@ namespace DevoidEngine.Engine.UI
                 32
             );
 
-            var DefaultTheme = new UITheme();
+            var theme = new UITheme();
 
-            DefaultTheme.SetFont(
-                StyleKeys.Font,
-                "DropdownHeader",
-                font
-            );
+            // Fonts
+            theme.SetFont(StyleKeys.Font, "DropdownHeader", font);
+            theme.SetFont(StyleKeys.Font, "Button", font);
+            theme.SetFont(StyleKeys.Font, "Panel", font);
 
-            DefaultTheme.SetFont(
-                StyleKeys.Font,
-                "Button",
-                font
-            );
-
-            DefaultTheme.SetFont(
-                StyleKeys.Font,
-                "Panel",
-                font
-            );
-
-            // Label styling
-            DefaultTheme.SetColor(
+            // Label
+            theme.SetColor(
                 StyleKeys.FontColor,
                 "Label",
                 new Vector4(1, 1, 1, 1)
             );
 
-            DefaultTheme.SetFontSize(
+            theme.SetFontSize(
                 StyleKeys.FontSize,
                 "Label",
                 16
             );
 
-            // Panel styling
-            DefaultTheme.SetConstant(
-                StyleKeys.BorderWidth,
+            // PANEL
+            theme.SetStyleBox(
+                StyleKeys.Normal,
                 "Panel",
-                0
+                new StyleBoxFlat()
+                {
+                    BackgroundColor = new Vector4(1, 1, 1, 0.4f),
+                    BorderWidth = 0,
+                    BorderColor = new Vector4(1, 1, 1, 1),
+                    BorderRadius = Vector4.Zero
+                }
             );
 
-
-            DefaultTheme.SetColor(
-                StyleKeys.BorderColor,
-                "Panel",
-                new Vector4(1, 1, 1, 1)
-            );
-
-            DefaultTheme.SetColor(
+            theme.SetColor(
                 StyleKeys.FontColor,
                 "Panel",
                 new Vector4(0, 0, 1, 1)
             );
 
-            DefaultTheme.SetColor(
-                StyleKeys.Background,
-                "Panel",
-                new Vector4(1, 1, 1, 0.4f)
-            );
-
-            DefaultTheme.SetColor(
-                StyleKeys.Background,
+            // SLIDER TRACK
+            theme.SetStyleBox(
+                StyleKeys.Normal,
                 "SliderTrack",
-                new Vector4(0.1f, 0.1f, 0.1f, 1)
+                new StyleBoxFlat()
+                {
+                    BackgroundColor = new Vector4(0.1f, 0.1f, 0.1f, 1),
+                    BorderWidth = 0,
+                    BorderColor = Vector4.Zero,
+                    BorderRadius = new Vector4(20)
+                }
             );
 
-            DefaultTheme.SetConstant(
-                StyleKeys.BorderWidth,
-                "SliderTrack",
-                0
-            );
-
-            DefaultTheme.SetConstant(
-                StyleKeys.BorderRadius,
-                "SliderTrack",
-                new Vector4(20)
-            );
-
-            DefaultTheme.SetColor(
-                StyleKeys.Background,
+            // SLIDER THUMB
+            theme.SetStyleBox(
+                StyleKeys.Normal,
                 "SliderThumb",
-                new Vector4(1, 1, 1, 0.5f)
+                new StyleBoxFlat()
+                {
+                    BackgroundColor = new Vector4(1, 1, 1, 0.5f),
+                    BorderWidth = 3,
+                    BorderColor = new Vector4(0, 0, 0, 0.4f),
+                    BorderRadius = new Vector4(20)
+                }
             );
 
-            DefaultTheme.SetConstant(
-                StyleKeys.BorderWidth,
-                "SliderThumb",
-                3
-            );
-
-            DefaultTheme.SetConstant(
-                StyleKeys.BorderRadius,
-                "SliderThumb",
-                new Vector4(20)
-            );
-
-            DefaultTheme.SetColor(
-                StyleKeys.Background,
-                "CheckboxInner",
-                new Vector4(1, 1, 1, 1)
-            );
-
-            DefaultTheme.SetColor(
-                StyleKeys.Background,
+            // CHECKBOX OUTER
+            theme.SetStyleBox(
+                StyleKeys.Normal,
                 "CheckboxOuter",
-                new Vector4(0.1f, 0.1f, 0.1f, 1)
+                new StyleBoxFlat()
+                {
+                    BackgroundColor = new Vector4(0.1f, 0.1f, 0.1f, 1),
+                    BorderWidth = 1,
+                    BorderColor = new Vector4(1, 1, 1, 0.15f),
+                    BorderRadius = new Vector4(20)
+                }
             );
 
-            DefaultTheme.SetConstant(
-                StyleKeys.BorderRadius,
+            // CHECKBOX INNER
+            theme.SetStyleBox(
+                StyleKeys.Normal,
                 "CheckboxInner",
-                new Vector4(20)
+                new StyleBoxFlat()
+                {
+                    BackgroundColor = new Vector4(1, 1, 1, 1),
+                    BorderWidth = 0,
+                    BorderColor = Vector4.Zero,
+                    BorderRadius = new Vector4(20)
+                }
             );
 
-            DefaultTheme.SetConstant(
-                StyleKeys.BorderRadius,
-                "CheckboxOuter",
-                new Vector4(20)
-            );
-
-            DefaultTheme.SetColor(
-                StyleKeys.Background,
+            // DROPDOWN HEADER
+            theme.SetStyleBox(
+                StyleKeys.Normal,
                 "DropdownHeader",
-                new Vector4(0.1f, 0.1f, 0.1f, 1)
+                new StyleBoxFlat()
+                {
+                    BackgroundColor = new Vector4(0.1f, 0.1f, 0.1f, 1),
+                    BorderWidth = 1,
+                    BorderColor = new Vector4(1, 1, 1, 0.1f),
+                    BorderRadius = new Vector4(4)
+                }
             );
 
-            DefaultTheme.SetColor(
-                StyleKeys.Background,
+            // DROPDOWN ITEM
+            theme.SetStyleBox(
+                StyleKeys.Normal,
                 "DropdownItem",
-                new Vector4(0.1f, 0.1f, 0.1f, 1)
+                new StyleBoxFlat()
+                {
+                    BackgroundColor = new Vector4(0.1f, 0.1f, 0.1f, 0.5f),
+                    BorderWidth = 0,
+                    BorderColor = Vector4.Zero,
+                    BorderRadius = Vector4.Zero
+                }
             );
 
-            DefaultTheme.SetColor(
-                StyleKeys.Background,
-                "DropdownItem",
-                new Vector4(0.1f, 0.1f, 0.1f, 0.5f)
-            );
-
-            DefaultTheme.SetColor(
-                StyleKeys.Background,
+            // BUTTON NORMAL
+            theme.SetStyleBox(
+                StyleKeys.Normal,
                 "Button",
-                new Vector4(0.25f, 0.25f, 0.25f, 1f)
+                new StyleBoxFlat()
+                {
+                    BackgroundColor = new Vector4(0.25f, 0.25f, 0.25f, 1f),
+                    BorderWidth = 1,
+                    BorderColor = new Vector4(0, 0, 0, 0.4f),
+                    BorderRadius = new Vector4(6)
+                }
             );
 
-            DefaultTheme.SetColor(
-                StyleKeys.Background,
-                "ButtonHover",
-                new Vector4(0.4f, 0.4f, 0.4f, 1f)
+            // BUTTON HOVER
+            theme.SetStyleBox(
+                StyleKeys.Hover,
+                "Button",
+                new StyleBoxFlat()
+                {
+                    BackgroundColor = new Vector4(0.4f, 0.4f, 0.4f, 1f),
+                    BorderWidth = 1,
+                    BorderColor = new Vector4(1, 1, 1, 0.2f),
+                    BorderRadius = new Vector4(6)
+                }
             );
 
-            DefaultTheme.SetColor(
-                StyleKeys.Background,
-                "ButtonPressed",
-                new Vector4(0.35f, 0.35f, 0.35f, 1f)
+            // BUTTON PRESSED
+            theme.SetStyleBox(
+                StyleKeys.Pressed,
+                "Button",
+                new StyleBoxFlat()
+                {
+                    BackgroundColor = new Vector4(0.35f, 0.35f, 0.35f, 1f),
+                    BorderWidth = 1,
+                    BorderColor = new Vector4(0, 0, 0, 0.6f),
+                    BorderRadius = new Vector4(6)
+                }
             );
 
-            DefaultTheme.SetTypeVariation("DropdownItem", "Panel");
-            DefaultTheme.SetTypeVariation("DropdownHeader", "Panel");
-            DefaultTheme.SetTypeVariation("Dropdown", "Panel");
-            DefaultTheme.SetTypeVariation("Label", "Panel");
+            // Type inheritance
+            theme.SetTypeVariation("DropdownItem", "Button");
+            theme.SetTypeVariation("DropdownHeader", "Panel");
+            theme.SetTypeVariation("Dropdown", "Panel");
+            theme.SetTypeVariation("Label", "Panel");
 
-            return DefaultTheme;
+            return theme;
         }
         public static UITheme InitializeRetroTheme()
         {
@@ -340,7 +343,7 @@ namespace DevoidEngine.Engine.UI
                 32
             );
 
-            var DefaultTheme = new UITheme();
+            var theme = new UITheme();
 
             Vector4 bg = new Vector4(30f / 255f, 30f / 255f, 30f / 255f, 1f);
             Vector4 panel = new Vector4(45f / 255f, 45f / 255f, 48f / 255f, 1f);
@@ -351,145 +354,150 @@ namespace DevoidEngine.Engine.UI
             Vector4 buttonHover = new Vector4(0f / 255f, 122f / 255f, 204f / 255f, 1f);
             Vector4 buttonPressed = new Vector4(28f / 255f, 151f / 255f, 234f / 255f, 1f);
 
-
-            DefaultTheme.SetFont(StyleKeys.Font, "DropdownHeader", font);
-            DefaultTheme.SetFont(StyleKeys.Font, "Button", font);
-            DefaultTheme.SetFont(StyleKeys.Font, "Panel", font);
+            // Fonts
+            theme.SetFont(StyleKeys.Font, "DropdownHeader", font);
+            theme.SetFont(StyleKeys.Font, "Button", font);
+            theme.SetFont(StyleKeys.Font, "Panel", font);
 
             // Label
-            DefaultTheme.SetColor(
-                StyleKeys.FontColor,
-                "Label",
-                text
-            );
-
-            DefaultTheme.SetFontSize(
-                StyleKeys.FontSize,
-                "Label",
-                16
-            );
+            theme.SetColor(StyleKeys.FontColor, "Label", text);
+            theme.SetFontSize(StyleKeys.FontSize, "Label", 16);
 
             // Panel
-            DefaultTheme.SetConstant(
-                StyleKeys.BorderWidth,
+            theme.SetStyleBox(
+                StyleKeys.Normal,
                 "Panel",
-                0
-            );
-
-            DefaultTheme.SetColor(
-                StyleKeys.Background,
-                "Panel",
-                panel
-            );
-
-            DefaultTheme.SetColor(
-                StyleKeys.FontColor,
-                "Panel",
-                text
+                new StyleBoxFlat()
+                {
+                    BackgroundColor = panel,
+                    BorderWidth = 0,
+                    BorderColor = Vector4.Zero,
+                    BorderRadius = Vector4.Zero
+                }
             );
 
             // Slider Track
-            DefaultTheme.SetColor(
-                StyleKeys.Background,
+            theme.SetStyleBox(
+                StyleKeys.Normal,
                 "SliderTrack",
-                bg
-            );
-
-            DefaultTheme.SetConstant(
-                StyleKeys.BorderWidth,
-                "SliderTrack",
-                0
-            );
-
-            DefaultTheme.SetConstant(
-                StyleKeys.BorderRadius,
-                "SliderTrack",
-                new Vector4(4)
+                new StyleBoxFlat()
+                {
+                    BackgroundColor = bg,
+                    BorderWidth = 0,
+                    BorderColor = Vector4.Zero,
+                    BorderRadius = new Vector4(4)
+                }
             );
 
             // Slider Thumb
-            DefaultTheme.SetColor(
-                StyleKeys.Background,
+            theme.SetStyleBox(
+                StyleKeys.Normal,
                 "SliderThumb",
-                accent
+                new StyleBoxFlat()
+                {
+                    BackgroundColor = accent,
+                    BorderWidth = 2,
+                    BorderColor = accentHover,
+                    BorderRadius = new Vector4(4)
+                }
             );
 
-            DefaultTheme.SetConstant(
-                StyleKeys.BorderWidth,
-                "SliderThumb",
-                2
-            );
-
-            DefaultTheme.SetConstant(
-                StyleKeys.BorderRadius,
-                "SliderThumb",
-                new Vector4(4)
-            );
-
-            // Checkbox
-            DefaultTheme.SetColor(
-                StyleKeys.Background,
+            // Checkbox Outer
+            theme.SetStyleBox(
+                StyleKeys.Normal,
                 "CheckboxOuter",
-                bg
+                new StyleBoxFlat()
+                {
+                    BackgroundColor = bg,
+                    BorderWidth = 1,
+                    BorderColor = accent,
+                    BorderRadius = new Vector4(3)
+                }
             );
 
-            DefaultTheme.SetColor(
-                StyleKeys.Background,
+            // Checkbox Inner
+            theme.SetStyleBox(
+                StyleKeys.Normal,
                 "CheckboxInner",
-                accent
+                new StyleBoxFlat()
+                {
+                    BackgroundColor = accent,
+                    BorderWidth = 0,
+                    BorderColor = Vector4.Zero,
+                    BorderRadius = new Vector4(3)
+                }
             );
 
-            DefaultTheme.SetConstant(
-                StyleKeys.BorderRadius,
-                "CheckboxOuter",
-                new Vector4(3)
-            );
-
-            DefaultTheme.SetConstant(
-                StyleKeys.BorderRadius,
-                "CheckboxInner",
-                new Vector4(3)
-            );
-
-            // Dropdown
-            DefaultTheme.SetColor(
-                StyleKeys.Background,
+            // Dropdown Header
+            theme.SetStyleBox(
+                StyleKeys.Normal,
                 "DropdownHeader",
-                button
+                new StyleBoxFlat()
+                {
+                    BackgroundColor = button,
+                    BorderWidth = 0,
+                    BorderColor = Vector4.Zero,
+                    BorderRadius = new Vector4(3)
+                }
             );
 
-            DefaultTheme.SetColor(
-                StyleKeys.Background,
+            // Dropdown Item
+            theme.SetStyleBox(
+                StyleKeys.Normal,
                 "DropdownItem",
-                bg
+                new StyleBoxFlat()
+                {
+                    BackgroundColor = bg,
+                    BorderWidth = 0,
+                    BorderColor = Vector4.Zero,
+                    BorderRadius = Vector4.Zero
+                }
             );
 
             // Buttons
-
-            DefaultTheme.SetColor(
-                StyleKeys.Background,
+            theme.SetStyleBox(
+                StyleKeys.Normal,
                 "Button",
-                button
+                new StyleBoxFlat()
+                {
+                    BackgroundColor = button,
+                    BorderWidth = 1,
+                    BorderColor = new Vector4(0, 0, 0, 0.4f),
+                    BorderRadius = new Vector4(4)
+                }
             );
 
-            DefaultTheme.SetColor(
-                StyleKeys.Background,
-                "ButtonHover",
-                buttonHover
+            theme.SetStyleBox(
+                StyleKeys.Hover,
+                "Button",
+                new StyleBoxFlat()
+                {
+                    BackgroundColor = buttonHover,
+                    BorderWidth = 1,
+                    BorderColor = accentHover,
+                    BorderRadius = new Vector4(4)
+                }
             );
 
-            DefaultTheme.SetColor(
-                StyleKeys.Background,
-                "ButtonPressed",
-                buttonPressed
+            theme.SetStyleBox(
+                StyleKeys.Pressed,
+                "Button",
+                new StyleBoxFlat()
+                {
+                    BackgroundColor = buttonPressed,
+                    BorderWidth = 1,
+                    BorderColor = accentHover,
+                    BorderRadius = new Vector4(4)
+                }
             );
 
-            DefaultTheme.SetTypeVariation("DropdownItem", "Panel");
-            DefaultTheme.SetTypeVariation("DropdownHeader", "Panel");
-            DefaultTheme.SetTypeVariation("Dropdown", "Panel");
-            DefaultTheme.SetTypeVariation("Label", "Panel");
+            // Type inheritance
+            theme.SetTypeVariation("DropdownItem", "Panel");
+            theme.SetTypeVariation("DropdownHeader", "Panel");
+            theme.SetTypeVariation("Dropdown", "Panel");
+            theme.SetTypeVariation("Label", "Panel");
 
-            return DefaultTheme;
+            return theme;
         }
 
     }

@@ -11,7 +11,7 @@ namespace DevoidEngine.Engine.UI.Nodes
 {
     class DropdownItem : ButtonNode
     {
-        //public override string ThemeType => "DropdownItem";
+        public override string ThemeType => "DropdownItem";
     }
 
     class DropdownHeader : ContainerNode

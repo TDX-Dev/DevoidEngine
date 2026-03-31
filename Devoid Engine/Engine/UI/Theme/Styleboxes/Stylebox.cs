@@ -12,18 +12,5 @@ namespace DevoidEngine.Engine.UI.Theme.Styleboxes
     {
         public Vector4 ContentMargin;
         // left, top, right, bottom
-
-
-        //static StyleBoxTexture CreateButtonNormal()
-        //{
-        //    return new StyleBoxTexture
-        //    {
-        //        Texture = Helper.LoadImageAsTex("Engine/Content/UI/"),
-        //        MarginLeft = 8,
-        //        MarginRight = 8,
-        //        MarginTop = 8,
-        //        MarginBottom = 8
-        //    };
-        //}
     }
 }

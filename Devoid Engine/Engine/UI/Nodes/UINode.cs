@@ -158,6 +158,21 @@ namespace DevoidEngine.Engine.UI.Nodes
         //    return Vector4.One;
         //}
 
+        protected Vector4 GetStateColor(string property)
+        {
+            var theme = GetTheme();
+
+            if (State.HasFlag(UIState.Pressed) &&
+                theme.HasColor(property + "_" + StyleKeys.Pressed, ThemeType))
+                return GetColor(property + "_" + StyleKeys.Pressed);
+
+            if (State.HasFlag(UIState.Hover) &&
+                theme.HasColor(property + "_" + StyleKeys.Hover, ThemeType))
+                return GetColor(property + "_" + StyleKeys.Hover);
+
+            return GetColor(property);
+        }
+
         public Vector4 GetColor(string name)
         {
             if (colorOverrides.TryGetValue(name, out var value))
@@ -177,6 +192,25 @@ namespace DevoidEngine.Engine.UI.Nodes
                 return theme.GetConstant<T>(name, ThemeType);
 
             return default;
+        }
+
+        protected StyleBox GetStateStyleBox()
+        {
+            if (State.HasFlag(UIState.Pressed))
+            {
+                var s = GetStyleBox(StyleKeys.Pressed);
+                if (s != null)
+                    return s;
+            }
+
+            if (State.HasFlag(UIState.Hover))
+            {
+                var s = GetStyleBox(StyleKeys.Hover);
+                if (s != null)
+                    return s;
+            }
+
+            return GetStyleBox(StyleKeys.Normal);
         }
 
         public StyleBox GetStyleBox(string name)
