@@ -123,13 +123,21 @@ namespace DevoidStandaloneLauncher.Prototypes
 
             GameObject canvasObject = scene.AddGameObject("EngineInfo");
             var canvasComponent = canvasObject.AddComponent<CanvasComponent>();
+            canvasComponent.Canvas.Align = AlignItems.Start;
+            canvasComponent.Canvas.Justify = JustifyContent.Start;
+            canvasComponent.Canvas.Direction = FlexDirection.Column;
+            canvasComponent.Canvas.Layout = new LayoutOptions()
+            {
+                FlexGrowCross = 1,
+            };
 
             string EngineInfo = $"Devoid Engine Ver. {engineVer.ToString()}";
 
             ContainerNode engineInfo = new ContainerNode()
             {
-                ParticipatesInLayout = false,
-                Padding = Padding.GetAll(10)
+                Padding = Padding.GetAll(10),
+                Layout = new LayoutOptions()
+                
             };
 
             var font = FontLibrary.LoadFont(
@@ -261,7 +269,7 @@ namespace DevoidStandaloneLauncher.Prototypes
 
                 titleContainer.Add(gameTitle);
 
-                canvas.Canvas.Add(titleContainer);
+                //canvas.Canvas.Add(titleContainer);
 
             });
 

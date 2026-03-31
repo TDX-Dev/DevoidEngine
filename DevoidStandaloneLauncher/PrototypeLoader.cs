@@ -14,6 +14,11 @@ namespace DevoidStandaloneLauncher
         internal Scene CurrentScene = SplashScene.CreateSplashScene(nameof(UIThemeTest1));
         internal Prototype GamePrototype = new UIThemeTest1();
 
+        public override void OnGUIRender()
+        {
+
+        }
+
         public override void OnAttach()
         {
             SceneManager.LoadScene(CurrentScene);

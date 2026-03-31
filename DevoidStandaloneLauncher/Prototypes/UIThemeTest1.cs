@@ -21,11 +21,17 @@ namespace DevoidStandaloneLauncher.Prototypes
 
         public override void OnInit()
         {
+            DefaultInput.ConfigureInput();
+
+            var font = FontLibrary.LoadFont(
+                "Engine/Content/Fonts/JetBrainsMono-Regular.ttf",
+                32
+            );
+
             Console.WriteLine("Initialized");
             this.scene = new Scene();
             loader.CurrentScene = scene;
             SceneManager.LoadScene(scene);
-            scene.Play(true);
 
             camera = scene.AddGameObject("Camera");
             var camComponent = camera.AddComponent<CameraComponent3D>();
@@ -50,18 +56,78 @@ namespace DevoidStandaloneLauncher.Prototypes
                 }
             };
 
-            FlexboxNode leftInnerContainer = new FlexboxNode()
+            ContainerNode leftInnerContainer = new ContainerNode()
             {
                 Gap = 10,
                 Padding = Padding.GetAll(10),
                 Direction = FlexDirection.Column,
+                Align = AlignItems.Start,
                 Layout = new LayoutOptions()
                 {
                     FlexGrowMain = 0.2f,
                 }
             };
 
-            AddAlterBoxes(leftInnerContainer, false, 2);
+            SliderNode slider = new SliderNode()
+            {
+                MinSize = new Vector2(1, 30),
+                Layout = new LayoutOptions()
+                {
+                    FlexGrowCross = 1
+                }
+            };
+
+            SliderNode sliderInner = new SliderNode()
+            {
+                MinSize = new Vector2(1, 30),
+                Layout = new LayoutOptions()
+                {
+                    FlexGrowCross = 1
+                }
+            };
+
+            FlexboxNode checkboxLabelContainer = new FlexboxNode()
+            {
+                Align = AlignItems.Center,
+                Gap = 10,
+                Layout = new LayoutOptions()
+                {
+                    FlexGrowCross = 1
+                }
+            };
+
+            LabelNode checkboxLabel = new LabelNode("Radio Button", font, 16);
+
+            CheckboxNode checkbox = new CheckboxNode()
+            {
+                Size = new Vector2(35),
+                Layout = new LayoutOptions()
+                {
+                    FlexGrowCross = 0
+                }
+            };
+
+            DropdownNode dropdown = new DropdownNode();
+
+            dropdown.SetItems(["Item1", "Item2", "Item3", "Item4"]);
+
+            ButtonNode button = new ButtonNode()
+            {
+                Layout = new LayoutOptions()
+                {
+                    FlexGrowCross = 1
+                }
+            };
+
+            checkboxLabelContainer.Add(checkbox);
+            checkboxLabelContainer.Add(checkboxLabel);
+
+            leftInnerContainer.Add(slider);
+            leftInnerContainer.Add(sliderInner);
+            leftInnerContainer.Add(checkboxLabelContainer);
+
+            leftInnerContainer.Add(button);
+            leftInnerContainer.Add(dropdown);
 
             FlexboxNode rightInnerContainer = new FlexboxNode()
             {
@@ -74,20 +140,17 @@ namespace DevoidStandaloneLauncher.Prototypes
                 }
             };
 
-            FlexboxNode rightInnerInnerContainer1 = new FlexboxNode()
+            ContainerNode rightInnerInnerContainer1 = new ContainerNode()
             {
-                Justify = JustifyContent.SpaceEvenly,
-                Align = AlignItems.Center,
-                Gap = 10,
                 Padding = Padding.GetAll(10),
-                Wrap = FlexWrap.Wrap,
+                Gap = 10,
                 Layout = new LayoutOptions()
                 {
                     FlexGrowMain = 0.3f
                 }
             };
 
-            FlexboxNode rightInnerInnerContainer2 = new FlexboxNode()
+            ContainerNode rightInnerInnerContainer2 = new ContainerNode()
             {
                 Padding = Padding.GetAll(10),
                 Gap = 10,
@@ -97,51 +160,68 @@ namespace DevoidStandaloneLauncher.Prototypes
                 }
             };
 
-            AddContainerList(rightInnerInnerContainer1, 5);
-            AddFlexboxList(rightInnerInnerContainer2);
 
             rightInnerContainer.Add(rightInnerInnerContainer1);
             rightInnerContainer.Add(rightInnerInnerContainer2);
+
+            dropdown.OnSelectionChanged = (int e) =>
+            {
+                var children = rightInnerInnerContainer1.Children.ToArray();
+                for (int i = 0; i < children.Length; i++)
+                {
+                    rightInnerInnerContainer1.Remove(children[i]);
+                }
+                AddFlexboxList(rightInnerInnerContainer1, e + 1);
+            };
+
+            slider.OnValueChanged = (float e) =>
+            {
+                rightInnerInnerContainer1.Layout.FlexGrowMain = e;
+                rightInnerInnerContainer2.Layout.FlexGrowMain = 1 - e;
+            };
+
+            checkbox.OnValueChanged = (bool e) =>
+            {
+                if (e)
+                {
+                    AddFlexboxList(rightInnerInnerContainer2, 2);
+                } else
+                {
+                    var children = rightInnerInnerContainer2.Children.ToArray();
+                    for (int i = 0; i <  children.Length; i++)
+                    {
+                        rightInnerInnerContainer2.Remove(children[i]);
+                    }
+                }
+            };
+
+            sliderInner.OnValueChanged = (float e) =>
+            {
+                if (rightInnerInnerContainer2.Children.Count == 0) return;
+
+                var flex1 = rightInnerInnerContainer2.Children[0];
+                var flex2 = rightInnerInnerContainer2.Children[1];
+
+                flex1.Layout.FlexGrowMain = e;
+                flex2.Layout.FlexGrowMain = 1 - e;
+            };
 
             bodyContainer.Add(leftInnerContainer);
             bodyContainer.Add(rightInnerContainer);
 
             canvas.Canvas.Add(bodyContainer);
+
+            scene.Play(true);
+
+
+
+            //camera.AddComponent<FreeCameraComponent>();
+            //canvas.Canvas.Add(slider);
         }
 
-        // Dk what to call this.
-        void AddAlterBoxes(UINode node, bool inv, int depth = 0)
+        public override void OnRender()
         {
-            FlexboxNode rightInnerInnerContainer1 = new FlexboxNode()
-            {
-                Padding = Padding.GetAll(10),
-                Gap = 10,
-                Direction = FlexDirection.Column,
-                Layout = new LayoutOptions()
-                {
-                    FlexGrowMain = inv ? 0.7f : 0.3f
-                }
-            };
-
-            FlexboxNode rightInnerInnerContainer2 = new FlexboxNode()
-            {
-                Padding = Padding.GetAll(10),
-                Gap = 10,
-                Direction = FlexDirection.Column,
-                Layout = new LayoutOptions()
-                {
-                    FlexGrowMain = inv ? 0.3f : 0.7f
-                }
-            };
-
-            node.Add(rightInnerInnerContainer1);
-            node.Add(rightInnerInnerContainer2);
-
-            if (depth == 0)
-                return;
-
-            AddAlterBoxes(rightInnerInnerContainer1, !inv, depth - 1);
-            AddAlterBoxes(rightInnerInnerContainer2, inv, depth - 1);
+            //DebugRenderSystem.DrawCube(Vector3.One, Vector3.Zero, Matrix4x4.Identity);
         }
 
         void AddFlexboxList(UINode node, int n = 4)
@@ -159,85 +239,8 @@ namespace DevoidStandaloneLauncher.Prototypes
                     }
                 };
 
-                AddAlterBoxes(rightInnerInnerContainer2, i % 2 == 0, 2);
-
                 node.Add(rightInnerInnerContainer2);
             }
         }
-
-
-        void AddContainerList(UINode node, int n = 5, float grow = 1)
-        {
-            var font = FontLibrary.LoadFont(
-                "Engine/Content/Fonts/JetBrainsMono-Regular.ttf",
-                32
-            );
-
-            int i = 0;
-
-            foreach (var kv in DebugMutedColors)
-            {
-                if (i++ >= n)
-                    break;
-
-                var container = new ContainerNode()
-                {
-                    Padding = Padding.GetAll(20),
-                    Layout = new LayoutOptions()
-                    {
-                        FlexGrowMain = grow,
-                    }
-                };
-
-                container.AddColorOverride(StyleKeys.Background, kv.Value);
-                container.AddConstantOverride(StyleKeys.BorderRadius, new Vector4(20));
-
-                var label = new LabelNode(kv.Key, font, 20)
-                {
-                    LayoutOptions = new TextLayoutOptions()
-                    {
-                        Overflow = TextOverflow.Overflow
-                    }
-                };
-
-                label.AddColorOverride(StyleKeys.FontColor, GetReadableTextColor(kv.Value));
-
-                container.Add(label);
-
-                node.Add(container);
-            }
-        }
-
-        public static Vector4 GetReadableTextColor(Vector4 background)
-        {
-            float luminance =
-                (0.299f * background.X) +
-                (0.587f * background.Y) +
-                (0.114f * background.Z);
-
-            if (luminance > 0.5f)
-                return new Vector4(0f, 0f, 0f, 1f);
-            else
-                return new Vector4(1f, 1f, 1f, 1f);
-        }
-
-        public static readonly Dictionary<string, Vector4> DebugMutedColors = new()
-        {
-            { "MutedRed",        new Vector4(0.75f, 0.35f, 0.35f, 1f) },
-            { "MutedGreen",      new Vector4(0.35f, 0.65f, 0.35f, 1f) },
-            { "MutedBlue",       new Vector4(0.35f, 0.45f, 0.75f, 1f) },
-            { "MutedYellow",     new Vector4(0.75f, 0.75f, 0.35f, 1f) },
-            { "MutedCyan",       new Vector4(0.35f, 0.65f, 0.65f, 1f) },
-            { "MutedMagenta",    new Vector4(0.65f, 0.35f, 0.65f, 1f) },
-            { "MutedOrange",     new Vector4(0.75f, 0.50f, 0.30f, 1f) },
-            { "MutedPurple",     new Vector4(0.55f, 0.40f, 0.70f, 1f) },
-            { "MutedPink",       new Vector4(0.75f, 0.50f, 0.60f, 1f) },
-            { "MutedLime",       new Vector4(0.60f, 0.75f, 0.40f, 1f) },
-            { "MutedTeal",       new Vector4(0.30f, 0.55f, 0.55f, 1f) },
-            { "MutedIndigo",     new Vector4(0.40f, 0.35f, 0.60f, 1f) },
-            { "MutedBrown",      new Vector4(0.55f, 0.40f, 0.30f, 1f) },
-            { "MutedGray",       new Vector4(0.55f, 0.55f, 0.55f, 1f) },
-            { "MutedWhite",      new Vector4(0.85f, 0.85f, 0.85f, 1f) },
-        };
     }
 }
