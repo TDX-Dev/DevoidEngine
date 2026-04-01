@@ -293,6 +293,12 @@ namespace DevoidEngine.Engine.UI.Nodes
             if (!Visible)
                 return;
 
+            //if (!ParticipatesInLayout && !Size.HasValue)
+            //{
+            //    Vector2 desired = Measure(new Vector2(float.PositiveInfinity, float.PositiveInfinity));
+            //    finalRect = new UITransform(finalRect.position, desired);
+            //}
+
             Rect = finalRect;
 
             if (VisualRect == null)
@@ -317,7 +323,7 @@ namespace DevoidEngine.Engine.UI.Nodes
 
             for (int i = 0; i < _children.Count; i++)
             {
-                _children[i].Render(renderList, model, order);
+                _children[i].Render(renderList, model, order + 10);
             }
         }
 

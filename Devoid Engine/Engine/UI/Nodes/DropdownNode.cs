@@ -69,6 +69,8 @@ namespace DevoidEngine.Engine.UI.Nodes
             popup.Visible = false;
             popup.ParticipatesInLayout = false;
             popup.Align = AlignItems.Stretch;
+            popup.Layout.FlexGrowMain = 1;
+            popup.Layout.FlexGrowCross = 1;
 
             options.Direction = FlexDirection.Column;
             options.Layout.FlexGrowMain = 1;

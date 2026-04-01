@@ -4,6 +4,8 @@ using DevoidEngine.Engine.InputSystem;
 using DevoidEngine.Engine.InputSystem.InputDevices;
 using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.UI.Nodes;
+using DevoidEngine.Engine.UI.Theme;
+using DevoidEngine.Engine.UI.Theme.Styleboxes;
 using DevoidEngine.Engine.Utilities;
 using DevoidStandaloneLauncher.Scripts;
 using DevoidStandaloneLauncher.Utils;
@@ -83,7 +85,7 @@ namespace DevoidStandaloneLauncher.Prototypes
         }
         public override void OnInit()
         {
-
+            LoadInput();
 
             Console.WriteLine("Initialized");
             this.scene = new Scene();
@@ -122,17 +124,57 @@ namespace DevoidStandaloneLauncher.Prototypes
             }
 
 
-            //CanvasComponent canvas = camera.AddComponent<CanvasComponent>();
+            canvasObject = scene.AddGameObject("CanvasObject");
+            CanvasComponent canvas = canvasObject.AddComponent<CanvasComponent>();
 
-            //ContainerNode buttonContainer = new ContainerNode()
-            //{
-            //    ParticipatesInLayout = false,
-            //    Color = Helper.RGBANormalize(new Vector4(34, 40, 49, 255)),
-            //    Size = new Vector2(300, 400),
-            //    Offset = new Vector2(50, 275)
-            //};
+            ContainerNode buttonContainer = new ContainerNode()
+            {
+                ParticipatesInLayout = false,
+                Offset = new Vector2(50, 50),
+                Padding = Padding.GetAll(10),
+                Direction = FlexDirection.Column,
+            };
 
-            //canvas.Canvas.Add(buttonContainer);
+            buttonContainer.AddStyleBoxOverride(StyleKeys.Normal, new StyleBoxFlat()
+            {
+                BackgroundColor = new Vector4(0.2f, 0.2f, 0.2f, 0.7f),
+                BorderRadius = new Vector4(5)
+            });
+
+            fpsLabel = new LabelNode("");
+            objectLabel = new LabelNode("");
+            fixedUpdateLabel = new LabelNode("Physics Update: Value Not Set");
+
+            buttonContainer.Add(fpsLabel);
+            buttonContainer.Add(objectLabel);
+            buttonContainer.Add(fixedUpdateLabel);
+
+            canvas.Canvas.Add(buttonContainer);
+
+            canvas.RenderMode = CanvasRenderMode.WorldSpace;
+            canvas.CanvasSize = new Vector2(1920, 1080);
+            //canvasObject.Transform.EulerAngles = new Vector3(0, 180, 0);
+        }
+
+        GameObject canvasObject;
+        LabelNode fpsLabel;
+        LabelNode objectLabel;
+        LabelNode fixedUpdateLabel;
+
+        float smoothedFPS = 60f;
+        float smoothing = 0.1f; // lower = smoother
+        float timer = 0;
+
+        public override void OnUpdate(float delta)
+        {
+            float currentFPS = 1f / delta;
+            smoothedFPS = smoothedFPS + (currentFPS - smoothedFPS) * smoothing;
+
+            fpsLabel.Text = $"FPS: {(int)smoothedFPS}";
+            objectLabel.Text = $"GameObjects in scene: {scene.GameObjects.Count}";
+
+            timer += delta;
+            canvasObject.Transform.EulerAngles = new Vector3(0, timer * 10, 0);
         }
 
         void LoadDCC()

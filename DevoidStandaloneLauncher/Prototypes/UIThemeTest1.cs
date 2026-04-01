@@ -217,6 +217,12 @@ namespace DevoidStandaloneLauncher.Prototypes
                 flex2.Layout.FlexGrowMain = 1 - e;
             };
 
+            LabelNode label1 = new LabelNode("HELLO WORLD M\nhello world m", 100);
+            LabelNode label2 = new LabelNode("HELLO WORLD M\nhello world m", 16);
+
+            rightInnerInnerContainer2.Add(label1);
+            rightInnerInnerContainer2.Add(label2);
+
             SplitterNode splitter = new SplitterNode();
             splitter.Target = leftInnerContainer;
             splitter.MinSize = new Vector2(6, 0);

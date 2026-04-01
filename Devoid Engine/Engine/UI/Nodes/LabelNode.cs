@@ -67,8 +67,8 @@ namespace DevoidEngine.Engine.UI.Nodes
         {
             var opts = LayoutOptions;
 
-            if (!float.IsInfinity(widthConstraint))
-                opts.MaxWidth = widthConstraint;
+            //if (!float.IsInfinity(widthConstraint))
+            //    opts.MaxWidth = widthConstraint;
 
             var newMesh = TextMeshGenerator.Generate(
                 Font,
@@ -91,12 +91,8 @@ namespace DevoidEngine.Engine.UI.Nodes
 
             float widthConstraint = availableSize.X;
 
-            if ((_meshDirty || _lastWidthConstraint != widthConstraint) && !string.IsNullOrEmpty(_text))
-            {
-                _meshDirty = false;
-                _lastWidthConstraint = widthConstraint;
-                UpdateMesh(widthConstraint);
-            }
+            //if (widthConstraint <= 0)
+            //    widthConstraint = float.PositiveInfinity;
 
             var opts = LayoutOptions;
             opts.MaxWidth = widthConstraint;
@@ -123,10 +119,12 @@ namespace DevoidEngine.Engine.UI.Nodes
             if (Font == null || string.IsNullOrEmpty(Text))
                 return;
 
-            //float widthConstraint = LayoutOptions.MaxWidth;
-
             float widthConstraint = finalRect.size.X;
-            if ((_meshDirty || _lastWidthConstraint != widthConstraint) && !string.IsNullOrEmpty(_text))
+
+            //if (widthConstraint <= 0)
+            //    widthConstraint = float.PositiveInfinity;
+
+            if (_meshDirty || _lastWidthConstraint != widthConstraint)
             {
                 _meshDirty = false;
                 _lastWidthConstraint = widthConstraint;
@@ -151,8 +149,8 @@ namespace DevoidEngine.Engine.UI.Nodes
 
             Matrix4x4 final =
                 local *
-                canvasModel *
-                Matrix4x4.CreateTranslation(0, 0, order * UISystem.OrderEpsilon);
+                Matrix4x4.CreateTranslation(0, 0, order * UISystem.OrderEpsilon) *
+                canvasModel;
 
             RenderItem renderItem = new RenderItem()
             {

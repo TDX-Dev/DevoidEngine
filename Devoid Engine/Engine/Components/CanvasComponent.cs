@@ -116,6 +116,9 @@ namespace DevoidEngine.Engine.Components
 
         public override void OnUpdate(float dt)
         {
+            Canvas.RenderMode = renderMode;
+            Canvas.PixelsPerUnit = pixelsperunit;
+            Canvas.Size = canvasSize;
             Canvas.WorldMatrix = gameObject.Transform.WorldMatrix;
             Canvas.WorldPosition = gameObject.Transform.Position;
             Canvas.WorldForward = gameObject.Transform.Forward;

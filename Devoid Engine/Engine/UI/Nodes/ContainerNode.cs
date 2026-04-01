@@ -83,8 +83,8 @@ namespace DevoidEngine.Engine.UI.Nodes
 
             Matrix4x4 final =
                 model *
-                canvasModel *
-                Matrix4x4.CreateTranslation(0, 0, order * UISystem.OrderEpsilon);
+                Matrix4x4.CreateTranslation(0, 0, order * UISystem.OrderEpsilon) *
+                canvasModel;
 
             var renderItem = new RenderItem()
             {
