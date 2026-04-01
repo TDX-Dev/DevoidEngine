@@ -11,6 +11,7 @@ using DevoidEngine.Engine.UI.Theme.Styleboxes;
 using DevoidEngine.Engine.Utilities;
 using DevoidStandaloneLauncher.Scripts;
 using DevoidStandaloneLauncher.Utils;
+using ElementalEditor.Editor.Utils;
 using System.Numerics;
 
 namespace DevoidStandaloneLauncher.Prototypes
@@ -92,6 +93,7 @@ namespace DevoidStandaloneLauncher.Prototypes
             {
                 Align = AlignItems.Center,
                 Gap = 10,
+                MinSize = new Vector2(0, 40),
                 Layout = new LayoutOptions()
                 {
                     FlexGrowCross = 1
@@ -102,7 +104,7 @@ namespace DevoidStandaloneLauncher.Prototypes
 
             CheckboxNode checkbox = new CheckboxNode()
             {
-                Size = new Vector2(35),
+                MinSize = new Vector2(35),
                 Layout = new LayoutOptions()
                 {
                     FlexGrowCross = 0
@@ -241,7 +243,7 @@ namespace DevoidStandaloneLauncher.Prototypes
 
         void AddThumbnails(UINode node)
         {
-            FlexboxNode mainContainer = new FlexboxNode()
+            ScrollNode mainContainer = new ScrollNode()
             {
                 Wrap = FlexWrap.Wrap,
                 Gap = 10,
@@ -271,6 +273,8 @@ namespace DevoidStandaloneLauncher.Prototypes
 
                 ContainerNode thumbnail = new ContainerNode()
                 {
+                    Align = AlignItems.Center,
+                    Justify = JustifyContent.Center,
                     MinSize = new Vector2(100, 100),
                     Layout = new LayoutOptions()
                     {
@@ -285,11 +289,14 @@ namespace DevoidStandaloneLauncher.Prototypes
                     BorderRadius = new Vector4(5)
                 });
 
+                //IconNode icon = new IconNode(GetRandomIcon(), 40);
+
                 LabelNode thumbnailLabel = new LabelNode("Thumbnail")
                 {
 
                 };
 
+                //thumbnail.Add(icon);
                 baseContainer.Add(thumbnail);
                 baseContainer.Add(thumbnailLabel);
                 mainContainer.Add(baseContainer);
@@ -315,6 +322,14 @@ namespace DevoidStandaloneLauncher.Prototypes
 
                 node.Add(rightInnerInnerContainer2);
             }
+        }
+
+        static Random rng = new Random();
+
+        public static string GetRandomIcon()
+        {
+            int codepoint = rng.Next(BootstrapIconFont.IconMin, BootstrapIconFont.IconMax + 1);
+            return char.ConvertFromUtf32(codepoint);
         }
     }
 }

@@ -86,12 +86,20 @@ namespace DevoidEngine.Engine.UI.Nodes
                 canvasModel *
                 Matrix4x4.CreateTranslation(0, 0, order * UISystem.OrderEpsilon);
 
-            renderList.Add(new RenderItem()
+            var renderItem = new RenderItem()
             {
                 Mesh = UISystem.QuadMesh,
                 Material = Material,
-                Model = final
-            });
+                Model = final,
+            };
+
+            if (UIScissorStack.HasClip)
+            {
+                renderItem.useClipping = true;
+                renderItem.ClipRegion = UIScissorStack.Current;
+            }
+
+            renderList.Add(renderItem);
             //DebugRenderSystem.DrawRectUI(model);
         }
     }

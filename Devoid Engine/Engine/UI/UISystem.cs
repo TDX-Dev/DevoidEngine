@@ -26,6 +26,7 @@ namespace DevoidEngine.Engine.UI
 
         public static float OrderEpsilon = 0.001f;
         public static bool DebugDraw = true;
+        public static float UIScale = 1f;
 
         private static Material uiMaterial;
         private static Material textMaterial;
@@ -132,8 +133,10 @@ namespace DevoidEngine.Engine.UI
 
                 if (root.RenderMode == CanvasRenderMode.ScreenSpace)
                 {
-                    root.Measure(screen);
-                    root.Arrange(new UITransform(Vector2.Zero, screen));
+                    Vector2 scaledScreen = Screen.Size / UISystem.UIScale;
+
+                    root.Measure(scaledScreen);
+                    root.Arrange(new UITransform(Vector2.Zero, scaledScreen));
                 }
                 else
                 {
@@ -339,6 +342,13 @@ namespace DevoidEngine.Engine.UI
             isDragging = false;
         }
 
+        public static void MouseScroll(Vector2 scroll)
+        {
+            if (HoveredNode != null)
+            {
+                HoveredNode.OnMouseScroll(scroll);
+            }
+        }
         static Ray BuildMouseRay(Vector2 mouse)
         {
             var cam = SceneManager.CurrentScene.GetDefaultCamera3D().Camera;

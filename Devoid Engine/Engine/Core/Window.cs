@@ -124,10 +124,10 @@ namespace DevoidEngine.Engine.Core
             {
                 case CursorShape.Arrow:
                     return MouseCursor.Default;
-                    break;
                 case CursorShape.ResizeEW:
                     return MouseCursor.ResizeEW;
-                    break;
+                case CursorShape.ResizeNS:
+                    return MouseCursor.ResizeNS;
                 default:
                     return MouseCursor.Default;
             }

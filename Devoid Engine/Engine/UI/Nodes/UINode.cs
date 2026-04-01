@@ -61,6 +61,7 @@ namespace DevoidEngine.Engine.UI.Nodes
         public Action OnNodeMouseEnter;
         public Action OnNodeMouseLeave;
         public Action OnNodeMouseHeld;
+        public Action<Vector2> OnNodeMouseScroll;
 
 
         public virtual string ThemeType => "Control";
@@ -73,7 +74,7 @@ namespace DevoidEngine.Engine.UI.Nodes
             DEBUG_NUM_LOCAL = DEBUG_NUM_STATIC++;
         }
 
-        public void Add(UINode child)
+        public virtual void Add(UINode child)
         {
             child._parent = this;
             _children.Add(child);
@@ -83,7 +84,7 @@ namespace DevoidEngine.Engine.UI.Nodes
                 child.Initialize();
         }
 
-        public void Remove(UINode child)
+        public virtual void Remove(UINode child)
         {
             _children.Remove(child);
         }
@@ -373,6 +374,7 @@ namespace DevoidEngine.Engine.UI.Nodes
 
         public virtual void OnMouseDown() => OnNodeMouseDown?.Invoke();
         public virtual void OnMouseUp() => OnNodeMouseUp?.Invoke();
+        public virtual void OnMouseScroll(Vector2 scroll) => OnNodeMouseScroll?.Invoke(scroll);
 
         public virtual void OnClick() { }
 

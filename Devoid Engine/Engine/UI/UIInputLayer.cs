@@ -32,6 +32,13 @@ namespace DevoidEngine.Engine.UI
                         mouse.Y = e.Value;
                         UISystem.MouseMove(mouse);
                         return false;
+
+                    case MouseAxis.ScrollY:
+                        UISystem.MouseScroll(new Vector2(0, e.Value));
+                        return true;
+                    case MouseAxis.ScrollX:
+                        UISystem.MouseScroll(new Vector2(e.Value, 0));
+                        return true;
                 }
             }
 

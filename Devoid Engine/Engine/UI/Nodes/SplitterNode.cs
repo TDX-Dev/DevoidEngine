@@ -20,6 +20,7 @@ namespace DevoidEngine.Engine.UI.Nodes
         float startBasis;
         Vector2 startMouse;
         bool isDragging;
+        bool isHovering;
 
         public SplitterNode()
         {
@@ -44,7 +45,9 @@ namespace DevoidEngine.Engine.UI.Nodes
             Target.Layout.FlexGrowMain = 0;
 
             isDragging = true;
-            Cursor.SetCursorShape(CursorShape.ResizeEW);
+            Cursor.SetCursorShape(
+                Vertical ? CursorShape.ResizeNS : CursorShape.ResizeEW
+            );
         }
 
         public override void OnDrag(Vector2 mouse, Vector2 delta)
@@ -59,17 +62,34 @@ namespace DevoidEngine.Engine.UI.Nodes
         public override void OnDragEnd(Vector2 mouse)
         {
             isDragging = false;
+            if (!isHovering)
+                Cursor.SetCursorShape(CursorShape.Arrow);
         }
 
         public override void OnMouseEnter()
         {
-            Cursor.SetCursorShape(CursorShape.ResizeEW);
+            isHovering = true;
+            Cursor.SetCursorShape(
+                Vertical ? CursorShape.ResizeNS : CursorShape.ResizeEW
+            );
         }
 
         public override void OnMouseLeave()
         {
+            isHovering = false;
             if (!isDragging)
                 Cursor.SetCursorShape(CursorShape.Arrow);
+        }
+
+        public override void OnMouseUp()
+        {
+            if (isDragging)
+            {
+                isDragging = false;
+                Cursor.SetCursorShape(CursorShape.Arrow);
+            }
+
+            base.OnMouseUp();
         }
     }
 }

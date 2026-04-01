@@ -1,4 +1,5 @@
-﻿using DevoidEngine.Engine.UI.Text;
+﻿using DevoidEngine.Engine.Rendering;
+using DevoidEngine.Engine.UI.Text;
 using DevoidEngine.Engine.UI.Theme;
 using System;
 using System.Collections.Generic;

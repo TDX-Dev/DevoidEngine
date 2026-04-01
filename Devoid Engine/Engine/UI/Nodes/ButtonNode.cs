@@ -12,9 +12,7 @@ namespace DevoidEngine.Engine.UI.Nodes
         bool pressed;
 
         public Action OnPressed;
-
-        string currentThemeType = "Button";
-        public override string ThemeType => currentThemeType;
+        public override string ThemeType => "Button";
 
         public string Text
         {
@@ -34,7 +32,12 @@ namespace DevoidEngine.Engine.UI.Nodes
             Layout.FlexGrowCross = 0;
 
             label = new LabelNode(text, GetFont(StyleKeys.Font), 16);
+
+            MinSize = new Vector2(35);
+            
+            
             Add(label);
+
 
             OnNodeMouseEnter += () =>
             {

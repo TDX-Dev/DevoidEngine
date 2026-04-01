@@ -19,12 +19,18 @@ namespace DevoidEngine.Engine.UI
                 32
             );
 
+            //var iconFont = FontLibrary.LoadFont(
+            //    "Engine/Content/Fonts/bootstrap_icons.ttf",
+            //    32
+            //);
+
             var theme = new UITheme();
 
             // Fonts
             theme.SetFont(StyleKeys.Font, "DropdownHeader", font);
             theme.SetFont(StyleKeys.Font, "Button", font);
             theme.SetFont(StyleKeys.Font, "Panel", font);
+            //theme.SetFont(StyleKeys.Font, "Icon", iconFont);
 
             // Label
             theme.SetColor(
@@ -172,6 +178,58 @@ namespace DevoidEngine.Engine.UI
                     BorderWidth = 1,
                     BorderColor = new Vector4(0, 0, 0, 0.6f),
                     BorderRadius = new Vector4(6)
+                }
+            );
+
+            // SCROLLBAR TRACK
+            theme.SetStyleBox(
+                StyleKeys.Normal,
+                "Scrollbar",
+                new StyleBoxFlat()
+                {
+                    BackgroundColor = new Vector4(0.1f, 0.1f, 0.1f, 1),
+                    BorderWidth = 0,
+                    BorderColor = Vector4.Zero,
+                    BorderRadius = new Vector4(4)
+                }
+            );
+
+            // SCROLLBAR THUMB NORMAL
+            theme.SetStyleBox(
+                StyleKeys.Normal,
+                "ScrollbarThumb",
+                new StyleBoxFlat()
+                {
+                    BackgroundColor = new Vector4(0.6f, 0.6f, 0.6f, 0.6f),
+                    BorderWidth = 1,
+                    BorderColor = new Vector4(0, 0, 0, 0.4f),
+                    BorderRadius = new Vector4(4)
+                }
+            );
+
+            // SCROLLBAR THUMB HOVER
+            theme.SetStyleBox(
+                StyleKeys.Hover,
+                "ScrollbarThumb",
+                new StyleBoxFlat()
+                {
+                    BackgroundColor = new Vector4(0.8f, 0.8f, 0.8f, 0.8f),
+                    BorderWidth = 1,
+                    BorderColor = new Vector4(0, 0, 0, 0.4f),
+                    BorderRadius = new Vector4(4)
+                }
+            );
+
+            // SCROLLBAR THUMB PRESSED
+            theme.SetStyleBox(
+                StyleKeys.Pressed,
+                "ScrollbarThumb",
+                new StyleBoxFlat()
+                {
+                    BackgroundColor = new Vector4(1f, 1f, 1f, 0.9f),
+                    BorderWidth = 1,
+                    BorderColor = new Vector4(0, 0, 0, 0.6f),
+                    BorderRadius = new Vector4(4)
                 }
             );
 
@@ -487,6 +545,58 @@ namespace DevoidEngine.Engine.UI
                     BackgroundColor = buttonPressed,
                     BorderWidth = 1,
                     BorderColor = accentHover,
+                    BorderRadius = new Vector4(4)
+                }
+            );
+
+            // SCROLLBAR TRACK
+            theme.SetStyleBox(
+                StyleKeys.Normal,
+                "Scrollbar",
+                new StyleBoxFlat()
+                {
+                    BackgroundColor = button,
+                    BorderWidth = 0,
+                    BorderColor = Vector4.Zero,
+                    BorderRadius = new Vector4(4)
+                }
+            );
+
+            // SCROLLBAR THUMB NORMAL
+            theme.SetStyleBox(
+                StyleKeys.Normal,
+                "ScrollbarThumb",
+                new StyleBoxFlat()
+                {
+                    BackgroundColor = new Vector4(0.6f, 0.6f, 0.6f, 0.6f),
+                    BorderWidth = 1,
+                    BorderColor = new Vector4(0, 0, 0, 0.4f),
+                    BorderRadius = new Vector4(4)
+                }
+            );
+
+            // SCROLLBAR THUMB HOVER
+            theme.SetStyleBox(
+                StyleKeys.Hover,
+                "ScrollbarThumb",
+                new StyleBoxFlat()
+                {
+                    BackgroundColor = new Vector4(0.8f, 0.8f, 0.8f, 0.8f),
+                    BorderWidth = 1,
+                    BorderColor = new Vector4(0, 0, 0, 0.4f),
+                    BorderRadius = new Vector4(4)
+                }
+            );
+
+            // SCROLLBAR THUMB PRESSED
+            theme.SetStyleBox(
+                StyleKeys.Pressed,
+                "ScrollbarThumb",
+                new StyleBoxFlat()
+                {
+                    BackgroundColor = new Vector4(1f, 1f, 1f, 0.9f),
+                    BorderWidth = 1,
+                    BorderColor = new Vector4(0, 0, 0, 0.6f),
                     BorderRadius = new Vector4(4)
                 }
             );
