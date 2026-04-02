@@ -71,6 +71,21 @@ namespace DevoidStandaloneLauncher.Scripts
         // =========================================
         private void HandleMovement(float dt)
         {
+            if (Input.GetActionDown("Capture"))
+            {
+                if (Cursor.GetCursorState() == CursorState.Grabbed)
+                {
+                    Cursor.SetCursorState(CursorState.Normal);
+                }
+                else
+                {
+                    Cursor.SetCursorState(CursorState.Grabbed);
+                }
+            }
+
+            if (Cursor.GetCursorState() != CursorState.Grabbed)
+                return;
+
             Quaternion rotation = gameObject.Transform.Rotation;
 
             Vector3 forward =
@@ -93,18 +108,6 @@ namespace DevoidStandaloneLauncher.Scripts
             if (Input.GetAction("Left") == 1) move -= right;
             if (Input.GetAction("Up") == 1) move += up;
             if (Input.GetAction("Down") == 1) move -= up;
-
-            if (Input.GetActionDown("Capture"))
-            {
-                if (Cursor.GetCursorState() == CursorState.Grabbed)
-                {
-                    Cursor.SetCursorState(CursorState.Normal);
-                } else
-                {
-                    Cursor.SetCursorState(CursorState.Grabbed);
-                }
-                Console.WriteLine(Cursor.GetCursorState());
-            }
 
             if (move.LengthSquared() > 0)
                 move = Vector3.Normalize(move);

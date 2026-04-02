@@ -1,4 +1,5 @@
 ﻿using DevoidEngine.Engine.Core;
+using DevoidEngine.Engine.InputSystem.InputDevices;
 using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.UI.Text;
 using DevoidEngine.Engine.UI.Theme;
@@ -381,6 +382,11 @@ namespace DevoidEngine.Engine.UI.Nodes
         public virtual void OnMouseDown() => OnNodeMouseDown?.Invoke();
         public virtual void OnMouseUp() => OnNodeMouseUp?.Invoke();
         public virtual void OnMouseScroll(Vector2 scroll) => OnNodeMouseScroll?.Invoke(scroll);
+
+        public virtual void OnKeyDown(Keys key) { }
+        public virtual void OnKeyUp(Keys key) { }
+        public virtual void OnKeyPressed(Keys key) { }
+        public virtual void OnTextInput(char value) { }
 
         public virtual void OnClick() { }
 

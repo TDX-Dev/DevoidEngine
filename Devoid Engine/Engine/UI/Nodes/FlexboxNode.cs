@@ -59,7 +59,9 @@ namespace DevoidEngine.Engine.UI.Nodes
             float currentLineCrossSize = 0f;
             int currentLineCount = 0;
 
-            foreach (var child in _children)
+            var children = GetLayoutChildren();
+
+            foreach (var child in children)
             {
                 if (!child.Visible || !child.ParticipatesInLayout)
                     continue;

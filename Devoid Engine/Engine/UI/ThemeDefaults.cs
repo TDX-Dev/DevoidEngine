@@ -19,6 +19,8 @@ namespace DevoidEngine.Engine.UI
                 32
             );
 
+            var fontSize = 16;
+
             //var iconFont = FontLibrary.LoadFont(
             //    "Engine/Content/Fonts/bootstrap_icons.ttf",
             //    32
@@ -28,8 +30,11 @@ namespace DevoidEngine.Engine.UI
 
             // Fonts
             theme.SetFont(StyleKeys.Font, "DropdownHeader", font);
+            theme.SetFont(StyleKeys.Font, "InputField", font);
             theme.SetFont(StyleKeys.Font, "Button", font);
             theme.SetFont(StyleKeys.Font, "Panel", font);
+
+            theme.SetFontSize(StyleKeys.FontSize, "InputField", fontSize);
             //theme.SetFont(StyleKeys.Font, "Icon", iconFont);
 
             // Label
@@ -49,6 +54,18 @@ namespace DevoidEngine.Engine.UI
             theme.SetStyleBox(
                 StyleKeys.Normal,
                 "Panel",
+                new StyleBoxFlat()
+                {
+                    BackgroundColor = new Vector4(1, 1, 1, 0.4f),
+                    BorderWidth = 0,
+                    BorderColor = new Vector4(1, 1, 1, 1),
+                    BorderRadius = Vector4.Zero
+                }
+            );
+
+            theme.SetStyleBox(
+                StyleKeys.Normal,
+                "InputField",
                 new StyleBoxFlat()
                 {
                     BackgroundColor = new Vector4(1, 1, 1, 0.4f),

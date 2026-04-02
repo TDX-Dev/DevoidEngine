@@ -102,6 +102,7 @@ namespace DevoidEngine.Engine.Components
 
         public override void OnStart()
         {
+            Canvas.BlockInput = false;
             Canvas.RenderMode = renderMode;
             Canvas.PixelsPerUnit = pixelsperunit;
             Canvas.Size = canvasSize;

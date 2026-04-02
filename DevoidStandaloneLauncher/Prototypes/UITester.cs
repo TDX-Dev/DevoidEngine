@@ -25,8 +25,8 @@ namespace DevoidStandaloneLauncher.Prototypes
 
         //string levelPath = "D:/Programming/Devoid Engine/DevoidStandaloneLauncher/LauncherContents/crt.fbx";
         //string levelPath = "C:\\Users\\maari\\Downloads\\service_pistol_2k.gltf\\service_pistol_2k.fbx";
-        string levelPath = "D:/Programming/Devoid Engine/DevoidStandaloneLauncher/LauncherContents/service_pistol_2k.fbx";
-        //string levelPath = "D:/Programming/Devoid Engine/DevoidStandaloneLauncher/LauncherContents/devoid_test_level2.fbx";
+        //string levelPath = "D:/Programming/Devoid Engine/DevoidStandaloneLauncher/LauncherContents/service_pistol_2k.fbx";
+        string levelPath = "D:/Programming/Devoid Engine/DevoidStandaloneLauncher/LauncherContents/devoid_test_level2.fbx";
         
         void LoadInput()
         {
@@ -194,10 +194,16 @@ namespace DevoidStandaloneLauncher.Prototypes
             AddSliders(buttonContainer);
             buttonContainer.Add(button);
 
+            buttonContainer.Add(new InputFieldNode()
+            {
+
+            });
+
             //AddDirLightControls(buttonContainer);
 
             FlexboxNode mainWindowSize = new FlexboxNode()
             {
+                BlockInput = false,
                 Layout = new LayoutOptions()
                 {
                     FlexGrowMain = 1
@@ -449,24 +455,24 @@ namespace DevoidStandaloneLauncher.Prototypes
             parent.Add(bloomSliderContainer);
             parent.Add(exposureSliderContainer);
 
-            FlexboxNode thumbnailParentContainer = new FlexboxNode()
-            {
-                Align = AlignItems.Start
-            };
+            //FlexboxNode thumbnailParentContainer = new FlexboxNode()
+            //{
+            //    Align = AlignItems.Start
+            //};
 
-            ContainerNode thumbnailContainer = new ContainerNode()
-            {
-                MinSize = new Vector2(128, 128),
-                MaxSize = new Vector2(128, 128)
-            };
+            //ContainerNode thumbnailContainer = new ContainerNode()
+            //{
+            //    MinSize = new Vector2(128, 128),
+            //    MaxSize = new Vector2(128, 128)
+            //};
 
-            thumbnailContainer.AddStyleBoxOverride(StyleKeys.Normal, new StyleBoxTexture()
-            {
-                Texture = Helper.LoadImageAsTex("D:/Programming/Devoid Engine/DevoidStandaloneLauncher/LauncherContents/textures/cube_thumbnail_place.png", DevoidGPU.TextureFilter.Linear)
-            });
+            //thumbnailContainer.AddStyleBoxOverride(StyleKeys.Normal, new StyleBoxTexture()
+            //{
+            //    Texture = Helper.LoadImageAsTex("D:/Programming/Devoid Engine/DevoidStandaloneLauncher/LauncherContents/textures/cube_thumbnail_place.png", DevoidGPU.TextureFilter.Linear)
+            //});
 
-            thumbnailParentContainer.Add(thumbnailContainer);
-            parent.Add(thumbnailParentContainer);
+            //thumbnailParentContainer.Add(thumbnailContainer);
+            //parent.Add(thumbnailParentContainer);
         }
 
         GameObject canvasObject;

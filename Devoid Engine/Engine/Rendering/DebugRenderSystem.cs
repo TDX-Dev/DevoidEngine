@@ -81,7 +81,7 @@ namespace DevoidEngine.Engine.Rendering
                 CullMode = CullMode.None,
                 DepthTest = DepthTest.Disabled,
                 DepthWrite = false,
-                FillMode = FillMode.Solid,
+                FillMode = FillMode.Wireframe,
                 PrimitiveType = PrimitiveType.Lines,
                 BlendMode = BlendMode.Opaque
             };
@@ -139,6 +139,15 @@ namespace DevoidEngine.Engine.Rendering
             });
         }
 
+        public static void DrawRectUIFilled(Matrix4x4 model)
+        {
+            rects.Add(new DebugRect()
+            {
+                Model = model,
+                materialOverride = debugMaterial,
+            });
+        }
+
         public static void DrawRectUI(Matrix4x4 model, MaterialInstance materialOverride)
         {
             rects.Add(new DebugRect()
@@ -146,6 +155,13 @@ namespace DevoidEngine.Engine.Rendering
                 Model = model,
                 materialOverride = materialOverride
             });
+        }
+
+        public static Matrix4x4 RectToMatrix(Vector2 pos, Vector2 size)
+        {
+            return
+                Matrix4x4.CreateScale(size.X, size.Y, 1) *
+                Matrix4x4.CreateTranslation(pos.X, pos.Y, 0);
         }
 
         public static void Render(CameraData cameraData, Framebuffer cameraRenderSurface)

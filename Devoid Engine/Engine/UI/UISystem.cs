@@ -124,6 +124,15 @@ namespace DevoidEngine.Engine.UI
             FocusedNode?.OnFocus();
         }
 
+        public static void ClearFocus()
+        {
+            if (FocusedNode == null)
+                return;
+
+            FocusedNode.OnBlur();
+            FocusedNode = null;
+        }
+
         public static void Update(float deltaTime)
         {
             Vector2 screen = Screen.Size;
@@ -148,6 +157,20 @@ namespace DevoidEngine.Engine.UI
                 }
 
                 root.Update(deltaTime);
+            }
+
+            if (FocusedNode != null)
+            {
+                foreach (Keys key in Enum.GetValues<Keys>())
+                {
+                    if (key == Keys.Unknown)
+                        continue;
+
+                    if (Input.State.Get(InputDeviceType.Keyboard, (ushort)key) > 0)
+                    {
+                        KeyPressed(key);
+                    }
+                }
             }
         }
 
@@ -319,6 +342,9 @@ namespace DevoidEngine.Engine.UI
             {
                 SetFocus(PressedNode);
                 PressedNode.OnMouseDown();
+            } else
+            {
+                ClearFocus();
             }
         }
         public static void MouseUp(Vector2 mouse)
@@ -349,6 +375,28 @@ namespace DevoidEngine.Engine.UI
                 HoveredNode.OnMouseScroll(scroll);
             }
         }
+
+        public static void KeyDown(Keys key)
+        {
+            FocusedNode?.OnKeyDown(key);
+        }
+
+        public static void KeyUp(Keys key)
+        {
+            FocusedNode?.OnKeyUp(key);
+        }
+
+        public static void KeyPressed(Keys key)
+        {
+            FocusedNode?.OnKeyPressed(key);
+        }
+
+        public static void TextInput(char c)
+        {
+            FocusedNode?.OnTextInput(c);
+        }
+
+
         static Ray BuildMouseRay(Vector2 mouse)
         {
             var cam = SceneManager.CurrentScene.GetDefaultCamera3D().Camera;

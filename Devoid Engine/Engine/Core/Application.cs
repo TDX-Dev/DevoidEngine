@@ -105,6 +105,10 @@ namespace DevoidEngine.Engine.Core
 
 
             targetWindow.OnResize += HandleWindowResize;
+            targetWindow.TextInput += c =>
+            {
+                UISystem.TextInput((char)c.Unicode);
+            };
 
             //imGuiRenderer = new ImGuiRenderer(Renderer.GraphicsDevice);
             //imGuiRenderer.Initialize();

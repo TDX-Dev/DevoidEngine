@@ -124,7 +124,6 @@ namespace DevoidEngine.Engine.Components
             // Compute forward direction from quaternion
             Vector3 forward = gameObject.Transform.Forward;
 
-            Console.WriteLine(forward);
 
             switch (lightType)
             {

@@ -89,12 +89,13 @@ namespace DevoidEngine.Engine.UI.Nodes
             if (Font == null)
                 return Vector2.Zero;
 
-            float widthConstraint = availableSize.X;
-
-            //if (widthConstraint <= 0)
-            //    widthConstraint = float.PositiveInfinity;
-
             var opts = LayoutOptions;
+
+            float widthConstraint = opts.MaxWidth;
+
+            if (float.IsInfinity(widthConstraint))
+                widthConstraint = availableSize.X;
+
             opts.MaxWidth = widthConstraint;
 
             Vector2 textSize = TextMeshGenerator.Measure(
