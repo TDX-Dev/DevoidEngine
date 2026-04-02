@@ -261,13 +261,16 @@ namespace DevoidEngine.Engine.Rendering
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public unsafe struct GPUSpotLight
+    public struct GPUSpotLight
     {
-        public Vector4 position; // xyz position w enabled
-        public Vector4 color; // xyz color w intensity
-        public Vector4 direction; // xyz direction w range
+        public Vector4 position;
+        public Vector4 color;
+        public Vector4 direction;
+
         public float innerCutoff;
         public float outerCutoff;
+
+        public Vector2 padding; // must match shader
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 16)]

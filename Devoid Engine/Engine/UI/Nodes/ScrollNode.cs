@@ -5,6 +5,18 @@ namespace DevoidEngine.Engine.UI.Nodes
 {
     public class ScrollNode : FlexboxNode
     {
+        public FlexWrap Wrap
+        {
+            get => InnerContainer.Wrap;
+            set => InnerContainer.Wrap = value;
+        }
+
+        public FlexDirection Direction
+        {
+            get => InnerContainer.Direction;
+            set => InnerContainer.Direction = value;
+        }
+
         public Vector2 ScrollOffset = Vector2.Zero;
         public float ScrollSpeed = 40f;
 
@@ -19,7 +31,7 @@ namespace DevoidEngine.Engine.UI.Nodes
         {
             InnerContainer = new ScrollContentNode()
             {
-                Wrap = FlexWrap.Wrap,
+                Wrap = FlexWrap.NoWrap,
                 Layout = new LayoutOptions()
                 {
                     FlexGrowCross = 1,

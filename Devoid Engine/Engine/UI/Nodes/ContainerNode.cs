@@ -23,6 +23,11 @@ namespace DevoidEngine.Engine.UI.Nodes
             Material = UISystem.UIMaterial;
         }
 
+        public override void Add(UINode child)
+        {
+            base.Add(child);
+        }
+
         protected override void ApplyTheme()
         {
             //_background = GetColor(StyleKeys.Background);
@@ -72,11 +77,13 @@ namespace DevoidEngine.Engine.UI.Nodes
 
         protected override void UpdateCore(float dt)
         {
+
             base.UpdateCore(dt);
         }
 
         protected override void RenderCore(List<RenderItem> renderList, Matrix4x4 canvasModel, int order)
         {
+            Material.SetVector2("RECT_SIZE", Rect?.size ?? Vector2.One);
             Vector2 size = VisualRect?.size ?? Vector2.One;
             Vector2 pos = VisualRect?.position ?? Vector2.One;
 

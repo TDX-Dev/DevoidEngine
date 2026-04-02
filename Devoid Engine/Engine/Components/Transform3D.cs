@@ -205,26 +205,30 @@ namespace DevoidEngine.Engine.Components
             set => Rotation = TransformMath.EulerToQuaternion(value);
         }
 
-        public Vector3 Forward
-        {
-            get => Vector3.Normalize(
-                Vector3.Transform(Vector3.UnitZ, Rotation)
-            );
-        }
+        //public Vector3 Forward
+        //{
+        //    get => Vector3.Normalize(
+        //        Vector3.Transform(Vector3.UnitZ, Rotation)
+        //    );
+        //}
 
-        public Vector3 Right
-        {
-            get => Vector3.Normalize(
-                Vector3.Normalize(Vector3.Cross(Forward, Up))
-            );
-        }
+        //public Vector3 Right
+        //{
+        //    get => Vector3.Normalize(
+        //        Vector3.Normalize(Vector3.Cross(Forward, Up))
+        //    );
+        //}
 
-        public Vector3 Up
-        {
-            get => Vector3.Normalize(
-                Vector3.Transform(Vector3.UnitY, Rotation)
-            );
-        }
+        //public Vector3 Up
+        //{
+        //    get => Vector3.Normalize(
+        //        Vector3.Transform(Vector3.UnitY, Rotation)
+        //    );
+        //}
+
+        public Vector3 Forward => Vector3.Normalize(Vector3.Transform(Vector3.UnitZ, Rotation));
+        public Vector3 Up => Vector3.Normalize(Vector3.Transform(Vector3.UnitY, Rotation));
+        public Vector3 Right => Vector3.Normalize(Vector3.Transform(Vector3.UnitX, Rotation));
 
         // ===============================
         // Parenting

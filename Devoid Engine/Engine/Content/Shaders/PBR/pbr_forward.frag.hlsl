@@ -11,21 +11,6 @@
 #include "../Common/render_constants.hlsl"
 #include "../Common/light_constructs.hlsl"
 
-//cbuffer Material : register(b3)
-//{
-//    float4 Albedo; // base color multiplier
-//    float Metallic;
-//    float Roughness;
-//    float AO;
-//    float3 SpecularColor; // dielectric F0 override (usually 0.04)
-    
-//    float3 EmissiveColor;
-//    float EmissiveStrength;
-//    uint useNormalMap;
-//    float _padding;
-    
-//};
-
 cbuffer Material : register(b3)
 {
     float4 Albedo; // base color multiplier
@@ -167,39 +152,54 @@ float4 PSMain(PSInput input) : SV_TARGET
     float3 F0 = lerp(float3(0.04, 0.04, 0.04), albedo, metallic);
     float3 Lo = 0;
     
-    for (uint p = 0; p < pointLightCount; ++p)
+    for (uint i = 0; i < pointLightCount; i++)
     {
-        if (PointLights[p].position.w == 0)
+        if (PointLights[i].position.w == 0)
             continue;
 
-        float3 lightPos = PointLights[p].position.xyz;
-        float3 toLight = lightPos - input.WorldspacePosition;
-        float lightDistance = length(toLight);
+        Lo += ComputePointLight(
+            PointLights[i],
+            input.WorldspacePosition,
+            N,
+            V,
+            albedo,
+            metallic,
+            roughness,
+            F0
+        );
+    }
 
-        float attenuation = ComputeAttenuation(PointLights[p], lightDistance);
-        if (attenuation <= 0.0)
+    for (uint i = 0; i < spotLightCount; i++)
+    {
+        if (SpotLights[i].position.w == 0)
             continue;
 
-        float3 L = normalize(toLight);
-        float3 H = normalize(V + L);
+        Lo += ComputeSpotLight(
+            SpotLights[i],
+            input.WorldspacePosition,
+            N,
+            V,
+            albedo,
+            metallic,
+            roughness,
+            F0
+        );
+    }
 
-        float3 lightColor = PointLights[p].color.rgb * PointLights[p].color.w;
-        float3 radiance = lightColor * attenuation;
+    for (uint i = 0; i < directionalLightCount; i++)
+    {
+        if (DirectionalLights[i].Direction.w == 0)
+            continue;
 
-        float NDF = DistributionGGX(N, H, roughness);
-        float G = GeometrySmith(N, V, L, roughness);
-        float3 F = FresnelSchlick(max(dot(H, V), 0.0), F0);
-
-        float3 numerator = NDF * G * F;
-        float denom = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001;
-        float3 specular = numerator / denom;
-
-        float3 kS = F;
-        float3 kD = (1.0 - kS) * (1.0 - metallic);
-
-        float NdotL = max(dot(N, L), 0.0);
-
-        Lo += (kD * albedo / PI + specular) * radiance * NdotL;
+        Lo += ComputeDirectionalLight(
+            DirectionalLights[i],
+            N,
+            V,
+            albedo,
+            metallic,
+            roughness,
+            F0
+        );
     }
     
     float3 ambient = ComputeIBL(

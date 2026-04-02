@@ -15,11 +15,11 @@ namespace DevoidStandaloneLauncher
             ApplicationSpecification applicationSpecification = new ApplicationSpecification()
             {
                 darkTitlebar = true,
-                forceVsync = true,
+                forceVsync = false,
                 graphicsDevice = new DX11GraphicsDevice(),
                 Width = 1280,
                 Height = 720,
-                useFullscreen = false,
+                useFullscreen = true,
                 useImGui = true,
                 useDebugConsole = true,
                 Name = "Devoid New Beginnings"

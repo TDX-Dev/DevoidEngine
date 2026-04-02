@@ -88,13 +88,23 @@ namespace DevoidEngine.Engine.Components
         public float InnerCutoff
         {
             get => MathHelper.RadToDeg(innerCutoff);
-            set { innerCutoff = MathHelper.DegToRad(value); dirty = true; }
+            set
+            {
+                float deg = Math.Clamp(value, 0.1f, OuterCutoff - 0.1f);
+                innerCutoff = MathHelper.DegToRad(deg);
+                dirty = true;
+            }
         }
 
         public float OuterCutoff
         {
             get => MathHelper.RadToDeg(outerCutoff);
-            set { outerCutoff = MathHelper.DegToRad(value); dirty = true; }
+            set
+            {
+                float deg = Math.Clamp(value, InnerCutoff + 0.1f, 89.0f);
+                outerCutoff = MathHelper.DegToRad(deg);
+                dirty = true;
+            }
         }
 
         #endregion
@@ -112,9 +122,9 @@ namespace DevoidEngine.Engine.Components
             Vector3 position = transform.Position;
 
             // Compute forward direction from quaternion
-            Vector3 forward = Vector3.Normalize(
-                Vector3.Transform(-Vector3.UnitZ, transform.Rotation)
-            );
+            Vector3 forward = gameObject.Transform.Forward;
+
+            Console.WriteLine(forward);
 
             switch (lightType)
             {

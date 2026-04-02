@@ -19,12 +19,14 @@ namespace DevoidStandaloneLauncher.Prototypes
         Scene scene;
         GameObject camera;
         GameObject cubeObject;
+        GameObject dirLight;
 
         Mesh testRender;
 
         //string levelPath = "D:/Programming/Devoid Engine/DevoidStandaloneLauncher/LauncherContents/crt.fbx";
         //string levelPath = "C:\\Users\\maari\\Downloads\\service_pistol_2k.gltf\\service_pistol_2k.fbx";
         string levelPath = "D:/Programming/Devoid Engine/DevoidStandaloneLauncher/LauncherContents/service_pistol_2k.fbx";
+        //string levelPath = "D:/Programming/Devoid Engine/DevoidStandaloneLauncher/LauncherContents/devoid_test_level2.fbx";
         
         void LoadInput()
         {
@@ -84,6 +86,9 @@ namespace DevoidStandaloneLauncher.Prototypes
                 Control = (ushort)Keys.LeftShift
             });
         }
+
+        LightComponent spotComp;
+
         public override void OnInit()
         {
             LoadInput();
@@ -105,14 +110,25 @@ namespace DevoidStandaloneLauncher.Prototypes
             //camera.Transform.EulerAngles = new System.Numerics.Vector3(32, -47f, 0);
             //camera.Transform.EulerAngles = new System.Numerics.Vector3(-45, 0, 0);
 
-            GameObject light = scene.AddGameObject("Light");
-            var lightComp = light.AddComponent<LightComponent>();
-            light.Transform.Position = new System.Numerics.Vector3(0, 5, -10);
-            lightComp.Intensity = 100;
-            lightComp.Radius = 100;
+            //GameObject light = scene.AddGameObject("Light");
+            //var lightComp = light.AddComponent<LightComponent>();
+            //light.Transform.Position = new System.Numerics.Vector3(0, 5, -10);
+            //lightComp.Intensity = 100;
+            //lightComp.Radius = 100;
 
             GameObject skybox = scene.AddGameObject("Skybox");
             var skyboxComp = skybox.AddComponent<SkyboxComponent>();
+
+            GameObject spotLight = scene.AddGameObject("SpotLight1");
+            spotComp = spotLight.AddComponent<LightComponent>();
+            spotComp.LightType = LightType.SpotLight;
+            spotComp.Intensity = 1000;
+            spotComp.InnerCutoff = 60;
+            spotComp.OuterCutoff = 40;
+            spotLight.Transform.Position = new Vector3(0, 3, 0);
+            spotLight.Transform.Rotation =
+                Quaternion.CreateFromAxisAngle(Vector3.UnitX, MathF.PI * 0.5f);
+
 
             scene.Play(true);
 
@@ -132,6 +148,12 @@ namespace DevoidStandaloneLauncher.Prototypes
             canvas.Canvas.Justify = JustifyContent.Start;
             canvas.Canvas.Padding = Padding.GetAll(50);
 
+            FlexboxNode leftContainer = new FlexboxNode()
+            {
+                Direction = FlexDirection.Column,
+                Gap = 10
+            };
+
             ContainerNode buttonContainer = new ContainerNode()
             {
                 //ParticipatesInLayout = false,
@@ -141,7 +163,20 @@ namespace DevoidStandaloneLauncher.Prototypes
                 Gap = 7,
             };
 
+            inspectorContainer = new ContainerNode()
+            {
+                Padding = Padding.GetAll(10),
+                Direction = FlexDirection.Column,
+                Gap = 7,
+            };
+
             buttonContainer.AddStyleBoxOverride(StyleKeys.Normal, new StyleBoxFlat()
+            {
+                BackgroundColor = new Vector4(0.2f, 0.2f, 0.2f, 0.7f),
+                BorderRadius = new Vector4(5)
+            });
+
+            inspectorContainer.AddStyleBoxOverride(StyleKeys.Normal, new StyleBoxFlat()
             {
                 BackgroundColor = new Vector4(0.2f, 0.2f, 0.2f, 0.7f),
                 BorderRadius = new Vector4(5)
@@ -158,6 +193,8 @@ namespace DevoidStandaloneLauncher.Prototypes
             buttonContainer.Add(objectLabel);
             AddSliders(buttonContainer);
             buttonContainer.Add(button);
+
+            //AddDirLightControls(buttonContainer);
 
             FlexboxNode mainWindowSize = new FlexboxNode()
             {
@@ -183,6 +220,7 @@ namespace DevoidStandaloneLauncher.Prototypes
             LabelNode sceneInfoText = new LabelNode("Scene Loaded: PBR Testing");
 
             rightContainer.Add(sceneInfoText);
+            DrawSceneObjects(rightContainer);
 
             rightContainer.AddStyleBoxOverride(StyleKeys.Normal, new StyleBoxFlat()
             {
@@ -190,13 +228,174 @@ namespace DevoidStandaloneLauncher.Prototypes
                 BorderRadius = new Vector4(5)
             });
 
-            canvas.Canvas.Add(buttonContainer);
+            leftContainer.Add(buttonContainer);
+            leftContainer.Add(inspectorContainer);
+            canvas.Canvas.Add(leftContainer);
             canvas.Canvas.Add(mainWindowSize);
             canvas.Canvas.Add(rightContainer);
 
             //canvas.RenderMode = CanvasRenderMode.WorldSpace;
             //canvas.CanvasSize = new Vector2(1920, 1080);
             //canvasObject.Transform.EulerAngles = new Vector3(0, 180, 0);
+        }
+
+        ContainerNode inspectorContainer;
+
+        void DrawSceneObjects(UINode node)
+        {
+            ScrollNode scrollNode = new ScrollNode()
+            {
+                Direction = FlexDirection.Column
+            };
+
+            for (int i = 0; i < scene.GameObjects.Count; i++)
+            {
+                GameObject obj = scene.GameObjects[i];
+
+                var btn = new ButtonNode()
+                {
+                    Text = obj.Name,
+                };
+
+                scrollNode.Add(btn);
+
+                btn.OnPressed = () =>
+                {
+                    DrawInspector(obj);
+                };
+            }
+
+            node.Add(scrollNode);
+        }
+
+        void DrawInspector(GameObject obj)
+        {
+            inspectorContainer.Clear();
+
+            // Object name
+            LabelNode nameLabel = new LabelNode(obj.Name);
+            inspectorContainer.Add(nameLabel);
+
+            Transform3D transform = obj.GetComponent<Transform3D>();
+
+            if (transform == null)
+                return;
+
+            AddVector3Slider("Position", transform.Position, v =>
+            {
+                transform.Position = v;
+            });
+
+            AddVector3Slider("Rotation", transform.EulerAngles, v =>
+            {
+                transform.EulerAngles = v;
+            });
+        }
+
+        void AddVector3Slider(string label, Vector3 value, Action<Vector3> onChanged)
+        {
+            LabelNode title = new LabelNode(label);
+            inspectorContainer.Add(title);
+
+            Vector3 current = value;
+
+            SliderNode x = new SliderNode();
+            SliderNode y = new SliderNode();
+            SliderNode z = new SliderNode();
+
+            x.OnValueChanged = v =>
+            {
+                current.X = v * 10f;
+                onChanged(current);
+            };
+
+            y.OnValueChanged = v =>
+            {
+                current.Y = v * 10f;
+                onChanged(current);
+            };
+
+            z.OnValueChanged = v =>
+            {
+                current.Z = v * 10f;
+                onChanged(current);
+            };
+
+            inspectorContainer.Add(x);
+            inspectorContainer.Add(y);
+            inspectorContainer.Add(z);
+        }
+
+        Vector3 dirLightEuler = Vector3.Zero;
+        void AddDirLightControls(UINode node)
+        {
+            LabelNode bloomSliderLabel = new LabelNode("Dir Light Controls: ");
+            SliderNode XSlider = new SliderNode()
+            {
+                Layout = new LayoutOptions()
+                {
+                    FlexGrowMain = 1
+                }
+            };
+
+            SliderNode YSlider = new SliderNode()
+            {
+                Layout = new LayoutOptions()
+                {
+                    FlexGrowMain = 1
+                }
+            };
+
+            SliderNode IntensitySlider = new SliderNode()
+            {
+                Layout = new LayoutOptions()
+                {
+                    FlexGrowMain = 1 
+                }
+            };
+
+            FlexboxNode bloomSliderContainer = new FlexboxNode()
+            {
+                Gap = 10,
+                Align = AlignItems.Stretch,
+                Direction = FlexDirection.Column
+            };
+
+            XSlider.OnValueChanged = (float e) =>
+            {
+                //if (dirLight == null)
+                //    return;
+
+                //dirLightEuler.X = (e * 360f) - 180f;
+                //dirLight.Transform.EulerAngles = dirLightEuler;
+
+                spotComp.InnerCutoff = (e * 60);
+            };
+
+            YSlider.OnValueChanged = (float e) =>
+            {
+                //if (dirLight == null)
+                //    return;
+
+                //dirLightEuler.Y = (e * 360f) - 180f;
+                //dirLight.Transform.EulerAngles = dirLightEuler;
+                spotComp.OuterCutoff = (e * 60);
+            };
+
+            IntensitySlider.OnValueChanged = (float e) =>
+            {
+                if (dirLight == null)
+                    return;
+
+                dirLight.GetComponent<LightComponent>().Intensity = e * 100;
+            };
+
+            bloomSliderContainer.Add(bloomSliderLabel);
+            bloomSliderContainer.Add(XSlider);
+            bloomSliderContainer.Add(YSlider);
+            bloomSliderContainer.Add(IntensitySlider);
+
+            node.Add(bloomSliderContainer);
         }
 
         void AddSliders(UINode parent)
@@ -340,11 +539,15 @@ namespace DevoidStandaloneLauncher.Prototypes
 
             LevelSpawnRegistry.RegisterLight((assimpNode, assimpLight) =>
             {
+                if (assimpLight.LightType == Assimp.LightSourceType.Directional || assimpLight.LightType == Assimp.LightSourceType.Spot)
+                    return;
                 GameObject lightGO = scene.AddGameObject(assimpNode.Name);
 
                 Importer.ApplyTransform(lightGO, assimpNode);
 
                 var lightComponent = lightGO.AddComponent<LightComponent>();
+
+                float multiplier = 1f;
 
                 switch (assimpLight.LightType)
                 {
@@ -353,9 +556,12 @@ namespace DevoidStandaloneLauncher.Prototypes
                         break;
                     case Assimp.LightSourceType.Directional:
                         lightComponent.LightType = LightType.DirectionalLight;
+                        dirLight = lightGO;
                         break;
                     case Assimp.LightSourceType.Spot:
                         lightComponent.LightType = LightType.SpotLight;
+                        multiplier = 0.5f;
+                        Console.WriteLine("Spot Light Found");
                         break;
                 }
 
@@ -367,7 +573,7 @@ namespace DevoidStandaloneLauncher.Prototypes
                 lightComponent.Color = new Vector4(color, 1f) * 5;
 
                 lightComponent.Radius = 200f;
-                lightComponent.Intensity = intensity * 15; // your scale
+                lightComponent.Intensity = intensity * 15 * multiplier; // your scale
 
 
                 //Console.WriteLine(lightComponent.Intensity);

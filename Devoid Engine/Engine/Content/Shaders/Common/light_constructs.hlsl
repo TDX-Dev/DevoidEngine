@@ -1,7 +1,3 @@
-// =====================================================
-// Light Structures
-// =====================================================
-
 struct GPUPointLight
 {
     float4 position; // xyz position, w = enabled
@@ -25,10 +21,10 @@ struct GPUDirectionalLight
     float4 Color; // rgb color, w = intensity
 };
 
+#include "../Common/math_constants.hlsl"
+#include "../PBR/pbr_methods.hlsl"
 
-// =====================================================
-// Scene Data (Light Counts)
-// =====================================================
+
 
 cbuffer SceneData : register(b2)
 {
@@ -39,18 +35,44 @@ cbuffer SceneData : register(b2)
 };
 
 
-// =====================================================
-// Buffers
-// =====================================================
-
 StructuredBuffer<GPUPointLight> PointLights : register(t10);
-StructuredBuffer<GPUSpotLight> SpotLights : register(t11);
-StructuredBuffer<GPUDirectionalLight> DirectionalLights : register(t12);
+StructuredBuffer<GPUDirectionalLight> DirectionalLights : register(t11);
+StructuredBuffer<GPUSpotLight> SpotLights : register(t12);
 
 
-// =====================================================
-// Attenuation
-// =====================================================
+float3 ComputeBRDF(
+    float3 N,
+    float3 V,
+    float3 L,
+    float3 albedo,
+    float metallic,
+    float roughness,
+    float3 F0,
+    float3 radiance
+)
+{
+    float3 H = normalize(V + L);
+
+    float NDF = DistributionGGX(N, H, roughness);
+    float G = GeometrySmith(N, V, L, roughness);
+    float3 F = FresnelSchlick(max(dot(H, V), 0.0), F0);
+
+    float3 numerator = NDF * G * F;
+
+    float denom =
+        4.0 * max(dot(N, V), 0.0) *
+        max(dot(N, L), 0.0) + 0.0001;
+
+    float3 specular = numerator / denom;
+
+    float3 kS = F;
+    float3 kD = (1.0 - kS) * (1.0 - metallic);
+
+    float NdotL = max(dot(N, L), 0.0);
+
+    return (kD * albedo / PI + specular) * radiance * NdotL;
+}
+
 
 float ComputeAttenuation(GPUPointLight light, float distance)
 {
@@ -79,163 +101,110 @@ float ComputeAttenuation(GPUPointLight light, float distance)
 }
 
 
-// =====================================================
-// Directional Light
-// =====================================================
 
-float3 ApplyDirectionalLight(
+float3 ComputeDirectionalLight(
     GPUDirectionalLight light,
-    float3 normal,
-    float3 viewDir,
+    float3 N,
+    float3 V,
     float3 albedo,
-    float shininess)
+    float metallic,
+    float roughness,
+    float3 F0
+)
 {
-    if (light.Direction.w == 0)
-        return 0;
+    float3 L = normalize(-light.Direction.xyz);
 
-    float3 lightDir = normalize(-light.Direction.xyz);
     float3 lightColor = light.Color.rgb * light.Color.w;
 
-    float NdotL = saturate(dot(normal, lightDir));
-    float3 diffuse = albedo * lightColor * NdotL;
+    float3 radiance = lightColor;
 
-    float3 halfway = normalize(lightDir + viewDir);
-    float spec = pow(saturate(dot(normal, halfway)), shininess);
-    float3 specular = lightColor * spec;
-
-    return diffuse + specular;
+    return ComputeBRDF(
+        N, V, L,
+        albedo,
+        metallic,
+        roughness,
+        F0,
+        radiance
+    );
 }
 
 
-// =====================================================
-// Point Light
-// =====================================================
-
-float3 ApplyPointLight(
+float3 ComputePointLight(
     GPUPointLight light,
     float3 worldPos,
-    float3 normal,
-    float3 viewDir,
+    float3 N,
+    float3 V,
     float3 albedo,
-    float shininess)
+    float metallic,
+    float roughness,
+    float3 F0
+)
 {
-    if (light.position.w == 0)
-        return 0;
+    float3 toLight = light.position.xyz - worldPos;
 
-    float3 lightPos = light.position.xyz;
-    float3 toLight = lightPos - worldPos;
     float distance = length(toLight);
 
     float attenuation = ComputeAttenuation(light, distance);
+
     if (attenuation <= 0)
         return 0;
 
-    float3 lightDir = normalize(toLight);
+    float3 L = normalize(toLight);
+
     float3 lightColor = light.color.rgb * light.color.w;
 
-    float NdotL = saturate(dot(normal, lightDir));
-    float3 diffuse = albedo * lightColor * NdotL;
+    float3 radiance = lightColor * attenuation;
 
-    float3 halfway = normalize(lightDir + viewDir);
-    float spec = pow(saturate(dot(normal, halfway)), shininess);
-    float3 specular = lightColor * spec;
-
-    return (diffuse + specular) * attenuation;
+    return ComputeBRDF(
+        N, V, L,
+        albedo,
+        metallic,
+        roughness,
+        F0,
+        radiance
+    );
 }
 
-
-// =====================================================
-// Spot Light
-// =====================================================
-
-float3 ApplySpotLight(
+float3 ComputeSpotLight(
     GPUSpotLight light,
     float3 worldPos,
-    float3 normal,
-    float3 viewDir,
+    float3 N,
+    float3 V,
     float3 albedo,
-    float shininess)
+    float metallic,
+    float roughness,
+    float3 F0
+)
 {
-    if (light.position.w == 0)
-        return 0;
+    float3 toLight = light.position.xyz - worldPos;
 
-    float3 lightPos = light.position.xyz;
-    float3 toLight = lightPos - worldPos;
     float distance = length(toLight);
 
-    float range = light.direction.w;
-    if (distance > range)
+    float3 L = normalize(toLight);
+
+    float3 lightDir = normalize(-light.direction.xyz);
+
+    float theta = dot(L, lightDir);
+
+    float epsilon = light.innerCutoff - light.outerCutoff;
+
+    float coneAtten = saturate((theta - light.outerCutoff) / epsilon);
+
+    if (coneAtten <= 0)
         return 0;
 
-    float3 lightDir = normalize(toLight);
-    float3 spotDir = normalize(-light.direction.xyz);
-
-    float theta = dot(lightDir, spotDir);
-    float epsilon = light.innerCutoff - light.outerCutoff;
-    float spotFactor = saturate((theta - light.outerCutoff) / epsilon);
-
-    float attenuation = saturate(1.0 - distance / range);
+    float attenuation = coneAtten;
 
     float3 lightColor = light.color.rgb * light.color.w;
 
-    float NdotL = saturate(dot(normal, lightDir));
-    float3 diffuse = albedo * lightColor * NdotL;
+    float3 radiance = lightColor * attenuation;
 
-    float3 halfway = normalize(lightDir + viewDir);
-    float spec = pow(saturate(dot(normal, halfway)), shininess);
-    float3 specular = lightColor * spec;
-
-    return (diffuse + specular) * attenuation * spotFactor;
-}
-
-
-// =====================================================
-// Combined Lighting (Now Using SceneData)
-// =====================================================
-
-float3 ComputeLighting(
-    float3 worldPos,
-    float3 normal,
-    float3 viewDir,
-    float3 albedo)
-{
-    float3 result = 0;
-    float shininess = 32.0;
-
-    // Directional
-    for (uint di = 0; di < directionalLightCount; di++)
-    {
-        result += ApplyDirectionalLight(
-            DirectionalLights[di],
-            normal,
-            viewDir,
-            albedo,
-            shininess);
-    }
-
-    // Point
-    for (uint pi = 0; pi < pointLightCount; pi++)
-    {
-        result += ApplyPointLight(
-            PointLights[pi],
-            worldPos,
-            normal,
-            viewDir,
-            albedo,
-            shininess);
-    }
-
-    // Spot
-    for (uint si = 0; si < spotLightCount; si++)
-    {
-        result += ApplySpotLight(
-            SpotLights[si],
-            worldPos,
-            normal,
-            viewDir,
-            albedo,
-            shininess);
-    }
-
-    return result;
+    return ComputeBRDF(
+        N, V, L,
+        albedo,
+        metallic,
+        roughness,
+        F0,
+        radiance
+    );
 }

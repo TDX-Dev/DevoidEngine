@@ -14,7 +14,7 @@ namespace DevoidEngine.Engine.Components
 
         public override void OnStart()
         {
-            Renderer.SkyboxRenderer.SetPanorama(Helper.LoadHDRI("Engine/Content/HDRIs/monochrome_studio.hdr"));
+            Renderer.SkyboxRenderer.SetPanorama(Helper.LoadHDRI("Engine/Content/HDRIs/qwantani_dusk_2_puresky_4k.hdr"));
         }
 
         public override void OnUpdate(float dt)

@@ -1,4 +1,7 @@
-static const float PI = 3.14159265;
+#ifndef PBR_METHODS
+#define PBR_METHODS
+
+#include "../Common/math_constants.hlsl"
 
 float DistributionGGX(float3 N, float3 H, float roughness)
 {
@@ -107,3 +110,5 @@ float3 FresnelSchlickRoughness(float cosTheta, float3 F0, float roughness)
 
     return F0 + (F90 - F0) * pow(1.0 - cosTheta, 5.0);
 }
+
+#endif
