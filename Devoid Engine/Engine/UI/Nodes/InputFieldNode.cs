@@ -178,7 +178,6 @@ namespace DevoidEngine.Engine.UI.Nodes
 
             UpdateText();
         }
-
         public override void OnKeyDown(Keys key)
         {
             switch (key)

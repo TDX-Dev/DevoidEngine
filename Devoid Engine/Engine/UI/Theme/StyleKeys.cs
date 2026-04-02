@@ -23,5 +23,6 @@ namespace DevoidEngine.Engine.UI.Theme
         public const string Normal = "normal";
         public const string Hover = "hover";
         public const string Pressed = "pressed";
+        public const string Editing = "editing";
     }
 }

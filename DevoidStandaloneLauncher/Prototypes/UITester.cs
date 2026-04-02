@@ -288,49 +288,57 @@ namespace DevoidStandaloneLauncher.Prototypes
             if (transform == null)
                 return;
 
-            AddVector3Slider("Position", transform.Position, v =>
+            AddVector3Drag("Position", transform.Position, v =>
             {
                 transform.Position = v;
             });
 
-            AddVector3Slider("Rotation", transform.EulerAngles, v =>
+            AddVector3Drag("Rotation", transform.EulerAngles, v =>
             {
                 transform.EulerAngles = v;
             });
         }
 
-        void AddVector3Slider(string label, Vector3 value, Action<Vector3> onChanged)
+        void AddVector3Drag(string label, Vector3 value, Action<Vector3> onChanged)
         {
             LabelNode title = new LabelNode(label);
             inspectorContainer.Add(title);
 
             Vector3 current = value;
 
-            SliderNode x = new SliderNode();
-            SliderNode y = new SliderNode();
-            SliderNode z = new SliderNode();
+            FlexboxNode row = new FlexboxNode()
+            {
+                Direction = FlexDirection.Row,
+                Gap = 6
+            };
+
+            DragFloatNode x = new DragFloatNode() { Value = value.X };
+            DragFloatNode y = new DragFloatNode() { Value = value.Y };
+            DragFloatNode z = new DragFloatNode() { Value = value.Z };
 
             x.OnValueChanged = v =>
             {
-                current.X = v * 10f;
+                current.X = v;
                 onChanged(current);
             };
 
             y.OnValueChanged = v =>
             {
-                current.Y = v * 10f;
+                current.Y = v;
                 onChanged(current);
             };
 
             z.OnValueChanged = v =>
             {
-                current.Z = v * 10f;
+                current.Z = v;
                 onChanged(current);
             };
 
-            inspectorContainer.Add(x);
-            inspectorContainer.Add(y);
-            inspectorContainer.Add(z);
+            row.Add(x);
+            row.Add(y);
+            row.Add(z);
+
+            inspectorContainer.Add(row);
         }
 
         Vector3 dirLightEuler = Vector3.Zero;

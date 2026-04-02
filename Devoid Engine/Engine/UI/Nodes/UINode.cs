@@ -212,6 +212,13 @@ namespace DevoidEngine.Engine.UI.Nodes
                     return s;
             }
 
+            if (State.HasFlag(UIState.Editing))
+            {
+                var s = GetStyleBox(StyleKeys.Editing);
+                if (s != null)
+                    return s;
+            }
+
             return GetStyleBox(StyleKeys.Normal);
         }
 

@@ -250,12 +250,24 @@ namespace DevoidEngine.Engine.UI
                 }
             );
 
+            //theme.SetStyleBox(
+            //    StyleKeys.Normal,
+            //    "DragField",
+            //    new StyleBoxFlat()
+            //    {
+            //        BackgroundColor = new Vector4(0.35f, 0.35f, 0.35f, 1),
+            //        BorderWidth = 1,
+            //        BorderColor = new Vector4(0, 0, 0, 0.6f),
+            //        BorderRadius = new Vector4(4)
+            //    }
+            //);
+
             theme.SetStyleBox(
-                StyleKeys.Pressed,
+                StyleKeys.Editing,
                 "DragField",
                 new StyleBoxFlat()
                 {
-                    BackgroundColor = new Vector4(1f, 1f, 1f, 0.9f),
+                    BackgroundColor = new Vector4(0.2f, 0.2f, 0.2f, 1),
                     BorderWidth = 1,
                     BorderColor = new Vector4(0, 0, 0, 0.6f),
                     BorderRadius = new Vector4(4)
@@ -268,6 +280,7 @@ namespace DevoidEngine.Engine.UI
             theme.SetTypeVariation("Dropdown", "Panel");
             theme.SetTypeVariation("Label", "Panel");
             theme.SetTypeVariation("DragField", "InputField");
+            //theme.SetTypeVariation("InputField", "Button");
             theme.SetTypeVariation("InputField", "Panel");
 
             return theme;
