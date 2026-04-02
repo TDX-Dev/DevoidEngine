@@ -79,10 +79,16 @@ namespace DevoidEngine.Engine.UI.Theme
 
         public int GetFontSize(string name, string themeType)
         {
-            if (types.TryGetValue(themeType, out var data) &&
-                data.FontSizes.TryGetValue(name, out var size))
+            if (!TryGetTypeChain(themeType, out var chain))
+                return 0;
+
+            foreach (var type in chain)
             {
-                return size;
+                if (types.TryGetValue(type, out var data) &&
+                    data.FontSizes.TryGetValue(name, out var size))
+                {
+                    return size;
+                }
             }
 
             return 0;

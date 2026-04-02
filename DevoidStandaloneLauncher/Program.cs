@@ -15,7 +15,7 @@ namespace DevoidStandaloneLauncher
             ApplicationSpecification applicationSpecification = new ApplicationSpecification()
             {
                 darkTitlebar = true,
-                forceVsync = false,
+                forceVsync = true,
                 graphicsDevice = new DX11GraphicsDevice(),
                 Width = 1280,
                 Height = 720,

@@ -250,11 +250,25 @@ namespace DevoidEngine.Engine.UI
                 }
             );
 
+            theme.SetStyleBox(
+                StyleKeys.Pressed,
+                "DragField",
+                new StyleBoxFlat()
+                {
+                    BackgroundColor = new Vector4(1f, 1f, 1f, 0.9f),
+                    BorderWidth = 1,
+                    BorderColor = new Vector4(0, 0, 0, 0.6f),
+                    BorderRadius = new Vector4(4)
+                }
+            );
+
             // Type inheritance
             theme.SetTypeVariation("DropdownItem", "Button");
             theme.SetTypeVariation("DropdownHeader", "Panel");
             theme.SetTypeVariation("Dropdown", "Panel");
             theme.SetTypeVariation("Label", "Panel");
+            theme.SetTypeVariation("DragField", "InputField");
+            theme.SetTypeVariation("InputField", "Panel");
 
             return theme;
         }
@@ -618,11 +632,25 @@ namespace DevoidEngine.Engine.UI
                 }
             );
 
+            theme.SetStyleBox(
+                StyleKeys.Pressed,
+                "DragField",
+                new StyleBoxFlat()
+                {
+                    BackgroundColor = new Vector4(1f, 1f, 1f, 0.9f),
+                    BorderWidth = 1,
+                    BorderColor = new Vector4(0, 0, 0, 0.6f),
+                    BorderRadius = new Vector4(4)
+                }
+            );
+
             // Type inheritance
             theme.SetTypeVariation("DropdownItem", "Panel");
             theme.SetTypeVariation("DropdownHeader", "Panel");
             theme.SetTypeVariation("Dropdown", "Panel");
             theme.SetTypeVariation("Label", "Panel");
+            theme.SetTypeVariation("DragField", "InputField");
+            theme.SetTypeVariation("InputField", "Panel");
 
             return theme;
         }

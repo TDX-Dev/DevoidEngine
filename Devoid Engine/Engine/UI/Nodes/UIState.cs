@@ -13,6 +13,7 @@ namespace DevoidEngine.Engine.UI.Nodes
         Hover = 1 << 0,
         Pressed = 1 << 1,
         Focused = 1 << 2,
-        Disabled = 1 << 3
+        Editing = 1 << 3,
+        Disabled = 1 << 4
     }
 }

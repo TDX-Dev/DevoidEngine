@@ -239,10 +239,7 @@ namespace DevoidEngine.Engine.UI.Nodes
 
             var theme = GetTheme();
 
-            if (theme.HasFontSize(name, ThemeType))
-                return theme.GetFontSize(name, ThemeType);
-
-            return 0;
+            return theme.GetFontSize(name, ThemeType);
         }
 
 

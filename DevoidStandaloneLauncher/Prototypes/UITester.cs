@@ -194,9 +194,10 @@ namespace DevoidStandaloneLauncher.Prototypes
             AddSliders(buttonContainer);
             buttonContainer.Add(button);
 
-            buttonContainer.Add(new InputFieldNode()
+            int val = 0;
+            buttonContainer.Add(new DragIntNode()
             {
-
+                Value = val
             });
 
             //AddDirLightControls(buttonContainer);
@@ -545,8 +546,8 @@ namespace DevoidStandaloneLauncher.Prototypes
 
             LevelSpawnRegistry.RegisterLight((assimpNode, assimpLight) =>
             {
-                if (assimpLight.LightType == Assimp.LightSourceType.Directional || assimpLight.LightType == Assimp.LightSourceType.Spot)
-                    return;
+                //if (assimpLight.LightType == Assimp.LightSourceType.Directional || assimpLight.LightType == Assimp.LightSourceType.Spot)
+                //    return;
                 GameObject lightGO = scene.AddGameObject(assimpNode.Name);
 
                 Importer.ApplyTransform(lightGO, assimpNode);
@@ -580,6 +581,9 @@ namespace DevoidStandaloneLauncher.Prototypes
 
                 lightComponent.Radius = 200f;
                 lightComponent.Intensity = intensity * 15 * multiplier; // your scale
+
+                lightComponent.InnerCutoff = assimpLight.AngleInnerCone;
+                lightComponent.OuterCutoff = assimpLight.AngleOuterCone;
 
 
                 //Console.WriteLine(lightComponent.Intensity);

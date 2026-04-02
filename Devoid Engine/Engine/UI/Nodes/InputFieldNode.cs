@@ -18,16 +18,16 @@ namespace DevoidEngine.Engine.UI.Nodes
 
         public Action<string>? OnSubmit;
 
-        LabelNode label;
-        BoxNode caret;
-        LabelNode hintLabel;
+        internal LabelNode label;
+        internal BoxNode caret;
+        internal LabelNode hintLabel;
 
         private FontInternal font;
         private int fontSize;
 
-        float caretTimer;
-        bool caretVisible = true;
-        float caretHeight = 5;
+        internal float caretTimer;
+        internal bool caretVisible = true;
+        internal float caretHeight = 5;
 
         const float BlinkTime = 0.8f;
 
@@ -53,6 +53,12 @@ namespace DevoidEngine.Engine.UI.Nodes
             label = new LabelNode("", font, fontSize);
             label.Layout.FlexGrowMain = 0;
             label.Layout.FlexGrowCross = 0;
+
+            hintLabel = new LabelNode("", font, fontSize);
+            hintLabel.Layout.FlexGrowMain = 0;
+            hintLabel.Layout.FlexGrowCross = 0;
+            hintLabel.ParticipatesInLayout = false;   // <-- important
+            hintLabel.AddColorOverride(StyleKeys.FontColor, new Vector4(1, 1, 1, 0.35f));
         }
 
         protected override void InitializeCore()
@@ -67,12 +73,6 @@ namespace DevoidEngine.Engine.UI.Nodes
                 Color = new Vector4(1, 1, 1, 1),
                 ParticipatesInLayout = false
             };
-
-            hintLabel = new LabelNode("", font, fontSize);
-            hintLabel.Layout.FlexGrowMain = 0;
-            hintLabel.Layout.FlexGrowCross = 0;
-            hintLabel.ParticipatesInLayout = false;   // <-- important
-            hintLabel.AddColorOverride(StyleKeys.FontColor, new Vector4(1, 1, 1, 0.35f));
 
             Add(hintLabel);
             Add(label);
@@ -115,7 +115,7 @@ namespace DevoidEngine.Engine.UI.Nodes
             base.ApplyTheme();
         }
 
-        void UpdateText()
+        internal void UpdateText()
         {
             label.Text = Text;
             hintLabel.Text = HintText;
@@ -234,6 +234,42 @@ namespace DevoidEngine.Engine.UI.Nodes
             if (key == Keys.Backspace)
                 backspaceHeld = false;
             base.OnKeyUp(key);
+        }
+
+        public override void OnClick()
+        {
+            if (label.Rect == null)
+                return;
+
+            Vector2 mouse = UISystem.mousePosition;
+
+            float wrapWidth = Rect.size.X - Padding.Left - Padding.Right;
+
+            int bestIndex = 0;
+            float bestDist = float.MaxValue;
+
+            for (int i = 0; i <= Text.Length; i++)
+            {
+                Vector2 cursor = label.GetCursorPosition(i, wrapWidth);
+
+                Vector2 worldPos = new Vector2(
+                    label.Rect.position.X + cursor.X,
+                    label.Rect.position.Y + cursor.Y
+                );
+
+                float dist = Vector2.Distance(mouse, worldPos);
+
+                if (dist < bestDist)
+                {
+                    bestDist = dist;
+                    bestIndex = i;
+                }
+            }
+
+            CaretIndex = bestIndex;
+
+            caretVisible = true;
+            caretTimer = 0;
         }
 
         void HandleBackspaceRepeat(float dt)
