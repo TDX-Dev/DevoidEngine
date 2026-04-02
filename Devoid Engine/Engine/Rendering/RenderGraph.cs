@@ -24,6 +24,11 @@ namespace DevoidEngine.Engine.Rendering
             dirty = true;
         }
 
+        public List<RenderGraphPass> GetPasses()
+        {
+            return passes;
+        }
+
         public void Clear()
         {
             passes.Clear();

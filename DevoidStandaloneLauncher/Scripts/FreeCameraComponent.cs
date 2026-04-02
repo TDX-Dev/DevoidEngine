@@ -47,6 +47,9 @@ namespace DevoidStandaloneLauncher.Scripts
         // =========================================
         private void HandleMouseLook()
         {
+            if (Cursor.GetCursorState() != CursorState.Grabbed)
+                return;
+
             float mouseDeltaX = Input.GetAction("LookX");
             float mouseDeltaY = Input.GetAction("LookY");
 

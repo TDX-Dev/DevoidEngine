@@ -9,13 +9,44 @@ namespace DevoidEngine.Engine.Rendering.PostProcessing
         Framebuffer framebuffer;
 
         MaterialInstance material;
+        public float Exposure
+        {
+            get => exposure;
+            set
+            {
+                if (value == exposure)
+                    return;
+
+                exposure = value;
+                material.SetFloat("exposure", value);
+            }
+        }
+
+        public float BloomIntensity
+        {
+            get => bloomIntensity;
+            set
+            {
+                if (value == bloomIntensity)
+                    return;
+
+                bloomIntensity = value;
+                material.SetFloat("bloomIntensity", value);
+            }
+        }
+
+
 
         public override Texture2D OutputTexture => output;
+
+        private float exposure = 1;
+        private float bloomIntensity = 1;
 
         public TonemapPass(int width, int height)
         {
             material = new MaterialInstance(new Material(new Shader("Engine/Content/Shaders/Testing/tonemap")));
-
+            material.SetFloat("exposure", exposure);
+            material.SetFloat("bloomIntensity", bloomIntensity);
 
             output = new Texture2D(new TextureDescription()
             {

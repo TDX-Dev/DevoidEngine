@@ -15,6 +15,8 @@ namespace DevoidEngine.Engine.UI.Nodes
         private float _borderWidth;
         private Vector4 _borderColor;
         private Vector4 _borderRadius;
+        private bool _useTexture;
+        private Texture2D _texture;
 
         protected override void InitializeCore()
         {
@@ -39,7 +41,12 @@ namespace DevoidEngine.Engine.UI.Nodes
                 _borderWidth = flat.BorderWidth;
                 _borderColor = flat.BorderColor;
                 _borderRadius = flat.BorderRadius;
+            } else if (style is StyleBoxTexture stex)
+            {
+                _useTexture = stex.Texture != null;
+                _texture = stex.Texture;
             }
+
             UpdateMaterial();
         }
 
@@ -50,8 +57,11 @@ namespace DevoidEngine.Engine.UI.Nodes
 
             Material.SetVector2("RECT_SIZE", Rect?.size ?? Vector2.One);
 
-            Material.SetInt("useTexture", 0);
-            //Material.SetTexture("MAT_Texture", _texture);
+            Material.SetInt("useTexture", _useTexture ? 1 : 0);
+            if (_useTexture)
+            {
+                Material.SetTexture("MAT_Texture", _texture);
+            }
 
             Material.SetVector4("COLOR", _background);
             Material.SetFloat("BORDER_THICKNESS", _borderWidth);

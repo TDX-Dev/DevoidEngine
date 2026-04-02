@@ -11,8 +11,8 @@ namespace DevoidStandaloneLauncher
         private float splashDuration = 1f;
         private bool prototypeLoaded = false;
 
-        internal Scene CurrentScene = SplashScene.CreateSplashScene(nameof(UIThemeTest1));
-        internal Prototype GamePrototype = new UIThemeTest1();
+        internal Scene CurrentScene = SplashScene.CreateSplashScene(nameof(UITester));
+        internal Prototype GamePrototype = new UITester();
 
         public override void OnGUIRender()
         {
@@ -71,6 +71,8 @@ namespace DevoidStandaloneLauncher
         public override void OnFixedUpdate(float deltaTime)
         {
             CurrentScene.FixedUpdate(deltaTime);
+            if (prototypeLoaded)
+                GamePrototype.OnFixedUpdate(deltaTime);
         }
 
         public override void OnRender()
