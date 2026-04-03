@@ -10,15 +10,15 @@ namespace DevoidEngine.Engine.AssetPipeline
 {
     public static class AssetDatabase
     {
-        private static Dictionary<string, AssetEntry> guidToAsset = new();
+        private static Dictionary<Guid, AssetEntry> guidToAsset = new();
         private static Dictionary<string, AssetEntry> pathToAsset = new();
 
-        public static string GetGuid(string assetPath)
+        public static Guid GetGuid(string assetPath)
         {
             return pathToAsset[assetPath].Guid;
         }
 
-        public static string GetPath(string guid)
+        public static string GetPath(Guid guid)
         {
             return guidToAsset[guid].AssetPath;
         }
@@ -45,12 +45,12 @@ namespace DevoidEngine.Engine.AssetPipeline
 
             var entry = new AssetEntry
             {
-                Guid = meta.Guid,
+                Guid = Guid.Parse(meta.Guid),
                 AssetPath = assetPath,
                 MetaPath = metaPath
             };
 
-            guidToAsset[meta.Guid] = entry;
+            guidToAsset[entry.Guid] = entry;
             pathToAsset[assetPath] = entry;
         }
 

@@ -8,5 +8,8 @@ namespace DevoidEngine.Engine.AssetPipeline
 {
     internal class AssetEntry
     {
+        public Guid Guid;
+        public string AssetPath;
+        public string MetaPath;
     }
 }
