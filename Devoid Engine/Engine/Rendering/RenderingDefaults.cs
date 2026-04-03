@@ -16,7 +16,7 @@ namespace DevoidEngine.Engine.Rendering
             //DefaultMaterial.SetFloat("Roughness", 1f);
             //DefaultMaterial.SetFloat("Metallic", 0f);
             DefaultMaterial.SetFloat("AO", 1);
-            Renderer.SkyboxRenderer.BindIBL(DefaultMaterial);
+            //Renderer.SkyboxRenderer.BindIBL(DefaultMaterial);
         }
 
         public static MaterialInstance GetMaterial() => new MaterialInstance(DefaultMaterial);

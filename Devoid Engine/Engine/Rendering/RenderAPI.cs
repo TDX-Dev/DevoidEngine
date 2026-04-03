@@ -4,53 +4,52 @@ using DevoidGPU;
 
 namespace DevoidEngine.Engine.Rendering
 {
-
     public static class RenderAPI
     {
-        static RenderAPI()
-        {
-            var shader = ShaderLibrary.GetShader("Screen/RENDER_SCREEN");
-            if (shader == null)
-                throw new Exception("Screen shader not loaded");
-            screenShader = shader;
-            mesh = RenderConstants.Quad;
-
-            var rendererLayout = Renderer.GetInputLayout(mesh, screenShader);
-            if (rendererLayout == null)
-                throw new Exception("Unable to get layout object from renderer");
-
-            if (mesh == null)
-                throw new Exception("Unable to get Quad Mesh from renderer");
-
-            layout = rendererLayout;
-        }
-
         static Mesh mesh;
         static IInputLayout layout;
-
         static Shader screenShader;
+        static int vertexCount;
 
-        // This method should only be called at the end of the render stage
+        static RenderAPI()
+        {
+            screenShader = ShaderLibrary.GetShader("Screen/RENDER_SCREEN")
+                ?? throw new Exception("Screen shader not loaded");
+
+            mesh = RenderConstants.Quad
+                ?? throw new Exception("Quad mesh not available");
+
+            layout = Renderer.GetInputLayout(mesh, screenShader)
+                ?? throw new Exception("Failed to create input layout");
+
+            vertexCount = mesh.GetVertices()?.Length
+                ?? throw new Exception("Mesh vertices missing");
+        }
+
+        static void SetupFullscreenState()
+        {
+            Renderer.GraphicsDevice.SetRasterizerState(CullMode.None);
+            Renderer.GraphicsDevice.SetPrimitiveType(PrimitiveType.Triangles);
+        }
+
+        // Render texture directly to the main backbuffer
         public static void RenderToScreen(Texture2D texture)
         {
             if (texture == null) return;
+
             Renderer.GraphicsDevice.MainSurface.Bind();
 
-            Renderer.GraphicsDevice.SetRasterizerState(CullMode.None);
-            Renderer.GraphicsDevice.SetPrimitiveType(PrimitiveType.Triangles);
+            SetupFullscreenState();
 
             layout.Bind();
             mesh.Bind();
 
-            var shader = ShaderLibrary.GetShader("Screen/RENDER_SCREEN");
-
-            if (shader == null)
-                return;
+            screenShader.Use();
 
             texture.BindSampler(0);
             texture.Bind(0);
 
-            Renderer.GraphicsDevice.Draw(mesh.GetVertices()!.Length, 0);
+            Renderer.GraphicsDevice.Draw(vertexCount, 0);
 
             Renderer.GraphicsDevice.UnbindAllShaderResources();
         }
@@ -58,88 +57,85 @@ namespace DevoidEngine.Engine.Rendering
         public static void RenderToScreen(TextureCube texture, CubeFace face = CubeFace.PositiveX, int mipLevel = 0)
         {
             if (texture == null) return;
+
             Renderer.GraphicsDevice.MainSurface.Bind();
 
-            Renderer.GraphicsDevice.SetRasterizerState(CullMode.None);
-            Renderer.GraphicsDevice.SetPrimitiveType(PrimitiveType.Triangles);
+            SetupFullscreenState();
 
             layout.Bind();
             mesh.Bind();
 
-            var shader = ShaderLibrary.GetShader("Screen/RENDER_SCREEN");
-            if (shader == null)
-                return;
+            screenShader.Use();
 
             texture.BindSampler(0);
             texture.Bind(0);
 
-            Renderer.GraphicsDevice.Draw(mesh.GetVertices()!.Length, 0);
+            Renderer.GraphicsDevice.Draw(vertexCount, 0);
 
             Renderer.GraphicsDevice.UnbindAllShaderResources();
         }
 
-
-
+        // Render texture to framebuffer
         public static void RenderToBuffer(Texture2D texture, Framebuffer destination)
         {
-            if (texture == null) return;
+            if (texture == null || destination == null) return;
+
             destination.Bind();
 
-            Renderer.GraphicsDevice.SetRasterizerState(CullMode.None);
-            Renderer.GraphicsDevice.SetPrimitiveType(PrimitiveType.Triangles);
+            SetupFullscreenState();
+
             Renderer.GraphicsDevice.SetDepthState(DepthTest.Disabled, false);
             Renderer.GraphicsDevice.SetBlendState(BlendMode.AlphaBlend);
 
             layout.Bind();
             mesh.Bind();
 
-            var shader = ShaderLibrary.GetShader("Screen/RENDER_SCREEN");
-            if (shader == null) return;
+            screenShader.Use();
 
             texture.BindSampler(0);
             texture.Bind(0);
 
-            Renderer.GraphicsDevice.Draw(mesh.GetVertices()!.Length, 0);
+            Renderer.GraphicsDevice.Draw(vertexCount, 0);
 
             Renderer.GraphicsDevice.UnbindAllShaderResources();
         }
 
+        // Render material to framebuffer
         public static void RenderToBuffer(MaterialInstance material, Framebuffer destination)
         {
-            if (material == null) return;
+            if (material == null || destination == null) return;
+
             destination.Bind();
 
-            Renderer.GraphicsDevice.SetRasterizerState(CullMode.None);
-            Renderer.GraphicsDevice.SetPrimitiveType(PrimitiveType.Triangles);
+            SetupFullscreenState();
 
             IInputLayout inputLayout = Renderer.GetInputLayout(mesh, material.BaseMaterial.Shader);
+            if (inputLayout == null) return;
 
             inputLayout.Bind();
             mesh.Bind();
 
             material.Bind();
 
-            Renderer.GraphicsDevice.Draw(mesh.GetVertices()!.Length, 0);
+            Renderer.GraphicsDevice.Draw(vertexCount, 0);
 
             Renderer.GraphicsDevice.UnbindAllShaderResources();
-
         }
 
-        // Assumes you have shader already bound before calling this function.
+        // Render fullscreen with already bound shader
         public static void RenderFullScreen(Shader shader)
         {
             if (shader == null) return;
-            Renderer.GraphicsDevice.SetRasterizerState(CullMode.None);
-            Renderer.GraphicsDevice.SetPrimitiveType(PrimitiveType.Triangles);
 
-            IInputLayout? inputLayout = Renderer.GetInputLayout(mesh, shader);
+            SetupFullscreenState();
+
+            IInputLayout inputLayout = Renderer.GetInputLayout(mesh, shader);
             if (inputLayout == null) return;
 
             inputLayout.Bind();
             mesh.Bind();
 
-            Renderer.GraphicsDevice.Draw(mesh.GetVertices()!.Length, 0);
+            Renderer.GraphicsDevice.Draw(vertexCount, 0);
         }
-
     }
 }
