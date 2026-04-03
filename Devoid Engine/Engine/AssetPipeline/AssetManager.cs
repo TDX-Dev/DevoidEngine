@@ -20,7 +20,7 @@ namespace DevoidEngine.Engine.AssetPipeline
 
         public static void Initialize()
         {
-            AssetLoaderRegistry.Register<Texture>(new TextureLoader());
+            AssetLoaderRegistry.Register<Texture2D>(new TextureLoader());
         }
 
         public static T Load<T>(Guid guid)

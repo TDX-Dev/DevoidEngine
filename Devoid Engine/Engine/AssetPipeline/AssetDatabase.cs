@@ -34,7 +34,7 @@ namespace DevoidEngine.Engine.AssetPipeline
 
         public static void Initialize()
         {
-            ImporterRegistry.Register<Texture>(new TextureImporter());
+            ImporterRegistry.Register<Texture2D>(new TextureImporter());
 
             ScanAssets();
         }
@@ -46,8 +46,9 @@ namespace DevoidEngine.Engine.AssetPipeline
             AssetMeta meta;
 
             bool created = false;
+            var absolutePath = Path.Combine(ProjectManager.Current.AssetPath, assetPath);
 
-            if (!File.Exists(metaPath))
+            if (!File.Exists(absolutePath))
             {
                 meta = CreateMeta(assetPath, metaPath);
                 created = true;
@@ -76,7 +77,7 @@ namespace DevoidEngine.Engine.AssetPipeline
 
                 importer.Import(assetPath, entry.Guid, meta.Settings, output);
 
-                meta.SourceTimestamp = File.GetLastWriteTimeUtc(assetPath).Ticks;
+                meta.SourceTimestamp = File.GetLastWriteTimeUtc(absolutePath).Ticks;
 
                 SaveMeta(metaPath, meta);
             }
@@ -176,7 +177,10 @@ namespace DevoidEngine.Engine.AssetPipeline
                 if (file.EndsWith(".meta"))
                     continue;
 
-                RegisterAsset(file);
+                string relative = Path.GetRelativePath(assetRoot, file);
+                relative = relative.Replace('\\', '/');
+
+                RegisterAsset(relative);
             }
         }
     }

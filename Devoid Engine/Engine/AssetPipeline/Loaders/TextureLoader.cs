@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace DevoidEngine.Engine.AssetPipeline.Loaders
 {
-    public class TextureLoader : IAssetLoader<Texture>
+    public class TextureLoader : IAssetLoader<Texture2D>
     {
-        public Texture Load(ReadOnlySpan<byte> data)
+        public Texture2D Load(ReadOnlySpan<byte> data)
         {
             return Helper.LoadImageAsTex(data, DevoidGPU.TextureFilter.Linear);
         }
