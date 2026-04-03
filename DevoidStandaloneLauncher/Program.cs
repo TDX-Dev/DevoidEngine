@@ -1,4 +1,5 @@
 ﻿using DevoidEngine.Engine.Core;
+using DevoidEngine.Engine.ProjectSystem;
 using DevoidGPU.DX11;
 using System;
 using System.Collections.Generic;
@@ -25,14 +26,38 @@ namespace DevoidStandaloneLauncher
                 Name = "Devoid New Beginnings"
             };
 
-
-            Console.WriteLine("Runtime Started");
+            LoadProject();
             Application application = new Application();
             application.Initialize(applicationSpecification);
             application.TargetFrameRate = 10;
             EngineSingleton.Instance.UseInterpolation = false;
             application.AddLayer(new PrototypeLoader());
+
+
             application.Run();
+        }
+
+        static void LoadProject()
+        {
+            var projectRoot = Path.Combine(AppContext.BaseDirectory, "Project");
+            var projectFile = Path.Combine(projectRoot, "Project.devoid");
+
+            Console.WriteLine($"Loading Project: {projectFile}");
+            return;
+
+            if (!File.Exists(projectFile))
+            {
+                Console.WriteLine("Creating project...");
+                ProjectManager.Create(projectRoot, "DevoidGame");
+            }
+            else
+            {
+                Console.WriteLine("Loading project...");
+                ProjectManager.Load(projectFile);
+            }
+
+            Console.WriteLine($"Project Loaded: {ProjectManager.Current.Config.Name}");
+            Console.WriteLine($"Assets: {ProjectManager.Current.AssetPath}");
         }
 
 
