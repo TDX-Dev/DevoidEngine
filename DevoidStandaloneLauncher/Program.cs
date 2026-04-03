@@ -39,11 +39,8 @@ namespace DevoidStandaloneLauncher
 
         static void LoadProject()
         {
-            var projectRoot = Path.Combine(AppContext.BaseDirectory, "Project");
+            var projectRoot = "D:\\Programming\\Devoid Engine\\DevoidStandaloneLauncher\\Project";
             var projectFile = Path.Combine(projectRoot, "Project.devoid");
-
-            Console.WriteLine($"Loading Project: {projectFile}");
-            return;
 
             if (!File.Exists(projectFile))
             {

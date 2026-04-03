@@ -51,7 +51,7 @@ namespace DevoidEngine.Engine.Rendering
 
             compiledPasses = ResolvePassOrder();
             dirty = false;
-            PrintExecutionOrder();
+            //PrintExecutionOrder();
         }
 
         public Texture2D Execute(Texture2D sceneColor)

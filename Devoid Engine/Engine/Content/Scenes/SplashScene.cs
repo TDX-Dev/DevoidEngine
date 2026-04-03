@@ -27,48 +27,54 @@ namespace DevoidEngine.Engine.Content.Scenes
                 64
             );
 
-            var root = new FlexboxNode()
+            // Background
+            var background = new ContainerNode()
             {
-                Direction = FlexDirection.Column,
-                Align = AlignItems.Center,
-                Justify = JustifyContent.Center,
-                Layout = new LayoutOptions() { FlexGrowMain = 1 },
-            };
-
-            var root1 = new FlexboxNode()
-            {
-                Offset = new System.Numerics.Vector2(10, 10),
-                Direction = FlexDirection.Column,
-                Align = AlignItems.Center,
-                Justify = JustifyContent.Center,
-                Layout = new LayoutOptions() { FlexGrowMain = 1 },
+                Size = Screen.Size,
                 ParticipatesInLayout = false
             };
 
-            root1.Add(new LabelNode($"Currently Loading: {loadingName}", font, 16f));
-
-            root.Add(new ContainerNode()
+            // Center layout (logo)
+            var center = new FlexboxNode()
             {
-                ParticipatesInLayout = false,
-                Size = Screen.Size,
+                Direction = FlexDirection.Column,
+                Align = AlignItems.Center,
+                Justify = JustifyContent.Center,
+                Layout = new LayoutOptions()
+                {
+                    FlexGrowMain = 1
+                }
+            };
+
+            center.Add(new BoxNode()
+            {
+                Size = Screen.Size * 0.45f,
+                Texture = Helper.LoadImageAsTex(
+                    "Engine/Content/Textures/DevoidLogo.png",
+                    DevoidGPU.TextureFilter.Linear
+                )
             });
 
-            root.Add(new BoxNode()
+            // Top-left overlay
+            var loadingOverlay = new FlexboxNode()
             {
-                Size = Screen.Size * 0.35f,
-                Texture = Helper.LoadImageAsTex("Engine/Content/Textures/DevoidLogo.png", DevoidGPU.TextureFilter.Linear)
-            });
+                Offset = new Vector2(10, 10),
+                Direction = FlexDirection.Column,
+                Align = AlignItems.Start,
+                Justify = JustifyContent.Start,
+                ParticipatesInLayout = false
+            };
 
-            canvas.Canvas.Add(root);
-            canvas.Canvas.Add(root1);
+            loadingOverlay.Add(
+                new LabelNode($"Currently Loading: {loadingName}", font, 16f)
+            );
 
-            // Add splash controller
-            //var controllerGO = scene.addGameObject("SplashController");
-            //controllerGO.AddComponent<SplashController>();
+            // Canvas order matters (background first)
+            canvas.Canvas.Add(background);
+            canvas.Canvas.Add(center);
+            canvas.Canvas.Add(loadingOverlay);
+
             return scene;
         }
-
-
-
     }
 }

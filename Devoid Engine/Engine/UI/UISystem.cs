@@ -25,7 +25,7 @@ namespace DevoidEngine.Engine.UI
         public static UINode PressedNode { get; private set; }
 
         public static float OrderEpsilon = 0.01f;
-        public static bool DebugDraw = true;
+        public static bool DebugDraw = false;
         public static float UIScale = 1f;
 
         private static Material uiMaterial;

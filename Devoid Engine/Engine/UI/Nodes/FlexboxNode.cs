@@ -504,6 +504,8 @@ namespace DevoidEngine.Engine.UI.Nodes
 
         protected override void RenderCore(List<RenderItem> renderList, Matrix4x4 canvasModel, int order)
         {
+            if (!UISystem.DebugDraw)
+                return;
             Vector2 size = VisualRect.size;
             Vector2 pos = VisualRect.position;
 
