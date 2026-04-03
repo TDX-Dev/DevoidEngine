@@ -30,6 +30,9 @@ namespace DevoidEngine.Engine.Rendering
         static Framebuffer UIFramebuffer;
         static Texture2D UIRenderOutput;
 
+        static Framebuffer CompositeBuffer;
+        static Texture2D CompositeTexture;
+
         public static IInputLayout GetInputLayout(Mesh mesh, Shader shader) => inputLayoutCache.Get(GraphicsDevice, mesh.VertexBuffer.GetVertexInfo(), shader.vShader);
 
         public static void SetupCamera(CameraData cameraData)

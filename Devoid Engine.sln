@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DevoidGPU", "DevoidGPU\Devo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DevoidStandaloneLauncher", "DevoidStandaloneLauncher\DevoidStandaloneLauncher.csproj", "{0C370142-B58E-45E5-89C2-A1FBA8BC96FA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DevoidEngine.SourceGen", "DevoidEngine.SourceGen\DevoidEngine.SourceGen.csproj", "{100B3A0E-C044-4302-8F62-BDDE2F06B46C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,6 +43,14 @@ Global
 		{0C370142-B58E-45E5-89C2-A1FBA8BC96FA}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0C370142-B58E-45E5-89C2-A1FBA8BC96FA}.Release|x64.ActiveCfg = Release|Any CPU
 		{0C370142-B58E-45E5-89C2-A1FBA8BC96FA}.Release|x64.Build.0 = Release|Any CPU
+		{100B3A0E-C044-4302-8F62-BDDE2F06B46C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{100B3A0E-C044-4302-8F62-BDDE2F06B46C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{100B3A0E-C044-4302-8F62-BDDE2F06B46C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{100B3A0E-C044-4302-8F62-BDDE2F06B46C}.Debug|x64.Build.0 = Debug|Any CPU
+		{100B3A0E-C044-4302-8F62-BDDE2F06B46C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{100B3A0E-C044-4302-8F62-BDDE2F06B46C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{100B3A0E-C044-4302-8F62-BDDE2F06B46C}.Release|x64.ActiveCfg = Release|Any CPU
+		{100B3A0E-C044-4302-8F62-BDDE2F06B46C}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

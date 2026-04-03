@@ -274,6 +274,18 @@ namespace DevoidEngine.Engine.UI
                 }
             );
 
+            theme.SetStyleBox(
+                StyleKeys.Normal,
+                "ScrollContainer",
+                new StyleBoxFlat()
+                {
+                    BackgroundColor = new Vector4(0.1f, 0.1f, 0.1f, 0.6f),
+                    //BorderWidth = 1,
+                    BorderColor = new Vector4(0, 0, 0, 0.6f),
+                    BorderRadius = new Vector4(4)
+                }
+            );
+
             // Type inheritance
             theme.SetTypeVariation("DropdownItem", "Button");
             theme.SetTypeVariation("DropdownHeader", "Panel");
@@ -282,6 +294,7 @@ namespace DevoidEngine.Engine.UI
             theme.SetTypeVariation("DragField", "InputField");
             //theme.SetTypeVariation("InputField", "Button");
             theme.SetTypeVariation("InputField", "Panel");
+            theme.SetTypeVariation("ScrollContentBox", "ScrollContainer");
 
             return theme;
         }

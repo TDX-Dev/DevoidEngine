@@ -26,4 +26,10 @@
     <ProjectReference Include="..\Devoid Engine\DevoidEngine.csproj" />
   </ItemGroup>
 
+	<ItemGroup>
+		<ProjectReference Include="..\DevoidEngine\DevoidEngine.SourceGen.csproj"
+						  OutputItemType="Analyzer"
+						  ReferenceOutputAssembly="false" />
+	</ItemGroup>
+
 </Project>

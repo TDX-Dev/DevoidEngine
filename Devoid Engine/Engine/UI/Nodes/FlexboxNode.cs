@@ -63,8 +63,8 @@ namespace DevoidEngine.Engine.UI.Nodes
 
             foreach (var child in children)
             {
-                if (!child.Visible || !child.ParticipatesInLayout)
-                    continue;
+                //if (!child.Visible || !child.ParticipatesInLayout)
+                //    continue;
 
                 Vector2 childSize = child.Measure(innerAvailableSize);
 

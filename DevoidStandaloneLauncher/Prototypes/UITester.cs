@@ -21,6 +21,8 @@ namespace DevoidStandaloneLauncher.Prototypes
         GameObject cubeObject;
         GameObject dirLight;
 
+        CanvasComponent editorCanvas;
+
         Mesh testRender;
 
         //string levelPath = "D:/Programming/Devoid Engine/DevoidStandaloneLauncher/LauncherContents/crt.fbx";
@@ -30,6 +32,12 @@ namespace DevoidStandaloneLauncher.Prototypes
         
         void LoadInput()
         {
+            Input.Map.Bind("Debug", new InputBinding()
+            {
+                DeviceType = InputDeviceType.Keyboard,
+                Control = (ushort)Keys.F8,
+            });
+
             Input.Map.Bind("LookX", new InputBinding()
             {
                 DeviceType = InputDeviceType.Mouse,
@@ -142,11 +150,11 @@ namespace DevoidStandaloneLauncher.Prototypes
 
 
             canvasObject = scene.AddGameObject("CanvasObject");
-            CanvasComponent canvas = canvasObject.AddComponent<CanvasComponent>();
+            editorCanvas = canvasObject.AddComponent<CanvasComponent>();
 
-            canvas.Canvas.Align = AlignItems.Start;
-            canvas.Canvas.Justify = JustifyContent.Start;
-            canvas.Canvas.Padding = Padding.GetAll(50);
+            editorCanvas.Canvas.Align = AlignItems.Start;
+            editorCanvas.Canvas.Justify = JustifyContent.Start;
+            //canvas.Canvas.Padding = Padding.GetAll(50);
 
             FlexboxNode leftContainer = new FlexboxNode()
             {
@@ -237,9 +245,9 @@ namespace DevoidStandaloneLauncher.Prototypes
 
             leftContainer.Add(buttonContainer);
             leftContainer.Add(inspectorContainer);
-            canvas.Canvas.Add(leftContainer);
-            canvas.Canvas.Add(mainWindowSize);
-            canvas.Canvas.Add(rightContainer);
+            editorCanvas.Canvas.Add(leftContainer);
+            editorCanvas.Canvas.Add(mainWindowSize);
+            editorCanvas.Canvas.Add(rightContainer);
 
             //canvas.RenderMode = CanvasRenderMode.WorldSpace;
             //canvas.CanvasSize = new Vector2(1920, 1080);
@@ -291,6 +299,11 @@ namespace DevoidStandaloneLauncher.Prototypes
             AddVector3Drag("Position", transform.Position, v =>
             {
                 transform.Position = v;
+            });
+
+            AddVector3Drag("LocalPosition", transform.LocalPosition, v =>
+            {
+                transform.LocalPosition = v;
             });
 
             AddVector3Drag("Rotation", transform.EulerAngles, v =>
@@ -533,6 +546,12 @@ namespace DevoidStandaloneLauncher.Prototypes
 
         public override void OnUpdate(float delta)
         {
+            if (Input.GetActionDown("Debug"))
+            {
+                Console.WriteLine("F8");
+                editorCanvas.Canvas.Visible = !editorCanvas.Canvas.Visible;
+            }
+
             float currentFPS = 1f / delta;
             smoothedFPS = smoothedFPS + (currentFPS - smoothedFPS) * smoothing;
 

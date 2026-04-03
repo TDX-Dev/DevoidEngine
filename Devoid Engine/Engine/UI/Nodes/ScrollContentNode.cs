@@ -2,8 +2,10 @@
 
 namespace DevoidEngine.Engine.UI.Nodes
 {
-    public class ScrollContentNode : FlexboxNode
+    public class ScrollContentNode : ContainerNode
     {
+        public override string ThemeType => "ScrollContentBox";
+
         public Vector2 ScrollOffset;
 
         public Vector2 ContentSize;

@@ -1,4 +1,5 @@
 ﻿using DevoidEngine.Engine.Core;
+using DevoidEngine.Engine.DebugTools;
 using DevoidGPU;
 
 namespace DevoidEngine.Engine.Rendering.PostProcessing
@@ -9,6 +10,7 @@ namespace DevoidEngine.Engine.Rendering.PostProcessing
         Framebuffer framebuffer;
 
         MaterialInstance material;
+
         public float Exposure
         {
             get => exposure;
@@ -58,6 +60,17 @@ namespace DevoidEngine.Engine.Rendering.PostProcessing
 
             framebuffer = new Framebuffer();
             framebuffer.AttachRenderTexture(output);
+
+
+
+            ConsoleRegistry.Instance.Register(
+                new ConsoleVariable<float>(
+                    "r.exposure",
+                    () => Exposure,
+                    e => Exposure = e,
+                    "The Camera exposure in tonemap pass"
+                )
+            );
         }
 
 

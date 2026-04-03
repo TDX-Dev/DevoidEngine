@@ -159,6 +159,7 @@ namespace DevoidEngine.Engine.UI
                 root.Update(deltaTime);
             }
 
+
             if (FocusedNode != null)
             {
                 foreach (Keys key in Enum.GetValues<Keys>())
@@ -283,6 +284,8 @@ namespace DevoidEngine.Engine.UI
             for (int i = Roots.Count - 1; i >= 0; i--)
             {
                 CanvasNode canvas = Roots[i];
+                if (!canvas.Visible)
+                    continue;
 
                 Vector2 pos;
 

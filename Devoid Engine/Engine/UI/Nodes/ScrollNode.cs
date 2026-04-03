@@ -5,6 +5,7 @@ namespace DevoidEngine.Engine.UI.Nodes
 {
     public class ScrollNode : FlexboxNode
     {
+        public override string ThemeType => "ScrollContainer";
         public FlexWrap Wrap
         {
             get => InnerContainer.Wrap;
@@ -73,8 +74,8 @@ namespace DevoidEngine.Engine.UI.Nodes
             Padding = Padding.GetAll(0);
             Gap = 0;
 
-            Layout.FlexGrowMain = 0;
-            Layout.FlexGrowCross = 1;
+            //Layout.FlexGrowMain = 0;
+            //Layout.FlexGrowCross = 1;
 
             base.Add(InnerContainer);
             base.Add(VScrollbar);

@@ -1,14 +1,13 @@
 ﻿using DevoidEngine.Engine.Audio;
 using DevoidEngine.Engine.Audio.SoLoud;
 using DevoidEngine.Engine.Components;
+using DevoidEngine.Engine.DebugTools;
 using DevoidEngine.Engine.Imgui;
 using DevoidEngine.Engine.InputSystem;
 using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.UI;
 using DevoidEngine.Engine.Utilities;
 using DevoidGPU;
-using OpenTK.Windowing.Common.Input;
-using System.Diagnostics;
 using System.Numerics;
 
 namespace DevoidEngine.Engine.Core
@@ -113,6 +112,8 @@ namespace DevoidEngine.Engine.Core
             //imGuiRenderer = new ImGuiRenderer(Renderer.GraphicsDevice);
             //imGuiRenderer.Initialize();
             //imGuiRenderer.OnGUI += () => { layerHandler.OnGUILayers(); };
+
+            AddLayer(new DebugConsole());
 
             isRunning = true;
         }
