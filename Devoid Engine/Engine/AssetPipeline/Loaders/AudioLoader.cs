@@ -8,11 +8,13 @@ using System.Threading.Tasks;
 
 namespace DevoidEngine.Engine.AssetPipeline.Loaders
 {
-    public class TextureLoader : IAssetLoader<Texture2D>
+    internal class AudioLoader : IAssetLoader<Audio>
     {
-        public Texture2D Load(ReadOnlySpan<byte> data)
+        public Audio Load(ReadOnlySpan<byte> data)
         {
-            return Helper.LoadImageAsDataTex(data, DevoidGPU.TextureFilter.Linear);
+            var audio = new Audio();
+            audio.audioClip = EngineSingleton.Instance.AudioSystem.Load(data);
+            return audio;
         }
     }
 }

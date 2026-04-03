@@ -15,9 +15,15 @@ namespace DevoidEngine.Engine.AssetPipeline.Loaders
             loaders[typeof(T)] = loader;
         }
 
-        public static IAssetLoader<T> Get<T>()
+        public static bool TryGet<T>(out IAssetLoader<T> loader)
         {
-            return (IAssetLoader<T>)loaders[typeof(T)];
+            if (loaders.TryGetValue(typeof(T), out var value))
+            {
+                loader = (IAssetLoader<T>)value;
+                return true;
+            }
+            loader = null;
+            return false;
         }
     }
 }

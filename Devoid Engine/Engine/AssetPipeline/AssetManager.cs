@@ -23,12 +23,16 @@ namespace DevoidEngine.Engine.AssetPipeline
             AssetLoaderRegistry.Register<Texture2D>(new TextureLoader());
         }
 
-        public static T Load<T>(Guid guid)
+        public static T? Load<T>(Guid guid)
         {
             if (AssetCache<T>.Cache.TryGetValue(guid, out var asset))
                 return asset;
 
-            var loader = AssetLoaderRegistry.Get<T>();
+            if (!AssetLoaderRegistry.TryGet<T>(out var loader))
+            {
+                Console.WriteLine($"No loader registered for {typeof(T).Name}");
+                return default(T);
+            }
 
             string extension = ImporterRegistry.GetRuntimeExtension<T>();
             string path = AssetDatabase.GetLibraryPath(guid, extension);

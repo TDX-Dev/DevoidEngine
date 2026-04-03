@@ -15,9 +15,16 @@ namespace DevoidEngine.Engine.AssetPipeline
         private static Dictionary<Guid, AssetEntry> guidToAsset = new();
         private static Dictionary<string, AssetEntry> pathToAsset = new();
 
-        public static Guid GetGuid(string assetPath)
+        public static bool TryGetGuid(string assetPath, out Guid guid)
         {
-            return pathToAsset[assetPath].Guid;
+            if (pathToAsset.TryGetValue(assetPath, out var entry))
+            {
+                guid = entry.Guid;
+                return true;
+            }
+
+            guid = default;
+            return false;
         }
 
         public static string GetPath(Guid guid)
@@ -37,7 +44,7 @@ namespace DevoidEngine.Engine.AssetPipeline
             ScanAssets();
         }
 
-        private static void RegisterAsset(string assetPath)
+        private static Guid RegisterAsset(string assetPath)
         {
             var metaPath = assetPath + ".meta";
 
@@ -83,6 +90,7 @@ namespace DevoidEngine.Engine.AssetPipeline
 
                 SaveMeta(metaPath, meta);
             }
+            return entry.Guid;
         }
 
         private static AssetMeta CreateMeta(string assetPath, string metaPath)
@@ -176,6 +184,7 @@ namespace DevoidEngine.Engine.AssetPipeline
         private static void ScanAssets()
         {
             var assetRoot = ProjectManager.Current.AssetPath;
+            HashSet<Guid> discovered = new();
 
             foreach (var file in Directory.GetFiles(assetRoot, "*", SearchOption.AllDirectories))
             {
@@ -185,7 +194,29 @@ namespace DevoidEngine.Engine.AssetPipeline
                 string relative = Path.GetRelativePath(assetRoot, file);
                 relative = relative.Replace('\\', '/');
 
-                RegisterAsset(relative);
+                Guid guid = RegisterAsset(relative);
+                discovered.Add(guid);
+            }
+
+            CleanupLibrary(discovered);
+        }
+
+        private static void CleanupLibrary(HashSet<Guid> validGuids)
+        {
+            var library = ProjectManager.Current.LibraryPath;
+
+            foreach (var file in Directory.GetFiles(library))
+            {
+                var name = Path.GetFileNameWithoutExtension(file);
+
+                if (!Guid.TryParse(name, out var guid))
+                    continue;
+
+                if (!validGuids.Contains(guid))
+                {
+                    Console.WriteLine($"Deleting orphaned asset: {file}");
+                    File.Delete(file);
+                }
             }
         }
     }

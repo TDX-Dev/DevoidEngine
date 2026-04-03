@@ -8,7 +8,7 @@ namespace DevoidStandaloneLauncher
     public class PrototypeLoader : Layer
     {
         private float splashTimer = 0;
-        private float splashDuration = 1f;
+        private float splashDuration = 5f;
         private bool prototypeLoaded = false;
 
         internal Scene CurrentScene = SplashScene.CreateSplashScene(nameof(ProjectLoaderTest));

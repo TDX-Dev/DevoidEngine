@@ -1,4 +1,5 @@
-﻿using DevoidEngine.Engine.Audio;
+﻿using DevoidEngine.Engine.AudioSystem;
+using DevoidEngine.Engine.Core;
 
 namespace DevoidEngine.Engine.Components
 {
@@ -6,27 +7,22 @@ namespace DevoidEngine.Engine.Components
     {
         public override string Type => nameof(AudioSourceComponent3D);
 
-        // --- Config ---
-        public string AudioPath;
         public bool PlayOnStart = true;
         public bool Looping = false;
 
         public float Volume = 1.0f;
         public float MinDistance = 1.0f;
         public float MaxDistance = 50.0f;
+        public Audio Audio;
 
-        // --- Runtime ---
-        private AudioClipHandle clip;
         private AudioPlayObject player;
 
         public bool IsPlaying => player != null;
 
         public override void OnStart()
         {
-            if (string.IsNullOrEmpty(AudioPath))
+            if (Audio == null)
                 return;
-
-            clip = gameObject.Scene.Audio.Load(AudioPath);
 
             if (PlayOnStart)
                 Play();
@@ -49,13 +45,16 @@ namespace DevoidEngine.Engine.Components
 
         public void Play()
         {
-            if (clip.Id == 0)
-                clip = gameObject.Scene.Audio.Load(AudioPath);
+            if (Audio == null)
+            {
+                Console.WriteLine("Cannot play without audio clip");
+                return;
+            }
 
             Stop(); // restart cleanly
 
             player = gameObject.Scene.Audio.Play3D(
-                clip,
+                Audio.audioClip,
                 gameObject.Transform.Position,
                 Looping
             );

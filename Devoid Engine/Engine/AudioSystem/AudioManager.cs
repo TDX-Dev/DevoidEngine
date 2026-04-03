@@ -1,13 +1,13 @@
 ﻿using System.Numerics;
 
-namespace DevoidEngine.Engine.Audio
+namespace DevoidEngine.Engine.AudioSystem
 {
-    public sealed class AudioSystem : IDisposable
+    public sealed class AudioManager : IDisposable
     {
         internal IAudioBackend _backend;
         private bool _disposed;
 
-        internal AudioSystem(IAudioBackend backend)
+        internal AudioManager(IAudioBackend backend)
         {
             _backend = backend;
             _backend.Initialize();
@@ -16,6 +16,11 @@ namespace DevoidEngine.Engine.Audio
         public AudioClipHandle Load(string path)
         {
             return _backend.Load(path);
+        }
+
+        public AudioClipHandle Load(ReadOnlySpan<byte> data)
+        {
+            return _backend.Load(data);
         }
 
         public AudioPlayObject Play3D(AudioClipHandle clip, Vector3 position, bool loop = false)

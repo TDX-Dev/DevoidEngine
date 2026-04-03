@@ -1,7 +1,7 @@
 ﻿using SoLoud;
 using System.Numerics;
 
-namespace DevoidEngine.Engine.Audio.SoLoud
+namespace DevoidEngine.Engine.AudioSystem.SoLoud
 {
     internal class SoLoudAudioBackend : IAudioBackend
     {
@@ -80,6 +80,24 @@ namespace DevoidEngine.Engine.Audio.SoLoud
             if (result != 0)
                 throw new Exception("Audio Load Failed");
 
+
+            _audioObjectMapping[audioHandle.Id] = audio;
+            return audioHandle;
+        }
+
+        public unsafe AudioClipHandle Load(ReadOnlySpan<byte> data)
+        {
+            AudioClipHandle audioHandle = new AudioClipHandle(++_nextAudioId);
+
+            Wav audio = new Wav();
+
+            fixed (byte* ptr = data)
+            {
+                int result = audio.loadMem((IntPtr)ptr, (uint)data.Length);
+
+                if (result != 0)
+                    throw new Exception("Audio Load Failed");
+            }
 
             _audioObjectMapping[audioHandle.Id] = audio;
             return audioHandle;

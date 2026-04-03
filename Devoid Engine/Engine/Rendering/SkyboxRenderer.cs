@@ -37,7 +37,6 @@ namespace DevoidEngine.Engine.Rendering
         private Matrix4x4[] captureViews;
 
         private bool dirty = true;
-        private bool texturesCreated = false;
 
         private const int SKY_SIZE = 1024;
         private const int IRR_SIZE = 32;
@@ -48,10 +47,8 @@ namespace DevoidEngine.Engine.Rendering
         private RenderState skyboxRenderState;
 
         private MaterialInstance panoramaConvertMaterial;
-        private MaterialInstance skyboxMaterial;
         private MaterialInstance irradianceMaterial;
         private MaterialInstance prefilterMaterial;
-        private MaterialInstance brdfMaterial;
 
         private CameraData conversionCameraData;
 

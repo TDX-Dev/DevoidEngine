@@ -1,6 +1,6 @@
 ﻿using DevoidEngine.Engine.AssetPipeline;
-using DevoidEngine.Engine.Audio;
-using DevoidEngine.Engine.Audio.SoLoud;
+using DevoidEngine.Engine.AudioSystem;
+using DevoidEngine.Engine.AudioSystem.SoLoud;
 using DevoidEngine.Engine.Components;
 using DevoidEngine.Engine.DebugTools;
 using DevoidEngine.Engine.Imgui;
@@ -92,7 +92,7 @@ namespace DevoidEngine.Engine.Core
                 Windowed = true,
             };
 
-            EngineSingleton.Instance.AudioSystem = new AudioSystem(new SoLoudAudioBackend());
+            EngineSingleton.Instance.AudioSystem = new AudioManager(new SoLoudAudioBackend());
 
             Screen.Size = new Vector2(applicationSpecification.Width, applicationSpecification.Height);
 

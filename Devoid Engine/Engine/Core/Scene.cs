@@ -1,4 +1,4 @@
-﻿using DevoidEngine.Engine.Audio;
+﻿using DevoidEngine.Engine.AudioSystem;
 using DevoidEngine.Engine.Components;
 
 namespace DevoidEngine.Engine.Core
@@ -10,7 +10,7 @@ namespace DevoidEngine.Engine.Core
 
         public List<GameObject> GameObjects { get; private set; }
 
-        public AudioSystem Audio;
+        public AudioManager Audio;
 
 
         private bool isPlaying = false;

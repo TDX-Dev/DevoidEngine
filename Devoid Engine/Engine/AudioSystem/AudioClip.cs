@@ -1,4 +1,4 @@
-﻿namespace DevoidEngine.Engine.Audio
+﻿namespace DevoidEngine.Engine.AudioSystem
 {
     public class AudioClip
     {
