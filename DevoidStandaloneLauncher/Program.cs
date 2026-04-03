@@ -1,4 +1,5 @@
-﻿using DevoidEngine.Engine.Core;
+﻿using DevoidEngine.Engine.AssetPipeline;
+using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.ProjectSystem;
 using DevoidGPU.DX11;
 using System;
@@ -27,6 +28,8 @@ namespace DevoidStandaloneLauncher
             };
 
             LoadProject();
+            AssetDatabase.Initialize();
+
             Application application = new Application();
             application.Initialize(applicationSpecification);
             application.TargetFrameRate = 10;

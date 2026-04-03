@@ -11,5 +11,7 @@ namespace DevoidEngine.Engine.AssetPipeline
         public string Guid;
         public string Importer;
         public int Version = 1;
+
+        public byte[] Settings;
     }
 }

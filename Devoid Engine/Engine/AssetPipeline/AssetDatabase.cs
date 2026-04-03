@@ -1,4 +1,5 @@
-﻿using DevoidEngine.Engine.ProjectSystem;
+﻿using DevoidEngine.Engine.AssetPipeline.Importers;
+using DevoidEngine.Engine.ProjectSystem;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,6 +26,8 @@ namespace DevoidEngine.Engine.AssetPipeline
 
         public static void Initialize()
         {
+            ImporterRegistry.Register(new TextureImporter());
+
             ScanAssets();
         }
 
@@ -56,10 +59,15 @@ namespace DevoidEngine.Engine.AssetPipeline
 
         private static AssetMeta CreateMeta(string assetPath, string metaPath)
         {
+            var ext = Path.GetExtension(assetPath);
+
+            var importer = ImporterRegistry.GetImporter(ext);
+
             var meta = new AssetMeta
             {
                 Guid = Guid.NewGuid().ToString("N"),
-                Importer = GuessImporter(assetPath)
+                Importer = importer.Name,
+                Settings = importer.CreateDefaultSettings()
             };
 
             SaveMeta(metaPath, meta);
@@ -74,22 +82,6 @@ namespace DevoidEngine.Engine.AssetPipeline
                 json,
                 AssetJsonContext.Default.AssetMeta
             );
-        }
-
-        private static string GuessImporter(string assetPath)
-        {
-            var ext = Path.GetExtension(assetPath).ToLower();
-
-            return ext switch
-            {
-                ".png" => "TextureImporter",
-                ".jpg" => "TextureImporter",
-                ".fbx" => "ModelImporter",
-                ".gltf" => "ModelImporter",
-                ".wav" => "AudioImporter",
-                ".mp3" => "AudioImporter",
-                _ => "DefaultImporter"
-            };
         }
 
         private static void SaveMeta(string metaPath, AssetMeta meta)
