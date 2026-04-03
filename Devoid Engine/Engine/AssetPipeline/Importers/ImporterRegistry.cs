@@ -13,7 +13,7 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
         public static void Register(IAssetImporter importer)
         {
             foreach (var ext in importer.Extensions)
-                extensionMap[ext] = importer;
+                extensionMap[ext.ToLower()] = importer;
         }
 
         public static bool HasImporter(string ext)

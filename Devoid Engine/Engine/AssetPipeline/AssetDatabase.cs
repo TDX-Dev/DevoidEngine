@@ -37,9 +37,12 @@ namespace DevoidEngine.Engine.AssetPipeline
 
             AssetMeta meta;
 
+            bool created = false;
+
             if (!File.Exists(metaPath))
             {
                 meta = CreateMeta(assetPath, metaPath);
+                created = true;
             }
             else
             {
@@ -59,7 +62,7 @@ namespace DevoidEngine.Engine.AssetPipeline
             var ext = Path.GetExtension(assetPath).ToLower();
             var importer = ImporterRegistry.GetImporter(ext);
 
-            if (NeedsReimport(assetPath, meta))
+            if (created || NeedsReimport(assetPath, meta))
             {
                 importer.Import(assetPath, entry.Guid, meta.Settings);
 
@@ -123,9 +126,6 @@ namespace DevoidEngine.Engine.AssetPipeline
         private static bool ValidateMeta(AssetMeta meta)
         {
             if (meta == null)
-                return false;
-
-            if (!ImporterRegistry.HasImporter(meta.Importer))
                 return false;
 
             if (string.IsNullOrWhiteSpace(meta.Guid))
