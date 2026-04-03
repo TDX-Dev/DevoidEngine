@@ -180,20 +180,32 @@ float3 ComputeSpotLight(
 
     float distance = length(toLight);
 
+    float range = light.direction.w;
+
+    if (distance > range)
+        return 0;
+
     float3 L = normalize(toLight);
 
     float3 lightDir = normalize(-light.direction.xyz);
 
     float theta = dot(L, lightDir);
 
-    float epsilon = light.innerCutoff - light.outerCutoff;
+    float cosInner = cos(light.innerCutoff);
+    float cosOuter = cos(light.outerCutoff);
 
-    float coneAtten = saturate((theta - light.outerCutoff) / epsilon);
+    float epsilon = cosInner - cosOuter;
+
+    float coneAtten = saturate((theta - cosOuter) / epsilon);
 
     if (coneAtten <= 0)
         return 0;
 
-    float attenuation = coneAtten;
+    // distance falloff
+    float norm = distance / range;
+    float distanceAtten = saturate(1.0 - norm * norm);
+
+    float attenuation = coneAtten * distanceAtten;
 
     float3 lightColor = light.color.rgb * light.color.w;
 

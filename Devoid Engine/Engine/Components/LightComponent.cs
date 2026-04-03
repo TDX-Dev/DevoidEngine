@@ -20,8 +20,8 @@ namespace DevoidEngine.Engine.Components
         private float intensity = 10f;
         private float radius = 30f;
 
-        private float outerCutoff = 1f;
-        private float innerCutoff = 1f;
+        private float outerCutoff = MathHelper.DegToRad(71);
+        private float innerCutoff = MathHelper.DegToRad(52);
 
         private LightType lightType = LightType.PointLight;
         private LightAttenuationType attenuationType = LightAttenuationType.Custom;
@@ -111,6 +111,7 @@ namespace DevoidEngine.Engine.Components
 
         public override void OnUpdate(float dt)
         {
+            DrawCubes();
             if (gameObject.Transform.hasMoved)
                 dirty = true;
         }
@@ -152,6 +153,56 @@ namespace DevoidEngine.Engine.Components
             }
 
             dirty = false;
+        }
+
+        public void DrawCubes()
+        {
+            if (lightType != LightType.SpotLight)
+                return;
+
+            var transform = gameObject.Transform;
+
+            Vector3 pos = transform.Position;
+            Vector3 forward = transform.Forward;
+
+            float range = radius;
+
+            // normalize direction
+            forward = Vector3.Normalize(forward);
+
+            // ---- Origin cube ----
+            Matrix4x4 originModel =
+                Matrix4x4.CreateScale(0.3f) *
+                Matrix4x4.CreateTranslation(pos);
+
+            DebugRenderSystem.DrawCube(originModel);
+
+
+            // ---- Forward cube (direction) ----
+            Vector3 forwardPoint = pos + forward * range;
+
+            Matrix4x4 forwardModel =
+                Matrix4x4.CreateScale(0.3f) *
+                Matrix4x4.CreateTranslation(forwardPoint);
+
+            DebugRenderSystem.DrawCube(forwardModel);
+
+
+            // ---- Cone slope cube ----
+            float slopeRadius = MathF.Tan(outerCutoff) * range;
+
+            // build orthonormal basis
+            Vector3 right = Vector3.Normalize(Vector3.Cross(forward, Vector3.UnitY));
+            if (right.LengthSquared() < 0.001f)
+                right = Vector3.Normalize(Vector3.Cross(forward, Vector3.UnitX));
+
+            Vector3 slopePoint = forwardPoint + right * slopeRadius;
+
+            Matrix4x4 slopeModel =
+                Matrix4x4.CreateScale(0.3f) *
+                Matrix4x4.CreateTranslation(slopePoint);
+
+            DebugRenderSystem.DrawCube(slopeModel);
         }
 
         //public void Collect(CameraComponent3D camera, CameraRenderContext ctx)

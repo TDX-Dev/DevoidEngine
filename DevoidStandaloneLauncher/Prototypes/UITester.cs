@@ -117,7 +117,7 @@ namespace DevoidStandaloneLauncher.Prototypes
             //lightComp.Radius = 100;
 
             GameObject skybox = scene.AddGameObject("Skybox");
-            var skyboxComp = skybox.AddComponent<SkyboxComponent>();
+            //var skyboxComp = skybox.AddComponent<SkyboxComponent>();
 
             GameObject spotLight = scene.AddGameObject("SpotLight1");
             spotComp = spotLight.AddComponent<LightComponent>();
@@ -132,7 +132,7 @@ namespace DevoidStandaloneLauncher.Prototypes
 
             scene.Play(true);
 
-            PBRSpheres.SpawnSphereGrid(scene, new Vector3(0, 5, 5));
+            //PBRSpheres.SpawnSphereGrid(scene, new Vector3(0, 5, 5));
 
             if (levelPath != "")
             {
@@ -297,6 +297,44 @@ namespace DevoidStandaloneLauncher.Prototypes
             {
                 transform.EulerAngles = v;
             });
+
+            var light = obj.GetComponent<LightComponent>();
+            if (light != null && light.LightType == LightType.SpotLight)
+            {
+                var innerCutoffDrag = new DragFloatNode()
+                {
+                    Value = light.InnerCutoff
+                };
+
+                var outerCutoffDrag = new DragFloatNode()
+                {
+                    Value = light.OuterCutoff
+                };
+
+                innerCutoffDrag.OnValueChanged = (float e) => light.InnerCutoff = e;
+                outerCutoffDrag.OnValueChanged = (float e) => light.OuterCutoff = e;
+
+                var intensityDrag = new DragFloatNode()
+                {
+                    Value = light.Intensity
+                };
+
+                var radiusDrag = new DragFloatNode()
+                {
+                    Value = light.Radius
+                };
+
+                intensityDrag.OnValueChanged = (float e) => light.Intensity = e;
+                radiusDrag.OnValueChanged = (float e) => light.Radius = e;
+
+                inspectorContainer.Add(new LabelNode("Spotlight Cutoff"));
+                inspectorContainer.Add(innerCutoffDrag);
+                inspectorContainer.Add(outerCutoffDrag);
+
+                inspectorContainer.Add(new LabelNode("Intensity & Radius"));
+                inspectorContainer.Add(intensityDrag);
+                inspectorContainer.Add(radiusDrag);
+            }
         }
 
         void AddVector3Drag(string label, Vector3 value, Action<Vector3> onChanged)
@@ -530,6 +568,13 @@ namespace DevoidStandaloneLauncher.Prototypes
                 var camComponent = camera.AddComponent<CameraComponent3D>();
                 camComponent.IsDefault = true;
 
+                GameObject flash = scene.AddGameObject("flashlight");
+                var lightComp = flash.AddComponent<LightComponent>();
+                lightComp.LightType = LightType.SpotLight;
+
+                flash.SetParent(camera, false);
+                flash.Transform.LocalPosition = new Vector3(0, 0, 2);
+
             });
 
             LevelSpawnRegistry.RegisterFallBack((assimpNode, assimpScene) =>
@@ -560,6 +605,10 @@ namespace DevoidStandaloneLauncher.Prototypes
 
                 Importer.ApplyTransform(lightGO, assimpNode);
 
+                var eul = lightGO.Transform.EulerAngles;
+                eul.X = 90;
+                lightGO.Transform.EulerAngles = eul;
+
                 var lightComponent = lightGO.AddComponent<LightComponent>();
 
                 float multiplier = 1f;
@@ -575,23 +624,24 @@ namespace DevoidStandaloneLauncher.Prototypes
                         break;
                     case Assimp.LightSourceType.Spot:
                         lightComponent.LightType = LightType.SpotLight;
-                        multiplier = 0.5f;
-                        Console.WriteLine("Spot Light Found");
                         break;
                 }
 
                 Vector3 diffuse = new Vector3(assimpLight.ColorDiffuse.X, assimpLight.ColorDiffuse.Y, assimpLight.ColorDiffuse.Z);
                 float intensity = MathF.Max(diffuse.X, MathF.Max(diffuse.Y, diffuse.Z));
-                Vector3 color = intensity > 0.0f ? diffuse / intensity : Vector3.Zero;
+
+                Vector3 color = intensity > 0.0f
+                    ? diffuse / intensity
+                    : Vector3.Zero;
 
                 //lightComponent.Color = new Vector4(assimpLight.ColorDiffuse.R, assimpLight.ColorDiffuse.G, assimpLight.ColorDiffuse.B, 1f);
                 lightComponent.Color = new Vector4(color, 1f) * 5;
 
-                lightComponent.Radius = 200f;
-                lightComponent.Intensity = intensity * 15 * multiplier; // your scale
+                lightComponent.Radius = 20;
+                lightComponent.Intensity = intensity * 0.01f; // your scale
 
-                lightComponent.InnerCutoff = assimpLight.AngleInnerCone;
-                lightComponent.OuterCutoff = assimpLight.AngleOuterCone;
+                lightComponent.InnerCutoff = MathHelper.RadToDeg(assimpLight.AngleInnerCone);
+                lightComponent.OuterCutoff = MathHelper.RadToDeg(assimpLight.AngleOuterCone);
 
 
                 //Console.WriteLine(lightComponent.Intensity);

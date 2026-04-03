@@ -58,6 +58,8 @@ namespace DevoidEngine.Engine.UI.Nodes
                     value = result;
                 else
                     Text = Format(value);
+
+                OnValueChanged?.Invoke(value);
             };
 
             HintText = "";

@@ -39,8 +39,8 @@ namespace DevoidEngine.Engine.Rendering.PostProcessing
 
         public override Texture2D OutputTexture => output;
 
-        private float exposure = 1;
-        private float bloomIntensity = 1;
+        private float exposure = 0.7f;
+        private float bloomIntensity = 0.35f;
 
         public TonemapPass(int width, int height)
         {
