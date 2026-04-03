@@ -15,6 +15,6 @@ namespace DevoidEngine.Engine.AudioSystem
         public float maxDistance;
         public AudioAttenuation attenuationFunc;
 
-        public Action OnFinished;
+        public Action? OnFinished;
     }
 }

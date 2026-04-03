@@ -8,18 +8,18 @@ namespace DevoidEngine.Engine.Rendering
 {
     public class ForwardRenderTechnique : IRenderTechnique
     {
-        Framebuffer finalOutputBuffer;
+        Framebuffer finalOutputBuffer = null!;
 
         // Lights
         const int MAX_POINTLIGHTS = 100;
         const int MAX_SPOTLIGHTS = 20;
         const int MAX_DIRECTIONALLIGHTS = 1;
 
-        StorageBuffer<GPUPointLight> pointLightBuffer;
-        StorageBuffer<GPUDirectionalLight> directionalLightBuffer;
-        StorageBuffer<GPUSpotLight> spotLightBuffer;
+        StorageBuffer<GPUPointLight> pointLightBuffer = null!;
+        StorageBuffer<GPUDirectionalLight> directionalLightBuffer = null!;
+        StorageBuffer<GPUSpotLight> spotLightBuffer = null!;
 
-        UniformBuffer sceneDataBuffer;
+        UniformBuffer sceneDataBuffer = null!;
 
         SceneData sceneData;
 

@@ -59,8 +59,6 @@ namespace DevoidEngine.Engine.Utilities
             texture.SetData<Half>(halfPixels);
             texture.GenerateMipmaps();
 
-            image.PixelHP = null;
-
             return texture;
         }
 
@@ -103,8 +101,6 @@ namespace DevoidEngine.Engine.Utilities
             texture.SetData(halfPixels);
             texture.GenerateMipmaps();
 
-            image.PixelHP = null;
-
             return texture;
         }
 
@@ -144,8 +140,6 @@ namespace DevoidEngine.Engine.Utilities
 
             texture.SetData(bytePixels);
             texture.GenerateMipmaps();
-
-            image.PixelHP = null;
 
             return texture;
         }
@@ -187,8 +181,6 @@ namespace DevoidEngine.Engine.Utilities
             texture.SetData(bytePixels);
             texture.GenerateMipmaps();
 
-            image.PixelHP = null;
-
             return texture;
         }
 
@@ -213,8 +205,6 @@ namespace DevoidEngine.Engine.Utilities
             texture.SetFilter(TextureFilter.Linear, TextureFilter.Linear);
 
             texture.SetData<float>(image.PixelHP);
-
-            image.PixelHP = null;
 
             return texture;
         }
@@ -260,8 +250,6 @@ namespace DevoidEngine.Engine.Utilities
             texture.SetData<byte>(bytePixels);
             texture.GenerateMipmaps();
 
-            image.PixelHP = null;
-
             return texture;
         }
 
@@ -305,8 +293,6 @@ namespace DevoidEngine.Engine.Utilities
 
             texture.SetData<byte>(bytePixels);
             texture.GenerateMipmaps();
-
-            image.PixelHP = null;
 
             return texture;
         }

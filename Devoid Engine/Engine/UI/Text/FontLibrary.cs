@@ -16,7 +16,7 @@ namespace DevoidEngine.Engine.UI.Text
         {
             var key = (path, pixelSize);
 
-            if (Fonts.TryGetValue(key, out FontInternal font))
+            if (Fonts.TryGetValue(key, out FontInternal? font))
                 return font;
 
             font = new FontInternal(FreeType, path, pixelSize);

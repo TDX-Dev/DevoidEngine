@@ -11,7 +11,7 @@ namespace DevoidEngine.Engine.InputSystem
         public static InputState State = new();
         public static InputMap Map = new();
 
-        private static Window currentWindow;
+        private static Window currentWindow = null!;
 
         public static void Initialize(Window window)
         {

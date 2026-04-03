@@ -7,7 +7,7 @@ namespace DevoidEngine.Engine.UI.Text
 {
     public class GlyphAtlas
     {
-        public Texture2D GPUTexture { get; private set; }
+        public Texture2D GPUTexture { get; private set; } = null!;
         public byte[] TextureData { get; internal set; }
         public int Width { get; private set; }
         public int Height { get; private set; }
@@ -112,7 +112,7 @@ namespace DevoidEngine.Engine.UI.Text
 
         public void Dispose()
         {
-            TextureData = null;
+            TextureData = [];
         }
 
     }

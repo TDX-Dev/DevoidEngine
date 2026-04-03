@@ -2,7 +2,7 @@
 {
     public class InputDeviceLayout
     {
-        public string Name;
+        public string Name = "";
         public InputDeviceType DeviceType;
         public Dictionary<ushort, string> ControlNames = new();
     }

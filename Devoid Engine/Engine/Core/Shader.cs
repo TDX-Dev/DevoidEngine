@@ -32,7 +32,7 @@ namespace DevoidEngine.Engine.Core
                 fSource = sr.ReadToEnd();
             }
 
-            string shaderSourceDirectory = Path.GetDirectoryName(vsfsPath);
+            string shaderSourceDirectory = Path.GetDirectoryName(vsfsPath)!;
 
 
             vShader = Renderer.GraphicsDevice.ShaderFactory.CreateShader(ShaderType.Vertex, vSource, "VSMain", shaderSourceDirectory);
@@ -59,8 +59,8 @@ namespace DevoidEngine.Engine.Core
                 fSource = sr.ReadToEnd();
             }
 
-            vShader = Renderer.GraphicsDevice.ShaderFactory.CreateShader(ShaderType.Vertex, vSource, "VSMain", Path.GetDirectoryName(vsPath));
-            fShader = Renderer.GraphicsDevice.ShaderFactory.CreateShader(ShaderType.Fragment, fSource, "PSMain", Path.GetDirectoryName(fsPath));
+            vShader = Renderer.GraphicsDevice.ShaderFactory.CreateShader(ShaderType.Vertex, vSource, "VSMain", Path.GetDirectoryName(vsPath)!);
+            fShader = Renderer.GraphicsDevice.ShaderFactory.CreateShader(ShaderType.Fragment, fSource, "PSMain", Path.GetDirectoryName(fsPath)!);
 
             shaderProgram = Renderer.GraphicsDevice.ShaderFactory.CreateShaderProgram();
             shaderProgram.AttachShader(vShader);

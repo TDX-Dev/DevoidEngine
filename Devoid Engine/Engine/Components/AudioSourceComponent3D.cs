@@ -13,9 +13,9 @@ namespace DevoidEngine.Engine.Components
         public float Volume = 1.0f;
         public float MinDistance = 1.0f;
         public float MaxDistance = 50.0f;
-        public Audio Audio;
+        public AudioClip? Audio;
 
-        private AudioPlayObject player;
+        private AudioPlayObject? player;
 
         public bool IsPlaying => player != null;
 
@@ -54,7 +54,7 @@ namespace DevoidEngine.Engine.Components
             Stop(); // restart cleanly
 
             player = gameObject.Scene.Audio.Play3D(
-                Audio.audioClip,
+                Audio._handle,
                 gameObject.Transform.Position,
                 Looping
             );
@@ -72,11 +72,13 @@ namespace DevoidEngine.Engine.Components
 
         public void Pause()
         {
+            if (player == null) return;
             gameObject.Scene.Audio.Pause(player);
         }
 
         public void Resume()
         {
+            if (player == null) return;
             gameObject.Scene.Audio.Pause(player, false);
         }
 

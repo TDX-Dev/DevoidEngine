@@ -25,9 +25,9 @@
             }
         }
 
-        public static Shader GetShader(string name)
+        public static Shader? GetShader(string name)
         {
-            if (shaders.TryGetValue(name, out Shader shader))
+            if (shaders.TryGetValue(name, out Shader? shader))
                 return shader;
             else
                 return null;

@@ -7,9 +7,9 @@ namespace DevoidEngine.Engine.Utilities
     public class Image
     {
         public int Width, Height;
-        public byte[] Pixels;
-        public float[] PixelHP;
-        public bool IsHDR;
+        public byte[] Pixels = null!;
+        public float[] PixelHP = null!;
+        public bool IsHDR = false;
 
         public Image()
         {
@@ -18,7 +18,6 @@ namespace DevoidEngine.Engine.Utilities
 
         public static (int width, int height, int channels) GetImageDimensions(Stream stream)
         {
-            IImageFormat format;
             var info = SixLabors.ImageSharp.Image.Identify(stream); // Reads metadata only
 
             if (info != null)
@@ -65,37 +64,36 @@ namespace DevoidEngine.Engine.Utilities
             }
 
             PixelHP = rgba;
-            Pixels = null;
             IsHDR = true;
         }
 
-        public void Load(byte[] data)
-        {
-            using var image = SixLabors.ImageSharp.Image.Load<Rgba32>(data);
+        //public void Load(byte[] data)
+        //{
+        //    using var image = SixLabors.ImageSharp.Image.Load<Rgba32>(data);
 
-            Width = image.Width;
-            Height = image.Height;
+        //    Width = image.Width;
+        //    Height = image.Height;
 
-            List<byte> pixels = new List<byte>(4 * image.Width * image.Height);
+        //    List<byte> pixels = new List<byte>(4 * image.Width * image.Height);
 
-            image.ProcessPixelRows(accessor =>
-            {
-                for (int y = 0; y < image.Height; y++)
-                {
-                    var row = accessor.GetRowSpan(y);
+        //    image.ProcessPixelRows(accessor =>
+        //    {
+        //        for (int y = 0; y < image.Height; y++)
+        //        {
+        //            var row = accessor.GetRowSpan(y);
 
-                    for (int x = 0; x < image.Width; x++)
-                    {
-                        pixels.Add(row[x].R);
-                        pixels.Add(row[x].G);
-                        pixels.Add(row[x].B);
-                        pixels.Add(row[x].A);
-                    }
-                }
-            });
+        //            for (int x = 0; x < image.Width; x++)
+        //            {
+        //                pixels.Add(row[x].R);
+        //                pixels.Add(row[x].G);
+        //                pixels.Add(row[x].B);
+        //                pixels.Add(row[x].A);
+        //            }
+        //        }
+        //    });
 
-            Pixels = pixels.ToArray();
-        }
+        //    Pixels = pixels.ToArray();
+        //}
 
         public void LoadPNG(string path, bool directPath = false)
         {
@@ -157,7 +155,7 @@ namespace DevoidEngine.Engine.Utilities
 
             this.PixelHP = floatPixels;   // store float array here
             this.IsHDR = true;            // mark as HDR/float
-            this.Pixels = null;           // not using byte[] now
+            this.Pixels = [];           // not using byte[] now
         }
 
 

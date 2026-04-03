@@ -12,15 +12,18 @@ namespace DevoidEngine.Engine.AudioSystem.SoLoud
 
         internal Soloud Soloud;
 
-        public void Initialize()
+        public SoLoudAudioBackend()
         {
             Soloud = new Soloud();
+            _audioObjectMapping = new Dictionary<uint, Wav>();
+            _audioPlayObjects = new List<AudioPlayObject>();
+        }
+
+        public void Initialize()
+        {
             var result = Soloud.init();
             if (result != 0)
                 throw new Exception("SoLoud init failed");
-
-            _audioObjectMapping = new Dictionary<uint, Wav>();
-            _audioPlayObjects = new List<AudioPlayObject>();
         }
 
         public void Update()
@@ -93,7 +96,7 @@ namespace DevoidEngine.Engine.AudioSystem.SoLoud
 
             fixed (byte* ptr = data)
             {
-                int result = audio.loadMem((IntPtr)ptr, (uint)data.Length);
+                int result = audio.loadMem((IntPtr)ptr, (uint)data.Length, 1, 0);
 
                 if (result != 0)
                     throw new Exception("Audio Load Failed");
@@ -103,7 +106,7 @@ namespace DevoidEngine.Engine.AudioSystem.SoLoud
             return audioHandle;
         }
 
-        public AudioPlayObject Play3D(AudioClipHandle clip, Vector3 pos, bool loop = false)
+        public AudioPlayObject? Play3D(AudioClipHandle clip, Vector3 pos, bool loop = false)
         {
             if (!_audioObjectMapping.TryGetValue(clip.Id, out var wav))
                 return null;
@@ -156,7 +159,6 @@ namespace DevoidEngine.Engine.AudioSystem.SoLoud
 
             // 4. Now safely shutdown SoLoud
             Soloud?.deinit();
-            Soloud = null;
         }
     }
 }

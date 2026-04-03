@@ -17,7 +17,7 @@ namespace DevoidEngine.Engine.Rendering
             Writes.Add(resource);
         }
 
-        public virtual Texture2D OutputTexture => null;
+        public virtual Texture2D? OutputTexture => null;
 
         public abstract void Setup();
         public abstract void Execute(RenderGraphContext ctx);

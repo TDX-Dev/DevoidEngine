@@ -9,7 +9,7 @@ namespace DevoidEngine.Engine.Core
     public class Layer
     {
         // The application to which the layer belongs to.
-        public Application Application { get; internal set; }
+        public Application Application { get; internal set; } = null!;
 
         // This method is called when the layer is attached to the application
         public virtual void OnAttach() { }

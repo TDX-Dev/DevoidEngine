@@ -19,7 +19,7 @@ namespace DevoidEngine.Engine.Core
 
         private readonly Dictionary<string, Texture> textures;
 
-        private byte[] defaultBuffer;
+        private byte[] defaultBuffer = null!;
 
         private int materialBufferBindSlot = -1;
         private int materialBufferSize;
@@ -66,7 +66,7 @@ namespace DevoidEngine.Engine.Core
             }
         }
 
-        public bool TryGetVariable(string name, out ShaderVariableInfo info)
+        public bool TryGetVariable(string name, out ShaderVariableInfo? info)
             => variables.TryGetValue(name, out info);
 
         public bool HasTextureBinding(string name)
@@ -132,7 +132,7 @@ namespace DevoidEngine.Engine.Core
 
             var span = defaultBuffer.AsSpan(varInfo.Offset);
 
-            MemoryMarshal.Write(span, ref value);
+            MemoryMarshal.Write(span, in value);
         }
 
     }

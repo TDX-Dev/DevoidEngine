@@ -29,6 +29,12 @@ namespace DevoidEngine.Engine.UI.Nodes
 
         private MaterialInstance debugMaterial;
 
+        public FlexboxNode()
+        {
+            debugMaterial = UISystem.DebugMaterial;
+        }
+
+
         private List<UINode> GetLayoutChildren()
         {
             List<UINode> children = new List<UINode>();
@@ -40,6 +46,11 @@ namespace DevoidEngine.Engine.UI.Nodes
             }
 
             return children;
+        }
+
+        protected override void InitializeCore()
+        {
+            
         }
 
         protected override Vector2 MeasureCore(Vector2 availableSize)
@@ -506,8 +517,8 @@ namespace DevoidEngine.Engine.UI.Nodes
         {
             if (!UISystem.DebugDraw)
                 return;
-            Vector2 size = VisualRect.size;
-            Vector2 pos = VisualRect.position;
+            Vector2 size = VisualRect!.size;
+            Vector2 pos = VisualRect!.position;
 
             Vector2 pivotOffset = (Pivot - new Vector2(0.5f)) * size;
             Vector2 centerPos = pos + size * 0.5f;
@@ -521,11 +532,6 @@ namespace DevoidEngine.Engine.UI.Nodes
             debugMaterial.SetVector2("RECT_SIZE", size);
 
             DebugRenderSystem.DrawRectUI(model, debugMaterial);
-        }
-
-        protected override void InitializeCore()
-        {
-            debugMaterial = UISystem.DebugMaterial;
         }
 
         protected override void UpdateCore(float deltaTime)

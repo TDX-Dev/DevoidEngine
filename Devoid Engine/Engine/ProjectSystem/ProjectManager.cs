@@ -8,7 +8,7 @@ namespace DevoidEngine.Engine.ProjectSystem
 {
     public static class ProjectManager
     {
-        public static Project Current { get; private set; }
+        public static Project? Current { get; private set; }
 
         public static void Load(string projectFile)
         {

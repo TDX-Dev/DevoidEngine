@@ -17,7 +17,7 @@ namespace DevoidEngine.Engine.Rendering.PostProcessing
             graph.RemovePass(pass);
         }
 
-        public T GetPass<T>() where T : RenderGraphPass
+        public T? GetPass<T>() where T : RenderGraphPass
         {
             var passes = graph.GetPasses();
             foreach (var pass in passes)

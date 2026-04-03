@@ -9,8 +9,8 @@ namespace DevoidEngine.Engine.Components
     {
         public override string Type => nameof(MeshRenderer);
 
-        private Mesh mesh;
-        public MaterialInstance material;
+        private Mesh? mesh;
+        public MaterialInstance? material;
 
         public override void OnStart()
         {
@@ -22,7 +22,7 @@ namespace DevoidEngine.Engine.Components
             this.mesh = mesh;
         }
 
-        public Mesh GetMesh()
+        public Mesh? GetMesh()
         {
             return mesh;
         }
@@ -35,7 +35,7 @@ namespace DevoidEngine.Engine.Components
 
         public void Collect(CameraComponent3D camera, CameraRenderContext viewData)
         {
-            if (mesh == null || !gameObject.Enabled)
+            if (mesh == null || !gameObject.Enabled || material == null)
                 return;
 
             Vector3 worldMin, worldMax;

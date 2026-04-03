@@ -9,10 +9,20 @@ namespace DevoidEngine.Engine.Rendering
     {
         static RenderAPI()
         {
-            screenShader = ShaderLibrary.GetShader("Screen/RENDER_SCREEN");
+            var shader = ShaderLibrary.GetShader("Screen/RENDER_SCREEN");
+            if (shader == null)
+                throw new Exception("Screen shader not loaded");
+            screenShader = shader;
             mesh = RenderConstants.Quad;
 
-            layout = Renderer.GetInputLayout(mesh, screenShader);
+            var rendererLayout = Renderer.GetInputLayout(mesh, screenShader);
+            if (rendererLayout == null)
+                throw new Exception("Unable to get layout object from renderer");
+
+            if (mesh == null)
+                throw new Exception("Unable to get Quad Mesh from renderer");
+
+            layout = rendererLayout;
         }
 
         static Mesh mesh;
@@ -32,12 +42,15 @@ namespace DevoidEngine.Engine.Rendering
             layout.Bind();
             mesh.Bind();
 
-            ShaderLibrary.GetShader("Screen/RENDER_SCREEN").Use();
+            var shader = ShaderLibrary.GetShader("Screen/RENDER_SCREEN");
+
+            if (shader == null)
+                return;
 
             texture.BindSampler(0);
             texture.Bind(0);
 
-            Renderer.GraphicsDevice.Draw(mesh.GetVertices().Length, 0);
+            Renderer.GraphicsDevice.Draw(mesh.GetVertices()!.Length, 0);
 
             Renderer.GraphicsDevice.UnbindAllShaderResources();
         }
@@ -53,12 +66,14 @@ namespace DevoidEngine.Engine.Rendering
             layout.Bind();
             mesh.Bind();
 
-            ShaderLibrary.GetShader("Screen/RENDER_SCREEN").Use();
+            var shader = ShaderLibrary.GetShader("Screen/RENDER_SCREEN");
+            if (shader == null)
+                return;
 
             texture.BindSampler(0);
             texture.Bind(0);
 
-            Renderer.GraphicsDevice.Draw(mesh.GetVertices().Length, 0);
+            Renderer.GraphicsDevice.Draw(mesh.GetVertices()!.Length, 0);
 
             Renderer.GraphicsDevice.UnbindAllShaderResources();
         }
@@ -78,12 +93,13 @@ namespace DevoidEngine.Engine.Rendering
             layout.Bind();
             mesh.Bind();
 
-            ShaderLibrary.GetShader("Screen/RENDER_SCREEN").Use();
+            var shader = ShaderLibrary.GetShader("Screen/RENDER_SCREEN");
+            if (shader == null) return;
 
             texture.BindSampler(0);
             texture.Bind(0);
 
-            Renderer.GraphicsDevice.Draw(mesh.GetVertices().Length, 0);
+            Renderer.GraphicsDevice.Draw(mesh.GetVertices()!.Length, 0);
 
             Renderer.GraphicsDevice.UnbindAllShaderResources();
         }
@@ -103,7 +119,7 @@ namespace DevoidEngine.Engine.Rendering
 
             material.Bind();
 
-            Renderer.GraphicsDevice.Draw(mesh.GetVertices().Length, 0);
+            Renderer.GraphicsDevice.Draw(mesh.GetVertices()!.Length, 0);
 
             Renderer.GraphicsDevice.UnbindAllShaderResources();
 
@@ -116,12 +132,13 @@ namespace DevoidEngine.Engine.Rendering
             Renderer.GraphicsDevice.SetRasterizerState(CullMode.None);
             Renderer.GraphicsDevice.SetPrimitiveType(PrimitiveType.Triangles);
 
-            IInputLayout inputLayout = Renderer.GetInputLayout(mesh, shader);
+            IInputLayout? inputLayout = Renderer.GetInputLayout(mesh, shader);
+            if (inputLayout == null) return;
 
             inputLayout.Bind();
             mesh.Bind();
 
-            Renderer.GraphicsDevice.Draw(mesh.GetVertices().Length, 0);
+            Renderer.GraphicsDevice.Draw(mesh.GetVertices()!.Length, 0);
         }
 
     }

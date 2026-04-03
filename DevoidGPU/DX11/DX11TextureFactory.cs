@@ -24,10 +24,8 @@ namespace DevoidGPU.DX11
             {
                 case TextureType.Texture2D:
                     return CreateTexture2D(description);
-                    break;
                 case TextureType.TextureCube:
                     return CreateTextureCube(description);
-                    break;
                 default:
                     throw new NotImplementedException("RHI Backend does not implement switch case for other texture types: " + description.Type.ToString());
             }

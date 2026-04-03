@@ -6,9 +6,9 @@ namespace DevoidEngine.Engine.UI.Nodes
 {
     public class BoxNode : FlexboxNode
     {
-        private Texture2D _texture;
+        private Texture2D? _texture;
 
-        public Texture2D Texture
+        public Texture2D? Texture
         {
             get => _texture;
             set
@@ -50,13 +50,14 @@ namespace DevoidEngine.Engine.UI.Nodes
             UpdateMaterial();
         }
 
-        private void UpdateMaterial()
+        protected override void UpdateMaterial()
         {
             if (Material == null)
                 return;
 
             Material.SetInt("useTexture", _texture != null ? 1 : 0);
-            Material.SetTexture("MAT_Texture", _texture);
+            if (_texture != null)
+                Material.SetTexture("MAT_Texture", _texture);
 
             Vector4 final = _color;
             final.W *= _opacity;
@@ -77,14 +78,16 @@ namespace DevoidEngine.Engine.UI.Nodes
 
         protected override void RenderCore(List<RenderItem> renderList, Matrix4x4 canvasModel, int order)
         {
-            Matrix4x4 local = UISystem.BuildTranslationModel(Rect) * Matrix4x4.CreateTranslation(0, 0, order * 0.001f);
+            if (Material == null)
+                return;
+            Matrix4x4 local = UISystem.BuildTranslationModel(Rect!) * Matrix4x4.CreateTranslation(0, 0, order * 0.001f);
             Matrix4x4 final = local * canvasModel;
 
             renderList.Add(new RenderItem()
             {
                 Mesh = UISystem.QuadMesh,
                 Material = Material,
-                Model = UISystem.BuildModel(Rect)
+                Model = UISystem.BuildModel(Rect!)
             });
         }
 

@@ -12,7 +12,7 @@ namespace DevoidEngine.Engine.Components
         public override string Type => nameof(CanvasComponent);
 
         public bool isEnabled = true;
-        public CameraComponent3D CameraConstraint;
+        public CameraComponent3D? CameraConstraint;
         public CanvasRenderMode RenderMode
         {
             get => renderMode;

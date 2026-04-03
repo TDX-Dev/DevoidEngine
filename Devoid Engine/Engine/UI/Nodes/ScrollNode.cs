@@ -6,13 +6,13 @@ namespace DevoidEngine.Engine.UI.Nodes
     public class ScrollNode : FlexboxNode
     {
         public override string ThemeType => "ScrollContainer";
-        public FlexWrap Wrap
+        public new FlexWrap Wrap
         {
             get => InnerContainer.Wrap;
             set => InnerContainer.Wrap = value;
         }
 
-        public FlexDirection Direction
+        public new FlexDirection Direction
         {
             get => InnerContainer.Direction;
             set => InnerContainer.Direction = value;

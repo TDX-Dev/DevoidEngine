@@ -9,7 +9,7 @@ namespace DevoidEngine.Engine.Rendering
     public class CameraRenderContext
     {
         public CameraData cameraData;
-        public Framebuffer cameraTargetSurface;
+        public Framebuffer cameraTargetSurface = null!;
 
         public List<RenderItem> renderItems3D = new();
         public List<RenderItem> renderItems2D = new();

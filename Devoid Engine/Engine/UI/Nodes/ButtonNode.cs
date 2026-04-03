@@ -11,7 +11,7 @@ namespace DevoidEngine.Engine.UI.Nodes
         bool hovered;
         bool pressed;
 
-        public Action OnPressed;
+        public Action? OnPressed;
         public override string ThemeType => "Button";
 
         public string Text
@@ -31,7 +31,7 @@ namespace DevoidEngine.Engine.UI.Nodes
             Layout.FlexGrowMain = 0;
             Layout.FlexGrowCross = 0;
 
-            label = new LabelNode(text, GetFont(StyleKeys.Font), 16);
+            label = new LabelNode(text, GetFont(StyleKeys.Font)!, 16);
 
             MinSize = new Vector2(35);
             

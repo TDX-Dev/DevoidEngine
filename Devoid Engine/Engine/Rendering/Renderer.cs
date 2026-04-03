@@ -15,22 +15,27 @@ namespace DevoidEngine.Engine.Rendering
 {
     public static class Renderer
     {
-        public static IGraphicsDevice GraphicsDevice { get; internal set; }
-        public static IRenderTechnique ActiveRenderTechnique;
-        public static SkyboxRenderer SkyboxRenderer;
-        public static PostProcessor PostProcessor;
+        public static IGraphicsDevice GraphicsDevice { get; internal set; } = null!;
+        public static IRenderTechnique? ActiveRenderTechnique;
+        public static SkyboxRenderer SkyboxRenderer = null!;
+        public static PostProcessor PostProcessor = null!;
 
         internal static ResourceManager ResourceManager = new ResourceManager();
         internal static InputLayoutCache inputLayoutCache = new InputLayoutCache();
 
         static MeshRenderData meshRenderData;
-        static UniformBuffer meshRenderDataBuffer;
-        static UniformBuffer cameraDataBuffer;
+        static UniformBuffer meshRenderDataBuffer = null!;
+        static UniformBuffer cameraDataBuffer = null!;
 
-        static Framebuffer UIFramebuffer;
-        static Texture2D UIRenderOutput;
+        static Framebuffer UIFramebuffer = null!;
+        static Texture2D UIRenderOutput = null!;
 
-        public static IInputLayout GetInputLayout(Mesh mesh, Shader shader) => inputLayoutCache.Get(GraphicsDevice, mesh.VertexBuffer.GetVertexInfo(), shader.vShader);
+        public static IInputLayout GetInputLayout(Mesh mesh, Shader shader)
+        {
+            if (mesh.VertexBuffer == null)
+                throw new Exception("Mesh vertexbuffer was null");
+            return inputLayoutCache.Get(GraphicsDevice, mesh.VertexBuffer.GetVertexInfo(), shader.vShader);
+        }
 
         public static void SetupCamera(CameraData cameraData)
         {
@@ -41,7 +46,8 @@ namespace DevoidEngine.Engine.Rendering
 
         public unsafe static void Initialize(int width, int height)
         {
-
+            if (GraphicsDevice == null)
+                throw new Exception("Graphics device has not been set.");
             meshRenderData = new MeshRenderData();
             meshRenderDataBuffer = new UniformBuffer(sizeof(MeshRenderData));
 
@@ -69,7 +75,6 @@ namespace DevoidEngine.Engine.Rendering
             ActiveRenderTechnique?.Initialize(width, height);
 
             SkyboxRenderer = new SkyboxRenderer();
-            SkyboxRenderer.Initialize();
 
 
             RenderingDefaults.Initialize();
@@ -84,11 +89,14 @@ namespace DevoidEngine.Engine.Rendering
         public static void Render(CameraRenderContext ctx)
         {
             if (ActiveRenderTechnique == null)
+            {
                 Console.WriteLine("[Renderer]: Render technique was not set. No Object rendered.");
+                return;
+            }
 
             RenderUI(ctx.renderItemsUI);
 
-            Framebuffer activeFrameBuffer = ActiveRenderTechnique?.Render(ctx);
+            Framebuffer activeFrameBuffer = ActiveRenderTechnique.Render(ctx);
 
             DebugRenderSystem.Render(ctx.cameraData, activeFrameBuffer);
 
@@ -116,9 +124,9 @@ namespace DevoidEngine.Engine.Rendering
         {
             if (items.Count == 0) { return; }
 
-            MaterialInstance currentMaterial = null;
-            Shader currentShader = null;
-            Mesh currentMesh = null;
+            MaterialInstance? currentMaterial = null;
+            Shader? currentShader = null;
+            Mesh? currentMesh = null;
 
             bool currentClipState = false;
             Vector4 currentClipRect = default;
@@ -172,7 +180,7 @@ namespace DevoidEngine.Engine.Rendering
                 UpdatePerObjectData(item.Model);
 
                 currentMesh.Bind();
-                GetInputLayout(currentMesh, currentShader).Bind();
+                GetInputLayout(currentMesh, currentShader!)?.Bind();
 
                 currentMesh.Draw();
             }

@@ -9,8 +9,8 @@ namespace DevoidEngine.Engine.Rendering
 
     public class Camera
     {
-        public Framebuffer RenderTarget { get; set; }
-        public Frustum Frustum { get; set; }
+        public Framebuffer? RenderTarget { get; set; }
+        public Frustum? Frustum { get; set; }
 
         public Vector3 Position { get; private set; } = new Vector3(0, 0, -5);
         public Vector3 Front { get; private set; } = Vector3.UnitZ;
@@ -110,6 +110,8 @@ namespace DevoidEngine.Engine.Rendering
 
         public bool IntersectsAABB(Vector3 min, Vector3 max)
         {
+            if (Frustum == null)
+                return false;
             var planes = Frustum.Planes;
 
             for (int i = 0; i < 6; i++)

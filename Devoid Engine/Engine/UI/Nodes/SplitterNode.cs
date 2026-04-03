@@ -10,7 +10,7 @@ namespace DevoidEngine.Engine.UI.Nodes
 {
     public class SplitterNode : ContainerNode
     {
-        public UINode Target; // panel being resized
+        public UINode? Target; // panel being resized
 
         public bool Vertical; // true = column layout
 
@@ -35,6 +35,8 @@ namespace DevoidEngine.Engine.UI.Nodes
 
         public override void OnDragStart(Vector2 mouse)
         {
+            if (Target == null)
+                return;
             startMouse = mouse;
 
             startBasis = Vertical
@@ -52,6 +54,7 @@ namespace DevoidEngine.Engine.UI.Nodes
 
         public override void OnDrag(Vector2 mouse, Vector2 delta)
         {
+            if (Target == null) return;
             float d = Vertical ? delta.Y : delta.X;
 
             float basis = Math.Clamp(Target.Layout.FlexBasis + d, Min, Max);

@@ -25,11 +25,10 @@ namespace DevoidEngine.Engine.UI.Nodes
             }
         }
 
-        public FontInternal Font;
+        public FontInternal? Font;
         public float Scale = 1f;
 
-        private Vector2 _measuredTextSize;
-        private Mesh _mesh;
+        private Mesh? _mesh;
         private string _text;
         private int _fontSize;
         private Vector4 _color = new Vector4(1, 1, 1, 1);
@@ -41,7 +40,8 @@ namespace DevoidEngine.Engine.UI.Nodes
         {
             Font = GetFont(StyleKeys.Font);
             Scale = scale;
-            Text = text;
+            _text = text;
+            _meshDirty = true;
 
             Layout.FlexGrowMain = 0;
             Layout.FlexGrowCross = 0;
@@ -51,7 +51,8 @@ namespace DevoidEngine.Engine.UI.Nodes
         {
             Font = font;
             Scale = scale;
-            Text = text;
+            _text = text;
+            _meshDirty = true;
 
             Layout.FlexGrowMain = 0;
             Layout.FlexGrowCross = 0;
@@ -65,6 +66,8 @@ namespace DevoidEngine.Engine.UI.Nodes
 
         private void UpdateMesh(float widthConstraint)
         {
+            if (Font == null)
+                return;
             var opts = LayoutOptions;
 
             //if (!float.IsInfinity(widthConstraint))
@@ -135,16 +138,16 @@ namespace DevoidEngine.Engine.UI.Nodes
 
         protected override void RenderCore(List<RenderItem> renderList, Matrix4x4 canvasModel, int order)
         {
-            if (Font == null || string.IsNullOrEmpty(Text) || _mesh == null)
+            if (Font == null || string.IsNullOrEmpty(Text) || _mesh == null || Material == null)
                 return;
 
-            Vector2 pos = VisualRect.position;
+            Vector2 pos = VisualRect!.position;
 
             pos.X = MathF.Round(pos.X);
             pos.Y = MathF.Round(pos.Y);
 
             Matrix4x4 local =
-                UISystem.BuildTranslationModel(new UITransform(pos, Rect.size)) *
+                UISystem.BuildTranslationModel(new UITransform(pos, Rect!.size)) *
                 Matrix4x4.CreateTranslation(Pivot.X, Pivot.Y, 0) *
                 Matrix4x4.CreateRotationX(Rotation);
 
@@ -195,9 +198,9 @@ namespace DevoidEngine.Engine.UI.Nodes
             UpdateMaterial();
         }
 
-        void UpdateMaterial()
+        protected override void UpdateMaterial()
         {
-            Material?.SetTexture("MAT_fontSDFAtlas", Font.Atlas.GPUTexture);
+            Material?.SetTexture("MAT_fontSDFAtlas", Font!.Atlas.GPUTexture);
             Material?.SetVector4("COLOR", _color);
         }
         //float rainbowTime = 0f;

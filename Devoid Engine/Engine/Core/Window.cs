@@ -48,13 +48,13 @@ namespace DevoidEngine.Engine.Core
         public event Action? OnLoad;
         public event Action? OnUnload;
 
-        public event Action<int, int>? OnResize;
+        public event Action<int, int>? OnWindowResize;
 
-        public event Action? OnStartFrame;
-        public event Action<double>? OnFixedUpdate;
-        public event Action<double>? OnUpdateFrame;
-        public event Action<double, float>? OnRenderFrame;
-        public event Action? OnEndFrame;
+        //public event Action? OnStartFrame;
+        //public event Action<double>? OnFixedUpdate;
+        //public event Action<double>? OnUpdateFrame;
+        //public event Action<double, float>? OnRenderFrame;
+        //public event Action? OnEndFrame;
 
         public WindowSpecification WindowSpecification;
 
@@ -84,7 +84,7 @@ namespace DevoidEngine.Engine.Core
 
         private void Window_Resize(OpenTK.Windowing.Common.ResizeEventArgs obj)
         {
-            OnResize?.Invoke((int)obj.Width, (int)obj.Height);
+            OnWindowResize?.Invoke((int)obj.Width, (int)obj.Height);
         }
 
         public void Load()
@@ -94,7 +94,7 @@ namespace DevoidEngine.Engine.Core
         }
 
 
-        public void Close()
+        public override void Close()
         {
             OnUnload?.Invoke();
             base.Close();

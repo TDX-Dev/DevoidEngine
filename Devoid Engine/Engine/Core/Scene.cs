@@ -10,11 +10,11 @@ namespace DevoidEngine.Engine.Core
 
         public List<GameObject> GameObjects { get; private set; }
 
-        public AudioManager Audio;
+        public AudioManager Audio = null!;
 
 
         private bool isPlaying = false;
-        private CameraComponent3D mainCamera;
+        private CameraComponent3D? mainCamera;
         private List<Transform3D> transforms;
         private List<CameraComponent3D> cameras;
         private List<IRenderComponent> renderables;
@@ -150,7 +150,7 @@ namespace DevoidEngine.Engine.Core
 
         public List<IRenderComponent> GetRenderables() => renderables;
         public List<CameraComponent3D> GetCameras3D() => cameras;
-        public CameraComponent3D GetDefaultCamera3D() => mainCamera;
+        public CameraComponent3D? GetDefaultCamera3D() => mainCamera;
         public void SetMainCamera3D(CameraComponent3D camera) => mainCamera = camera;
         public void AddCamera3D(CameraComponent3D camera) => cameras.Add(camera);
         public void RemoveCamera3D(CameraComponent3D camera)

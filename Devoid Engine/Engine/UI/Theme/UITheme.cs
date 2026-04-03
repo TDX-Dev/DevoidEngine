@@ -11,7 +11,7 @@ namespace DevoidEngine.Engine.UI.Theme
 {
     public class UITheme
     {
-        public event Action ThemeChanged;
+        public event Action? ThemeChanged;
 
         private Dictionary<string, ThemeTypeData> types = new();
         private Dictionary<string, string> typeVariations = new();
@@ -41,7 +41,7 @@ namespace DevoidEngine.Engine.UI.Theme
             ThemeChanged?.Invoke();
         }
 
-        public void SetConstant<T>(string name, string themeType, T constant)
+        public void SetConstant<T>(string name, string themeType, T constant) where T : struct
         {
             var data = GetOrCreateType(themeType);
             data.Constants[name] = constant;
@@ -94,7 +94,7 @@ namespace DevoidEngine.Engine.UI.Theme
             return 0;
         }
 
-        public FontInternal GetFont(string name, string themeType)
+        public FontInternal? GetFont(string name, string themeType)
         {
             if (!TryGetTypeChain(themeType, out var chain))
                 return null;
@@ -111,7 +111,7 @@ namespace DevoidEngine.Engine.UI.Theme
             return null;
         }
 
-        public StyleBox GetStyleBox(string name, string themeType)
+        public StyleBox? GetStyleBox(string name, string themeType)
         {
             if (!TryGetTypeChain(themeType, out var chain))
                 return null;
@@ -145,7 +145,7 @@ namespace DevoidEngine.Engine.UI.Theme
             return Vector4.One;
         }
 
-        public T GetConstant<T>(string name, string themeType)
+        public T? GetConstant<T>(string name, string themeType)
         {
             if (!TryGetTypeChain(themeType, out var chain))
                 return default;

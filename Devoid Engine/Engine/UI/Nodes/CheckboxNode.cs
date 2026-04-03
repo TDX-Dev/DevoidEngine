@@ -32,7 +32,7 @@ namespace DevoidEngine.Engine.UI.Nodes
             }
         }
 
-        public Action<bool> OnValueChanged;
+        public Action<bool>? OnValueChanged;
 
         ContainerNode checkboxBG;
         ContainerNode checkboxThumb;

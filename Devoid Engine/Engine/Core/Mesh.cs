@@ -7,18 +7,18 @@ namespace DevoidEngine.Engine.Core
 {
     public class Mesh : IDisposable
     {
-        public VertexBuffer VertexBuffer { get; private set; }
-        public IndexBuffer IndexBuffer { get; private set; }
+        public VertexBuffer? VertexBuffer { get; private set; }
+        public IndexBuffer? IndexBuffer { get; private set; }
 
-        private Vertex[] vertices;
-        private int[] indices;
+        private Vertex[]? vertices;
+        private int[]? indices;
 
         //public Material Material { get; set; }
 
         public Guid Id { get; } = Guid.NewGuid();
         public string Name { get; set; }
 
-        public int VertexCount { get => VertexBuffer.VertexCount; }
+        public int VertexCount { get => VertexBuffer?.VertexCount ?? 0; }
 
         // State
         public bool IsRenderable { get; set; } = true;
@@ -29,7 +29,10 @@ namespace DevoidEngine.Engine.Core
         private bool isDisposed = false;
 
         // Constructors
-        public Mesh() { }
+        public Mesh()
+        {
+            Name = "Mesh";
+        }
 
         ~Mesh()
         {
@@ -58,9 +61,10 @@ namespace DevoidEngine.Engine.Core
 
         public void Draw()
         {
+            if (VertexBuffer == null) return;
             if (IndexBuffer == null)
             {
-                Renderer.GraphicsDevice.Draw(vertices.Length, 0);
+                Renderer.GraphicsDevice.Draw(vertices!.Length, 0);
             }
             else
             {
@@ -121,7 +125,7 @@ namespace DevoidEngine.Engine.Core
         }
 
         // Getters
-        public Vertex[] GetVertices() => vertices;
-        public int[] GetIndices() => indices;
+        public Vertex[]? GetVertices() => vertices;
+        public int[]? GetIndices() => indices;
     }
 }

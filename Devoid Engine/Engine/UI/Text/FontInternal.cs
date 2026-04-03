@@ -55,11 +55,11 @@ namespace DevoidEngine.Engine.UI.Text
     public class AtlasData
     {
         [Key(0)]
-        public Dictionary<uint, Vector4> GlyphRectangles;
+        public Dictionary<uint, Vector4> GlyphRectangles = null!;
         [Key(1)]
-        public byte[] TextureData;
+        public byte[] TextureData= null!;
         [Key(2)]
-        public Dictionary<uint, GlyphMetric> Metrics;
+        public Dictionary<uint, GlyphMetric> Metrics = null!;
     }
 
     public class FontInternal
@@ -102,7 +102,7 @@ namespace DevoidEngine.Engine.UI.Text
 
 
             Metrics = new Dictionary<uint, GlyphMetric>();
-
+            Atlas = new GlyphAtlas((int)AtlasSize.X, (int)AtlasSize.Y);
 
 
             ProcessGlyphs();
@@ -143,8 +143,6 @@ namespace DevoidEngine.Engine.UI.Text
 
                 charCode = face.GetNextChar(charCode, out glyphIndex);
             }
-
-            Atlas = new GlyphAtlas((int)AtlasSize.X, (int)AtlasSize.Y);
             Atlas.Pack(rawGlyphs);
             Atlas.UploadGPU();
 
@@ -207,7 +205,7 @@ namespace DevoidEngine.Engine.UI.Text
                     BearingX = 0,
                     BearingY = 0
                 };
-                return new BitmapData { Bitmap = null, Width = 0, Height = 0 };
+                return new BitmapData { Width = 0, Height = 0 };
             }
 
             BitmapData sdfBitmapData = SDFGenerator.Generate(

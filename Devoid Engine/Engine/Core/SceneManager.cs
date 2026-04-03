@@ -8,7 +8,7 @@ namespace DevoidEngine.Engine.Core
 {
     public static class SceneManager
     {
-        public static Scene CurrentScene;
+        public static Scene? CurrentScene;
 
         public static void LoadScene(Scene scene)
         {

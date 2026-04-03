@@ -27,7 +27,7 @@ namespace DevoidEngine.Engine.UI.Nodes
         public List<string> Items = new();
         public int SelectedIndex = -1;
 
-        public Action<int> OnSelectionChanged;
+        public Action<int>? OnSelectionChanged;
 
         ContainerNode header;
         LabelNode label;
@@ -49,20 +49,7 @@ namespace DevoidEngine.Engine.UI.Nodes
             MinSize = new Vector2(120, 30);
             MaxSize = new Vector2(120, 30);
 
-            label = new LabelNode("Dropdown", GetFont(StyleKeys.Font), 16);
-        }
-
-        protected override void InitializeCore()
-        {
-            base.InitializeCore();
-
-            // HEADER
-            header = new DropdownHeader();
-            header.Layout.FlexGrowMain = 1;
-            header.Justify = JustifyContent.Center;
-            header.Padding = Padding.GetAll(5);
-
-            header.Add(label);
+            label = new LabelNode("Dropdown", GetFont(StyleKeys.Font)!, 16);
 
             // POPUP
             popup = new ContainerNode();
@@ -71,6 +58,20 @@ namespace DevoidEngine.Engine.UI.Nodes
             popup.Align = AlignItems.Stretch;
             popup.Layout.FlexGrowMain = 1;
             popup.Layout.FlexGrowCross = 1;
+
+            header = new DropdownHeader();
+            header.Layout.FlexGrowMain = 1;
+            header.Justify = JustifyContent.Center;
+            header.Padding = Padding.GetAll(5);
+        }
+
+        protected override void InitializeCore()
+        {
+            base.InitializeCore();
+
+            // HEADER
+
+            header.Add(label);
 
             options.Direction = FlexDirection.Column;
             options.Layout.FlexGrowMain = 1;

@@ -10,7 +10,7 @@ namespace DevoidEngine.Engine.Rendering
         FrameBufferHandle _frameBuffer;
 
         List<Texture> RenderTextures;
-        Texture2D DepthTexture;
+        Texture2D? DepthTexture;
 
         public Framebuffer()
         {
@@ -30,13 +30,13 @@ namespace DevoidEngine.Engine.Rendering
             int clearDepth = 1;
 
             Renderer.ResourceManager.FramebufferManager.ClearFramebufferColor(_frameBuffer, clearColor);
-            Renderer.ResourceManager.FramebufferManager.ClearFramebufferDepth(_frameBuffer, 1);
+            Renderer.ResourceManager.FramebufferManager.ClearFramebufferDepth(_frameBuffer, clearDepth);
         }
 
         public void Clear(Vector4 clearColor, int clearDepth = 1)
         {
             Renderer.ResourceManager.FramebufferManager.ClearFramebufferColor(_frameBuffer, clearColor);
-            Renderer.ResourceManager.FramebufferManager.ClearFramebufferDepth(_frameBuffer, 1);
+            Renderer.ResourceManager.FramebufferManager.ClearFramebufferDepth(_frameBuffer, clearDepth);
         }
 
         public Texture GetRenderTexture(int index)
@@ -44,7 +44,7 @@ namespace DevoidEngine.Engine.Rendering
             return RenderTextures[index];
         }
 
-        public Texture2D GetDepthTexture()
+        public Texture2D? GetDepthTexture()
         {
             return DepthTexture;
         }

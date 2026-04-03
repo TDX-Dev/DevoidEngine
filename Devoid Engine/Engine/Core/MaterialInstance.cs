@@ -84,8 +84,8 @@ namespace DevoidEngine.Engine.Core
                 return;
             }
 
-            var span = cpuBuffer.AsSpan(varInfo.Offset);
-            MemoryMarshal.Write(span, ref value);
+            var span = cpuBuffer.AsSpan(varInfo!.Offset);
+            MemoryMarshal.Write(span, in value);
 
             isDirty = true;
         }

@@ -16,7 +16,7 @@ namespace DevoidEngine.Engine.UI.Nodes
         private Vector4 _borderColor;
         private Vector4 _borderRadius;
         private bool _useTexture;
-        private Texture2D _texture;
+        private Texture2D? _texture;
 
         protected override void InitializeCore()
         {
@@ -63,7 +63,7 @@ namespace DevoidEngine.Engine.UI.Nodes
             Material.SetVector2("RECT_SIZE", Rect?.size ?? Vector2.One);
 
             Material.SetInt("useTexture", _useTexture ? 1 : 0);
-            if (_useTexture)
+            if (_useTexture && _texture != null)
             {
                 Material.SetTexture("MAT_Texture", _texture);
             }
@@ -83,6 +83,7 @@ namespace DevoidEngine.Engine.UI.Nodes
 
         protected override void RenderCore(List<RenderItem> renderList, Matrix4x4 canvasModel, int order)
         {
+            if (Material == null) return;
             Material.SetVector2("RECT_SIZE", Rect?.size ?? Vector2.One);
             Vector2 size = VisualRect?.size ?? Vector2.One;
             Vector2 pos = VisualRect?.position ?? Vector2.One;

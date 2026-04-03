@@ -1,4 +1,5 @@
 ﻿using DevoidEngine.Engine.AssetPipeline.Importers;
+using DevoidEngine.Engine.AudioSystem;
 using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.ProjectSystem;
 using System;
@@ -39,7 +40,11 @@ namespace DevoidEngine.Engine.AssetPipeline
 
         public static void Initialize()
         {
+            if (ProjectManager.Current == null)
+                throw new Exception("Project not initialized");
+
             ImporterRegistry.Register<Texture2D>(new TextureImporter());
+            ImporterRegistry.Register<AudioClip>(new AudioImporter());
 
             ScanAssets();
         }
@@ -51,7 +56,7 @@ namespace DevoidEngine.Engine.AssetPipeline
             AssetMeta meta;
 
             bool created = false;
-            var absolutePath = Path.Combine(ProjectManager.Current.AssetPath, assetPath);
+            var absolutePath = Path.Combine(ProjectManager.Current!.AssetPath, assetPath);
             var metaAbsolutePath = absolutePath + ".meta";
 
             if (!File.Exists(metaAbsolutePath))
@@ -97,14 +102,14 @@ namespace DevoidEngine.Engine.AssetPipeline
         {
             var ext = Path.GetExtension(assetPath).ToLower();
             var importer = ImporterRegistry.GetImporter(ext);
-            var absolutePath = Path.Combine(ProjectManager.Current.AssetPath, assetPath);
+            var absolutePath = Path.Combine(ProjectManager.Current!.AssetPath, assetPath);
 
             var meta = new AssetMeta
             {
                 Guid = Guid.NewGuid().ToString("N"),
                 Importer = importer.Name,
                 Settings = importer.CreateDefaultSettings(),
-
+                Version = 1,
                 SourceTimestamp = File.GetLastWriteTimeUtc(absolutePath).Ticks
             };
 
@@ -114,7 +119,7 @@ namespace DevoidEngine.Engine.AssetPipeline
         }
         private static bool NeedsReimport(string assetPath, AssetMeta meta)
         {
-            var absolutePath = Path.Combine(ProjectManager.Current.AssetPath, assetPath);
+            var absolutePath = Path.Combine(ProjectManager.Current!.AssetPath, assetPath);
             long currentTimestamp = File.GetLastWriteTimeUtc(absolutePath).Ticks;
 
             return currentTimestamp != meta.SourceTimestamp;
@@ -134,10 +139,10 @@ namespace DevoidEngine.Engine.AssetPipeline
                     AssetJsonContext.Default.AssetMeta
                 );
 
-                if (!ValidateMeta(meta))
+                if (!ValidateMeta(meta!))
                     throw new Exception("Invalid meta");
 
-                return meta;
+                return meta!;
             }
             catch
             {
@@ -183,7 +188,7 @@ namespace DevoidEngine.Engine.AssetPipeline
 
         private static void ScanAssets()
         {
-            var assetRoot = ProjectManager.Current.AssetPath;
+            var assetRoot = ProjectManager.Current!.AssetPath;
             HashSet<Guid> discovered = new();
 
             foreach (var file in Directory.GetFiles(assetRoot, "*", SearchOption.AllDirectories))
@@ -194,6 +199,11 @@ namespace DevoidEngine.Engine.AssetPipeline
                 string relative = Path.GetRelativePath(assetRoot, file);
                 relative = relative.Replace('\\', '/');
 
+                var ext = Path.GetExtension(relative).ToLower();
+
+                if (!ImporterRegistry.HasImporter(ext))
+                    continue;
+
                 Guid guid = RegisterAsset(relative);
                 discovered.Add(guid);
             }
@@ -203,7 +213,7 @@ namespace DevoidEngine.Engine.AssetPipeline
 
         private static void CleanupLibrary(HashSet<Guid> validGuids)
         {
-            var library = ProjectManager.Current.LibraryPath;
+            var library = ProjectManager.Current!.LibraryPath;
 
             foreach (var file in Directory.GetFiles(library))
             {

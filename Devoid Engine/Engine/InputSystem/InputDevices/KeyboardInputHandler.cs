@@ -17,6 +17,7 @@ namespace DevoidEngine.Engine.InputSystem.InputDevices
         public override void Register(InputBackend backend)
         {
             InputDeviceLayout layout = new InputDeviceLayout();
+
             layout.Name = "Keyboard0";
             layout.DeviceType = InputDeviceType.Keyboard;
             _deviceId = backend.InputDeviceRegistry.RegisterDevice(layout);

@@ -23,12 +23,12 @@ namespace DevoidEngine.Engine.UI.Nodes
         private bool _materialDirty = true;
         private bool _initialized = false;
 
-        internal UINode _parent;
+        internal UINode? _parent;
         internal List<UINode> _children = new();
 
 
-        public UITransform Rect { get; protected set; }
-        public UITransform VisualRect { get; protected set; }
+        public UITransform Rect { get; protected set; } = default!;
+        public UITransform VisualRect { get; protected set; } = default!;
         public Vector2 DesiredSize { get; set; }
 
         public LayoutOptions Layout { get; set; } = new LayoutOptions();
@@ -42,10 +42,10 @@ namespace DevoidEngine.Engine.UI.Nodes
         public float Rotation = 0f;
 
 
-        public MaterialInstance Material { get; set; }
+        public MaterialInstance? Material { get; set; }
 
-        public UITheme Theme;
-        private UITheme cachedTheme;
+        public UITheme? Theme;
+        private UITheme? cachedTheme;
 
         public UIState State;
 
@@ -57,16 +57,16 @@ namespace DevoidEngine.Engine.UI.Nodes
         Dictionary<string, StyleBox> styleboxOverrides = new();
 
 
-        public Action OnNodeMouseDown;
-        public Action OnNodeMouseUp;
-        public Action OnNodeMouseEnter;
-        public Action OnNodeMouseLeave;
-        public Action OnNodeMouseHeld;
-        public Action<Vector2> OnNodeMouseScroll;
+        public Action? OnNodeMouseDown;
+        public Action? OnNodeMouseUp;
+        public Action? OnNodeMouseEnter;
+        public Action? OnNodeMouseLeave;
+        public Action? OnNodeMouseHeld;
+        public Action<Vector2>? OnNodeMouseScroll;
 
 
         public virtual string ThemeType => "Control";
-        public UINode Parent => _parent;
+        public UINode? Parent => _parent;
         public IReadOnlyList<UINode> Children => _children;
 
 
@@ -141,7 +141,7 @@ namespace DevoidEngine.Engine.UI.Nodes
             if (Parent != null)
                 return Parent.GetTheme();
 
-            return UISystem.DefaultTheme;
+            return UISystem.DefaultTheme!;
         }
 
         protected virtual void ApplyTheme() { }
@@ -183,7 +183,7 @@ namespace DevoidEngine.Engine.UI.Nodes
             return GetTheme().GetColor(name, ThemeType);
         }
 
-        public T GetConstant<T>(string name)
+        public T GetConstant<T>(string name) where T : struct
         {
             if (constantOverrides.TryGetValue(name, out var value))
                 return (T)value;
@@ -196,7 +196,7 @@ namespace DevoidEngine.Engine.UI.Nodes
             return default;
         }
 
-        protected StyleBox GetStateStyleBox()
+        protected StyleBox? GetStateStyleBox()
         {
             if (State.HasFlag(UIState.Pressed))
             {
@@ -222,7 +222,7 @@ namespace DevoidEngine.Engine.UI.Nodes
             return GetStyleBox(StyleKeys.Normal);
         }
 
-        public StyleBox GetStyleBox(string name)
+        public StyleBox? GetStyleBox(string name)
         {
             if (styleboxOverrides.TryGetValue(name, out var value))
                 return value;
@@ -230,7 +230,7 @@ namespace DevoidEngine.Engine.UI.Nodes
             return GetTheme().GetStyleBox(name, ThemeType);
         }
 
-        public FontInternal GetFont(string name)
+        public FontInternal? GetFont(string name)
         {
             if (fontOverrides.TryGetValue(name, out var value))
                 return value;
@@ -315,7 +315,7 @@ namespace DevoidEngine.Engine.UI.Nodes
 
         public virtual void Render(List<RenderItem> renderList, Matrix4x4 model, int order)
         {
-            if (!Visible)
+            if (!Visible || VisualRect == null || Rect == null)
                 return;
 
             if (_materialDirty)
@@ -343,13 +343,13 @@ namespace DevoidEngine.Engine.UI.Nodes
 
                 VisualRect.position = Vector2.Lerp(
                     VisualRect.position,
-                    Rect.position,
+                    Rect?.position ?? Vector2.Zero,
                     1 - MathF.Exp(-speed * dt)
                 );
 
                 VisualRect.size = Vector2.Lerp(
                     VisualRect.size,
-                    Rect.size,
+                    Rect!.size,
                     1 - MathF.Exp(-speed * dt)
                 );
             } else

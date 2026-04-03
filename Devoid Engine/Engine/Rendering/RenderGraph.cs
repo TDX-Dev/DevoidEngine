@@ -63,7 +63,7 @@ namespace DevoidEngine.Engine.Rendering
 
             ctx.SetTexture("SceneColor", sceneColor);
 
-            string lastWritten = null;
+            string? lastWritten = null;
 
             foreach (var pass in compiledPasses)
             {

@@ -1,4 +1,5 @@
 ﻿using DevoidEngine.Engine.AssetPipeline;
+using DevoidEngine.Engine.AudioSystem;
 using DevoidEngine.Engine.Components;
 using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.UI.Nodes;
@@ -26,7 +27,7 @@ namespace DevoidStandaloneLauncher.Prototypes
             camera.IsDefault = true;
 
             Texture2D shrekTexture = Asset.Load<Texture2D>("shrk.png");
-            Audio toneAudio = Asset.Load<Audio>("tone.mp3");
+            AudioClip toneAudio = Asset.Load<AudioClip>("tone.mp3");
 
             GameObject canvas = scene.AddGameObject("Canvas");
             var canvasComp = canvas.AddComponent<CanvasComponent>();

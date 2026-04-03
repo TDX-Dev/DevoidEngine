@@ -8,8 +8,8 @@ namespace DevoidEngine.Engine.Physics.Bepu
     internal struct BepuPoseIntegratorCallbacks : IPoseIntegratorCallbacks
     {
         public Vector3 Gravity;
-        public float LinearDamping;
-        public float AngularDamping;
+        //public float LinearDamping;
+        //public float AngularDamping;
 
 
         private Vector3Wide gravityWideDt;

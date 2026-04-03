@@ -14,12 +14,12 @@ namespace DevoidEngine.Engine.Core
         public float InterpolationAlpha { get; set; } = 0;
         public bool UseInterpolation = false;
 
-        public AudioManager AudioSystem { get; set; }
+        public AudioManager AudioSystem { get; set; } = null!;
 
 
 
 
-        public static EngineSingleton Instance { get; private set; }
+        public static EngineSingleton Instance { get; private set; } = null!;
 
         public EngineSingleton()
         {

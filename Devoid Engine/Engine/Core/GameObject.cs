@@ -10,11 +10,11 @@ namespace DevoidEngine.Engine.Core
 
         public bool Enabled = true;
 
-        public Transform3D Transform { get; set; }
+        public Transform3D Transform { get; set; } = null!;
 
-        private Scene scene;
+        private Scene scene = null!;
 
-        public GameObject parentObject;
+        public GameObject? parentObject;
         public List<GameObject> children;
 
         public List<Component> Components;
@@ -33,7 +33,7 @@ namespace DevoidEngine.Engine.Core
 
         public GameObject()
         {
-
+            Name = "GameObject";
             children = new List<GameObject>();
             Components = new List<Component>();
 
@@ -59,7 +59,7 @@ namespace DevoidEngine.Engine.Core
             return _component;
         }
 
-        public T GetComponent<T>() where T : Component
+        public T? GetComponent<T>() where T : Component
         {
             for (int i = 0; i < Components.Count; i++)
             {
@@ -70,7 +70,7 @@ namespace DevoidEngine.Engine.Core
             return null;
         }
 
-        public Component GetComponent(Type type)
+        public Component? GetComponent(Type type)
         {
             foreach (var comp in Components)
             {
@@ -138,9 +138,9 @@ namespace DevoidEngine.Engine.Core
             }
         }
 
-        public T GetParentComponent<T>() where T : Component
+        public T? GetParentComponent<T>() where T : Component
         {
-            GameObject current = parentObject;
+            GameObject? current = parentObject;
 
             while (current != null)
             {
@@ -172,7 +172,7 @@ namespace DevoidEngine.Engine.Core
             if (parentObject != null)
                 parentObject.children.Remove(this);
 
-            GameObject current = newParent;
+            GameObject? current = newParent;
             while (current != null)
             {
                 if (current == this)
@@ -186,8 +186,8 @@ namespace DevoidEngine.Engine.Core
             {
                 if (!newParent.children.Contains(this))
                     newParent.children.Add(this);
+                Transform.SetParent(newParent.Transform, keepWorld);
             }
-            Transform.SetParent(newParent?.Transform, keepWorld);
         }
 
 

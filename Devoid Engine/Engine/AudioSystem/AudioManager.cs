@@ -23,7 +23,7 @@ namespace DevoidEngine.Engine.AudioSystem
             return _backend.Load(data);
         }
 
-        public AudioPlayObject Play3D(AudioClipHandle clip, Vector3 position, bool loop = false)
+        public AudioPlayObject? Play3D(AudioClipHandle clip, Vector3 position, bool loop = false)
         {
             return _backend.Play3D(clip, position, loop);
         }
@@ -55,7 +55,6 @@ namespace DevoidEngine.Engine.AudioSystem
                 return;
 
             _backend?.Dispose();
-            _backend = null;
 
             _disposed = true;
             GC.SuppressFinalize(this);

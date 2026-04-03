@@ -120,11 +120,11 @@ namespace DevoidEngine.Engine.Components
 
         public void SetViewportSize(int newWidth, int newHeight)
         {
-            if (newWidth == width && newHeight == height) return;
+            if (newWidth == width && newHeight == height && Camera.RenderTarget == null) return;
 
             width = newWidth;
             height = newHeight;
-            Camera.RenderTarget.Resize(width, height);
+            Camera.RenderTarget!.Resize(width, height);
             UpdateProjection();
         }
 

@@ -2,9 +2,9 @@
 {
     public class InputBackend
     {
-        public InputDeviceRegistry InputDeviceRegistry { get; set; }
-        public event Action<InputDeviceType, uint> OnDeviceConnected;
-        public event Action<InputDeviceType, uint> OnDeviceDisconnected;
+        public InputDeviceRegistry InputDeviceRegistry { get; set; } = null!;
+        public event Action<InputDeviceType, uint>? OnDeviceConnected;
+        public event Action<InputDeviceType, uint>? OnDeviceDisconnected;
 
         List<InputDeviceHandler> _inputDeviceHandlers;
         List<InputEvent> _events;

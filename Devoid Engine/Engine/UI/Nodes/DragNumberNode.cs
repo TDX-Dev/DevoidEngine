@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 
 namespace DevoidEngine.Engine.UI.Nodes
 {
-    public abstract class DragNumberNode<T> : InputFieldNode
+    public abstract class DragNumberNode<T> : InputFieldNode where T : struct
     {
         public override string ThemeType => "DragField";
 
@@ -80,8 +80,6 @@ namespace DevoidEngine.Engine.UI.Nodes
 
             Cursor.SetCursorShape(CursorShape.Arrow);
         }
-
-        float pixelAccumulator = 0f;
 
         public override void OnDragStart(Vector2 mouse)
         {

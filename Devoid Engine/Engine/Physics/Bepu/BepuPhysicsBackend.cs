@@ -8,8 +8,8 @@ namespace DevoidEngine.Engine.Physics.Bepu
 {
     internal class BepuPhysicsBackend : IPhysicsBackend
     {
-        private Simulation simulation;
-        private BufferPool bufferPool;
+        private Simulation simulation = null!;
+        private BufferPool bufferPool = null!;
 
         private Dictionary<BodyHandle, GameObject> bodyToGameObject = new Dictionary<BodyHandle, GameObject>();
         private Dictionary<StaticHandle, GameObject> staticToGameObject = new Dictionary<StaticHandle, GameObject>();
@@ -23,7 +23,7 @@ namespace DevoidEngine.Engine.Physics.Bepu
         private Dictionary<BodyHandle, bool> bodyTriggers = new();
 
 
-        public event Action<IPhysicsObject, IPhysicsObject> CollisionDetected;
+        public event Action<IPhysicsObject, IPhysicsObject>? CollisionDetected;
 
         public void Initialize()
         {
@@ -46,8 +46,8 @@ namespace DevoidEngine.Engine.Physics.Bepu
 
         internal void ReportCollision(CollidableReference a, CollidableReference b)
         {
-            IPhysicsObject objA = Resolve(a);
-            IPhysicsObject objB = Resolve(b);
+            IPhysicsObject? objA = Resolve(a);
+            IPhysicsObject? objB = Resolve(b);
 
             if (objA == null || objB == null)
                 return;
@@ -55,7 +55,7 @@ namespace DevoidEngine.Engine.Physics.Bepu
             CollisionDetected?.Invoke(objA, objB);
         }
 
-        private IPhysicsObject Resolve(CollidableReference c)
+        private IPhysicsObject? Resolve(CollidableReference c)
         {
             if (c.Mobility == CollidableMobility.Static)
             {
@@ -98,12 +98,14 @@ namespace DevoidEngine.Engine.Physics.Bepu
                 var a = pair.A;
                 var b = pair.B;
 
-                if (a != null && b != null)
-                {
+                //if (a != null && b != null)
+                //{
 
-                    ReportCollision(a, b);
-                    //Console.WriteLine(a.Id + " " + b.Id + " deltaTime" + DateTime.Now);
-                }
+                //    ReportCollision(a, b);
+                //    //Console.WriteLine(a.Id + " " + b.Id + " deltaTime" + DateTime.Now);
+                //}
+
+                ReportCollision(a, b);
 
             }
 

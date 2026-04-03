@@ -19,9 +19,11 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
             runtimeExtensions[typeof(TAsset)] = importer.OutputExtension;
         }
 
-        public static string GetRuntimeExtension<T>()
+        public static string? GetRuntimeExtension<T>()
         {
-            return runtimeExtensions[typeof(T)];
+            if (runtimeExtensions.TryGetValue(typeof(T), out var ext))
+                return ext;
+            return null;
         }
 
         public static bool HasImporter(string ext)

@@ -30,7 +30,6 @@ namespace DevoidEngine.Engine.Rendering
     {
         static Shader debugShader;
         static MaterialInstance debugMaterial;
-        static MaterialInstance debugUIRectMaterial;
 
         static RenderState debug3DRenderState;
         static RenderState debug2DRenderState;

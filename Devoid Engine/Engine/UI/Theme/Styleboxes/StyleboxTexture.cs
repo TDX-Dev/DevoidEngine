@@ -9,7 +9,7 @@ namespace DevoidEngine.Engine.UI.Theme.Styleboxes
 {
     public class StyleBoxTexture : StyleBox
     {
-        public Texture2D Texture;
+        public required Texture2D Texture;
 
         public int MarginLeft;
         public int MarginRight;

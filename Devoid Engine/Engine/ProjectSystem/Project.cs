@@ -18,15 +18,15 @@ namespace DevoidEngine.Engine.ProjectSystem
 
     public class Project
     {
-        public string ProjectFile;
-        public string RootPath;
+        public string ProjectFile = null!;
+        public string RootPath = null!;
 
-        public string AssetPath;
-        public string LibraryPath;
-        public string TempPath;
-        public string SettingsPath;
+        public string AssetPath = null!;
+        public string LibraryPath = null!;
+        public string TempPath = null!;
+        public string SettingsPath = null!;
 
-        public ProjectConfig Config;
+        public ProjectConfig Config = null!;
 
         private static void EnsureDirectories(Project p)
         {

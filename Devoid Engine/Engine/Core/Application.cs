@@ -54,13 +54,13 @@ namespace DevoidEngine.Engine.Core
 
         private List<CameraRenderContext> renderContexts = new List<CameraRenderContext>();
 
-        private ImGuiRenderer imGuiRenderer;
+        //private ImGuiRenderer imGuiRenderer;
 
         private bool isRunning = false;
         private bool isResizePending = false;
         public int pendingWidth;
         public int pendingHeight;
-        private Window targetWindow;
+        private Window? targetWindow;
 
         public Application()
         {
@@ -107,7 +107,7 @@ namespace DevoidEngine.Engine.Core
             UISystem.Initialize();
 
 
-            targetWindow.OnResize += HandleWindowResize;
+            targetWindow.OnWindowResize += HandleWindowResize;
             targetWindow.TextInput += c =>
             {
                 UISystem.TextInput((char)c.Unicode);
@@ -151,11 +151,12 @@ namespace DevoidEngine.Engine.Core
 
         public void Quit()
         {
-            targetWindow.Close();
+            targetWindow?.Close();
         }
 
         public void Run()
         {
+            if (targetWindow == null) return;
             layerHandler.AttachLayers();
             while (isRunning)
             {
@@ -232,7 +233,10 @@ namespace DevoidEngine.Engine.Core
 
                     CameraRenderContext ctx = new CameraRenderContext();
                     ctx.cameraData = cameraComponent.Camera.GetCameraData();
+                    if (cameraComponent.Camera.RenderTarget == null)
+                        return;
                     ctx.cameraTargetSurface = cameraComponent.Camera.RenderTarget;
+
 
                     foreach (var renderable in renderables)
                     {
@@ -260,7 +264,7 @@ namespace DevoidEngine.Engine.Core
         {
             if (Cursor.stateDirty)
             {
-                targetWindow.CursorState =
+                targetWindow!.CursorState =
                     (OpenTK.Windowing.Common.CursorState)Cursor.cursorState;
 
                 Cursor.stateDirty = false;
@@ -268,7 +272,7 @@ namespace DevoidEngine.Engine.Core
 
             if (Cursor.shapeDirty)
             {
-                targetWindow.Cursor = Window.ConvertCursorShape(Cursor.cursorShape);
+                targetWindow!.Cursor = Window.ConvertCursorShape(Cursor.cursorShape);
 
                 Cursor.shapeDirty = false;
             }

@@ -17,12 +17,12 @@ namespace DevoidEngine.Engine.DebugTools
 {
     public class DebugConsole : Layer, IInputLayer
     {
-        CanvasNode debugCanvas;
+        CanvasNode debugCanvas = null!;
 
-        ContainerNode ConsoleContainer;
-        FlexboxNode InnerContainer;
-        ScrollNode logsContainer;
-        InputFieldNode inputField;
+        ContainerNode ConsoleContainer = null!;
+        FlexboxNode InnerContainer = null!;
+        ScrollNode logsContainer = null!;
+        InputFieldNode inputField = null!;
 
         RenderState debugRenderState = new RenderState()
         {
@@ -141,7 +141,7 @@ namespace DevoidEngine.Engine.DebugTools
             List<RenderItem> renderItems = new List<RenderItem>();
             debugCanvas.Render(renderItems, Matrix4x4.Identity, 0);
 
-            Framebuffer renderTarget = defaultCamera.RenderTarget;
+            Framebuffer renderTarget = defaultCamera.RenderTarget!;
             Renderer.SetupCamera(UISystem.ScreenData);
             renderTarget.Bind();
             Renderer.ExecuteDrawList(renderItems, debugRenderState);
@@ -172,7 +172,7 @@ namespace DevoidEngine.Engine.DebugTools
                 var result = ConsoleExecutor.Execute(path, args);
 
                 if (result != null)
-                    AddLog(result.ToString());
+                    AddLog(result.ToString()!);
             }
             catch (Exception ex)
             {

@@ -19,7 +19,7 @@ namespace DevoidEngine.Engine.Components
         public abstract string Type { get; }
         public Component() { }
 
-        public GameObject gameObject;
+        public GameObject gameObject = null!;
         public virtual void OnStart() { }
         public virtual void OnUpdate(float dt) { }
         public virtual void OnLateUpdate(float dt) { }

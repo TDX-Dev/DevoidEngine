@@ -8,12 +8,12 @@ namespace DevoidEngine.Engine.AssetPipeline
 {
     public class AssetMeta
     {
-        public string Guid;
-        public string Importer;
-        public int Version = 1;
+        public required string Guid;
+        public required string Importer;
+        public required int Version = 1;
 
-        public byte[] Settings;
+        public required byte[] Settings;
 
-        public long SourceTimestamp;
+        public required long SourceTimestamp;
     }
 }

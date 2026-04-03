@@ -12,10 +12,10 @@ namespace DevoidEngine.Engine.Components
         // Hierarchy
         // ===============================
 
-        private Transform3D parent;
+        private Transform3D? parent;
         private readonly List<Transform3D> children = new();
 
-        public Transform3D Parent => parent;
+        public Transform3D? Parent => parent;
         public IReadOnlyList<Transform3D> Children => children;
 
         // ===============================

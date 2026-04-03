@@ -46,7 +46,7 @@ namespace DevoidEngine.Engine.UI.Nodes
 
         public float Step = 0f;
 
-        public Action<float> OnValueChanged;
+        public Action<float>? OnValueChanged;
 
         public ContainerNode track;
         public ContainerNode thumb;

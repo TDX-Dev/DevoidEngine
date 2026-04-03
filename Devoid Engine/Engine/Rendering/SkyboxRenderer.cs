@@ -13,10 +13,10 @@ namespace DevoidEngine.Engine.Rendering
 {
     public class SkyboxRenderer
     {
-        public TextureCube SkyboxTexture { get; private set; }
-        public TextureCube IrradianceTexture { get; private set; }
-        public TextureCube PreFilterTexture { get; private set; }
-        public Texture2D BrdfLutTexture { get; private set; }
+        public TextureCube SkyboxTexture { get; private set; } = null!;
+        public TextureCube IrradianceTexture { get; private set; } = null!;
+        public TextureCube PreFilterTexture { get; private set; } = null!;
+        public Texture2D BrdfLutTexture { get; private set; } = null!;
 
         private Shader skyboxShader;
         private Shader panoramaConvertShader;
@@ -31,7 +31,7 @@ namespace DevoidEngine.Engine.Rendering
 
         private Mesh cubeMesh;
 
-        private Texture2D panorama;
+        private Texture2D? panorama;
 
         private Matrix4x4 captureProjection;
         private Matrix4x4[] captureViews;
@@ -52,7 +52,7 @@ namespace DevoidEngine.Engine.Rendering
 
         private CameraData conversionCameraData;
 
-        public void Initialize()
+        public SkyboxRenderer()
         {
             skyboxRenderState = new RenderState()
             {
@@ -218,6 +218,7 @@ namespace DevoidEngine.Engine.Rendering
 
         private void ConvertPanoramaToCubemap()
         {
+            if (panorama == null) return;
             (int,int,int,int) prevViewportSize = Renderer.GraphicsDevice.GetViewport();
             Renderer.GraphicsDevice.SetViewport(0, 0, SKY_SIZE, SKY_SIZE);
             Renderer.GraphicsDevice.SetPrimitiveType(PrimitiveType.Triangles);

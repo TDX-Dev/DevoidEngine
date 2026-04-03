@@ -1,5 +1,6 @@
 ﻿using DevoidEngine.Engine.AssetPipeline.Importers;
 using DevoidEngine.Engine.AssetPipeline.Loaders;
+using DevoidEngine.Engine.AudioSystem;
 using DevoidEngine.Engine.Core;
 using System;
 using System.Collections.Generic;
@@ -21,6 +22,7 @@ namespace DevoidEngine.Engine.AssetPipeline
         public static void Initialize()
         {
             AssetLoaderRegistry.Register<Texture2D>(new TextureLoader());
+            AssetLoaderRegistry.Register<AudioClip>(new AudioLoader());
         }
 
         public static T? Load<T>(Guid guid)
@@ -28,13 +30,19 @@ namespace DevoidEngine.Engine.AssetPipeline
             if (AssetCache<T>.Cache.TryGetValue(guid, out var asset))
                 return asset;
 
-            if (!AssetLoaderRegistry.TryGet<T>(out var loader))
+            if (!AssetLoaderRegistry.TryGet<T>(out var loader) || loader == null)
             {
                 Console.WriteLine($"No loader registered for {typeof(T).Name}");
-                return default(T);
+                return default;
             }
 
-            string extension = ImporterRegistry.GetRuntimeExtension<T>();
+            string? extension = ImporterRegistry.GetRuntimeExtension<T>();
+            if (extension == null)
+            {
+                Console.WriteLine($"No runtime extension registered for {typeof(T).Name} in importer.");
+                return default;
+            }
+
             string path = AssetDatabase.GetLibraryPath(guid, extension);
 
             byte[] data = VirtualFileSystem.Instance.ReadAllBytes(path);

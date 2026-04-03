@@ -22,8 +22,8 @@ namespace DevoidEngine.Engine.UI.Nodes
         internal BoxNode caret;
         internal LabelNode hintLabel;
 
-        private FontInternal font;
-        private int fontSize;
+        private FontInternal? font;
+        private int? fontSize;
 
         internal float caretTimer;
         internal bool caretVisible = true;
@@ -50,22 +50,16 @@ namespace DevoidEngine.Engine.UI.Nodes
             font = GetFont(StyleKeys.Font);
             fontSize = GetFontSize(StyleKeys.FontSize);
 
-            label = new LabelNode("", font, fontSize);
+
+            label = new LabelNode("", font!, (float)fontSize!);
             label.Layout.FlexGrowMain = 0;
             label.Layout.FlexGrowCross = 0;
 
-            hintLabel = new LabelNode("", font, fontSize);
+            hintLabel = new LabelNode("", font!, (float)fontSize!);
             hintLabel.Layout.FlexGrowMain = 0;
             hintLabel.Layout.FlexGrowCross = 0;
             hintLabel.ParticipatesInLayout = false;   // <-- important
             hintLabel.AddColorOverride(StyleKeys.FontColor, new Vector4(1, 1, 1, 0.35f));
-        }
-
-        protected override void InitializeCore()
-        {
-            base.InitializeCore();
-
-            caretHeight = font.LineHeight * font.GetScaleForFontSize(fontSize);
 
             caret = new BoxNode()
             {
@@ -73,6 +67,12 @@ namespace DevoidEngine.Engine.UI.Nodes
                 Color = new Vector4(1, 1, 1, 1),
                 ParticipatesInLayout = false
             };
+        }
+
+        protected override void InitializeCore()
+        {
+            base.InitializeCore();
+
 
             Add(hintLabel);
             Add(label);
@@ -107,7 +107,10 @@ namespace DevoidEngine.Engine.UI.Nodes
             font = GetFont(StyleKeys.Font);
             fontSize = GetFontSize(StyleKeys.FontSize);
 
-            caretHeight = font.LineHeight * font.GetScaleForFontSize(fontSize);
+            if (font == null || fontSize == null)
+                throw new Exception("Input field font was not set");
+
+            caretHeight = font!.LineHeight * font.GetScaleForFontSize(fontSize ?? 16);
 
             if (caret != null)
                 caret.Size = new Vector2(2, caretHeight);

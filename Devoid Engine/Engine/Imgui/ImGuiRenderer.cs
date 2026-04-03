@@ -48,12 +48,11 @@ namespace DevoidEngine.Engine.Imgui
         private int vertexBufferSize = 2000;
         private int indexBufferSize = 4000;
 
-        private ITexture2D _fontTexture;
+        private ITexture2D? _fontTexture;
         private ISampler _defaultSampler;
 
-        private float _scaleFactor = 1.0f;
 
-        private bool _fontsConfigured = false;
+        //private bool _fontsConfigured = false;
         private int _fontsCount = -1;
         private ImFontPtr DefaultFont;
 

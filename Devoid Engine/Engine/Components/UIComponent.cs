@@ -9,7 +9,7 @@ namespace DevoidEngine.Engine.Components
 {
     public abstract class UIComponent : Component
     {
-        public UINode Root { get; protected set; }
+        public UINode? Root { get; protected set; }
 
         public override void OnStart()
         {
@@ -22,11 +22,13 @@ namespace DevoidEngine.Engine.Components
 
         private void AttachToHierarchy()
         {
+            if (Root == null) return;
             var parentUI = gameObject.GetParentComponent<UIComponent>();
 
             if (parentUI != null)
             {
                 Console.WriteLine(parentUI + " Found");
+                if (parentUI.Root == null) return;
                 parentUI.Root.Add(Root);
                 return;
             }

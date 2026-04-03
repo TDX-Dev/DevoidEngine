@@ -16,30 +16,30 @@ namespace DevoidEngine.Engine.UI
 {
     public static class UISystem
     {
-        public static UITheme DefaultTheme;
+        public static UITheme DefaultTheme = null!;
 
         public static List<CanvasNode> Roots = new();
 
-        public static UINode FocusedNode { get; private set; }
-        public static UINode HoveredNode { get; private set; }
-        public static UINode PressedNode { get; private set; }
+        public static UINode? FocusedNode { get; private set; }
+        public static UINode? HoveredNode { get; private set; }
+        public static UINode? PressedNode { get; private set; }
 
         public static float OrderEpsilon = 0.01f;
         public static bool DebugDraw = false;
         public static float UIScale = 1f;
 
-        private static Material uiMaterial;
-        private static Material textMaterial;
-        private static Material debugUIRectMaterial;
+        private static Material uiMaterial = null!;
+        private static Material textMaterial = null!;
+        private static Material debugUIRectMaterial = null!;
 
-        public static Mesh QuadMesh;
+        public static Mesh QuadMesh = null!;
 
         public static MaterialInstance UIMaterial => new MaterialInstance(uiMaterial);
         public static MaterialInstance TextMaterial => new MaterialInstance(textMaterial);
         public static MaterialInstance DebugMaterial => new MaterialInstance(debugUIRectMaterial);
 
         public static CameraData ScreenData;
-        private static IUniformBuffer screenDataBuffer;
+        private static IUniformBuffer screenDataBuffer = null!;
 
         public static Vector2 mousePosition;
         private static Vector2 previousMouse;
@@ -278,7 +278,7 @@ namespace DevoidEngine.Engine.UI
             Vector2 mouseDelta = mouse - previousMouse;
             previousMouse = mouse;
 
-            UINode previousHovered = HoveredNode;
+            UINode? previousHovered = HoveredNode;
             HoveredNode = null;
 
             for (int i = Roots.Count - 1; i >= 0; i--)
@@ -402,7 +402,9 @@ namespace DevoidEngine.Engine.UI
 
         static Ray BuildMouseRay(Vector2 mouse)
         {
-            var cam = SceneManager.CurrentScene.GetDefaultCamera3D().Camera;
+            var cam = SceneManager.CurrentScene?.GetDefaultCamera3D()?.Camera;
+            if (cam == null)
+                return new Ray();
 
             Vector2 screen = Screen.Size;
 
@@ -432,83 +434,6 @@ namespace DevoidEngine.Engine.UI
             return new Ray(origin, dir);
         }
 
-        private static void HandleInput()
-        {
-            Vector2 mouse = InputBackendMousePosition();
-            Vector2 mouseDelta = mouse - previousMouse;
-            previousMouse = mouse;
-
-            UINode previousHovered = HoveredNode;
-            HoveredNode = null;
-
-            for (int i = Roots.Count - 1; i >= 0; i--)
-            {
-                HoveredNode = HitTest(Roots[i], mouse);
-                if (HoveredNode != null)
-                    break;
-            }
-
-            if (previousHovered != HoveredNode)
-            {
-                previousHovered?.OnMouseLeave();
-                HoveredNode?.OnMouseEnter();
-            }
-
-            bool mouseDown = Input.State.GetDown(InputDeviceType.Mouse, (ushort)MouseButton.Left);
-            bool mouseHeld = Input.State.Get(InputDeviceType.Mouse, (ushort)MouseButton.Left) > 0;
-
-            // Press
-            if (mouseDown)
-            {
-                PressedNode = HoveredNode;
-                dragStartMouse = mouse;
-                isDragging = false;
-
-                if (PressedNode != null)
-                {
-                    SetFocus(PressedNode);
-                    PressedNode.OnMouseDown();
-                }
-            }
-
-            // Drag detection
-            if (mouseHeld && PressedNode != null)
-            {
-                if (!isDragging)
-                {
-                    if (Vector2.Distance(mouse, dragStartMouse) > 3f)
-                    {
-                        isDragging = true;
-                        PressedNode.OnDragStart(mouse);
-                    }
-                }
-
-                if (isDragging)
-                {
-                    PressedNode.OnDrag(mouse, mouseDelta);
-                }
-            }
-
-            // Release
-            if (!mouseHeld && PressedNode != null)
-            {
-                if (isDragging)
-                {
-                    PressedNode.OnDragEnd(mouse);
-                }
-
-                PressedNode.OnMouseUp();
-
-                if (!isDragging && HoveredNode == PressedNode)
-                {
-                    PressedNode.OnClick();
-                }
-
-                PressedNode = null;
-                isDragging = false;
-            }
-        }
-
         private static Vector2 InputBackendMousePosition()
         {
             float x = Input.State.Get(InputDeviceType.Mouse, (ushort)MouseAxis.X);
@@ -517,7 +442,7 @@ namespace DevoidEngine.Engine.UI
             return new Vector2(x, y);
         }
 
-        private static UINode HitTest(UINode node, Vector2 position)
+        private static UINode? HitTest(UINode node, Vector2 position)
         {
             if (!node.Visible)
                 return null;
