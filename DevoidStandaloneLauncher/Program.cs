@@ -31,7 +31,7 @@ namespace DevoidStandaloneLauncher
 
             // Essential initializations
             LoadProject();
-            application.InitializeFileSystem();
+            VirtualFileSystem.Initialize();
             AssetDatabase.Initialize();
 
             application.Initialize(applicationSpecification);

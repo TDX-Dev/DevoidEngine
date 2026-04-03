@@ -69,19 +69,6 @@ namespace DevoidEngine.Engine.Core
             frameTimer = new FrameTimer();
         }
 
-
-        // must be called before initialize file system, but after projectmanager.load
-        public void InitializeFileSystem()
-        {
-            var vfs = new VirtualFileSystem();
-            EngineSingleton.Instance.VirtualFileSystem = vfs;
-
-            var project = ProjectManager.Current;
-
-            vfs.Mount(new DirectorySource(project.LibraryPath));
-            vfs.Mount(new DirectorySource(project.AssetPath));
-        }
-
         public void Initialize(ApplicationSpecification applicationSpecification)
         {
             WindowSpecification windowSpecification = new WindowSpecification()

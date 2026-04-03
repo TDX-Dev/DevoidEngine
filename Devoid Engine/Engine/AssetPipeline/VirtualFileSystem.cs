@@ -1,4 +1,6 @@
-﻿using System;
+﻿using DevoidEngine.Engine.Core;
+using DevoidEngine.Engine.ProjectSystem;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +10,18 @@ namespace DevoidEngine.Engine.AssetPipeline
 {
     public class VirtualFileSystem
     {
+        public static VirtualFileSystem Instance { get; private set; }
+        
+        public static void Initialize()
+        {
+            Instance = new VirtualFileSystem();
+
+            var project = ProjectManager.Current;
+
+            Instance.Mount(new DirectorySource(project.LibraryPath));
+            Instance.Mount(new DirectorySource(project.AssetPath));
+        }
+
         private readonly List<IVirtualFileSource> sources = new();
 
         public void Mount(IVirtualFileSource source)
