@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DevoidEngine.Engine.AssetPipeline
+namespace DevoidEngine.Engine.AssetPipeline.Loaders
 {
     public interface IAssetLoader<T>
     {
         T Load(ReadOnlySpan<byte> data);
+
     }
 }

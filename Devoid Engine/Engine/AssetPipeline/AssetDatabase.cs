@@ -71,7 +71,7 @@ namespace DevoidEngine.Engine.AssetPipeline
 
             if (created || NeedsReimport(assetPath, meta))
             {
-                var output = GetLibraryPath(entry.Guid, "texture");
+                var output = GetLibraryPath(entry.Guid, importer.OutputExtension);
 
                 importer.Import(assetPath, entry.Guid, meta.Settings, output);
 

@@ -11,6 +11,7 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
         string Name { get; }
 
         IReadOnlyList<string> Extensions { get; }
+        string OutputExtension { get; }
 
         Type SettingsType { get; }
 
