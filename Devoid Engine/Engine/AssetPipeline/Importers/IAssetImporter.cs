@@ -16,6 +16,6 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
 
         byte[] CreateDefaultSettings();
 
-        void Import(string assetPath, Guid guid, byte[] settingsData);
+        void Import(string assetPath, Guid guid, byte[] settingsData, string outputPath);
     }
 }

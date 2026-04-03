@@ -24,6 +24,13 @@ namespace DevoidEngine.Engine.AssetPipeline
             return guidToAsset[guid].AssetPath;
         }
 
+        public static string GetLibraryPath(Guid guid, string extension)
+        {
+            var library = ProjectManager.Current.LibraryPath;
+
+            return Path.Combine(library, $"{guid:N}.{extension}");
+        }
+
         public static void Initialize()
         {
             ImporterRegistry.Register(new TextureImporter());
@@ -64,7 +71,9 @@ namespace DevoidEngine.Engine.AssetPipeline
 
             if (created || NeedsReimport(assetPath, meta))
             {
-                importer.Import(assetPath, entry.Guid, meta.Settings);
+                var output = GetLibraryPath(entry.Guid, "texture");
+
+                importer.Import(assetPath, entry.Guid, meta.Settings, output);
 
                 meta.SourceTimestamp = File.GetLastWriteTimeUtc(assetPath).Ticks;
 

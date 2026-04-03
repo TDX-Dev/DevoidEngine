@@ -12,8 +12,6 @@ namespace DevoidEngine.Engine.Core
 
         Stream OpenRead(string path);
 
-        byte[] ReadAllBytes(string path);
-
-        string ReadAllText(string path);
+        IEnumerable<string> Enumerate(string path);
     }
 }

@@ -24,7 +24,7 @@ namespace DevoidStandaloneLauncher
                 useFullscreen = true,
                 useImGui = true,
                 useDebugConsole = true,
-                Name = "Devoid New Beginnings"
+                Name = "Devoid Runtime"
             };
 
             LoadProject();

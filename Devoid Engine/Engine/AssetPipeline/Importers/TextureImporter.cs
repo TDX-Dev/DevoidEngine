@@ -21,10 +21,15 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
         public override void Import(
             string assetPath,
             Guid guid,
-            TextureImportSettings settings
+            TextureImportSettings settings,
+            string outputPath
         )
         {
             Console.WriteLine($"Importing texture {assetPath}");
+
+            var bytes = File.ReadAllBytes(assetPath);
+
+            File.WriteAllBytes(outputPath, bytes);
         }
     }
 }

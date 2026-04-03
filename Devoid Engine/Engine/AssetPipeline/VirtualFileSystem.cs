@@ -12,21 +12,26 @@ namespace DevoidEngine.Engine.Core
 
         public void Mount(IVirtualFileSource source)
         {
-            sources.Insert(0, source); // higher priority first
+            sources.Insert(0, source);
         }
 
         public bool Exists(string path)
         {
+            path = Normalize(path);
+
             foreach (var source in sources)
             {
                 if (source.Exists(path))
                     return true;
             }
+
             return false;
         }
 
         public Stream OpenRead(string path)
         {
+            path = Normalize(path);
+
             foreach (var source in sources)
             {
                 if (source.Exists(path))
@@ -49,6 +54,11 @@ namespace DevoidEngine.Engine.Core
             using var stream = OpenRead(path);
             using var reader = new StreamReader(stream);
             return reader.ReadToEnd();
+        }
+
+        private static string Normalize(string path)
+        {
+            return path.Replace('\\', '/');
         }
     }
 }
