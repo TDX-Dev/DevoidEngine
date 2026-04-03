@@ -15,7 +15,6 @@ namespace DevoidEngine.Engine.Core
         public bool UseInterpolation = false;
 
         public AudioSystem AudioSystem { get; set; }
-        public VirtualFileSystem VirtualFileSystem { get; set; }
 
 
 
