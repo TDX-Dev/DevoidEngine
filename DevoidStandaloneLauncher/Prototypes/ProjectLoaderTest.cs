@@ -12,7 +12,7 @@ namespace DevoidStandaloneLauncher.Prototypes
     {
         public override void OnInit()
         {
-            Texture2D shrekTexture = Asset.Load<Texture2D>("shrk.png");
+            Texture2D shrekTexture = Asset.Load<Texture2D>("tawf.png");
         }
 
     }

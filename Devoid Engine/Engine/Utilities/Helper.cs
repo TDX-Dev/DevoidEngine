@@ -77,7 +77,7 @@ namespace DevoidEngine.Engine.Utilities
                 GenerateMipmaps = true,
                 MipLevels = 0,
                 IsDepthStencil = false,
-                IsRenderTarget = false,
+                IsRenderTarget = true,
                 IsMutable = false
             });
 
@@ -121,7 +121,7 @@ namespace DevoidEngine.Engine.Utilities
                 GenerateMipmaps = true,
                 MipLevels = 0,
                 IsDepthStencil = false,
-                IsRenderTarget = false,
+                IsRenderTarget = true,
                 IsMutable = false
             });
 
@@ -163,7 +163,7 @@ namespace DevoidEngine.Engine.Utilities
                 GenerateMipmaps = true,
                 MipLevels = 0,
                 IsDepthStencil = false,
-                IsRenderTarget = false,
+                IsRenderTarget = true,
                 IsMutable = false
             });
 

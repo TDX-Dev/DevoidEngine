@@ -27,9 +27,7 @@ namespace DevoidEngine.Engine.AssetPipeline
 
         public static string GetLibraryPath(Guid guid, string extension)
         {
-            var library = ProjectManager.Current.LibraryPath;
-
-            return Path.Combine(library, $"{guid:N}.{extension}");
+            return $"{guid:N}.{extension}";
         }
 
         public static void Initialize()
@@ -47,15 +45,16 @@ namespace DevoidEngine.Engine.AssetPipeline
 
             bool created = false;
             var absolutePath = Path.Combine(ProjectManager.Current.AssetPath, assetPath);
+            var metaAbsolutePath = absolutePath + ".meta";
 
-            if (!File.Exists(absolutePath))
+            if (!File.Exists(metaAbsolutePath))
             {
-                meta = CreateMeta(assetPath, metaPath);
+                meta = CreateMeta(assetPath, metaAbsolutePath);
                 created = true;
             }
             else
             {
-                meta = LoadMeta(metaPath, assetPath);
+                meta = LoadMeta(metaAbsolutePath, assetPath);
             }
 
             var entry = new AssetEntry
@@ -73,9 +72,12 @@ namespace DevoidEngine.Engine.AssetPipeline
 
             if (created || NeedsReimport(assetPath, meta))
             {
-                var output = GetLibraryPath(entry.Guid, importer.OutputExtension);
+                var output = Path.Combine(
+                    ProjectManager.Current.LibraryPath,
+                    GetLibraryPath(entry.Guid, importer.OutputExtension)
+                );
 
-                importer.Import(assetPath, entry.Guid, meta.Settings, output);
+                importer.Import(absolutePath, entry.Guid, meta.Settings, output);
 
                 meta.SourceTimestamp = File.GetLastWriteTimeUtc(absolutePath).Ticks;
 
@@ -87,13 +89,15 @@ namespace DevoidEngine.Engine.AssetPipeline
         {
             var ext = Path.GetExtension(assetPath).ToLower();
             var importer = ImporterRegistry.GetImporter(ext);
+            var absolutePath = Path.Combine(ProjectManager.Current.AssetPath, assetPath);
 
             var meta = new AssetMeta
             {
                 Guid = Guid.NewGuid().ToString("N"),
                 Importer = importer.Name,
                 Settings = importer.CreateDefaultSettings(),
-                SourceTimestamp = File.GetLastWriteTimeUtc(assetPath).Ticks
+
+                SourceTimestamp = File.GetLastWriteTimeUtc(absolutePath).Ticks
             };
 
             SaveMeta(metaPath, meta);
@@ -102,7 +106,8 @@ namespace DevoidEngine.Engine.AssetPipeline
         }
         private static bool NeedsReimport(string assetPath, AssetMeta meta)
         {
-            long currentTimestamp = File.GetLastWriteTimeUtc(assetPath).Ticks;
+            var absolutePath = Path.Combine(ProjectManager.Current.AssetPath, assetPath);
+            long currentTimestamp = File.GetLastWriteTimeUtc(absolutePath).Ticks;
 
             return currentTimestamp != meta.SourceTimestamp;
         }
