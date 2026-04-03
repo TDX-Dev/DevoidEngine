@@ -115,12 +115,16 @@ namespace DevoidGPU.DX11
             handle = TextureManager.Register(this);
         }
 
-        public void SetData(byte[] data)
+        public unsafe void SetData(byte[] data)
         {
-            int rowPitch = DX11TextureFormat.RowPitch(DX11TextureFormat.DXGIFormatToTextureFormat(format), Width); // Format is stored in DX11Texture2D
-            var handle = System.Runtime.InteropServices.Marshal.UnsafeAddrOfPinnedArrayElement(data, 0);
-            var box = new DataBox(handle, rowPitch, 0);
-            deviceContext.UpdateSubresource(box, Texture, 0);
+            int rowPitch = DX11TextureFormat.RowPitch(
+                DX11TextureFormat.DXGIFormatToTextureFormat(format), Width);
+
+            fixed (byte* ptr = data)
+            {
+                var box = new DataBox((IntPtr)ptr, rowPitch, 0);
+                deviceContext.UpdateSubresource(box, Texture, 0);
+            }
         }
 
         public void SetData<T>(T[] data) where T : unmanaged

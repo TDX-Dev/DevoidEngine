@@ -1,4 +1,6 @@
-﻿using System;
+﻿using DevoidGPU;
+using MessagePack;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,9 +21,15 @@ namespace DevoidEngine.Engine.Assets
         public TextureFormat Format;
 
         [Key(3)]
-        public int MipCount;
-
+        public TextureFilter Filter;
         [Key(4)]
+        public TextureWrapMode Wrap;
+        [Key(5)]
+        public int Anisotropy;
+
+        [Key(6)]
         public byte[] PixelData = Array.Empty<byte>();
     }
+
+
 }

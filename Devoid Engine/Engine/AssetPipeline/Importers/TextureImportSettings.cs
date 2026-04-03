@@ -21,5 +21,7 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
         public TextureWrapMode Wrap = TextureWrapMode.Repeat;
         [Key(5)]
         public int Anisotropy = 8;
+        [Key(6)]
+        public TextureFormat Format = TextureFormat.RGBA8_UNorm;
     }
 }

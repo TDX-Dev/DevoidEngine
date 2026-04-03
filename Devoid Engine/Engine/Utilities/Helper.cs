@@ -16,6 +16,17 @@ namespace DevoidEngine.Engine.Utilities
             return MathF.Pow((v + 0.055f) / 1.055f, 2.4f);
         }
 
+
+        public static void LoadImageFloat(ReadOnlySpan<byte> data, out int width, out int height, out float[] pixels)
+        {
+            Image image = new Image();
+            image.LoadPNGAsFloatFromMemory(data);
+
+            width = image.Width;
+            height = image.Height;
+            pixels = image.PixelHP;
+        }
+
         // ------------------------------------------
         // Color texture (Albedo / Emissive etc)
         // sRGB -> Linear conversion
