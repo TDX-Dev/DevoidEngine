@@ -72,7 +72,7 @@ namespace DevoidEngine.Engine.Core
             ClientSize = new OpenTK.Mathematics.Vector2i((int)windowSpec.WindowSize.X, (int)windowSpec.WindowSize.Y),
             //MaximumClientSize = new OpenTK.Mathematics.Vector2i((int)windowSpec.WindowMaximumSize.X, (int)windowSpec.WindowMaximumSize.Y),
             MinimumClientSize = new OpenTK.Mathematics.Vector2i((int)windowSpec.WindowMinimumSize.X, (int)windowSpec.WindowMinimumSize.Y),
-
+            IsEventDriven = false,
             Title = windowSpec.WindowTitle
         })
         {

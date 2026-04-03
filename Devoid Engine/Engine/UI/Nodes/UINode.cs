@@ -10,9 +10,8 @@ namespace DevoidEngine.Engine.UI.Nodes
 {
     public abstract class UINode
     {
-
-        public int DEBUG_NUM_LOCAL = 0;
         static int DEBUG_NUM_STATIC = 0;
+        public int DEBUG_NUM_LOCAL = DEBUG_NUM_STATIC++;
 
         public bool AnimateLayout = true;
         public bool BlockInput = false;
@@ -20,18 +19,18 @@ namespace DevoidEngine.Engine.UI.Nodes
         public bool Interactable = true;
         public bool ParticipatesInLayout = true;
 
-        private bool _materialDirty = true;
-        private bool _initialized = false;
+        bool _materialDirty = true;
+        bool _initialized = false;
 
         internal UINode? _parent;
-        internal List<UINode> _children = new();
-
+        internal readonly List<UINode> _children = new();
 
         public UITransform Rect { get; protected set; } = default!;
         public UITransform VisualRect { get; protected set; } = default!;
-        public Vector2 DesiredSize { get; set; }
 
-        public LayoutOptions Layout { get; set; } = new LayoutOptions();
+        public Vector2 DesiredSize { get; private set; }
+
+        public LayoutOptions Layout { get; set; } = new();
 
         public Vector2 Offset = Vector2.Zero;
         public Vector2? Size;
@@ -41,21 +40,19 @@ namespace DevoidEngine.Engine.UI.Nodes
         public Vector2 Pivot = Vector2.Zero;
         public float Rotation = 0f;
 
-
         public MaterialInstance? Material { get; set; }
 
         public UITheme? Theme;
-        private UITheme? cachedTheme;
+        UITheme? cachedTheme;
 
         public UIState State;
 
-        Dictionary<string, Vector4> colorOverrides = new();
-        Dictionary<string, object> constantOverrides = new();
-        Dictionary<string, FontInternal> fontOverrides = new();
-        Dictionary<string, int> fontSizeOverrides = new();
-        Dictionary<string, Texture2D> iconOverrides = new();
-        Dictionary<string, StyleBox> styleboxOverrides = new();
-
+        readonly Dictionary<string, Vector4> colorOverrides = new();
+        readonly Dictionary<string, object> constantOverrides = new();
+        readonly Dictionary<string, FontInternal> fontOverrides = new();
+        readonly Dictionary<string, int> fontSizeOverrides = new();
+        readonly Dictionary<string, Texture2D> iconOverrides = new();
+        readonly Dictionary<string, StyleBox> styleboxOverrides = new();
 
         public Action? OnNodeMouseDown;
         public Action? OnNodeMouseUp;
@@ -64,23 +61,16 @@ namespace DevoidEngine.Engine.UI.Nodes
         public Action? OnNodeMouseHeld;
         public Action<Vector2>? OnNodeMouseScroll;
 
-
         public virtual string ThemeType => "Control";
+
         public UINode? Parent => _parent;
         public IReadOnlyList<UINode> Children => _children;
-
-
-        public UINode()
-        {
-            DEBUG_NUM_LOCAL = DEBUG_NUM_STATIC++;
-        }
 
         public virtual void Add(UINode child)
         {
             child._parent = this;
             _children.Add(child);
 
-            // if this node is already initialized, initialize the child immediately
             if (_initialized)
                 child.Initialize();
         }
@@ -92,14 +82,11 @@ namespace DevoidEngine.Engine.UI.Nodes
 
         public void Clear()
         {
-            for (int i = 0; i < _children.Count; i++)
-            {
-                _children[i].Dispose();
-            }
+            foreach (var child in _children)
+                child.Dispose();
 
             _children.Clear();
         }
-
 
         public void Initialize()
         {
@@ -109,11 +96,12 @@ namespace DevoidEngine.Engine.UI.Nodes
             _initialized = true;
 
             RegisterTheme();
+
             InitializeCore();
             ApplyTheme();
 
-            for (int i = 0; i < _children.Count; i++)
-                _children[i].Initialize();
+            foreach (var child in _children)
+                child.Initialize();
         }
 
         void RegisterTheme()
@@ -128,37 +116,23 @@ namespace DevoidEngine.Engine.UI.Nodes
         {
             ApplyTheme();
 
-            for (int i = 0; i < _children.Count; i++)
-                _children[i].OnThemeChanged();
+            foreach (var child in _children)
+                child.OnThemeChanged();
         }
-
 
         public UITheme GetTheme()
         {
             if (Theme != null)
                 return Theme;
 
-            if (Parent != null)
-                return Parent.GetTheme();
+            if (_parent != null)
+                return _parent.GetTheme();
 
             return UISystem.DefaultTheme!;
         }
 
         protected virtual void ApplyTheme() { }
         protected virtual void UpdateMaterial() { }
-
-        //public Vector4 GetColor(string name)
-        //{
-        //    if (colorOverrides.TryGetValue(name, out var value))
-        //        return value;
-
-        //    var theme = GetTheme();
-
-        //    if (theme.HasColor(name, ThemeType))
-        //        return theme.GetColor(name, ThemeType);
-
-        //    return Vector4.One;
-        //}
 
         protected Vector4 GetStateColor(string property)
         {
@@ -201,22 +175,19 @@ namespace DevoidEngine.Engine.UI.Nodes
             if (State.HasFlag(UIState.Pressed))
             {
                 var s = GetStyleBox(StyleKeys.Pressed);
-                if (s != null)
-                    return s;
+                if (s != null) return s;
             }
 
             if (State.HasFlag(UIState.Hover))
             {
                 var s = GetStyleBox(StyleKeys.Hover);
-                if (s != null)
-                    return s;
+                if (s != null) return s;
             }
 
             if (State.HasFlag(UIState.Editing))
             {
                 var s = GetStyleBox(StyleKeys.Editing);
-                if (s != null)
-                    return s;
+                if (s != null) return s;
             }
 
             return GetStyleBox(StyleKeys.Normal);
@@ -235,8 +206,7 @@ namespace DevoidEngine.Engine.UI.Nodes
             if (fontOverrides.TryGetValue(name, out var value))
                 return value;
 
-            var theme = GetTheme();
-            return theme.GetFont(name, ThemeType);
+            return GetTheme().GetFont(name, ThemeType);
         }
 
         public int GetFontSize(string name)
@@ -244,11 +214,8 @@ namespace DevoidEngine.Engine.UI.Nodes
             if (fontSizeOverrides.TryGetValue(name, out var value))
                 return value;
 
-            var theme = GetTheme();
-
-            return theme.GetFontSize(name, ThemeType);
+            return GetTheme().GetFontSize(name, ThemeType);
         }
-
 
         public void AddColorOverride(string name, Vector4 value)
         {
@@ -273,7 +240,6 @@ namespace DevoidEngine.Engine.UI.Nodes
             colorOverrides.Remove(name);
             OnThemeChanged();
         }
-
 
         public Vector2 Measure(Vector2 availableSize)
         {
@@ -300,22 +266,20 @@ namespace DevoidEngine.Engine.UI.Nodes
 
             if (!ParticipatesInLayout && !Size.HasValue)
             {
-                Vector2 desired = Measure(new Vector2(float.PositiveInfinity, float.PositiveInfinity));
+                Vector2 desired = Measure(new(float.PositiveInfinity));
                 finalRect = new UITransform(finalRect.position, desired);
             }
 
             Rect = finalRect;
-
             if (VisualRect == null)
                 VisualRect = finalRect;
 
             ArrangeCore(Rect);
         }
 
-
         public virtual void Render(List<RenderItem> renderList, Matrix4x4 model, int order)
         {
-            if (!Visible || VisualRect == null || Rect == null)
+            if (!Visible)
                 return;
 
             if (_materialDirty)
@@ -326,10 +290,8 @@ namespace DevoidEngine.Engine.UI.Nodes
 
             RenderCore(renderList, model, ++order);
 
-            for (int i = 0; i < _children.Count; i++)
-            {
-                _children[i].Render(renderList, model, order);
-            }
+            foreach (var child in _children)
+                child.Render(renderList, model, order);
         }
 
         public void Update(float dt)
@@ -339,30 +301,20 @@ namespace DevoidEngine.Engine.UI.Nodes
 
             if (AnimateLayout)
             {
-                float speed = 25f;
+                float t = 1 - MathF.Exp(-25f * dt);
 
-                VisualRect.position = Vector2.Lerp(
-                    VisualRect.position,
-                    Rect?.position ?? Vector2.Zero,
-                    1 - MathF.Exp(-speed * dt)
-                );
-
-                VisualRect.size = Vector2.Lerp(
-                    VisualRect.size,
-                    Rect!.size,
-                    1 - MathF.Exp(-speed * dt)
-                );
-            } else
+                VisualRect.position = Vector2.Lerp(VisualRect.position, Rect.position, t);
+                VisualRect.size = Vector2.Lerp(VisualRect.size, Rect.size, t);
+            }
+            else
             {
                 VisualRect = Rect;
             }
 
-                UpdateCore(dt);
+            UpdateCore(dt);
 
-            for (int i = 0; i < _children.Count; i++)
-            {
-                _children[i].Update(dt);
-            }
+            foreach (var child in _children)
+                child.Update(dt);
         }
 
         protected abstract void InitializeCore();
@@ -371,9 +323,11 @@ namespace DevoidEngine.Engine.UI.Nodes
         protected abstract void RenderCore(List<RenderItem> renderList, Matrix4x4 canvasModel, int order);
         protected abstract void UpdateCore(float deltaTime);
 
-
-        public virtual void Dispose() { }
-
+        public virtual void Dispose()
+        {
+            if (cachedTheme != null)
+                cachedTheme.ThemeChanged -= OnThemeChanged;
+        }
 
         public virtual void OnDragStart(Vector2 mouse) { }
         public virtual void OnDrag(Vector2 mouse, Vector2 delta) { }

@@ -82,7 +82,7 @@ namespace DevoidEngine.Engine.AssetPipeline
             var ext = Path.GetExtension(assetPath).ToLower();
             var importer = ImporterRegistry.GetImporter(ext);
 
-            if (created || NeedsReimport(assetPath, meta))
+            if (created || NeedsReimport(assetPath, meta, entry.Guid))
             {
                 var output = Path.Combine(
                     ProjectManager.Current.LibraryPath,
@@ -93,7 +93,8 @@ namespace DevoidEngine.Engine.AssetPipeline
 
                 meta.SourceTimestamp = File.GetLastWriteTimeUtc(absolutePath).Ticks;
 
-                SaveMeta(metaPath, meta);
+                //SaveMeta(metaPath, meta);
+                SaveMeta(metaAbsolutePath, meta);
             }
             return entry.Guid;
         }
@@ -117,12 +118,27 @@ namespace DevoidEngine.Engine.AssetPipeline
 
             return meta;
         }
-        private static bool NeedsReimport(string assetPath, AssetMeta meta)
+        private static bool NeedsReimport(string assetPath, AssetMeta meta, Guid guid)
         {
-            var absolutePath = Path.Combine(ProjectManager.Current!.AssetPath, assetPath);
+            var project = ProjectManager.Current!;
+
+            var absolutePath = Path.Combine(project.AssetPath, assetPath);
             long currentTimestamp = File.GetLastWriteTimeUtc(absolutePath).Ticks;
 
-            return currentTimestamp != meta.SourceTimestamp;
+            if (currentTimestamp != meta.SourceTimestamp)
+                return true;
+
+            var importer = ImporterRegistry.GetImporter(Path.GetExtension(assetPath).ToLower());
+
+            var libraryPath = Path.Combine(
+                project.LibraryPath,
+                GetLibraryPath(guid, importer.OutputExtension)
+            );
+
+            if (!File.Exists(libraryPath))
+                return true;
+
+            return false;
         }
 
         private static AssetMeta LoadMeta(string metaPath, string assetPath)
@@ -189,6 +205,9 @@ namespace DevoidEngine.Engine.AssetPipeline
         private static void ScanAssets()
         {
             var assetRoot = ProjectManager.Current!.AssetPath;
+
+            CleanupMeta();
+
             HashSet<Guid> discovered = new();
 
             foreach (var file in Directory.GetFiles(assetRoot, "*", SearchOption.AllDirectories))
@@ -209,6 +228,22 @@ namespace DevoidEngine.Engine.AssetPipeline
             }
 
             CleanupLibrary(discovered);
+        }
+
+        private static void CleanupMeta()
+        {
+            var assetRoot = ProjectManager.Current!.AssetPath;
+
+            foreach (var meta in Directory.GetFiles(assetRoot, "*.meta", SearchOption.AllDirectories))
+            {
+                var asset = meta.Substring(0, meta.Length - 5);
+
+                if (!File.Exists(asset))
+                {
+                    Console.WriteLine($"Deleting orphan meta: {meta}");
+                    File.Delete(meta);
+                }
+            }
         }
 
         private static void CleanupLibrary(HashSet<Guid> validGuids)

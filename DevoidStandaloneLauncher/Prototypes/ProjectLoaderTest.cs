@@ -29,10 +29,16 @@ namespace DevoidStandaloneLauncher.Prototypes
             Texture2D shrekTexture = Asset.Load<Texture2D>("shrk.png");
             AudioClip toneAudio = Asset.Load<AudioClip>("tone.mp3");
 
+            GameObject audio = scene.AddGameObject("Audio");
+            var audC = audio.AddComponent<AudioSourceComponent3D>();
+            audC.Audio = toneAudio;
+
+            audC.Play();
+
             GameObject canvas = scene.AddGameObject("Canvas");
             var canvasComp = canvas.AddComponent<CanvasComponent>();
 
-            var container = new ContainerNode()
+            container = new ContainerNode()
             {
                 Size = new System.Numerics.Vector2(200, 200)
             };
@@ -43,6 +49,14 @@ namespace DevoidStandaloneLauncher.Prototypes
             });
 
             canvasComp.Canvas.Add(container);
+        }
+        ContainerNode container;
+        float timer = 0;
+
+        public override void OnUpdate(float delta)
+        {
+            timer += delta;
+            container.Rotation = timer;
         }
 
     }
