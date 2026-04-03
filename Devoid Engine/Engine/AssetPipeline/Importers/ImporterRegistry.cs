@@ -16,6 +16,11 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
                 extensionMap[ext] = importer;
         }
 
+        public static bool HasImporter(string ext)
+        {
+            return extensionMap.ContainsKey(ext);
+        }
+
         public static IAssetImporter GetImporter(string ext)
         {
             return extensionMap[ext];

@@ -43,7 +43,7 @@ namespace DevoidEngine.Engine.AssetPipeline
             }
             else
             {
-                meta = LoadMeta(metaPath);
+                meta = LoadMeta(metaPath, assetPath);
             }
 
             var entry = new AssetEntry
@@ -55,33 +55,92 @@ namespace DevoidEngine.Engine.AssetPipeline
 
             guidToAsset[entry.Guid] = entry;
             pathToAsset[assetPath] = entry;
+
+            var ext = Path.GetExtension(assetPath).ToLower();
+            var importer = ImporterRegistry.GetImporter(ext);
+
+            if (NeedsReimport(assetPath, meta))
+            {
+                importer.Import(assetPath, entry.Guid, meta.Settings);
+
+                meta.SourceTimestamp = File.GetLastWriteTimeUtc(assetPath).Ticks;
+
+                SaveMeta(metaPath, meta);
+            }
         }
 
         private static AssetMeta CreateMeta(string assetPath, string metaPath)
         {
-            var ext = Path.GetExtension(assetPath);
-
+            var ext = Path.GetExtension(assetPath).ToLower();
             var importer = ImporterRegistry.GetImporter(ext);
 
             var meta = new AssetMeta
             {
                 Guid = Guid.NewGuid().ToString("N"),
                 Importer = importer.Name,
-                Settings = importer.CreateDefaultSettings()
+                Settings = importer.CreateDefaultSettings(),
+                SourceTimestamp = File.GetLastWriteTimeUtc(assetPath).Ticks
             };
 
             SaveMeta(metaPath, meta);
 
             return meta;
         }
-        private static AssetMeta LoadMeta(string metaPath)
+        private static bool NeedsReimport(string assetPath, AssetMeta meta)
         {
-            var json = File.ReadAllText(metaPath);
+            long currentTimestamp = File.GetLastWriteTimeUtc(assetPath).Ticks;
 
-            return JsonSerializer.Deserialize(
-                json,
-                AssetJsonContext.Default.AssetMeta
-            );
+            return currentTimestamp != meta.SourceTimestamp;
+        }
+
+        private static AssetMeta LoadMeta(string metaPath, string assetPath)
+        {
+            try
+            {
+                var json = File.ReadAllText(metaPath);
+
+                if (string.IsNullOrWhiteSpace(json))
+                    throw new Exception("Empty meta file");
+
+                var meta = JsonSerializer.Deserialize(
+                    json,
+                    AssetJsonContext.Default.AssetMeta
+                );
+
+                if (!ValidateMeta(meta))
+                    throw new Exception("Invalid meta");
+
+                return meta;
+            }
+            catch
+            {
+                Console.WriteLine($"Meta corrupted, regenerating: {metaPath}");
+
+                return CreateMeta(assetPath, metaPath);
+            }
+        }
+
+        private static bool ValidateMeta(AssetMeta meta)
+        {
+            if (meta == null)
+                return false;
+
+            if (!ImporterRegistry.HasImporter(meta.Importer))
+                return false;
+
+            if (string.IsNullOrWhiteSpace(meta.Guid))
+                return false;
+
+            if (!Guid.TryParse(meta.Guid, out _))
+                return false;
+
+            if (string.IsNullOrWhiteSpace(meta.Importer))
+                return false;
+
+            if (meta.Settings == null)
+                return false;
+
+            return true;
         }
 
         private static void SaveMeta(string metaPath, AssetMeta meta)

@@ -13,5 +13,7 @@ namespace DevoidEngine.Engine.AssetPipeline
         public int Version = 1;
 
         public byte[] Settings;
+
+        public long SourceTimestamp;
     }
 }
