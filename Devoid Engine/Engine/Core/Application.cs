@@ -1,9 +1,11 @@
-﻿using DevoidEngine.Engine.Audio;
+﻿using DevoidEngine.Engine.AssetPipeline;
+using DevoidEngine.Engine.Audio;
 using DevoidEngine.Engine.Audio.SoLoud;
 using DevoidEngine.Engine.Components;
 using DevoidEngine.Engine.DebugTools;
 using DevoidEngine.Engine.Imgui;
 using DevoidEngine.Engine.InputSystem;
+using DevoidEngine.Engine.ProjectSystem;
 using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.UI;
 using DevoidEngine.Engine.Utilities;
@@ -60,6 +62,26 @@ namespace DevoidEngine.Engine.Core
         public int pendingHeight;
         private Window targetWindow;
 
+        public Application()
+        {
+            EngineSingleton EngineSingleton = new EngineSingleton();
+            layerHandler = new LayerHandler();
+            frameTimer = new FrameTimer();
+        }
+
+
+        // must be called before initialize file system, but after projectmanager.load
+        public void InitializeFileSystem()
+        {
+            var vfs = new VirtualFileSystem();
+            EngineSingleton.Instance.VirtualFileSystem = vfs;
+
+            var project = ProjectManager.Current;
+
+            vfs.Mount(new DirectorySource(project.LibraryPath));
+            vfs.Mount(new DirectorySource(project.AssetPath));
+        }
+
         public void Initialize(ApplicationSpecification applicationSpecification)
         {
             WindowSpecification windowSpecification = new WindowSpecification()
@@ -83,17 +105,12 @@ namespace DevoidEngine.Engine.Core
                 Windowed = true,
             };
 
-            EngineSingleton EngineSingleton = new EngineSingleton();
-
             EngineSingleton.Instance.AudioSystem = new AudioSystem(new SoLoudAudioBackend());
 
-            layerHandler = new LayerHandler();
             Screen.Size = new Vector2(applicationSpecification.Width, applicationSpecification.Height);
 
             Renderer.GraphicsDevice = applicationSpecification.graphicsDevice;
             RenderThread.mainThreadID = Thread.CurrentThread.ManagedThreadId;
-
-            frameTimer = new FrameTimer();
 
             targetWindow = new Window(windowSpecification);
             Renderer.GraphicsDevice.Initialize(targetWindow.GetWindowPtr(), presentParameters);

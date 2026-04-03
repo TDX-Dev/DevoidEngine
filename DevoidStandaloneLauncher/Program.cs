@@ -27,10 +27,13 @@ namespace DevoidStandaloneLauncher
                 Name = "Devoid Runtime"
             };
 
+            Application application = new Application();
+
+            // Essential initializations
             LoadProject();
+            application.InitializeFileSystem();
             AssetDatabase.Initialize();
 
-            Application application = new Application();
             application.Initialize(applicationSpecification);
             application.TargetFrameRate = 10;
             EngineSingleton.Instance.UseInterpolation = false;
