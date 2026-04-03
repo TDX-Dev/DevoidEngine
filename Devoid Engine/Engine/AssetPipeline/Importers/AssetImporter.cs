@@ -12,6 +12,7 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
         public abstract string Name { get; }
 
         public abstract IReadOnlyList<string> Extensions { get; }
+        public abstract string OutputExtension { get; }
 
         public Type SettingsType => typeof(TSettings);
 

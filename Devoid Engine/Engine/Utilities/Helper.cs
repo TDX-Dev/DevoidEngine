@@ -64,6 +64,134 @@ namespace DevoidEngine.Engine.Utilities
             return texture;
         }
 
+        public static Texture2D LoadImageAsTex(ReadOnlySpan<byte> data, TextureFilter textureFilter)
+        {
+            Image image = new Image();
+            image.LoadPNGAsFloatFromMemory(data);
+
+            Texture2D texture = new Texture2D(new TextureDescription()
+            {
+                Width = image.Width,
+                Height = image.Height,
+                Format = TextureFormat.RGBA16_Float,
+                GenerateMipmaps = true,
+                MipLevels = 0,
+                IsDepthStencil = false,
+                IsRenderTarget = false,
+                IsMutable = false
+            });
+
+            texture.SetFilter(textureFilter, textureFilter);
+            texture.SetAnisotropy(8);
+            texture.SetWrapMode(TextureWrapMode.ClampToEdge, TextureWrapMode.ClampToEdge);
+
+            float[] floatPixels = image.PixelHP;
+            Half[] halfPixels = new Half[floatPixels.Length];
+
+            for (int i = 0; i < floatPixels.Length; i++)
+            {
+                float v = floatPixels[i];
+
+                if (v < 0f) v = 0f;
+                if (v > 1f) v = 1f;
+
+                v = SRGBToLinear(v);
+
+                halfPixels[i] = (Half)v;
+            }
+
+            texture.SetData(halfPixels);
+            texture.GenerateMipmaps();
+
+            image.PixelHP = null;
+
+            return texture;
+        }
+
+        public static Texture2D LoadImageAsDataTex(ReadOnlySpan<byte> data, TextureFilter textureFilter)
+        {
+            Image image = new Image();
+            image.LoadPNGAsFloatFromMemory(data);
+
+            Texture2D texture = new Texture2D(new TextureDescription()
+            {
+                Width = image.Width,
+                Height = image.Height,
+                Format = TextureFormat.RGBA8_UNorm,
+                GenerateMipmaps = true,
+                MipLevels = 0,
+                IsDepthStencil = false,
+                IsRenderTarget = false,
+                IsMutable = false
+            });
+
+            texture.SetFilter(textureFilter, textureFilter);
+            texture.SetAnisotropy(8);
+            texture.SetWrapMode(TextureWrapMode.ClampToEdge, TextureWrapMode.ClampToEdge);
+
+            float[] floatPixels = image.PixelHP;
+            byte[] bytePixels = new byte[floatPixels.Length];
+
+            for (int i = 0; i < floatPixels.Length; i++)
+            {
+                float v = floatPixels[i];
+
+                if (v < 0f) v = 0f;
+                if (v > 1f) v = 1f;
+
+                bytePixels[i] = (byte)(v * 255f);
+            }
+
+            texture.SetData(bytePixels);
+            texture.GenerateMipmaps();
+
+            image.PixelHP = null;
+
+            return texture;
+        }
+
+        public static Texture2D LoadNormalMap(ReadOnlySpan<byte> data, TextureFilter textureFilter)
+        {
+            Image image = new Image();
+            image.LoadPNGAsFloatFromMemory(data);
+
+            Texture2D texture = new Texture2D(new TextureDescription()
+            {
+                Width = image.Width,
+                Height = image.Height,
+                Format = TextureFormat.RGBA8_UNorm,
+                GenerateMipmaps = true,
+                MipLevels = 0,
+                IsDepthStencil = false,
+                IsRenderTarget = false,
+                IsMutable = false
+            });
+
+            texture.SetFilter(textureFilter, textureFilter);
+            texture.SetAnisotropy(8);
+            texture.SetWrapMode(TextureWrapMode.ClampToEdge, TextureWrapMode.ClampToEdge);
+
+            float[] floatPixels = image.PixelHP;
+            byte[] bytePixels = new byte[floatPixels.Length];
+
+            for (int i = 0; i < floatPixels.Length; i++)
+            {
+                float v = floatPixels[i];
+
+                if (v < 0f) v = 0f;
+                if (v > 1f) v = 1f;
+
+                bytePixels[i] = (byte)(v * 255f);
+            }
+
+            texture.SetData(bytePixels);
+            texture.GenerateMipmaps();
+
+            image.PixelHP = null;
+
+            return texture;
+        }
+
         public static Texture2D LoadHDRI(string file)
         {
             Image image = new Image();

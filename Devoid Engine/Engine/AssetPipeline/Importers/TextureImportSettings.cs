@@ -1,4 +1,5 @@
-﻿using MessagePack;
+﻿using DevoidGPU;
+using MessagePack;
 
 namespace DevoidEngine.Engine.AssetPipeline.Importers
 {
@@ -14,5 +15,11 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
 
         [Key(2)]
         public bool Compress = true;
+        [Key(3)]
+        public TextureFilter Filter = TextureFilter.Linear;
+        [Key(4)]
+        public TextureWrapMode Wrap = TextureWrapMode.Repeat;
+        [Key(5)]
+        public int Anisotropy = 8;
     }
 }

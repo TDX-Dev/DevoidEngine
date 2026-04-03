@@ -10,6 +10,11 @@ namespace DevoidEngine.Engine.Core
         public IShader fShader;
         public IShaderProgram shaderProgram;
 
+        public static void FromSource(string vsSource, string fsSource)
+        {
+
+        }
+
         public Shader(string vsfsPath)
         {
             string vsPath = vsfsPath + ".vert.hlsl";

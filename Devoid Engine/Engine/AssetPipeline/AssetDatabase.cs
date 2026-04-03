@@ -1,4 +1,5 @@
 ﻿using DevoidEngine.Engine.AssetPipeline.Importers;
+using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.ProjectSystem;
 using System;
 using System.Collections.Generic;
@@ -33,7 +34,7 @@ namespace DevoidEngine.Engine.AssetPipeline
 
         public static void Initialize()
         {
-            ImporterRegistry.Register(new TextureImporter());
+            ImporterRegistry.Register<Texture>(new TextureImporter());
 
             ScanAssets();
         }

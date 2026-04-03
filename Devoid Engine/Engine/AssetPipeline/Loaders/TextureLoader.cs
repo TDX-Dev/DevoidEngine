@@ -1,4 +1,5 @@
 ﻿using DevoidEngine.Engine.Core;
+using DevoidEngine.Engine.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +12,7 @@ namespace DevoidEngine.Engine.AssetPipeline.Loaders
     {
         public Texture Load(ReadOnlySpan<byte> data)
         {
-            return Texture.CreateFromMemory(data);
+            return Helper.LoadImageAsTex(data, DevoidGPU.TextureFilter.Linear);
         }
     }
 }

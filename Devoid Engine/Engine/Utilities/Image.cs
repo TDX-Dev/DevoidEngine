@@ -27,6 +27,21 @@ namespace DevoidEngine.Engine.Utilities
                 throw new Exception("Unable to identify image format.");
         }
 
+        public void LoadPNGAsFloatFromMemory(ReadOnlySpan<byte> data)
+        {
+            using var stream = new MemoryStream(data.ToArray());
+
+            var image = ImageResultFloat.FromStream(
+                stream,
+                ColorComponents.RedGreenBlueAlpha
+            );
+
+            Width = image.Width;
+            Height = image.Height;
+
+            PixelHP = image.Data;
+        }
+
         public void LoadHDRI(string path)
         {
             using var stream = File.OpenRead(path);
