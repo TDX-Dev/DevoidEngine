@@ -150,7 +150,11 @@ namespace DevoidEngine.Engine.AssetPipeline
                 AssetJsonContext.Default.AssetMeta
             );
 
-            File.WriteAllText(metaPath, json);
+            var temp = metaPath + ".tmp";
+
+            File.WriteAllText(temp, json);
+
+            File.Move(temp, metaPath, true);
         }
 
         private static void ScanAssets()
