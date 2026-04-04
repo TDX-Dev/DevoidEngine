@@ -20,7 +20,7 @@ namespace DevoidEngine.Engine.AssetPipeline
             if (project == null)
                 throw new Exception("Project not initialized");
 
-            Instance.Mount(new DirectorySource(project.LibraryPath));
+            Instance.Mount(new DirectorySource(project.CachePath));
             Instance.Mount(new DirectorySource(project.AssetPath));
         }
 

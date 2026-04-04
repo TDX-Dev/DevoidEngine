@@ -85,7 +85,7 @@ namespace DevoidEngine.Engine.AssetPipeline
             if (created || NeedsReimport(assetPath, meta, entry.Guid))
             {
                 var output = Path.Combine(
-                    ProjectManager.Current.LibraryPath,
+                    ProjectManager.Current.CachePath,
                     GetLibraryPath(entry.Guid, importer.OutputExtension)
                 );
 
@@ -131,7 +131,7 @@ namespace DevoidEngine.Engine.AssetPipeline
             var importer = ImporterRegistry.GetImporter(Path.GetExtension(assetPath).ToLower());
 
             var libraryPath = Path.Combine(
-                project.LibraryPath,
+                project.CachePath,
                 GetLibraryPath(guid, importer.OutputExtension)
             );
 
@@ -248,7 +248,7 @@ namespace DevoidEngine.Engine.AssetPipeline
 
         private static void CleanupLibrary(HashSet<Guid> validGuids)
         {
-            var library = ProjectManager.Current!.LibraryPath;
+            var library = ProjectManager.Current!.CachePath;
 
             foreach (var file in Directory.GetFiles(library))
             {

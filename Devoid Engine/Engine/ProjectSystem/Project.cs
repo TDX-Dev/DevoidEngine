@@ -11,7 +11,7 @@ namespace DevoidEngine.Engine.ProjectSystem
     {
         public string Name { get; set; } = "NewProject";
         public string AssetPath { get; set; } = "Assets";
-        public string LibraryPath { get; set; } = "Library";
+        public string CachePath { get; set; } = "Cache"; // This is equivalent to Library/
         public string TempPath { get; set; } = "Temp";
         public string SettingsPath { get; set; } = "ProjectSettings";
     }
@@ -22,7 +22,7 @@ namespace DevoidEngine.Engine.ProjectSystem
         public string RootPath = null!;
 
         public string AssetPath = null!;
-        public string LibraryPath = null!;
+        public string CachePath = null!;
         public string TempPath = null!;
         public string SettingsPath = null!;
 
@@ -31,7 +31,7 @@ namespace DevoidEngine.Engine.ProjectSystem
         private static void EnsureDirectories(Project p)
         {
             Directory.CreateDirectory(p.AssetPath);
-            Directory.CreateDirectory(p.LibraryPath);
+            Directory.CreateDirectory(p.CachePath);
             Directory.CreateDirectory(p.TempPath);
             Directory.CreateDirectory(p.SettingsPath);
         }
@@ -54,7 +54,7 @@ namespace DevoidEngine.Engine.ProjectSystem
                 ProjectFile = projectFile,
                 RootPath = root,
                 AssetPath = Path.Combine(root, config.AssetPath),
-                LibraryPath = Path.Combine(root, config.LibraryPath),
+                CachePath = Path.Combine(root, config.CachePath),
                 TempPath = Path.Combine(root, config.TempPath),
                 SettingsPath = Path.Combine(root, config.SettingsPath),
                 Config = config
