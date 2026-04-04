@@ -30,7 +30,7 @@ namespace DevoidStandaloneLauncher.Prototypes
 
             scene.GetComponentsOfType<AudioSourceComponent3D>()[0].Play();
 
-            Console.WriteLine(scene.GetComponentsOfType<CameraComponent3D>()[0].IsDefault);
+            //Console.WriteLine(scene.GetComponentsOfType<CameraComponent3D>()[0].IsDefault);
         }
 
         public override void OnUpdate(float delta)

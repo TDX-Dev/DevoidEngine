@@ -23,12 +23,13 @@ internal static class SerializerEmitter
                 f.Type.ToDisplayString() != "DevoidEngine.Engine.Core.GameObject" &&
                 !f.Type.ToDisplayString().StartsWith("DevoidEngine.Engine.Core") &&
                 !f.Type.ToDisplayString().StartsWith("DevoidEngine.Engine.Rendering") &&
-                !f.Type.ToDisplayString().StartsWith("DevoidEngine.Engine.UI"));
+                !f.Type.ToDisplayString().StartsWith("DevoidEngine.Engine.UI"))
+            .ToArray();
 
         StringBuilder serializeBody = new();
         StringBuilder deserializeBody = new();
 
-        int fieldCount = fields.Count();
+        int fieldCount = fields.Length;
 
         serializeBody.AppendLine($"writer.WriteArrayHeader({fieldCount});");
 
@@ -41,30 +42,116 @@ internal static class SerializerEmitter
 
             if (IsAssetType(field.Type))
             {
+                //serializeBody.AppendLine(
+                //    $"MessagePack.MessagePackSerializer.Serialize(ref writer, value.{fieldName}?.Guid ?? Guid.Empty, MessagePack.MessagePackSerializerOptions.Standard);");
+
                 serializeBody.AppendLine(
-                    $"MessagePack.MessagePackSerializer.Serialize(ref writer, value.{fieldName}?.Guid ?? Guid.Empty, MessagePack.MessagePackSerializerOptions.Standard);");
+                    "try\n" +
+                    "{\n" +
+                    $"    MessagePack.MessagePackSerializer.Serialize(ref writer, value.{fieldName}?.Guid ?? Guid.Empty, MessagePack.MessagePackSerializerOptions.Standard);\n" +
+                    "}\n" +
+                    "catch (Exception e)\n" +
+                    "{\n" +
+                    $"    Console.WriteLine(\"[Serialization] Failed to serialize asset field '{fieldName}' in {componentName}: \" + e.Message);\n" +
+                    "    writer.WriteNil();\n" +
+                "}");
 
-                deserializeBody.AppendLine(
-                    $"var guid_{fieldName} = MessagePack.MessagePackSerializer.Deserialize<Guid>(ref reader, MessagePack.MessagePackSerializerOptions.Standard);");
 
-                deserializeBody.AppendLine(
-                    $"component.{fieldName} = guid_{fieldName} == Guid.Empty ? default : AssetManager.Load<{type}>(guid_{fieldName});");
+                //deserializeBody.AppendLine(
+                //    $"var guid_{fieldName} = MessagePack.MessagePackSerializer.Deserialize<Guid>(ref reader, MessagePack.MessagePackSerializerOptions.Standard);");
+
+                //deserializeBody.AppendLine(
+                //    $"component.{fieldName} = guid_{fieldName} == Guid.Empty ? default : AssetManager.Load<{type}>(guid_{fieldName});");
+
+                deserializeBody.AppendLine($$"""
+                    if (!reader.End)
+                    {
+                        try
+                        {
+                            var guid_{{fieldName}} =
+                                MessagePack.MessagePackSerializer.Deserialize<Guid>(
+                                    ref reader,
+                                    MessagePack.MessagePackSerializerOptions.Standard);
+
+                            component.{{fieldName}} =
+                                guid_{{fieldName}} == Guid.Empty
+                                    ? default
+                                    : AssetManager.Load<{{type}}>(guid_{{fieldName}});
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine($"[Serialization] Failed to deserialize asset field '{{fieldName}}' in {{componentName}}: " + e.Message);
+                            component.{{fieldName}} = default;
+                        }
+                    }
+                """);
             } 
             else if (IsPrimitive(field.Type))
             {
-                serializeBody.AppendLine($"writer.Write(value.{fieldName});");
+                //serializeBody.AppendLine($"writer.Write(value.{fieldName});");
+
+                serializeBody.AppendLine(
+                    "try\n" +
+                    "{\n" +
+                    $"    writer.Write(value.{fieldName});\n" +
+                    "}\n" +
+                    "catch (Exception e)\n" +
+                    "{\n" +
+                    $"    Console.WriteLine(\"[Serialization] Failed to serialize field '{fieldName}' in {componentName}: \" + e.Message);\n" +
+                    "    writer.WriteNil();\n" +
+                    "}");
 
                 deserializeBody.AppendLine($"// Deserialize field: {fieldName} ({type})");
-                deserializeBody.AppendLine($"component.{fieldName} = reader.Read{GetPrimitiveReader(type)}();");
+                //deserializeBody.AppendLine($"component.{fieldName} = reader.Read{GetPrimitiveReader(type)}();");
+                deserializeBody.AppendLine(
+                    $"if (!reader.End) {{ try {{ component.{fieldName} = reader.Read{GetPrimitiveReader(field.Type)}(); }} catch (Exception e) {{ Console.WriteLine(\"[Serialization] Failed to deserialize field '{fieldName}' in {componentName}: \" + e.Message); }} }}"
+                );
             }
             else
             {
-                serializeBody.AppendLine($"MessagePack.MessagePackSerializer.Serialize(ref writer, value.{fieldName}, MessagePack.MessagePackSerializerOptions.Standard);");
+                //serializeBody.AppendLine($"MessagePack.MessagePackSerializer.Serialize(ref writer, value.{fieldName}, MessagePack.MessagePackSerializerOptions.Standard);");
+                serializeBody.AppendLine(
+                    "try\n" +
+                    "{\n" +
+                    $"    MessagePack.MessagePackSerializer.Serialize(ref writer, value.{fieldName}, MessagePack.MessagePackSerializerOptions.Standard);\n" +
+                    "}\n" +
+                    "catch (Exception e)\n" +
+                    "{\n" +
+                    $"    Console.WriteLine(\"[Serialization] Failed to serialize field '{fieldName}' in {componentName}: \" + e.Message);\n" +
+                    "    writer.WriteNil();\n" +
+                    "}");
 
                 deserializeBody.AppendLine($"// Deserialize field: {fieldName} ({type})");
-                deserializeBody.AppendLine($"component.{fieldName} = MessagePack.MessagePackSerializer.Deserialize<{type}>(ref reader, MessagePack.MessagePackSerializerOptions.Standard);");
+                //deserializeBody.AppendLine($"component.{fieldName} = MessagePack.MessagePackSerializer.Deserialize<{type}>(ref reader, MessagePack.MessagePackSerializerOptions.Standard);");
+                deserializeBody.AppendLine($$"""
+                    if (!reader.End)
+                    {
+                        try
+                        {
+                            component.{{fieldName}} =
+                                MessagePack.MessagePackSerializer.Deserialize<{{type}}>(
+                                    ref reader,
+                                    MessagePack.MessagePackSerializerOptions.Standard);
+                        }
+                        catch { }
+                    }
+                """);
             }
         }
+
+        deserializeBody.AppendLine("""
+            while (!reader.End)
+            {
+                try
+                {
+                    reader.Skip();
+                }
+                catch
+                {
+                    break;
+                }
+            }
+            """);
 
         string source = $$"""
             #nullable enable
@@ -91,9 +178,17 @@ internal static class SerializerEmitter
                     {
                         var reader = new MessagePackReader(data);
 
-                        int count = reader.ReadArrayHeader();
-
                         var component = new {{namespaceName}}.{{componentName}}();
+
+                        int count;
+                        try
+                        {
+                            count = reader.ReadArrayHeader();
+                        }
+                        catch
+                        {
+                            return component;
+                        }
 
                         {{deserializeBody}}
 

@@ -28,24 +28,24 @@ namespace DevoidEngine.Engine.Serialization
 
             Dictionary<Guid, GameObject> map = new();
 
-            // pass 1: create objects
-            foreach (var goData in data.GameObjects)
+            try
             {
-                var go = GameObjectSerializer.Deserialize(goData, scene, map);
-                scene.AddGameObject(go);
+                foreach (var goData in data.GameObjects)
+                {
+                    try
+                    {
+                        var go = GameObjectSerializer.Deserialize(goData, scene, map);
+                        scene.AddGameObject(go);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine($"[Scene] Failed to load GameObject {goData.Name}: {e.Message}");
+                    }
+                }
             }
-
-            // pass 2: rebuild hierarchy
-            foreach (var goData in data.GameObjects)
+            catch (Exception e)
             {
-                if (goData.Parent == Guid.Empty)
-                    continue;
-
-                var go = map[goData.Id];
-                var parent = map[goData.Parent];
-
-                go.parentObject = parent;
-                parent.children.Add(go);
+                Console.WriteLine($"[Scene] Scene corrupted: {e.Message}");
             }
 
             return scene;

@@ -48,13 +48,22 @@ namespace DevoidEngine.Engine.AssetPipeline
 
             byte[] data = VirtualFileSystem.Instance.ReadAllBytes(path);
 
-            T loaded = loader.Load(data);
-            if (loaded is AssetType assetType)
-                assetType.Guid = guid;
+            try
+            {
+                T loaded = loader.Load(data);
 
-            AssetCache<T>.Cache[guid] = loaded;
+                if (loaded is AssetType assetType)
+                    assetType.Guid = guid;
 
-            return loaded;
+                AssetCache<T>.Cache[guid] = loaded;
+
+                return loaded;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Asset load failed {guid}: {e.Message}");
+                return default;
+            }
         }
     }
 }

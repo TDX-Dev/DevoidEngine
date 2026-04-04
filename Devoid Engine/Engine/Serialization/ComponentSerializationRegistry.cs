@@ -31,9 +31,23 @@ namespace DevoidEngine.Engine.Serialization
             return serializers[component.GetType()](component);
         }
 
-        public static Component Deserialize(string type, byte[] data)
+        public static Component? Deserialize(string type, byte[] data)
         {
-            return deserializers[type](data);
+            if (!deserializers.TryGetValue(type, out var fn))
+            {
+                Console.WriteLine($"[Serialization] Unknown component type: {type}");
+                return null;
+            }
+
+            try
+            {
+                return fn(data);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"[Serialization] Failed to deserialize {type}: {e.Message}");
+                return null;
+            }
         }
     }
 }

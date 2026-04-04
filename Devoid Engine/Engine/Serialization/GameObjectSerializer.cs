@@ -42,10 +42,15 @@ namespace DevoidEngine.Engine.Serialization
 
             foreach (var compData in data.Components)
             {
-                var component =
-                    ComponentSerializationRegistry.Deserialize(
-                        compData.Type,
-                        compData.Data);
+                var component = ComponentSerializationRegistry.Deserialize(
+                    compData.Type,
+                    compData.Data);
+
+                if (component == null)
+                {
+                    Console.WriteLine($"[Scene] Skipping component {compData.Type}");
+                    continue;
+                }
 
                 go.Components.Add(component);
                 component.gameObject = go;
