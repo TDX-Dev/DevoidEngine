@@ -14,6 +14,7 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
         string OutputExtension { get; }
 
         Type SettingsType { get; }
+        int SettingsVersion { get; }
 
         byte[] CreateDefaultSettings();
 

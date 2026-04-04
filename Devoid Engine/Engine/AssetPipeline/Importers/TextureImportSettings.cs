@@ -7,6 +7,7 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
     [MessagePackObject]
     public class TextureImportSettings
     {
+        public const int CurrentVersion = 0;
         [Key(0)]
         public bool GenerateMipmaps = true;
 

@@ -15,6 +15,7 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
         public abstract string OutputExtension { get; }
 
         public Type SettingsType => typeof(TSettings);
+        public int SettingsVersion => 0;
 
         public abstract TSettings DefaultSettings();
 
@@ -32,7 +33,17 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
 
         void IAssetImporter.Import(string path, Guid guid, byte[] data, string outputPath)
         {
-            var settings = MessagePackSerializer.Deserialize<TSettings>(data);
+            TSettings settings;
+
+            try
+            {
+                settings = MessagePackSerializer.Deserialize<TSettings>(data);
+            }
+            catch
+            {
+                Console.WriteLine("Settings incompatible, regenerating defaults.");
+                settings = DefaultSettings();
+            }
 
             Import(path, guid, settings, outputPath);
         }

@@ -11,6 +11,6 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
     [MessagePackObject]
     public class AudioImportSettings
     {
-
+        public const int CurrentVersion = 0;
     }
 }

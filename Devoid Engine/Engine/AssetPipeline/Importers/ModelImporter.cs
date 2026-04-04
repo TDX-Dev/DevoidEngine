@@ -1,5 +1,8 @@
-﻿using DevoidEngine.Engine.Assets;
+﻿using Assimp;
+using DevoidEngine.Engine.Assets;
 using DevoidEngine.Engine.Core;
+using DevoidEngine.Engine.ProjectSystem;
+using DevoidEngine.Engine.Utilities;
 using MessagePack;
 using System;
 using System.Collections.Generic;
@@ -7,13 +10,11 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-
+using AssimpContext = Assimp.AssimpContext;
+using AssimpMesh = Assimp.Mesh;
 using AssimpScene = Assimp.Scene;
 using Node = Assimp.Node;
-using AssimpMesh = Assimp.Mesh;
 using PostProcessSteps = Assimp.PostProcessSteps;
-using AssimpContext = Assimp.AssimpContext;
-using DevoidEngine.Engine.Utilities;
 
 namespace DevoidEngine.Engine.AssetPipeline.Importers
 {
@@ -46,21 +47,40 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
                 PostProcessSteps.GenerateNormals |
                 PostProcessSteps.CalculateTangentSpace);
 
-            var model = ConvertScene(scene, settings);
+            var model = ConvertScene(scene, settings, outputPath);
 
             File.WriteAllBytes(
                 outputPath,
                 MessagePackSerializer.Serialize(model));
         }
 
-        private ModelAsset ConvertScene(AssimpScene scene, ModelImportSettings settings)
+        private ModelAsset ConvertScene(AssimpScene scene, ModelImportSettings settings, string outputPath)
         {
             List<ModelNode> nodes = new();
             List<MeshAsset> meshes = new();
+            List<Guid> materials = new();
 
             Matrix4x4 axis = AxisHelper.BuildAxisMatrix(
                 settings.SourceUp,
                 settings.SourceForward);
+
+            foreach (var mat in scene.Materials)
+            {
+                MaterialAsset matAsset = ConvertMaterial(mat, outputPath);
+                Guid matGuid = Guid.NewGuid();
+
+                string matPath = Path.Combine(
+                    Path.GetDirectoryName(outputPath)!,
+                    matGuid.ToString("N") + ".material"
+                );
+
+                File.WriteAllBytes(
+                    matPath,
+                    MessagePackSerializer.Serialize(matAsset)
+                );
+
+                materials.Add(matGuid);
+            }
 
             ProcessNode(scene.RootNode, -1, Matrix4x4.Identity, nodes, meshes, scene, settings, axis);
 
@@ -68,7 +88,7 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
             {
                 Nodes = nodes.ToArray(),
                 Meshes = meshes.ToArray(),
-                Materials = []
+                Materials = materials.ToArray()
             };
         }
 
@@ -161,6 +181,59 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
             asset.MaterialIndex = mesh.MaterialIndex;
 
             return asset;
+        }
+
+        MaterialAsset ConvertMaterial(Assimp.Material mat, string currentModelPath)
+        {
+            MaterialAsset asset = new();
+
+            asset.Shader = "PBR/ForwardPBR";
+
+            if (mat.HasTextureDiffuse)
+            {
+                mat.GetMaterialTexture(
+                    Assimp.TextureType.Diffuse,
+                    0,
+                    out var tex);
+
+                Guid texGuid = ImportTexture(tex.FilePath, currentModelPath);
+
+                asset.Textures["MAT_Albedo"] = texGuid;
+            }
+
+            if (mat.HasTextureNormal)
+            {
+                mat.GetMaterialTexture(
+                    Assimp.TextureType.Normals,
+                    0,
+                    out var tex);
+
+                Guid texGuid = ImportTexture(tex.FilePath, currentModelPath);
+
+                asset.Textures["MAT_Normal"] = texGuid;
+            }
+
+            return asset;
+        }
+
+        Guid ImportTexture(string relativePath, string currentModelPath)
+        {
+            string assetPath = Path.Combine(
+                Path.GetDirectoryName(currentModelPath)!,
+                relativePath
+            );
+
+            assetPath = Path.GetFullPath(assetPath);
+
+            string projectAssets = ProjectManager.Current!.AssetPath;
+
+            string relative = Path.GetRelativePath(projectAssets, assetPath);
+
+            if (AssetDatabase.TryGetGuid(relative, out var guid))
+                return guid;
+
+            Console.WriteLine($"Texture not registered: {relative}");
+            return Guid.Empty;
         }
     }
 }

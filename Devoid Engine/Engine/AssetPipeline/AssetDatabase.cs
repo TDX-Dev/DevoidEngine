@@ -51,7 +51,7 @@ namespace DevoidEngine.Engine.AssetPipeline
             ScanAssets();
         }
 
-        private static Guid RegisterAsset(string assetPath)
+        internal static Guid RegisterAsset(string assetPath)
         {
             var metaPath = assetPath + ".meta";
 
@@ -83,6 +83,16 @@ namespace DevoidEngine.Engine.AssetPipeline
 
             var ext = Path.GetExtension(assetPath).ToLower();
             var importer = ImporterRegistry.GetImporter(ext);
+
+            if (meta.Version != importer.SettingsVersion)
+            {
+                Console.WriteLine($"[Asset] Importer settings changed for {assetPath}, regenerating.");
+
+                meta.Settings = importer.CreateDefaultSettings();
+                meta.Version = importer.SettingsVersion;
+
+                SaveMeta(metaAbsolutePath, meta);
+            }
 
             if (created || NeedsReimport(assetPath, meta, entry.Guid))
             {

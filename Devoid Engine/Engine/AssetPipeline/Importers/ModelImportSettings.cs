@@ -11,6 +11,7 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
     [MessagePackObject]
     public class ModelImportSettings
     {
+        public const int CurrentVersion = 0;
         [Key(0)]
         public Axis SourceUp = Axis.Y;
 

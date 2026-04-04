@@ -1,6 +1,4 @@
-﻿using BepuPhysics.Collidables;
-using DevoidGPU;
-using SharpDX.Direct3D11;
+﻿using DevoidGPU;
 using System.Numerics;
 using System.Runtime.InteropServices;
 
