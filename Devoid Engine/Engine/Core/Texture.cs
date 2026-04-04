@@ -1,10 +1,11 @@
-﻿using DevoidEngine.Engine.Rendering;
+﻿using DevoidEngine.Engine.Assets;
+using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.Rendering.GPUResource;
 using DevoidGPU;
 
 namespace DevoidEngine.Engine.Core
 {
-    public abstract class Texture : IDisposable
+    public abstract class Texture : AssetType, IDisposable
     {
         protected SamplerHandle _sampler;
         protected SamplerDescription _samplerDescription = SamplerDescription.Default;
