@@ -31,8 +31,8 @@ namespace DevoidStandaloneLauncher.Prototypes
             scene.Play();
 
             var audioSources = scene.GetComponentsOfType<AudioSourceComponent3D>();
-            for (int i = 0; i < audioSources.Count; i++)
-                audioSources[i].Play();
+             for (int i = 0; i < audioSources.Count; i++)
+                audioSources[i].Pause();
 
             scene.GetComponentsOfType<CameraComponent3D>()[0].gameObject.AddComponent<FreeCameraComponent>();
             var gameObject = scene.GetComponentsOfType<CameraComponent3D>()[0].gameObject;

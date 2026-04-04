@@ -58,7 +58,7 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
         {
             List<ModelNode> nodes = new();
             List<MeshAsset> meshes = new();
-            List<Guid> materials = new();
+            List<MaterialAsset> materials = new();
 
             Matrix4x4 axis = AxisHelper.BuildAxisMatrix(
                 settings.SourceUp,
@@ -67,19 +67,7 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
             foreach (var mat in scene.Materials)
             {
                 MaterialAsset matAsset = ConvertMaterial(mat, outputPath);
-                Guid matGuid = Guid.NewGuid();
-
-                string matPath = Path.Combine(
-                    Path.GetDirectoryName(outputPath)!,
-                    matGuid.ToString("N") + ".material"
-                );
-
-                File.WriteAllBytes(
-                    matPath,
-                    MessagePackSerializer.Serialize(matAsset)
-                );
-
-                materials.Add(matGuid);
+                materials.Add(matAsset);
             }
 
             ProcessNode(scene.RootNode, -1, Matrix4x4.Identity, nodes, meshes, scene, settings, axis);
@@ -189,6 +177,52 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
 
             asset.Shader = "PBR/ForwardPBR";
 
+            MaterialProperty roughnessProperty = mat.GetProperty("$mat.roughnessFactor,0,0");
+
+            asset.Floats["AO"] = 1f;
+
+            if (mat.HasColorDiffuse)
+            {
+                asset.Vector4s["Albedo"] = mat.ColorDiffuse;
+            }
+
+            if (roughnessProperty != null)
+            {
+                float roughness = mat.GetProperty("$mat.roughnessFactor,0,0").GetFloatValue();
+                asset.Floats["Roughness"] = roughness;
+            }
+            else
+            {
+                asset.Floats["Roughness"] = 0.5f;
+            }
+
+            if (mat.HasReflectivity)
+                asset.Floats["Metallic"] = mat.Reflectivity;
+            else
+                asset.Floats["Metallic"] = 0f;
+
+            if (mat.HasColorEmissive)
+            {
+                var e = mat.ColorEmissive;
+
+                Vector3 emissiveColor = e.AsVector3();
+
+                // optional: normalize color and extract strength
+                float emissiveStrength = MathF.Max(e.X, MathF.Max(e.Y, e.Z));
+
+                if (emissiveStrength > 0)
+                    emissiveColor /= emissiveStrength;
+
+                asset.Vector3s["EmissiveColor"] = mat.ColorEmissive.AsVector3();
+                asset.Floats["EmissiveStrength"] = emissiveStrength;
+            }
+            else
+            {
+                asset.Vector3s["EmissiveColor"] = Vector3.Zero;
+                asset.Floats["EmissiveStrength"] = 0f;
+            }
+
+
             if (mat.HasTextureDiffuse)
             {
                 mat.GetMaterialTexture(
@@ -216,23 +250,19 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
             return asset;
         }
 
-        Guid ImportTexture(string relativePath, string currentModelPath)
+        Guid ImportTexture(string texturePath, string modelAssetPath)
         {
-            string assetPath = Path.Combine(
-                Path.GetDirectoryName(currentModelPath)!,
-                relativePath
-            );
+            // directory of the model inside Assets/
+            string modelDir = Path.GetDirectoryName(modelAssetPath)!;
 
-            assetPath = Path.GetFullPath(assetPath);
+            // resolve relative texture reference
+            string assetPath = Path.Combine(modelDir, texturePath)
+                .Replace('\\', '/');
 
-            string projectAssets = ProjectManager.Current!.AssetPath;
-
-            string relative = Path.GetRelativePath(projectAssets, assetPath);
-
-            if (AssetDatabase.TryGetGuid(relative, out var guid))
+            if (AssetDatabase.TryGetGuid(assetPath, out var guid))
                 return guid;
 
-            Console.WriteLine($"Texture not registered: {relative}");
+            Console.WriteLine($"Texture not found in AssetDatabase: {assetPath}");
             return Guid.Empty;
         }
     }

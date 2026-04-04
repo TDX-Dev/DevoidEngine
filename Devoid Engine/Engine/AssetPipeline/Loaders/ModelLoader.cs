@@ -22,13 +22,36 @@ namespace DevoidEngine.Engine.AssetPipeline.Loaders
             model.Nodes = asset.Nodes;
 
             model.Meshes = new Mesh[asset.Meshes.Length];
+            model.Materials = new Material[asset.Materials.Length];
 
             for (int i = 0; i < asset.Meshes.Length; i++)
             {
                 model.Meshes[i] = BuildMesh(asset.Meshes[i]);
             }
 
+            for (int i = 0; i < asset.Materials.Length; i++)
+            {
+                model.Materials[i] = BuildMaterial(asset.Materials[i]);
+            }
+
             return model;
+        }
+
+        Material BuildMaterial(MaterialAsset asset)
+        {
+            Shader shader = ShaderLibrary.GetShader(asset.Shader)
+                ?? ShaderLibrary.GetShader("PBR/ForwardPBR")!;
+
+            Material material = new Material(shader);
+
+            foreach (var (name, guid) in asset.Textures)
+            {
+                Texture2D? tex = AssetManager.Load<Texture2D>(guid);
+                if (tex != null)
+                    material.SetTexture(name, tex);
+            }
+
+            return material;
         }
 
         Mesh BuildMesh(MeshAsset data)

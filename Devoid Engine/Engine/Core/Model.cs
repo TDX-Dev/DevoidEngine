@@ -12,6 +12,7 @@ namespace DevoidEngine.Engine.Core
     {
         public Mesh[] Meshes = [];
         public ModelNode[] Nodes = [];
+        public Material[] Materials = [];
 
         public GameObject Instantiate(Scene scene)
         {
@@ -32,8 +33,11 @@ namespace DevoidEngine.Engine.Core
 
                 foreach (int meshIndex in node.MeshIndices)
                 {
+                    var mesh = Meshes[meshIndex];
+                    var material = Materials[mesh.MaterialIndex];
+
                     var renderer = go.AddComponent<MeshRenderer>();
-                    renderer.AddMesh(Meshes[meshIndex]);
+                    renderer.AddMesh(mesh, material);
                 }
             }
 
