@@ -1,4 +1,5 @@
-﻿using DevoidEngine.Engine.Core;
+﻿using Assimp;
+using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.Utilities;
 using DevoidGPU;
@@ -77,7 +78,7 @@ namespace DevoidEngine.Engine.Rendering
             Position = position;
             Front = Vector3.Normalize(front);
             Up = Vector3.Normalize(up);
-            Right = Vector3.Normalize(Vector3.Cross(Front, Up));
+            Right = Vector3.Normalize(Vector3.Cross(Up, Front));
 
             _viewMatrix = Matrix4x4.CreateLookAt(Position, Position + Front, Up);
 

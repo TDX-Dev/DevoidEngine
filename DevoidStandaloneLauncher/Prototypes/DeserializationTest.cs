@@ -8,6 +8,7 @@ using DevoidEngine.Engine.UI.Nodes;
 using DevoidEngine.Engine.UI.Theme;
 using DevoidEngine.Engine.UI.Theme.Styleboxes;
 using DevoidStandaloneLauncher.Scripts;
+using DevoidStandaloneLauncher.Utils;
 using MessagePack;
 using System;
 using System.Collections.Generic;
@@ -22,6 +23,7 @@ namespace DevoidStandaloneLauncher.Prototypes
     {
         public override void OnInit()
         {
+            DefaultInput.ConfigureInput();
 
             Scene scene = DeserializeScene();
             loader.CurrentScene = scene;
@@ -31,6 +33,14 @@ namespace DevoidStandaloneLauncher.Prototypes
             var audioSources = scene.GetComponentsOfType<AudioSourceComponent3D>();
             for (int i = 0; i < audioSources.Count; i++)
                 audioSources[i].Play();
+
+            scene.GetComponentsOfType<CameraComponent3D>()[0].gameObject.AddComponent<FreeCameraComponent>();
+            var gameObject = scene.GetComponentsOfType<CameraComponent3D>()[0].gameObject;
+            gameObject.Transform.Position = new Vector3(0, 0, -5);
+
+            Model model = Asset.Load<Model>("model.glb");
+            GameObject go = model.Instantiate(scene);
+
         }
 
         public Scene DeserializeScene()

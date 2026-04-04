@@ -46,6 +46,7 @@ namespace DevoidEngine.Engine.AssetPipeline
             ImporterRegistry.Register<Texture2D>(new TextureImporter());
             ImporterRegistry.Register<AudioClip>(new AudioImporter());
             ImporterRegistry.Register<Scene>(new SceneImporter());
+            ImporterRegistry.Register<Model>(new ModelImporter());
 
             ScanAssets();
         }

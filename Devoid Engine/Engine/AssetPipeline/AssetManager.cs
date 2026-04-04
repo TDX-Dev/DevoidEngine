@@ -25,6 +25,7 @@ namespace DevoidEngine.Engine.AssetPipeline
             AssetLoaderRegistry.Register<Texture2D>(new TextureLoader());
             AssetLoaderRegistry.Register<AudioClip>(new AudioLoader());
             AssetLoaderRegistry.Register<Scene>(new SceneLoader());
+            AssetLoaderRegistry.Register<Model>(new ModelLoader());
         }
 
         public static T? Load<T>(Guid guid)

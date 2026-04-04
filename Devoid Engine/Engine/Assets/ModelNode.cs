@@ -15,7 +15,7 @@ namespace DevoidEngine.Engine.Assets
 
         [Key(1)] public int Parent = -1;
 
-        [Key(2)] public int MeshIndex = -1;
+        [Key(2)] public int[] MeshIndices = [];
 
         [Key(3)] public Vector3 Translation;
 

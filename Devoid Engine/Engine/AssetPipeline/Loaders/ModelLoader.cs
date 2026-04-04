@@ -38,15 +38,35 @@ namespace DevoidEngine.Engine.AssetPipeline.Loaders
             int numElemPerUV = 2;
             int numElemPerNormal = 3;
 
-            Vertex[] vertex = new Vertex[data.Positions.Length];
+            int vertexCount = data.Positions.Length / numElemPerVertex;
 
-            for (int i = 0; i < data.Positions.Length; i++)
+            Vertex[] vertex = new Vertex[vertexCount];
+
+            for (int i = 0; i < vertexCount; i++)
             {
-                Vector3 position = new Vector3(data.Positions[i * numElemPerVertex], data.Positions[i * numElemPerVertex + 1], data.Positions[i * numElemPerVertex + 2]);
-                Vector2 uv = new Vector2(data.UVs[i * numElemPerUV], data.UVs[i * numElemPerUV + 1]);
-                Vector3 normal = new Vector3(data.Normals[i * numElemPerNormal], data.Normals[i * numElemPerNormal + 1], data.Normals[i * numElemPerNormal + 2]);
-                Vector3 tangent = new Vector3(data.Tangents[i * numElemPerNormal], data.Tangents[i * numElemPerNormal + 1], data.Tangents[i * numElemPerNormal + 2]);
-                Vector3 bitangent = new Vector3(data.Bitangents[i * numElemPerNormal], data.Bitangents[i * numElemPerNormal + 1], data.Bitangents[i * numElemPerNormal + 2]);
+                Vector3 position = new Vector3(
+                    data.Positions[i * numElemPerVertex],
+                    data.Positions[i * numElemPerVertex + 1],
+                    data.Positions[i * numElemPerVertex + 2]);
+
+                Vector2 uv = new Vector2(
+                    data.UVs[i * numElemPerUV],
+                    data.UVs[i * numElemPerUV + 1]);
+
+                Vector3 normal = new Vector3(
+                    data.Normals[i * numElemPerNormal],
+                    data.Normals[i * numElemPerNormal + 1],
+                    data.Normals[i * numElemPerNormal + 2]);
+
+                Vector3 tangent = new Vector3(
+                    data.Tangents[i * numElemPerNormal],
+                    data.Tangents[i * numElemPerNormal + 1],
+                    data.Tangents[i * numElemPerNormal + 2]);
+
+                Vector3 bitangent = new Vector3(
+                    data.Bitangents[i * numElemPerNormal],
+                    data.Bitangents[i * numElemPerNormal + 1],
+                    data.Bitangents[i * numElemPerNormal + 2]);
 
                 vertex[i] = new Vertex(position, normal, uv, tangent, bitangent);
             }
