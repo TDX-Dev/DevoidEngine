@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace DevoidEngine.Engine.Serialization
 {
     [AttributeUsage(AttributeTargets.Field)]
-    public sealed class SerializeFieldAttribute : Attribute
+    public sealed class DontSerialize : Attribute
     {
     }
 }

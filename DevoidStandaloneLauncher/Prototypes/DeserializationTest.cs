@@ -31,36 +31,11 @@ namespace DevoidStandaloneLauncher.Prototypes
             var audioSources = scene.GetComponentsOfType<AudioSourceComponent3D>();
             for (int i = 0; i < audioSources.Count; i++)
                 audioSources[i].Play();
-
-            //Console.WriteLine(scene.GetComponentsOfType<CameraComponent3D>()[0].IsDefault);
         }
-
-        public override void OnUpdate(float delta)
-        {
-        }
-
 
         public Scene DeserializeScene()
         {
-            string path = ProjectManager.Current.AssetPath + "/scene.scene";
-
-            try
-            {
-                byte[] bytes = File.ReadAllBytes(path);
-
-                var options = MessagePackSerializerOptions.Standard
-                    .WithSecurity(MessagePackSecurity.UntrustedData);
-
-                SceneData sceneData =
-                    MessagePackSerializer.Deserialize<SceneData>(bytes, options);
-
-                return SceneSerializer.Deserialize(sceneData);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Scene] Failed to deserialize scene: {e.Message}");
-                return new Scene();
-            }
+            return Asset.Load<Scene>("scene.scene") ?? new Scene();
         }
 
         public void SerializeComponent(Component comp)

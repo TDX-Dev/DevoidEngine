@@ -208,7 +208,7 @@ internal static class SerializerEmitter
     {
         foreach (var attr in field.GetAttributes())
         {
-            if (attr.AttributeClass?.Name == "SerializeFieldAttribute")
+            if (attr.AttributeClass?.Name == "DontSerialize")
                 return true;
         }
 

@@ -1,9 +1,10 @@
-﻿using DevoidEngine.Engine.AudioSystem;
+﻿using DevoidEngine.Engine.Assets;
+using DevoidEngine.Engine.AudioSystem;
 using DevoidEngine.Engine.Components;
 
 namespace DevoidEngine.Engine.Core
 {
-    public class Scene
+    public class Scene : AssetType
     {
         public event Action<Component>? OnComponentAdded;
         public event Action<Component>? OnComponentRemoved;
