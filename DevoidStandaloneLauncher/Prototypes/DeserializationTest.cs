@@ -28,7 +28,9 @@ namespace DevoidStandaloneLauncher.Prototypes
             SceneManager.LoadScene(scene);
             scene.Play();
 
-            scene.GetComponentsOfType<AudioSourceComponent3D>()[0].Play();
+            var audioSources = scene.GetComponentsOfType<AudioSourceComponent3D>();
+            for (int i = 0; i < audioSources.Count; i++)
+                audioSources[i].Play();
 
             //Console.WriteLine(scene.GetComponentsOfType<CameraComponent3D>()[0].IsDefault);
         }
@@ -40,12 +42,25 @@ namespace DevoidStandaloneLauncher.Prototypes
 
         public Scene DeserializeScene()
         {
-            var deserializationBytes = (SceneData)MessagePackSerializer.Deserialize<SceneData>(File.ReadAllBytes(ProjectManager.Current.AssetPath + "/scene.scene"));
-            Scene deserializedSceneData = SceneSerializer.Deserialize(deserializationBytes);
+            string path = ProjectManager.Current.AssetPath + "/scene.scene";
 
-            Console.WriteLine("GameObjects in scene after deserialization: " + deserializedSceneData.GameObjects.Count);
+            try
+            {
+                byte[] bytes = File.ReadAllBytes(path);
 
-            return deserializedSceneData;
+                var options = MessagePackSerializerOptions.Standard
+                    .WithSecurity(MessagePackSecurity.UntrustedData);
+
+                SceneData sceneData =
+                    MessagePackSerializer.Deserialize<SceneData>(bytes, options);
+
+                return SceneSerializer.Deserialize(sceneData);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"[Scene] Failed to deserialize scene: {e.Message}");
+                return new Scene();
+            }
         }
 
         public void SerializeComponent(Component comp)

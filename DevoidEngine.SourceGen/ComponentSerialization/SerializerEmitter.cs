@@ -133,7 +133,10 @@ internal static class SerializerEmitter
                                     ref reader,
                                     MessagePack.MessagePackSerializerOptions.Standard);
                         }
-                        catch { }
+                        catch (Exception e) 
+                        {
+                            Console.WriteLine("[Serialization] Failed to deserialize field '{{fieldName}}' in {{componentName}}: " + e.Message);
+                        }
                     }
                 """);
             }

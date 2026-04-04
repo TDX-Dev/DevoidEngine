@@ -46,6 +46,12 @@ namespace DevoidEngine.Engine.AssetPipeline
 
             string path = AssetDatabase.GetLibraryPath(guid, extension);
 
+            if (!VirtualFileSystem.Instance.Exists(path))
+            {
+                Console.WriteLine($"[Asset] Cache missing for {guid}, reimporting...");
+                AssetDatabase.Reimport(guid);
+            }
+
             byte[] data = VirtualFileSystem.Instance.ReadAllBytes(path);
 
             try

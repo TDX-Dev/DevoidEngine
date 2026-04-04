@@ -141,6 +141,49 @@ namespace DevoidEngine.Engine.AssetPipeline
             return false;
         }
 
+        public static void Reimport(Guid guid)
+        {
+            if (!guidToAsset.TryGetValue(guid, out var entry))
+            {
+                Console.WriteLine($"[Asset] Cannot reimport unknown GUID {guid}");
+                return;
+            }
+
+            var project = ProjectManager.Current!;
+            string assetPath = entry.AssetPath;
+
+            string absolutePath = Path.Combine(project.AssetPath, assetPath);
+
+            if (!File.Exists(absolutePath))
+            {
+                Console.WriteLine($"[Asset] Source asset missing: {assetPath}");
+                return;
+            }
+
+            var meta = LoadMeta(
+                Path.Combine(project.AssetPath, entry.MetaPath),
+                assetPath
+            );
+
+            var importer = ImporterRegistry.GetImporter(
+                Path.GetExtension(assetPath).ToLower()
+            );
+
+            string output = Path.Combine(
+                project.CachePath,
+                GetLibraryPath(guid, importer.OutputExtension)
+            );
+
+            importer.Import(
+                absolutePath,
+                guid,
+                meta.Settings,
+                output
+            );
+
+            Console.WriteLine($"[Asset] Reimported {assetPath}");
+        }
+
         private static AssetMeta LoadMeta(string metaPath, string assetPath)
         {
             try
