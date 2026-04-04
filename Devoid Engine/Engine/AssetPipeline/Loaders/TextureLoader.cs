@@ -20,6 +20,7 @@ namespace DevoidEngine.Engine.AssetPipeline.Loaders
                 Format = asset.Format,
                 GenerateMipmaps = false,
                 IsDepthStencil = false,
+                MipLevels = 1,
                 IsRenderTarget = false,
                 IsMutable = false
             });

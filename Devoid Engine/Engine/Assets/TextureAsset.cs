@@ -28,7 +28,7 @@ namespace DevoidEngine.Engine.Assets
         public int Anisotropy;
 
         [Key(6)]
-        public byte[] PixelData = Array.Empty<byte>();
+        public byte[] PixelData = [];
     }
 
 

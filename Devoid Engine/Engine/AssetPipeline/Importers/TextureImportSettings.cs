@@ -11,7 +11,7 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
         public bool GenerateMipmaps = true;
 
         [Key(1)]
-        public bool SRGB = true;
+        public bool SRGB = false;
 
         [Key(2)]
         public bool Compress = true;

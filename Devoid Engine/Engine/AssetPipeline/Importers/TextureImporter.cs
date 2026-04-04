@@ -39,24 +39,34 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
 
             byte[] pixels = new byte[data.Length];
 
-            for (int i = 0; i < data.Length; i++)
+            for (int i = 0; i < data.Length; i += 4)
             {
-                float v = data[i];
+                float r = data[i];
+                float g = data[i + 1];
+                float b = data[i + 2];
+                float a = data[i + 3];
 
-                if (v < 0f) v = 0f;
-                if (v > 1f) v = 1f;
+                if (settings.SRGB)
+                {
+                    r = Helper.SRGBToLinear(r);
+                    g = Helper.SRGBToLinear(g);
+                    b = Helper.SRGBToLinear(b);
+                }
 
-                pixels[i] = (byte)(v * 255f);
+                pixels[i] = (byte)(Math.Clamp(r, 0f, 1f) * 255f);
+                pixels[i + 1] = (byte)(Math.Clamp(g, 0f, 1f) * 255f);
+                pixels[i + 2] = (byte)(Math.Clamp(b, 0f, 1f) * 255f);
+                pixels[i + 3] = (byte)(Math.Clamp(a, 0f, 1f) * 255f);
             }
 
             var asset = new TextureAsset
             {
                 Width = width,
                 Height = height,
-                Format = TextureFormat.RGBA8_UNorm,
+                Format = settings.Format,
                 Anisotropy = 8,
-                Filter = TextureFilter.Nearest,
-                Wrap = TextureWrapMode.ClampToEdge,
+                Filter = settings.Filter,
+                Wrap = settings.Wrap,
                 PixelData = pixels
             };
 

@@ -8,7 +8,7 @@ namespace DevoidEngine.Engine.Utilities
     {
         public static Vector4 RGBANormalize(Vector4 color) => color / 255;
 
-        private static float SRGBToLinear(float v)
+        public static float SRGBToLinear(float v)
         {
             if (v <= 0.04045f)
                 return v / 12.92f;
@@ -25,6 +25,31 @@ namespace DevoidEngine.Engine.Utilities
             width = image.Width;
             height = image.Height;
             pixels = image.PixelHP;
+        }
+
+        public static void LoadImageFloatSRGB(ReadOnlySpan<byte> data, out int width, out int height, out Half[] pixels)
+        {
+            Image image = new Image();
+            image.LoadPNGAsFloatFromMemory(data);
+
+            float[] floatPixels = image.PixelHP;
+            Half[] halfPixels = new Half[floatPixels.Length];
+
+            for (int i = 0; i < floatPixels.Length; i++)
+            {
+                float v = floatPixels[i];
+
+                if (v < 0f) v = 0f;
+                if (v > 1f) v = 1f;
+
+                v = SRGBToLinear(v);
+
+                halfPixels[i] = (Half)v;
+            }
+
+            width = image.Width;
+            height = image.Height;
+            pixels = halfPixels;
         }
 
         // ------------------------------------------
