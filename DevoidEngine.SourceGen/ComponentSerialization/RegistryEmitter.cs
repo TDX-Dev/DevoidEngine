@@ -17,7 +17,7 @@ internal static class RegistryEmitter
         sb.AppendLine("using DevoidEngine.Engine.Components;");
         sb.AppendLine("using DevoidEngine.Engine.Serialization;");
         sb.AppendLine("using System.Runtime.CompilerServices;");
-        sb.AppendLine("namespace DevoidEngine.Serialization.Generated");
+        sb.AppendLine("namespace DevoidEngine.Engine.Serialization.Generated");
         sb.AppendLine("{");
         sb.AppendLine("internal static class GeneratedComponentRegistry");
         sb.AppendLine("{");

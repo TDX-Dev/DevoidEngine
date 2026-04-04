@@ -1,5 +1,6 @@
 ﻿using DevoidEngine.Engine.AssetPipeline.Importers;
 using DevoidEngine.Engine.AssetPipeline.Loaders;
+using DevoidEngine.Engine.Assets;
 using DevoidEngine.Engine.AudioSystem;
 using DevoidEngine.Engine.Core;
 using System;
@@ -48,6 +49,8 @@ namespace DevoidEngine.Engine.AssetPipeline
             byte[] data = VirtualFileSystem.Instance.ReadAllBytes(path);
 
             T loaded = loader.Load(data);
+            if (loaded is AssetType assetType)
+                assetType.Guid = guid;
 
             AssetCache<T>.Cache[guid] = loaded;
 

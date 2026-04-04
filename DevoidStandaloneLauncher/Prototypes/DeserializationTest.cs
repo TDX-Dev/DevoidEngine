@@ -18,37 +18,19 @@ using System.Threading.Tasks;
 
 namespace DevoidStandaloneLauncher.Prototypes
 {
-    public class SerializationTest : Prototype
+    public class DeserializationTest : Prototype
     {
         public override void OnInit()
         {
 
-            Scene scene = new Scene();
+            Scene scene = DeserializeScene();
             loader.CurrentScene = scene;
             SceneManager.LoadScene(scene);
-            scene.Play(true);
+            scene.Play();
 
-            GameObject gameObject = scene.AddGameObject("Camera");
-            CameraComponent3D camera = gameObject.AddComponent<CameraComponent3D>();
-            camera.IsDefault = true;
+            scene.GetComponentsOfType<AudioSourceComponent3D>()[0].Play();
 
-            AudioClip toneAudio = Asset.Load<AudioClip>("tone.mp3");
-
-            GameObject audio = scene.AddGameObject("Audio");
-            var audC = audio.AddComponent<AudioSourceComponent3D>();
-            audC.Audio = toneAudio;
-
-            audC.Play();
-
-
-            GameObject testObject = scene.AddGameObject("Test Object# This should print if deserialized correctly!");
-            var testComponent = testObject.AddComponent<TestComponent>();
-            
-            // Component Serialization Test
-            SerializeComponent(testComponent);
-
-            // Scene Serialization Test
-            SerializeScene(scene);
+            Console.WriteLine(scene.GetComponentsOfType<CameraComponent3D>()[0].IsDefault);
         }
 
         public override void OnUpdate(float delta)
@@ -56,13 +38,8 @@ namespace DevoidStandaloneLauncher.Prototypes
         }
 
 
-        public Scene SerializeScene(Scene scene)
+        public Scene DeserializeScene()
         {
-            Console.WriteLine("GameObjects in scene before serialization: " + scene.GameObjects.Count);
-            SceneData sceneData = SceneSerializer.Serialize(scene);
-            byte[] bytes = MessagePackSerializer.Serialize(sceneData);
-
-            File.WriteAllBytes(ProjectManager.Current.AssetPath + "/scene.scene", bytes);
             var deserializationBytes = (SceneData)MessagePackSerializer.Deserialize<SceneData>(File.ReadAllBytes(ProjectManager.Current.AssetPath + "/scene.scene"));
             Scene deserializedSceneData = SceneSerializer.Deserialize(deserializationBytes);
 

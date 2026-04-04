@@ -10,12 +10,16 @@ namespace DevoidEngine.Engine.Serialization
     [MessagePackObject]
     public class GameObjectData
     {
-        [Key(0)] public Guid Id;
+        [Key(0)]
+        public Guid Id;
 
-        [Key(1)] public string Name = "";
+        [Key(1)]
+        public string Name = "";
 
-        [Key(2)] public Guid Parent;
+        [Key(2)]
+        public Guid Parent;
 
-        [Key(3)] public List<ComponentData> Components = new List<ComponentData>();
+        [Key(3)]
+        public List<ComponentData> Components = new();
     }
 }

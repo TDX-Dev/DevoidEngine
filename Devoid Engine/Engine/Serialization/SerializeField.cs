@@ -1,5 +1,4 @@
-﻿using MessagePack;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,10 +6,8 @@ using System.Threading.Tasks;
 
 namespace DevoidEngine.Engine.Serialization
 {
-    [MessagePackObject]
-    public class SceneData
+    [AttributeUsage(AttributeTargets.Field)]
+    public sealed class SerializeFieldAttribute : Attribute
     {
-        [Key(0)]
-        public List<GameObjectData> GameObjects = new();
     }
 }

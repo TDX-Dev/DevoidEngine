@@ -1,4 +1,5 @@
 ﻿using DevoidEngine.Engine.Core;
+using DevoidEngine.Engine.Serialization;
 using MessagePack;
 using System;
 using System.Collections.Generic;
@@ -12,9 +13,6 @@ namespace DevoidEngine.Engine.Assets
     public class SceneAsset
     {
         [Key(0)]
-        public string Name = "";
-        [Key(1)]
-        public List<GameObject> GameObjects = new List<GameObject>();
-
+        public SceneData Scene = new SceneData();
     }
 }

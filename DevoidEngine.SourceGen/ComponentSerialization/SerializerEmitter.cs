@@ -1,4 +1,5 @@
 ﻿using Microsoft.CodeAnalysis;
+using System;
 using System.Linq;
 using System.Text;
 
@@ -17,9 +18,9 @@ internal static class SerializerEmitter
             .OfType<IFieldSymbol>()
             .Where(f =>
                 !f.IsStatic &&
-                f.DeclaredAccessibility == Accessibility.Public &&
+                (f.DeclaredAccessibility == Accessibility.Public || HasSerializeFieldAttribute(f)) &&
                 f.Name != "gameObject" &&
-                !ContainsGameObject(f.Type) &&
+                f.Type.ToDisplayString() != "DevoidEngine.Engine.Core.GameObject" &&
                 !f.Type.ToDisplayString().StartsWith("DevoidEngine.Engine.Core") &&
                 !f.Type.ToDisplayString().StartsWith("DevoidEngine.Engine.Rendering") &&
                 !f.Type.ToDisplayString().StartsWith("DevoidEngine.Engine.UI"));
@@ -38,7 +39,18 @@ internal static class SerializerEmitter
 
             serializeBody.AppendLine($"// Serialize field: {fieldName} ({type})");
 
-            if (IsPrimitive(field.Type))
+            if (IsAssetType(field.Type))
+            {
+                serializeBody.AppendLine(
+                    $"MessagePack.MessagePackSerializer.Serialize(ref writer, value.{fieldName}?.Guid ?? Guid.Empty, MessagePack.MessagePackSerializerOptions.Standard);");
+
+                deserializeBody.AppendLine(
+                    $"var guid_{fieldName} = MessagePack.MessagePackSerializer.Deserialize<Guid>(ref reader, MessagePack.MessagePackSerializerOptions.Standard);");
+
+                deserializeBody.AppendLine(
+                    $"component.{fieldName} = guid_{fieldName} == Guid.Empty ? default : AssetManager.Load<{type}>(guid_{fieldName});");
+            } 
+            else if (IsPrimitive(field.Type))
             {
                 serializeBody.AppendLine($"writer.Write(value.{fieldName});");
 
@@ -58,8 +70,9 @@ internal static class SerializerEmitter
             #nullable enable
             using MessagePack;
             using System.Buffers;
+            using DevoidEngine.Engine.AssetPipeline;
 
-            namespace DevoidEngine.Serialization.Generated
+            namespace DevoidEngine.Engine.Serialization.Generated
             {
                 internal static class {{serializerName}}
                 {
@@ -93,6 +106,29 @@ internal static class SerializerEmitter
         context.AddSource($"{componentName}.ComponentSerializer.g.cs", source);
     }
 
+    private static bool HasSerializeFieldAttribute(IFieldSymbol field)
+    {
+        foreach (var attr in field.GetAttributes())
+        {
+            if (attr.AttributeClass?.Name == "SerializeFieldAttribute")
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsAssetType(ITypeSymbol type)
+    {
+        while (type != null)
+        {
+            if (type.Name == "AssetType")
+                return true;
+
+            type = type.BaseType;
+        }
+
+        return false;
+    }
     private static bool ContainsGameObject(ITypeSymbol type)
     {
         if (type.ToDisplayString() == "DevoidEngine.Engine.Core.GameObject")
@@ -120,6 +156,19 @@ internal static class SerializerEmitter
             SpecialType.System_Double => true,
             SpecialType.System_String => true,
             _ => false
+        };
+    }
+
+    private static string GetPrimitiveReader(ITypeSymbol type)
+    {
+        return type.SpecialType switch
+        {
+            SpecialType.System_Int32 => "Int32",
+            SpecialType.System_Single => "Single",
+            SpecialType.System_Boolean => "Boolean",
+            SpecialType.System_Double => "Double",
+            SpecialType.System_String => "String",
+            _ => throw new Exception("Unsupported primitive")
         };
     }
 

@@ -30,7 +30,7 @@ namespace DevoidEngine.Engine.Core
             renderables = new List<IRenderComponent>();
         }
 
-        public void Play(bool value)
+        public void Play(bool value = true)
         {
             isPlaying = value;
             if (isPlaying)
@@ -85,6 +85,15 @@ namespace DevoidEngine.Engine.Core
             gameObject.Transform = transform;
             GameObjects.Add(gameObject);
             transforms.Add(transform);
+            return gameObject;
+        }
+
+        // This method is when you already initialize your own game object.
+        public GameObject AddGameObject(GameObject gameObject)
+        {
+            gameObject.Scene = this;
+            GameObjects.Add(gameObject);
+            transforms.Add(gameObject.Transform);
             return gameObject;
         }
 

@@ -1,5 +1,6 @@
 ﻿using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.Rendering;
+using DevoidEngine.Engine.Serialization;
 using DevoidEngine.Engine.Utilities;
 using System.Numerics;
 
@@ -23,7 +24,7 @@ namespace DevoidEngine.Engine.Components
 
         public Camera Camera { get; private set; }
 
-        private bool isDefault;
+        public bool isDefault;
         private int width;
         private int height;
 
@@ -67,7 +68,10 @@ namespace DevoidEngine.Engine.Components
 
             UpdateProjection();
             gameObject.Scene.AddCamera3D(this);
-            
+
+            if (isDefault)
+                gameObject.Scene.SetMainCamera3D(this);
+
             //if (IsDefault) gameObject.Scene.SetMainCamera(this);
         }
 

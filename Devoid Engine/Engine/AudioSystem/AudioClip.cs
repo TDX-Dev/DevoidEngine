@@ -1,6 +1,8 @@
-﻿namespace DevoidEngine.Engine.AudioSystem
+﻿using DevoidEngine.Engine.Assets;
+
+namespace DevoidEngine.Engine.AudioSystem
 {
-    public class AudioClip
+    public class AudioClip : AssetType
     {
         internal AudioClipHandle _handle;
     }

@@ -1,11 +1,12 @@
-﻿using DevoidEngine.Engine.Rendering;
+﻿using DevoidEngine.Engine.Assets;
+using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.Utilities;
 using DevoidGPU;
 using System.Numerics;
 
 namespace DevoidEngine.Engine.Core
 {
-    public class Mesh : IDisposable
+    public class Mesh : AssetType, IDisposable
     {
         public VertexBuffer? VertexBuffer { get; private set; }
         public IndexBuffer? IndexBuffer { get; private set; }
@@ -14,8 +15,6 @@ namespace DevoidEngine.Engine.Core
         private int[]? indices;
 
         //public Material Material { get; set; }
-
-        public Guid Id { get; } = Guid.NewGuid();
         public string Name { get; set; }
 
         public int VertexCount { get => VertexBuffer?.VertexCount ?? 0; }

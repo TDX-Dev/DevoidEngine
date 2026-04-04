@@ -52,6 +52,14 @@ namespace DevoidStandaloneLauncher.Prototypes
             });
 
             canvasComp.Canvas.Add(container);
+
+
+
+
+
+
+
+
         }
         ContainerNode container;
         float timer = 0;
