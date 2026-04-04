@@ -10,12 +10,13 @@ using DevoidStandaloneLauncher.Scripts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace DevoidStandaloneLauncher.Prototypes
 {
-    public class ProjectLoaderTest : Prototype
+    public class SerializationTest : Prototype
     {
         public override void OnInit()
         {
@@ -29,7 +30,6 @@ namespace DevoidStandaloneLauncher.Prototypes
             CameraComponent3D camera = gameObject.AddComponent<CameraComponent3D>();
             camera.IsDefault = true;
 
-            Texture2D shrekTexture = Asset.Load<Texture2D>("shrk.png");
             AudioClip toneAudio = Asset.Load<AudioClip>("tone.mp3");
 
             GameObject audio = scene.AddGameObject("Audio");
@@ -38,28 +38,31 @@ namespace DevoidStandaloneLauncher.Prototypes
 
             audC.Play();
 
-            GameObject canvas = scene.AddGameObject("Canvas");
-            var canvasComp = canvas.AddComponent<CanvasComponent>();
 
-            container = new ContainerNode()
-            {
-                Size = new System.Numerics.Vector2(200, 200)
-            };
-
-            container.AddStyleBoxOverride(StyleKeys.Normal, new StyleBoxTexture()
-            {
-                Texture = shrekTexture
-            });
-
-            canvasComp.Canvas.Add(container);
+            GameObject testObject = scene.AddGameObject("Test Object# This should print if deserialized correctly!");
+            var testComponent = testObject.AddComponent<TestComponent>();
+            SerializeComponent(testComponent);
         }
-        ContainerNode container;
-        float timer = 0;
 
         public override void OnUpdate(float delta)
         {
-            timer += delta;
-            container.Rotation = timer;
+        }
+
+        public void SerializeComponent(Component comp)
+        {
+
+            byte[] data = ComponentSerializationRegistry.Serialize(comp);
+
+            var restored =
+                (TestComponent)ComponentSerializationRegistry.Deserialize(
+                    typeof(TestComponent).FullName!,
+                    data);
+
+            //Console.WriteLine("Owner GameObject: " + restored.gameObject.Name);
+            foreach (KeyValuePair<string, Vector3> entry in restored.KeyVecs)
+            {
+                Console.WriteLine($"Key: {entry.Key}, Value: {entry.Value}");
+            }
         }
 
     }

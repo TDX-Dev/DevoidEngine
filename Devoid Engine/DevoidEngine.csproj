@@ -15,6 +15,23 @@
   </PropertyGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\DevoidEngine.SourceGen\DevoidEngine.SourceGen.csproj"
+						  OutputItemType="Analyzer"
+						  ReferenceOutputAssembly="false" />
+	</ItemGroup>
+
+
+	<!-- This is the source generator project setting to output the files to the output dir, remove once done implementing source generator serialization properly. -->
+	<PropertyGroup>
+		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+		<CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<NoWarn>$(NoWarn);MsgPack003</NoWarn>
+	</PropertyGroup>
+
+	<ItemGroup>
 		<None Include="./Engine/Content/**/*.*" CopyToOutputDirectory="PreserveNewest" Visible="true" />
 	</ItemGroup>
 

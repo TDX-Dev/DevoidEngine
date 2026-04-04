@@ -113,6 +113,8 @@ namespace DevoidStandaloneLauncher.Prototypes
 
             GenCam();
 
+            DevoidEngine.Engine.Serialization.ComponentSerializationRegistry.Initialize();
+
             //camera = scene.AddGameObject("Camera");
             //CameraComponent3D cameraComponent = camera.AddComponent<CameraComponent3D>();
             //cameraComponent.IsDefault = true;
