@@ -40,6 +40,8 @@ namespace DevoidStandaloneLauncher.Prototypes
 
             audC.Play();
 
+            audio.Transform.Position = new Vector3(0, 69, 0);
+
 
             GameObject testObject = scene.AddGameObject("Test Object# This should print if deserialized correctly!");
             var testComponent = testObject.AddComponent<TestComponent>();

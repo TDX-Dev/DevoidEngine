@@ -1,5 +1,6 @@
 ﻿using DevoidEngine.Engine.Assets;
 using DevoidEngine.Engine.Core;
+using DevoidEngine.Engine.Rendering;
 using DevoidGPU;
 using MessagePack;
 using System;
@@ -24,6 +25,7 @@ namespace DevoidEngine.Engine.AssetPipeline.Loaders
             model.Meshes = new Mesh[asset.Meshes.Length];
             model.Materials = new Material[asset.Materials.Length];
             model.MeshMaterialIndices = new int[asset.Meshes.Length];
+
 
             for (int i = 0; i < asset.Meshes.Length; i++)
             {
@@ -56,6 +58,7 @@ namespace DevoidEngine.Engine.AssetPipeline.Loaders
                 ?? ShaderLibrary.GetShader("PBR/ForwardPBR")!;
 
             Material material = new Material(shader);
+            Renderer.SkyboxRenderer.BindIBL(material);
 
             foreach (var (name, guid) in asset.Textures)
             {

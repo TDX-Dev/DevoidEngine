@@ -30,9 +30,11 @@ namespace DevoidEngine.Engine.Core
 
             if (typeof(T) == typeof(Material))
             {
-                if (id < (ulong)Materials.Length)
+                ulong matId = id - (ulong)Meshes.Length;
+
+                if (matId < (ulong)Materials.Length)
                 {
-                    asset = (Materials[(int)id] as T)!;
+                    asset = (Materials[(int)matId] as T)!;
                     return true;
                 }
             }

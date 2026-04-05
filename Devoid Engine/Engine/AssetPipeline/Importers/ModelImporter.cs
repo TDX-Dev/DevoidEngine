@@ -57,13 +57,11 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
             model.MeshGuids = new Guid[model.Meshes.Length];
             model.MaterialGuids = new Guid[model.Materials.Length];
 
-            ulong id = 0;
-
             for (int i = 0; i < model.Meshes.Length; i++)
             {
                 Guid subGuid = AssetDatabase.RegisterSubAsset(
                     guid,
-                    id++,
+                    (ulong)i,
                     assetPath);
 
                 model.MeshGuids[i] = subGuid;
@@ -73,7 +71,7 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
             {
                 Guid subGuid = AssetDatabase.RegisterSubAsset(
                     guid,
-                    id++,
+                    (ulong)(model.Meshes.Length + i),
                     assetPath);
 
                 model.MaterialGuids[i] = subGuid;

@@ -28,11 +28,18 @@ namespace DevoidStandaloneLauncher.Prototypes
             Scene scene = DeserializeScene();
             loader.CurrentScene = scene;
             SceneManager.LoadScene(scene);
-            scene.Play();
+
+            //var meshRenderers = scene.GetComponentsOfType<MeshRenderer>();
+            //for (int i = 0; i < meshRenderers.Count; i++)
+            //    Console.WriteLine("Mesh renderer exists");
 
             //var audioSources = scene.GetComponentsOfType<AudioSourceComponent3D>();
             //for (int i = 0; i < audioSources.Count; i++)
             //    audioSources[i].Play();
+
+            //var lightSources = scene.GetComponentsOfType<LightComponent>();
+            //for (int i = 0; i < lightSources.Count; i++)
+            //    Console.WriteLine("Light Intensity: " + lightSources[i].intensity);
 
             //scene.GetComponentsOfType<CameraComponent3D>()[0].gameObject.AddComponent<FreeCameraComponent>();
             //var gameObject = scene.GetComponentsOfType<CameraComponent3D>()[0].gameObject;
@@ -45,11 +52,12 @@ namespace DevoidStandaloneLauncher.Prototypes
             //Model model = Asset.Load<Model>("model.gltf");
             //var go = model.Instantiate(scene);
 
-
             //SceneData sceneData = SceneSerializer.Serialize(scene);
             //byte[] bytes = MessagePackSerializer.Serialize(sceneData);
 
             //File.WriteAllBytes(ProjectManager.Current.AssetPath + "/deserialized.scene", bytes);
+
+            scene.Play();
 
         }
 

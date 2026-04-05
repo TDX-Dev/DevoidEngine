@@ -36,6 +36,8 @@ namespace DevoidStandaloneLauncher.Prototypes
             var audC = audio.AddComponent<AudioSourceComponent3D>();
             audC.Audio = toneAudio;
 
+            audio.Transform.Position = new System.Numerics.Vector3(0, 10, 0);
+
             audC.Play();
 
             GameObject canvas = scene.AddGameObject("Canvas");

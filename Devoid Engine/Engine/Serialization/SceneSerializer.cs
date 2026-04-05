@@ -48,6 +48,20 @@ namespace DevoidEngine.Engine.Serialization
                 Console.WriteLine($"[Scene] Scene corrupted: {e.Message}");
             }
 
+            foreach (var goData in data.GameObjects)
+            {
+                if (goData.Parent == Guid.Empty)
+                    continue;
+
+                if (!map.TryGetValue(goData.Id, out var child))
+                    continue;
+
+                if (!map.TryGetValue(goData.Parent, out var parent))
+                    continue;
+
+                child.Transform.SetParent(parent.Transform);
+            }
+
             return scene;
         }
     }

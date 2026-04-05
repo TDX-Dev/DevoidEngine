@@ -87,7 +87,7 @@ namespace DevoidEngine.Engine.AssetPipeline
 
         private static T? ResolveSubAsset<T>(Guid guid, Guid containerGuid, ulong localId) where T : class?
         {
-            var container = Load<ISubAssetContainer>(containerGuid);
+            var container = Load<Model>(containerGuid);
 
             if (container == null)
             {

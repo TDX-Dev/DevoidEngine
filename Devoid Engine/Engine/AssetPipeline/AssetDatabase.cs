@@ -199,7 +199,6 @@ namespace DevoidEngine.Engine.AssetPipeline
             };
 
             guidToAsset[guid] = entry;
-            pathToAsset[assetPath] = entry;
 
             return guid;
         }

@@ -14,8 +14,15 @@ namespace DevoidEngine.Engine.Serialization
 
             data.Parent = go.parentObject?.Id ?? Guid.Empty;
 
+            data.Position = go.Transform.LocalPosition;
+            data.Rotation = go.Transform.LocalRotation;
+            data.Scale = go.Transform.LocalScale;
+
             foreach (var component in go.Components)
             {
+                if (component is Transform3D)
+                    continue;
+
                 data.Components.Add(new ComponentData
                 {
                     Type = component.GetType().FullName!,
@@ -37,6 +44,13 @@ namespace DevoidEngine.Engine.Serialization
             go.Id = data.Id;
             go.Name = data.Name;
             go.Scene = scene;
+            var transform = go.AddComponent<Transform3D>();
+            go.Transform = transform;
+
+            transform.LocalPosition = data.Position;
+            transform.LocalRotation = data.Rotation;
+            transform.LocalScale = data.Scale;
+
 
             map[data.Id] = go;
 
@@ -52,12 +66,9 @@ namespace DevoidEngine.Engine.Serialization
                     continue;
                 }
 
-                go.Components.Add(component);
-                component.gameObject = go;
-
-                if (component is Transform3D transform)
-                    go.Transform = transform;
+                go.AddComponent(component);
             }
+
 
             return go;
         }

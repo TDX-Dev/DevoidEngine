@@ -15,16 +15,16 @@ namespace DevoidEngine.Engine.Components
 
         private bool dirty = true;
 
-        private bool enabled = true;
-        private Vector3 color = Vector3.One;
-        private float intensity = 10f;
-        private float radius = 30f;
+        public bool enabled = true;
+        public Vector3 color = Vector3.One;
+        public float intensity = 10f;
+        public float radius = 30f;
 
-        private float outerCutoff = MathHelper.DegToRad(71);
-        private float innerCutoff = MathHelper.DegToRad(52);
+        public float outerCutoff = MathHelper.DegToRad(71);
+        public float innerCutoff = MathHelper.DegToRad(52);
 
-        private LightType lightType = LightType.PointLight;
-        private LightAttenuationType attenuationType = LightAttenuationType.Custom;
+        public LightType lightType = LightType.PointLight;
+        public LightAttenuationType attenuationType = LightAttenuationType.Custom;
         private float linearFactor = 0.7f;
         private float quadraticFactor = 1.8f;
 
