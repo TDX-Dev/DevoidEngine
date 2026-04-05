@@ -51,6 +51,12 @@ namespace DevoidStandaloneLauncher.Scripts
 
         public override void OnUpdate(float dt)
         {
+            if (gameObject.Transform.Position.Y < -100)
+            {
+
+                body.Position = new(0, 5, 0);
+            }
+
 
             if (Camera != null)
             {
@@ -230,23 +236,15 @@ namespace DevoidStandaloneLauncher.Scripts
             jumpsUsed++;
         }
 
-        bool IsGrounded()
+        private bool IsGrounded()
         {
-            Vector3 pos = body.Position;   // physics position
+            Vector3 origin = gameObject.Transform.Position;
 
-            gameObject.Scene.Physics.Raycast(
-                new Ray(pos - (Vector3.UnitY * 1.1f), -Vector3.UnitY),
-                1.2f,
+            return gameObject.Scene.Physics.Raycast(
+                new Ray(origin - Vector3.UnitY, -Vector3.UnitY),
+                1f,
                 out RaycastHit hit
             );
-
-            if (hit.HitObject != null && hit.HitObject != gameObject)
-            {
-                Console.WriteLine("Grounded: " + DateTime.Now.Millisecond);
-                return true;
-            }
-
-            return false;
         }
     }
 }

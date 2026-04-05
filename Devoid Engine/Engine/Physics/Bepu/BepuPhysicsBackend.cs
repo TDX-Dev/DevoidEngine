@@ -97,8 +97,6 @@ namespace DevoidEngine.Engine.Physics.Bepu
                 ReportCollision(a, b);
             }
 
-
-
             foreach (var pair in bodyMaterials)
             {
                 var handle = pair.Key;

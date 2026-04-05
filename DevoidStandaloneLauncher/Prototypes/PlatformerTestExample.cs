@@ -115,6 +115,7 @@ namespace DevoidStandaloneLauncher.Prototypes
 
         }
 
+
         void SetPhysicsForColliderPlatforms(GameObject gameObject)
         {
             Console.WriteLine(gameObject.Name);
@@ -131,6 +132,23 @@ namespace DevoidStandaloneLauncher.Prototypes
                     };
 
                 }
+            } else if (IsMovingCollider(gameObject.Name))
+            {
+                var collider = gameObject.AddComponent<RigidBodyComponent>();
+                
+                collider.StartKinematic = true;
+                collider.Shape = new PhysicsShapeDescription()
+                {
+                    Size = gameObject.Transform.Scale * 2,
+                    Type = PhysicsShapeType.Box
+                };
+                collider.Material = new PhysicsMaterial()
+                {
+                    Restitution = 1,
+                    Friction = 1,
+                };
+                collider.Mass = 100;
+                gameObject.AddComponent<MovingCollider>();
             }
 
             foreach (var child in gameObject.children)
@@ -142,6 +160,11 @@ namespace DevoidStandaloneLauncher.Prototypes
         bool IsCollideable(string name)
         {
             return name == "Collideable" || name.StartsWith("Collideable.");
+        }
+
+        bool IsMovingCollider(string name)
+        {
+            return name == "Collideable_MP" || name.StartsWith("Collideable_MP.");
         }
 
     }
