@@ -29,14 +29,22 @@ namespace DevoidEngine.Engine.AssetPipeline.Loaders
             {
                 var meshAsset = asset.Meshes[i];
 
-                model.Meshes[i] = BuildMesh(meshAsset);
+                var mesh = BuildMesh(meshAsset);
+
+                mesh.Guid = asset.MeshGuids[i];
+
+                model.Meshes[i] = mesh;
 
                 model.MeshMaterialIndices[i] = meshAsset.MaterialIndex;
             }
 
             for (int i = 0; i < asset.Materials.Length; i++)
             {
-                model.Materials[i] = BuildMaterial(asset.Materials[i]);
+                var mat = BuildMaterial(asset.Materials[i]);
+
+                mat.Guid = asset.MaterialGuids[i];
+
+                model.Materials[i] = mat;
             }
 
             return model;

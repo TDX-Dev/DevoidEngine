@@ -1,10 +1,11 @@
-﻿using DevoidGPU;
+﻿using DevoidEngine.Engine.Assets;
+using DevoidGPU;
 using System.Numerics;
 using System.Runtime.InteropServices;
 
 namespace DevoidEngine.Engine.Core
 {
-    public class Material
+    public class Material : AssetType
     {
         public Shader Shader { get; }
         public BlendMode BlendMode { get; set; } = BlendMode.Opaque;

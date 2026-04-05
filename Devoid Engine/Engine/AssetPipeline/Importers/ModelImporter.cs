@@ -54,6 +54,32 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
 
             var model = ConvertScene(scene, settings, assetPath);
 
+            model.MeshGuids = new Guid[model.Meshes.Length];
+            model.MaterialGuids = new Guid[model.Materials.Length];
+
+            ulong id = 0;
+
+            for (int i = 0; i < model.Meshes.Length; i++)
+            {
+                Guid subGuid = AssetDatabase.RegisterSubAsset(
+                    guid,
+                    id++,
+                    assetPath);
+
+                model.MeshGuids[i] = subGuid;
+            }
+
+            for (int i = 0; i < model.Materials.Length; i++)
+            {
+                Guid subGuid = AssetDatabase.RegisterSubAsset(
+                    guid,
+                    id++,
+                    assetPath);
+
+                model.MaterialGuids[i] = subGuid;
+            }
+
+
             File.WriteAllBytes(
                 outputPath,
                 MessagePackSerializer.Serialize(model));

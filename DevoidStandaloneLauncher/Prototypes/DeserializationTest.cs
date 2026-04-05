@@ -30,32 +30,32 @@ namespace DevoidStandaloneLauncher.Prototypes
             SceneManager.LoadScene(scene);
             scene.Play();
 
-            var audioSources = scene.GetComponentsOfType<AudioSourceComponent3D>();
-            for (int i = 0; i < audioSources.Count; i++)
-                audioSources[i].Pause();
+            //var audioSources = scene.GetComponentsOfType<AudioSourceComponent3D>();
+            //for (int i = 0; i < audioSources.Count; i++)
+            //    audioSources[i].Play();
 
-            scene.GetComponentsOfType<CameraComponent3D>()[0].gameObject.AddComponent<FreeCameraComponent>();
-            var gameObject = scene.GetComponentsOfType<CameraComponent3D>()[0].gameObject;
-            gameObject.Transform.Position = new Vector3(0, 0, -5);
+            //scene.GetComponentsOfType<CameraComponent3D>()[0].gameObject.AddComponent<FreeCameraComponent>();
+            //var gameObject = scene.GetComponentsOfType<CameraComponent3D>()[0].gameObject;
+            //gameObject.Transform.Position = new Vector3(0, 0, -5);
 
-            var gameObjectLight = scene.AddGameObject("Light");
-            gameObjectLight.AddComponent<LightComponent>().Intensity = 100;
-            gameObjectLight.Transform.Position = new Vector3(0, 5, 0);
+            //var gameObjectLight = scene.AddGameObject("Light");
+            //gameObjectLight.AddComponent<LightComponent>().Intensity = 100;
+            //gameObjectLight.Transform.Position = new Vector3(0, 5, 0);
 
-            Model model = Asset.Load<Model>("model.gltf");
-            var go = model.Instantiate(scene);
+            //Model model = Asset.Load<Model>("model.gltf");
+            //var go = model.Instantiate(scene);
 
 
             //SceneData sceneData = SceneSerializer.Serialize(scene);
             //byte[] bytes = MessagePackSerializer.Serialize(sceneData);
 
-            //File.WriteAllBytes(ProjectManager.Current.AssetPath + "/scene.scene", bytes);
+            //File.WriteAllBytes(ProjectManager.Current.AssetPath + "/deserialized.scene", bytes);
 
         }
 
         public Scene DeserializeScene()
         {
-            return Asset.Load<Scene>("scene.scene") ?? new Scene();
+            return Asset.Load<Scene>("deserialized.scene") ?? new Scene();
         }
 
         public void SerializeComponent(Component comp)

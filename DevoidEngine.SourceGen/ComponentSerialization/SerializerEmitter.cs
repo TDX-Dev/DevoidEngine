@@ -25,10 +25,15 @@ internal static class SerializerEmitter
                 ) &&
                 f.Name != "gameObject" &&
                 f.Type.ToDisplayString() != "DevoidEngine.Engine.Core.GameObject" &&
-                !f.Type.ToDisplayString().StartsWith("DevoidEngine.Engine.Core") &&
-                !f.Type.ToDisplayString().StartsWith("DevoidEngine.Engine.Rendering") &&
-                !f.Type.ToDisplayString().StartsWith("DevoidEngine.Engine.UI"))
-            .ToArray();
+                (
+                    IsAssetType(f.Type) ||
+                    (
+                        !f.Type.ToDisplayString().StartsWith("DevoidEngine.Engine.Core") &&
+                        !f.Type.ToDisplayString().StartsWith("DevoidEngine.Engine.Rendering") &&
+                        !f.Type.ToDisplayString().StartsWith("DevoidEngine.Engine.UI")
+                    )
+                )
+            ).ToArray();
 
         StringBuilder serializeBody = new();
         StringBuilder deserializeBody = new();

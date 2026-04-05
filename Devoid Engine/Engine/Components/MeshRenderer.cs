@@ -23,6 +23,9 @@ namespace DevoidEngine.Engine.Components
 
             if (material == null)
                 material = RenderingDefaults.GetMaterial();
+
+
+            Console.WriteLine("My mesh Guid is: " + mesh?.Guid.ToString("N"));
         }
 
         public void AddMaterial(MaterialInstance mat)

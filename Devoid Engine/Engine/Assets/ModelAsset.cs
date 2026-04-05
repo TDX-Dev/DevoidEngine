@@ -15,8 +15,11 @@ namespace DevoidEngine.Engine.Assets
 
         [Key(1)]
         public MeshAsset[] Meshes = [];
-
         [Key(2)]
+        public Guid[] MeshGuids = [];
+        [Key(3)]
         public MaterialAsset[] Materials = [];
+        [Key(4)]
+        public Guid[] MaterialGuids = [];
     }
 }

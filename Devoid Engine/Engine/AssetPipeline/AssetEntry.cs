@@ -12,7 +12,7 @@ namespace DevoidEngine.Engine.AssetPipeline
         public required string AssetPath;
         public required string MetaPath;
 
-        public Guid? ContainerGuid = Guid.Empty;
+        public Guid? ContainerGuid = null;
         public ulong LocalId = 0;
     }
 }

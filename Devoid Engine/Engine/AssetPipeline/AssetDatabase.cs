@@ -13,6 +13,8 @@ namespace DevoidEngine.Engine.AssetPipeline
 {
     public static class AssetDatabase
     {
+        static string DatabasePath => Path.Combine(ProjectManager.Current!.CachePath, "AssetDatabase.bin");
+
         private static Dictionary<Guid, AssetEntry> guidToAsset = new();
         private static Dictionary<string, AssetEntry> pathToAsset = new();
 
@@ -72,7 +74,48 @@ namespace DevoidEngine.Engine.AssetPipeline
             ImporterRegistry.Register<Scene>(new SceneImporter());
             ImporterRegistry.Register<Model>(new ModelImporter());
 
+            LoadDatabase();
             ScanAssets();
+            SaveDatabase();
+        }
+
+        static void LoadDatabase()
+        {
+            if (!File.Exists(DatabasePath))
+                return;
+
+            try
+            {
+                var data = File.ReadAllBytes(DatabasePath);
+
+                var state = MessagePack.MessagePackSerializer
+                    .Deserialize<AssetDatabaseState>(data);
+
+                guidToAsset = state.Entries;
+
+                pathToAsset.Clear();
+
+                foreach (var entry in guidToAsset.Values)
+                    pathToAsset[entry.AssetPath] = entry;
+            }
+            catch
+            {
+                Console.WriteLine("[AssetDatabase] Failed to load database, rebuilding.");
+                guidToAsset.Clear();
+                pathToAsset.Clear();
+            }
+        }
+
+        static void SaveDatabase()
+        {
+            var state = new AssetDatabaseState
+            {
+                Entries = guidToAsset
+            };
+
+            var data = MessagePack.MessagePackSerializer.Serialize(state);
+
+            File.WriteAllBytes(DatabasePath, data);
         }
 
         //internal static Guid RegisterAsset(string assetPath)
@@ -198,6 +241,27 @@ namespace DevoidEngine.Engine.AssetPipeline
             meta.SourceTimestamp = File.GetLastWriteTimeUtc(absolutePath).Ticks;
 
             SaveMeta(Path.Combine(project.AssetPath, entry.MetaPath), meta);
+        }
+
+        internal static Guid RegisterSubAsset(
+            Guid containerGuid,
+            ulong localId,
+            string assetPath)
+        {
+            Guid guid = Guid.NewGuid();
+
+            var entry = new AssetEntry
+            {
+                Guid = guid,
+                AssetPath = assetPath,
+                MetaPath = guidToAsset[containerGuid].MetaPath,
+                ContainerGuid = containerGuid,
+                LocalId = localId
+            };
+
+            guidToAsset[guid] = entry;
+
+            return guid;
         }
 
         private static AssetMeta CreateMeta(string assetPath, string metaPath)
