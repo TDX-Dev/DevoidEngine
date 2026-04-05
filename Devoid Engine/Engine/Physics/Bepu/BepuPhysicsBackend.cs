@@ -92,21 +92,9 @@ namespace DevoidEngine.Engine.Physics.Bepu
             for (int i = 0; i < mapping.Count; ++i)
             {
                 ref var pair = ref mapping.Keys[i];
-
-                //var a = Resolve(pair.A);
-                //var b = Resolve(pair.B);
                 var a = pair.A;
                 var b = pair.B;
-
-                //if (a != null && b != null)
-                //{
-
-                //    ReportCollision(a, b);
-                //    //Console.WriteLine(a.Id + " " + b.Id + " deltaTime" + DateTime.Now);
-                //}
-
                 ReportCollision(a, b);
-
             }
 
 

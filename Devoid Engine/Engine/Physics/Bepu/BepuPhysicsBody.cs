@@ -9,12 +9,15 @@ namespace DevoidEngine.Engine.Physics.Bepu
         private Simulation simulation;
 
         internal PhysicsMaterial Material;
-
-
         private BepuPhysicsBackend backend;
 
         private static int nextId = 1;
         public int Id { get; }
+
+        // Physics interpolation buffers
+        public Vector3 PrevPosition { get; set; }
+        public Quaternion PrevRotation { get; set; }
+
 
         public BepuPhysicsBody(
             BodyHandle handle,
@@ -23,18 +26,31 @@ namespace DevoidEngine.Engine.Physics.Bepu
             BepuPhysicsBackend backend)
         {
             Id = Interlocked.Increment(ref nextId);
+
             Handle = handle;
             this.simulation = simulation;
             Material = material;
             this.backend = backend;
 
+            // Initialize pose buffers so the first frame is stable
+            var body = GetBody();
+            Position = body.Pose.Position;
+            Rotation = body.Pose.Orientation;
         }
-
-
 
         private BodyReference GetBody()
         {
             return simulation.Bodies.GetBodyReference(Handle);
+        }
+
+        // Called once per physics step from PhysicsSystem.SyncTransforms()
+        public void UpdatePose(Vector3 position, Quaternion rotation)
+        {
+            PrevPosition = Position;
+            PrevRotation = Rotation;
+
+            Position = position;
+            Rotation = rotation;
         }
 
         public Vector3 Position
@@ -48,7 +64,7 @@ namespace DevoidEngine.Engine.Physics.Bepu
             {
                 var body = GetBody();
                 body.Pose.Position = value;
-                body.UpdateBounds(); // important if teleporting
+                body.UpdateBounds();
                 body.Awake = true;
             }
         }
@@ -129,7 +145,6 @@ namespace DevoidEngine.Engine.Physics.Bepu
             }
         }
 
-
         public void AddImpulse(Vector3 impulse)
         {
             var body = GetBody();
@@ -141,13 +156,10 @@ namespace DevoidEngine.Engine.Physics.Bepu
         {
             var body = GetBody();
 
-            // If inverse mass is zero → kinematic body
             if (body.LocalInertia.InverseMass == 0f)
                 return;
 
-            Vector3 impulse = force;
-
-            body.ApplyLinearImpulse(impulse);
+            body.ApplyLinearImpulse(force);
             body.Awake = true;
         }
 
@@ -189,5 +201,4 @@ namespace DevoidEngine.Engine.Physics.Bepu
             backend.RemoveBody(this);
         }
     }
-
 }
