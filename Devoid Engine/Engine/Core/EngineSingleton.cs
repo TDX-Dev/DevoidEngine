@@ -1,5 +1,6 @@
 ﻿using DevoidEngine.Engine.AssetPipeline;
 using DevoidEngine.Engine.AudioSystem;
+using DevoidEngine.Engine.Physics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +15,10 @@ namespace DevoidEngine.Engine.Core
         public float InterpolationAlpha { get; set; } = 0;
         public bool UseInterpolation = false;
 
+        public float TargetFrameRate { get; set; } = 60;
+
         public AudioManager AudioSystem { get; set; } = null!;
+        public PhysicsSystem PhysicsSystem { get; set; } = null!;
 
 
 

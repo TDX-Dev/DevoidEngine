@@ -137,7 +137,7 @@ namespace DevoidEngine.Engine.Physics.Bepu
             body.Awake = true;
         }
 
-        public void AddForce(Vector3 force, float dt)
+        public void AddForce(Vector3 force)
         {
             var body = GetBody();
 
@@ -145,7 +145,7 @@ namespace DevoidEngine.Engine.Physics.Bepu
             if (body.LocalInertia.InverseMass == 0f)
                 return;
 
-            Vector3 impulse = force * dt;
+            Vector3 impulse = force;
 
             body.ApplyLinearImpulse(impulse);
             body.Awake = true;

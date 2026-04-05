@@ -207,6 +207,7 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
             asset.Shader = "PBR/ForwardPBR";
 
             MaterialProperty roughnessProperty = mat.GetProperty("$mat.roughnessFactor,0,0");
+            MaterialProperty metallicProperty = mat.GetProperty("$mat.metallicFactor,0,0");
 
             asset.Floats["AO"] = 1f;
 
@@ -217,7 +218,7 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
 
             if (roughnessProperty != null)
             {
-                float roughness = mat.GetProperty("$mat.roughnessFactor,0,0").GetFloatValue();
+                float roughness = roughnessProperty.GetFloatValue();
                 asset.Floats["Roughness"] = roughness;
             }
             else
@@ -225,10 +226,15 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
                 asset.Floats["Roughness"] = 0.5f;
             }
 
-            if (mat.HasReflectivity)
-                asset.Floats["Metallic"] = mat.Reflectivity;
+            if (roughnessProperty != null)
+            {
+                float metallic = metallicProperty.GetFloatValue();
+                asset.Floats["Metallic"] = metallic;
+            }
             else
+            {
                 asset.Floats["Metallic"] = 0f;
+            }
 
             if (mat.HasColorEmissive)
             {
@@ -274,7 +280,9 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
 
             //MaterialProperty[] mps = mat.GetAllProperties();
             //foreach (MaterialProperty mp in mps)
-            //    Console.WriteLine(mp.FullyQualifiedName);
+            //{
+            //    Console.WriteLine(mp.FullyQualifiedName + " : " + mp.GetFloatValue());
+            //}
 
             return asset;
         }

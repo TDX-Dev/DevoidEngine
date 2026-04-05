@@ -11,7 +11,7 @@ namespace DevoidEngine.Engine.Physics
         bool IsKinematic { get; set; }
 
 
-        void AddForce(Vector3 force, float dt);
+        void AddForce(Vector3 force);
         void AddImpulse(Vector3 impulse);
         void AddTorque(Vector3 torque);
 

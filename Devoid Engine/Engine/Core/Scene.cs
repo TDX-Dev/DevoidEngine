@@ -1,6 +1,7 @@
 ﻿using DevoidEngine.Engine.Assets;
 using DevoidEngine.Engine.AudioSystem;
 using DevoidEngine.Engine.Components;
+using DevoidEngine.Engine.Physics;
 
 namespace DevoidEngine.Engine.Core
 {
@@ -12,6 +13,7 @@ namespace DevoidEngine.Engine.Core
         public List<GameObject> GameObjects { get; private set; }
 
         public AudioManager Audio = null!;
+        public PhysicsSystem Physics = null!;
 
 
         private bool isPlaying = false;

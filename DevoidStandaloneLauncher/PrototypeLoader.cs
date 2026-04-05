@@ -11,8 +11,8 @@ namespace DevoidStandaloneLauncher
         private float splashDuration = 5f;
         private bool prototypeLoaded = false;
 
-        internal Scene CurrentScene = SplashScene.CreateSplashScene(nameof(DeserializationTest));
-        internal Prototype GamePrototype = new DeserializationTest();
+        internal Scene CurrentScene = SplashScene.CreateSplashScene(nameof(PlatformerTestExample));
+        internal Prototype GamePrototype = new PlatformerTestExample();
 
         public override void OnGUIRender()
         {

@@ -5,6 +5,8 @@ using DevoidEngine.Engine.Components;
 using DevoidEngine.Engine.DebugTools;
 using DevoidEngine.Engine.Imgui;
 using DevoidEngine.Engine.InputSystem;
+using DevoidEngine.Engine.Physics;
+using DevoidEngine.Engine.Physics.Bepu;
 using DevoidEngine.Engine.ProjectSystem;
 using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.UI;
@@ -93,6 +95,8 @@ namespace DevoidEngine.Engine.Core
             };
 
             EngineSingleton.Instance.AudioSystem = new AudioManager(new SoLoudAudioBackend());
+            EngineSingleton.Instance.PhysicsSystem = new PhysicsSystem(new BepuPhysicsBackend());
+            EngineSingleton.Instance.TargetFrameRate = targetFramerate;
 
             Screen.Size = new Vector2(applicationSpecification.Width, applicationSpecification.Height);
 
@@ -170,6 +174,7 @@ namespace DevoidEngine.Engine.Core
                 EngineSingleton.Instance.AudioSystem.Update();
 
 
+
                 deltaTimeAccumulator += deltaTime;
                 while (deltaTimeAccumulator >= targetDeltaTime)
                 {
@@ -207,6 +212,10 @@ namespace DevoidEngine.Engine.Core
         void FixedUpdate(float deltaTime)
         {
             layerHandler.FixedUpdateLayers(deltaTime);
+
+            EngineSingleton.Instance.PhysicsSystem.Step(deltaTime);
+            EngineSingleton.Instance.PhysicsSystem.SyncTransforms();
+            EngineSingleton.Instance.PhysicsSystem.ResolveFrameCollisions();
         }
 
         void Update(float deltaTime)

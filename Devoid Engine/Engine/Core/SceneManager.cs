@@ -20,6 +20,7 @@ namespace DevoidEngine.Engine.Core
             }
 
             scene.Audio = EngineSingleton.Instance.AudioSystem;
+            scene.Physics = EngineSingleton.Instance.PhysicsSystem;
             // 2. Set new scene
             CurrentScene = scene;
         }
