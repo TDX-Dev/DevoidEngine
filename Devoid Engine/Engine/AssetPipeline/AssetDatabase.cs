@@ -40,6 +40,18 @@ namespace DevoidEngine.Engine.AssetPipeline
             return false;
         }
 
+        internal static bool TryGetEntry(Guid guid, out AssetEntry? entry)
+        {
+            if (guidToAsset.TryGetValue(guid, out var assetEntry))
+            {
+                entry = assetEntry;
+                return true;
+            }
+
+            entry = default;
+            return false;
+        }
+
         public static string GetPath(Guid guid)
         {
             return guidToAsset[guid].AssetPath;
@@ -146,7 +158,9 @@ namespace DevoidEngine.Engine.AssetPipeline
             {
                 Guid = Guid.Parse(meta.Guid),
                 AssetPath = assetPath,
-                MetaPath = metaPath
+                MetaPath = metaPath,
+                ContainerGuid = null,
+                LocalId = 0,
             };
 
             guidToAsset[entry.Guid] = entry;

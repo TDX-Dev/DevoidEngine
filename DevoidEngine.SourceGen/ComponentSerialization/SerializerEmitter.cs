@@ -18,7 +18,11 @@ internal static class SerializerEmitter
             .OfType<IFieldSymbol>()
             .Where(f =>
                 !f.IsStatic &&
-                (f.DeclaredAccessibility == Accessibility.Public || HasSerializeFieldAttribute(f)) &&
+                !HasDontSerializeAttribute(f) &&
+                (
+                    f.DeclaredAccessibility == Accessibility.Public ||
+                    HasSerializeFieldAttribute(f)
+                ) &&
                 f.Name != "gameObject" &&
                 f.Type.ToDisplayString() != "DevoidEngine.Engine.Core.GameObject" &&
                 !f.Type.ToDisplayString().StartsWith("DevoidEngine.Engine.Core") &&
@@ -205,6 +209,17 @@ internal static class SerializerEmitter
     }
 
     private static bool HasSerializeFieldAttribute(IFieldSymbol field)
+    {
+        foreach (var attr in field.GetAttributes())
+        {
+            if (attr.AttributeClass?.Name == "SerializeField")
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool HasDontSerializeAttribute(IFieldSymbol field)
     {
         foreach (var attr in field.GetAttributes())
         {

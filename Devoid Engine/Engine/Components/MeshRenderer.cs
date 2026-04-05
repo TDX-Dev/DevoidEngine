@@ -1,5 +1,6 @@
 ﻿using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.Rendering;
+using DevoidEngine.Engine.Serialization;
 using DevoidEngine.Engine.Utilities;
 using System.Numerics;
 
@@ -9,18 +10,25 @@ namespace DevoidEngine.Engine.Components
     {
         public override string Type => nameof(MeshRenderer);
 
-        private Mesh? mesh;
+        public Mesh? mesh;
+        public Material? materialAsset;
+
+        [DontSerialize]
         public MaterialInstance? material;
 
         public override void OnStart()
         {
-            if (material != null)
+            if (materialAsset != null)
+                material = new MaterialInstance(materialAsset);
+
+            if (material == null)
                 material = RenderingDefaults.GetMaterial();
         }
 
-        public void AddMaterial(MaterialInstance material)
+        public void AddMaterial(MaterialInstance mat)
         {
-            this.material = material;
+            material = mat;
+            materialAsset = mat.BaseMaterial;
         }
 
         public void AddMesh(Mesh mesh)

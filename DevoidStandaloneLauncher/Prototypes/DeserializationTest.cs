@@ -43,10 +43,7 @@ namespace DevoidStandaloneLauncher.Prototypes
             gameObjectLight.Transform.Position = new Vector3(0, 5, 0);
 
             Model model = Asset.Load<Model>("model.gltf");
-            GameObject go = scene.AddGameObject("modelObject");
-            var modelInst = go.AddComponent<ModelInstance>();
-            modelInst.ModelGuid = model.Guid;
-            modelInst.Rebuild();
+            var go = model.Instantiate(scene);
 
 
             //SceneData sceneData = SceneSerializer.Serialize(scene);

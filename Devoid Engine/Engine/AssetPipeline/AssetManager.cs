@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Assimp.Metadata;
 
 namespace DevoidEngine.Engine.AssetPipeline
 {
@@ -29,16 +30,19 @@ namespace DevoidEngine.Engine.AssetPipeline
             AssetLoaderRegistry.Register<Material>(new MaterialLoader());
         }
 
-        public static T? Load<T>(Guid guid)
+        public static T? Load<T>(Guid guid) where T : class?
         {
             if (AssetCache<T>.Cache.TryGetValue(guid, out var asset))
                 return asset;
 
-            if (!AssetDatabase.TryGetPath(guid, out _))
+            if (!AssetDatabase.TryGetEntry(guid, out AssetEntry? entry))
             {
                 Console.WriteLine($"[Asset] Missing asset {guid}");
                 return default;
             }
+
+            if (entry != null && entry.ContainerGuid != null)
+                return ResolveSubAsset<T>(guid, entry.ContainerGuid.Value, entry.LocalId);
 
             if (!AssetLoaderRegistry.TryGet<T>(out var loader) || loader == null)
             {
@@ -79,6 +83,30 @@ namespace DevoidEngine.Engine.AssetPipeline
                 Console.WriteLine($"Asset load failed {guid}: {e.Message}");
                 return default;
             }
+        }
+
+        private static T? ResolveSubAsset<T>(Guid guid, Guid containerGuid, ulong localId) where T : class?
+        {
+            var container = Load<ISubAssetContainer>(containerGuid);
+
+            if (container == null)
+            {
+                Console.WriteLine("[Asset] Container missing");
+                return default;
+            }
+
+            if (!container.TryGetSubAsset<T>(localId, out var asset))
+            {
+                Console.WriteLine("[Asset] Subasset not found");
+                return default;
+            }
+
+            if (asset is AssetType at)
+                at.Guid = guid;
+
+            AssetCache<T>.Cache[guid] = asset;
+
+            return asset;
         }
     }
 }
