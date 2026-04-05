@@ -38,7 +38,7 @@ namespace DevoidEngine.Engine.Physics.Bepu
             simulation = Simulation.Create(
                 bufferPool,
                 callbacks,
-                new BepuPoseIntegratorCallbacks { Gravity = new Vector3(0, -9.81f, 0) },
+                new BepuPoseIntegratorCallbacks { Gravity = new Vector3(0, -12f, 0) },
                 new SolveDescription(8, 24),
                 new DefaultTimestepper()
             );
@@ -166,9 +166,29 @@ namespace DevoidEngine.Engine.Physics.Bepu
                 );
             }
 
-
             BodyHandle handle = simulation.Bodies.Add(bodyDescription);
             var bodyRef = simulation.Bodies.GetBodyReference(handle);
+
+            // -------- ROTATION LOCK --------
+            if (!desc.IsKinematic)
+            {
+                var localInertia = bodyRef.LocalInertia;
+                var tensor = localInertia.InverseInertiaTensor;
+
+                if (!desc.AllowRotationX)
+                    tensor.XX = 0;
+
+                if (!desc.AllowRotationY)
+                    tensor.YY = 0;
+
+                if (!desc.AllowRotationZ)
+                    tensor.ZZ = 0;
+
+                localInertia.InverseInertiaTensor = tensor;
+                bodyRef.LocalInertia = localInertia;
+            }
+            // --------------------------------
+
             bodyRef.Awake = true;
 
             bodyToGameObject[handle] = owner;
@@ -181,7 +201,6 @@ namespace DevoidEngine.Engine.Physics.Bepu
 
             return wrapper;
         }
-
 
 
 

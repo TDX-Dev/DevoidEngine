@@ -100,7 +100,7 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
                 materials.Add(matAsset);
             }
 
-            ProcessNode(scene.RootNode, -1, Matrix4x4.Identity, nodes, meshes, scene, settings, axis);
+            ProcessNode(scene.RootNode, -1, nodes, meshes, scene, settings, axis);
 
             return new ModelAsset
             {
@@ -113,7 +113,6 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
         void ProcessNode(
             Node node,
             int parent,
-            Matrix4x4 parentTransform,
             List<ModelNode> nodes,
             List<MeshAsset> meshes,
             AssimpScene scene,
@@ -125,16 +124,13 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
 
             Matrix4x4 local = Matrix4x4.Transpose(node.Transform);
 
-            // apply axis conversion ONLY on root
             if (parent == -1)
             {
-                local = local * axis;
+                local = axis * local;
             }
 
-            Matrix4x4 world = local * parentTransform;
-
             Matrix4x4.Decompose(
-                world,
+                local,
                 out Vector3 scale,
                 out Quaternion rotation,
                 out Vector3 translation
@@ -145,9 +141,7 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
             foreach (int meshIndex in node.MeshIndices)
             {
                 var mesh = ConvertMesh(scene.Meshes[meshIndex]);
-
                 meshes.Add(mesh);
-
                 nodeMeshes.Add(meshes.Count - 1);
             }
 
@@ -163,7 +157,7 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
 
             foreach (var child in node.Children)
             {
-                ProcessNode(child, nodeIndex, world, nodes, meshes, scene, settings, axis);
+                ProcessNode(child, nodeIndex, nodes, meshes, scene, settings, axis);
             }
         }
 

@@ -53,8 +53,22 @@ namespace DevoidEngine.Engine.Core
 
                 GameObject go = scene.AddGameObject(node.Name);
                 objects[i] = go;
+            }
 
-                var transform = go.Transform;
+            // establish hierarchy first
+            for (int i = 0; i < Nodes.Length; i++)
+            {
+                int parent = Nodes[i].Parent;
+
+                if (parent >= 0)
+                    objects[i].SetParent(objects[parent]);
+            }
+
+            // then apply local transforms
+            for (int i = 0; i < Nodes.Length; i++)
+            {
+                var node = Nodes[i];
+                var transform = objects[i].Transform;
 
                 transform.LocalPosition = node.Translation;
                 transform.LocalRotation = node.Rotation;
@@ -64,20 +78,13 @@ namespace DevoidEngine.Engine.Core
                 {
                     var mesh = Meshes[meshIndex];
                     var material = Materials[MeshMaterialIndices[meshIndex]];
+
                     Renderer.SkyboxRenderer.BindIBL(material);
 
-                    var renderer = go.AddComponent<MeshRenderer>();
+                    var renderer = objects[i].AddComponent<MeshRenderer>();
                     renderer.AddMesh(mesh);
                     renderer.AddMaterial(new MaterialInstance(material));
                 }
-            }
-
-            for (int i = 0; i < Nodes.Length; i++)
-            {
-                int parent = Nodes[i].Parent;
-
-                if (parent >= 0)
-                    objects[i].SetParent(objects[parent]);
             }
 
             return objects[0];

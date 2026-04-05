@@ -251,7 +251,9 @@ namespace DevoidEngine.Engine.Components
                 if (parent != null)
                 {
                     Matrix4x4.Invert(parent.WorldMatrix, out var invParent);
-                    Matrix4x4 local = oldWorld * invParent;
+                    // This was changed from:
+                    // Matrix4x4 local = oldWorld * invParent;
+                    Matrix4x4 local = invParent * oldWorld;
                     Decompose(local);
                 }
                 else

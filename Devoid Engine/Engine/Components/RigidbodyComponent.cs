@@ -29,9 +29,9 @@ namespace DevoidEngine.Engine.Components
 
         public bool OverrideRotation = false;
 
-        public bool FreezeRotationX = false;
-        public bool FreezeRotationY = false;
-        public bool FreezeRotationZ = false;
+        public bool LockRotationX = false;
+        public bool LockRotationY = false;
+        public bool LockRotationZ = false;
 
         public PhysicsShapeDescription Shape
         {
@@ -119,7 +119,7 @@ namespace DevoidEngine.Engine.Components
             }
         }
 
-        private float _mass;
+        private float _mass = 100;
         public bool IsKinematic =>
             internalBody != null && internalBody.IsKinematic;
 
@@ -174,7 +174,10 @@ namespace DevoidEngine.Engine.Components
                 IsKinematic = StartKinematic,
                 Shape = Shape,
                 Material = Material,
-                AllowSleep = allowSleep
+                AllowSleep = allowSleep,
+                AllowRotationX = !LockRotationX,
+                AllowRotationY = !LockRotationY,
+                AllowRotationZ = !LockRotationZ,
             };
 
             internalBody = gameObject.Scene.Physics.CreateBody(desc, gameObject);

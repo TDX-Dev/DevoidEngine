@@ -81,6 +81,11 @@ namespace DevoidStandaloneLauncher.Utils
                 DeviceType = InputDeviceType.Keyboard,
                 Control = (ushort)Keys.LeftShift
             });
+
+            Input.Backend.OnDeviceConnected += (InputDeviceType type, uint id) =>
+            {
+                Console.WriteLine(type);
+            };
         }
 
     }

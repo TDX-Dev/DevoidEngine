@@ -157,25 +157,24 @@ namespace DevoidEngine.Engine.Components
 
         public void DrawCubes()
         {
-            if (lightType != LightType.SpotLight)
-                return;
-
             var transform = gameObject.Transform;
 
             Vector3 pos = transform.Position;
             Vector3 forward = transform.Forward;
 
-            float range = radius;
-
-            // normalize direction
-            forward = Vector3.Normalize(forward);
-
-            // ---- Origin cube ----
             Matrix4x4 originModel =
                 Matrix4x4.CreateScale(0.3f) *
                 Matrix4x4.CreateTranslation(pos);
 
             DebugRenderSystem.DrawCube(originModel);
+
+            if (lightType != LightType.SpotLight)
+                return;
+
+            float range = radius;
+
+            // normalize direction
+            forward = Vector3.Normalize(forward);
 
 
             // ---- Forward cube (direction) ----

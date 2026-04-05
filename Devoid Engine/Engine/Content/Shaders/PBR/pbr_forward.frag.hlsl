@@ -93,7 +93,7 @@ float3 ComputeIBL(
 
     // Diffuse IBL
     float3 irradiance = ENV_Irradiance.Sample(ENV_Irradiance_Sampler, N).rgb;
-    float3 diffuse = irradiance * albedo;// / PI;
+    float3 diffuse = irradiance * albedo / PI;
 
     // Specular IBL
     float3 R = normalize(reflect(-V, N));

@@ -12,6 +12,10 @@ namespace DevoidEngine.Engine.Physics
         public bool IsKinematic;
         public bool IsTrigger;
 
+        public bool AllowRotationX;
+        public bool AllowRotationY;
+        public bool AllowRotationZ;
+
         public PhysicsShapeDescription Shape;
 
         public PhysicsMaterial Material;
