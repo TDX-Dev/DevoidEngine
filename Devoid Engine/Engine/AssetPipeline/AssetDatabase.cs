@@ -118,67 +118,6 @@ namespace DevoidEngine.Engine.AssetPipeline
             File.WriteAllBytes(DatabasePath, data);
         }
 
-        //internal static Guid RegisterAsset(string assetPath)
-        //{
-        //    var metaPath = assetPath + ".meta";
-
-        //    AssetMeta meta;
-
-        //    bool created = false;
-        //    var absolutePath = Path.Combine(ProjectManager.Current!.AssetPath, assetPath);
-        //    var metaAbsolutePath = absolutePath + ".meta";
-
-        //    if (!File.Exists(metaAbsolutePath))
-        //    {
-        //        meta = CreateMeta(assetPath, metaAbsolutePath);
-        //        created = true;
-        //    }
-        //    else
-        //    {
-        //        meta = LoadMeta(metaAbsolutePath, assetPath);
-        //    }
-
-        //    var entry = new AssetEntry
-        //    {
-        //        Guid = Guid.Parse(meta.Guid),
-        //        AssetPath = assetPath,
-        //        MetaPath = metaPath
-        //    };
-
-        //    Console.WriteLine(assetPath);
-        //    guidToAsset[entry.Guid] = entry;
-        //    pathToAsset[assetPath] = entry;
-
-        //    var ext = Path.GetExtension(assetPath).ToLower();
-        //    var importer = ImporterRegistry.GetImporter(ext);
-
-        //    if (meta.Version != importer.SettingsVersion)
-        //    {
-        //        Console.WriteLine($"[Asset] Importer settings changed for {assetPath}, regenerating.");
-
-        //        meta.Settings = importer.CreateDefaultSettings();
-        //        meta.Version = importer.SettingsVersion;
-
-        //        SaveMeta(metaAbsolutePath, meta);
-        //    }
-
-        //    if (created || NeedsReimport(assetPath, meta, entry.Guid))
-        //    {
-        //        var output = Path.Combine(
-        //            ProjectManager.Current.CachePath,
-        //            GetLibraryPath(entry.Guid, importer.OutputExtension)
-        //        );
-
-        //        importer.Import(absolutePath, entry.Guid, meta.Settings, output);
-
-        //        meta.SourceTimestamp = File.GetLastWriteTimeUtc(absolutePath).Ticks;
-
-        //        //SaveMeta(metaPath, meta);
-        //        SaveMeta(metaAbsolutePath, meta);
-        //    }
-        //    return entry.Guid;
-        //}
-
         internal static Guid RegisterAssetMetaOnly(string assetPath)
         {
             var metaPath = assetPath + ".meta";
@@ -260,6 +199,7 @@ namespace DevoidEngine.Engine.AssetPipeline
             };
 
             guidToAsset[guid] = entry;
+            pathToAsset[assetPath] = entry;
 
             return guid;
         }
