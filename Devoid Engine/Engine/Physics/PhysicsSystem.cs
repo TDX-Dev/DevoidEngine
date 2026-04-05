@@ -85,14 +85,18 @@ namespace DevoidEngine.Engine.Physics
                 if (pair.Key is not IPhysicsBody body)
                     continue;
 
-                if (body.IsKinematic)
-                    continue;
-
                 var go = pair.Value;
 
-                // apply new physics pose
-                go.Transform.Position = body.Position;
-                go.Transform.Rotation = body.Rotation;
+                if (body.IsKinematic)
+                {
+                    body.Position = go.Transform.Position;
+                    body.Rotation = go.Transform.Rotation;
+
+                } else
+                {
+                    go.Transform.Position = body.Position;
+                    go.Transform.Rotation = body.Rotation;
+                }
             }
         }
 

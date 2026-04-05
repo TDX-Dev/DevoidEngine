@@ -166,6 +166,8 @@ namespace DevoidEngine.Engine.Components
                 internalShape.Size = new Vector3(1, 1, 1);
             }
 
+            Console.WriteLine($"GameObject: {gameObject.Name}: " + StartKinematic);
+
             var desc = new PhysicsBodyDescription
             {
                 Position = gameObject.Transform.Position,
@@ -185,24 +187,31 @@ namespace DevoidEngine.Engine.Components
 
         public override void OnUpdate(float dt)
         {
-            Matrix4x4 model = Matrix4x4.CreateFromQuaternion(Rotation) * Matrix4x4.CreateScale(Shape.Size) * Matrix4x4.CreateTranslation(gameObject.Transform.Position);
+            Matrix4x4 model = Matrix4x4.CreateFromQuaternion(internalBody?.Rotation ?? Quaternion.Identity) * Matrix4x4.CreateScale(Shape.Size) * Matrix4x4.CreateTranslation(internalBody?.Position ?? new Vector3(0));
 
             DebugRenderSystem.DrawCube(model);
 
-            if (internalBody == null)
-                return;
+            //if (internalBody == null)
+            //    return;
 
-            if (internalBody.IsKinematic)
-            {
-                internalBody.Position = gameObject.Transform.Position;
-                internalBody.Rotation = gameObject.Transform.Rotation;
-            }
+            //if (internalBody.IsKinematic)
+            //{
+            //    internalBody.Position = gameObject.Transform.Position;
+            //    internalBody.Rotation = gameObject.Transform.Rotation;
+            //}
         }
 
         public override void OnFixedUpdate(float dt)
         {
-            if (internalBody == null)
-                return;
+            //if (internalBody == null)
+            //    return;
+
+
+            //if (internalBody.IsKinematic)
+            //{
+            //    internalBody.Position = gameObject.Transform.Position;
+            //    internalBody.Rotation = gameObject.Transform.Rotation;
+            //}
 
             //if (!internalBody.IsKinematic)
             //{
