@@ -1,5 +1,6 @@
 ﻿using DevoidEngine.Engine.Assets;
 using DevoidEngine.Engine.Components;
+using DevoidEngine.Engine.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +14,53 @@ namespace DevoidEngine.Engine.Core
         public Mesh[] Meshes = [];
         public ModelNode[] Nodes = [];
         public Material[] Materials = [];
+        public int[] MeshMaterialIndices = [];
+
+        //public GameObject Instantiate(GameObject root)
+        //{
+        //    GameObject[] objects = new GameObject[Nodes.Length];
+
+        //    for (int i = 0; i < Nodes.Length; i++)
+        //    {
+        //        var node = Nodes[i];
+
+        //        GameObject go = root.Scene.AddGameObject("Child");
+        //        go.SetParent(root);
+        //        //go.Transform.SetParent(root.Transform);
+
+        //        objects[i] = go;
+
+        //        var transform = go.Transform;
+        //        transform.LocalPosition = node.Translation;
+        //        transform.LocalRotation = node.Rotation;
+        //        transform.LocalScale = node.Scale;
+
+        //        foreach (int meshIndex in node.MeshIndices)
+        //        {
+        //            var mesh = Meshes[meshIndex];
+
+        //            int materialIndex = MeshMaterialIndices[meshIndex];
+        //            var material = Materials[materialIndex];
+
+        //            Renderer.SkyboxRenderer.BindIBL(material);
+
+        //            var renderer = go.AddComponent<MeshRenderer>();
+        //            renderer.AddMesh(mesh);
+        //            renderer.AddMaterial(new MaterialInstance(material));
+        //        }
+        //    }
+
+        //    // build hierarchy
+        //    for (int i = 0; i < Nodes.Length; i++)
+        //    {
+        //        int parent = Nodes[i].Parent;
+
+        //        if (parent >= 0)
+        //            objects[i].Transform.SetParent(objects[parent].Transform);
+        //    }
+
+        //    return objects[0];
+        //}
 
         public GameObject Instantiate(Scene scene)
         {
@@ -34,10 +82,12 @@ namespace DevoidEngine.Engine.Core
                 foreach (int meshIndex in node.MeshIndices)
                 {
                     var mesh = Meshes[meshIndex];
-                    var material = Materials[mesh.MaterialIndex];
+                    var material = Materials[MeshMaterialIndices[meshIndex]];
+                    Renderer.SkyboxRenderer.BindIBL(material);
 
                     var renderer = go.AddComponent<MeshRenderer>();
-                    renderer.AddMesh(mesh, material);
+                    renderer.AddMesh(mesh);
+                    renderer.AddMaterial(new MaterialInstance(material));
                 }
             }
 

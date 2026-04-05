@@ -34,6 +34,12 @@ namespace DevoidEngine.Engine.AssetPipeline
             if (AssetCache<T>.Cache.TryGetValue(guid, out var asset))
                 return asset;
 
+            if (!AssetDatabase.TryGetPath(guid, out _))
+            {
+                Console.WriteLine($"[Asset] Missing asset {guid}");
+                return default;
+            }
+
             if (!AssetLoaderRegistry.TryGet<T>(out var loader) || loader == null)
             {
                 Console.WriteLine($"No loader registered for {typeof(T).Name}");

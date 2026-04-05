@@ -84,6 +84,7 @@ namespace DevoidEngine.Engine.Core
 
         public void SetTexture(string name, Texture texture)
         {
+
             if (!textureBindings.ContainsKey(name))
                 throw new Exception($"Texture '{name}' not found in material layout.");
 

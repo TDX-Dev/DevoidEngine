@@ -23,10 +23,15 @@ namespace DevoidEngine.Engine.AssetPipeline.Loaders
 
             model.Meshes = new Mesh[asset.Meshes.Length];
             model.Materials = new Material[asset.Materials.Length];
+            model.MeshMaterialIndices = new int[asset.Meshes.Length];
 
             for (int i = 0; i < asset.Meshes.Length; i++)
             {
-                model.Meshes[i] = BuildMesh(asset.Meshes[i]);
+                var meshAsset = asset.Meshes[i];
+
+                model.Meshes[i] = BuildMesh(meshAsset);
+
+                model.MeshMaterialIndices[i] = meshAsset.MaterialIndex;
             }
 
             for (int i = 0; i < asset.Materials.Length; i++)
@@ -50,6 +55,23 @@ namespace DevoidEngine.Engine.AssetPipeline.Loaders
                 if (tex != null)
                     material.SetTexture(name, tex);
             }
+            foreach (var (name, value) in asset.Ints)
+                material.SetInt(name, value);
+
+            foreach (var (name, value) in asset.Floats)
+                material.SetFloat(name, value);
+
+            foreach (var (name, value) in asset.Vector2s)
+                material.SetVector2(name, value);
+
+            foreach (var (name, value) in asset.Vector3s)
+                material.SetVector3(name, value);
+
+            foreach (var (name, value) in asset.Vector4s)
+                material.SetVector4(name, value);
+
+            foreach (var (name, value) in asset.Matrices)
+                material.SetMatrix4x4(name, value);
 
             return material;
         }

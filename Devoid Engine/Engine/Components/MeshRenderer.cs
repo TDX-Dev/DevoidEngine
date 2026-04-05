@@ -14,7 +14,13 @@ namespace DevoidEngine.Engine.Components
 
         public override void OnStart()
         {
-            material = RenderingDefaults.GetMaterial();
+            if (material != null)
+                material = RenderingDefaults.GetMaterial();
+        }
+
+        public void AddMaterial(MaterialInstance material)
+        {
+            this.material = material;
         }
 
         public void AddMesh(Mesh mesh)

@@ -45,9 +45,14 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
             var scene = ctx.ImportFile(assetPath,
                 PostProcessSteps.Triangulate |
                 PostProcessSteps.GenerateNormals |
-                PostProcessSteps.CalculateTangentSpace);
+                PostProcessSteps.GenerateSmoothNormals |
+                PostProcessSteps.CalculateTangentSpace |
+                PostProcessSteps.GenerateUVCoords |
+                PostProcessSteps.FlipUVs |
+                PostProcessSteps.FlipWindingOrder
+            );
 
-            var model = ConvertScene(scene, settings, outputPath);
+            var model = ConvertScene(scene, settings, assetPath);
 
             File.WriteAllBytes(
                 outputPath,
@@ -206,12 +211,7 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
                 var e = mat.ColorEmissive;
 
                 Vector3 emissiveColor = e.AsVector3();
-
-                // optional: normalize color and extract strength
-                float emissiveStrength = MathF.Max(e.X, MathF.Max(e.Y, e.Z));
-
-                if (emissiveStrength > 0)
-                    emissiveColor /= emissiveStrength;
+                float emissiveStrength = mat.GetProperty("$mat.emissiveIntensity,0,0")?.GetFloatValue() ?? 0f;
 
                 asset.Vector3s["EmissiveColor"] = mat.ColorEmissive.AsVector3();
                 asset.Floats["EmissiveStrength"] = emissiveStrength;
@@ -230,9 +230,10 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
                     0,
                     out var tex);
 
-                Guid texGuid = ImportTexture(tex.FilePath, currentModelPath);
+                Console.WriteLine(tex.FilePath);
+                Guid texGuid = ImportTexture(tex.FilePath);
 
-                asset.Textures["MAT_Albedo"] = texGuid;
+                asset.Textures["MAT_AlbedoMap"] = texGuid;
             }
 
             if (mat.HasTextureNormal)
@@ -242,27 +243,26 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
                     0,
                     out var tex);
 
-                Guid texGuid = ImportTexture(tex.FilePath, currentModelPath);
+                Guid texGuid = ImportTexture(tex.FilePath);
 
-                asset.Textures["MAT_Normal"] = texGuid;
+                asset.Textures["MAT_NormalMap"] = texGuid;
             }
+
+            //MaterialProperty[] mps = mat.GetAllProperties();
+            //foreach (MaterialProperty mp in mps)
+            //    Console.WriteLine(mp.FullyQualifiedName);
 
             return asset;
         }
 
-        Guid ImportTexture(string texturePath, string modelAssetPath)
+        Guid ImportTexture(string texturePath)
         {
-            // directory of the model inside Assets/
-            string modelDir = Path.GetDirectoryName(modelAssetPath)!;
+            Console.WriteLine("[Model Importer]: " + texturePath);
 
-            // resolve relative texture reference
-            string assetPath = Path.Combine(modelDir, texturePath)
-                .Replace('\\', '/');
-
-            if (AssetDatabase.TryGetGuid(assetPath, out var guid))
+            if (AssetDatabase.TryGetGuid(texturePath, out var guid))
                 return guid;
 
-            Console.WriteLine($"Texture not found in AssetDatabase: {assetPath}");
+            Console.WriteLine($"Texture not found in AssetDatabase: {texturePath}");
             return Guid.Empty;
         }
     }

@@ -28,6 +28,18 @@ namespace DevoidEngine.Engine.AssetPipeline
             return false;
         }
 
+        public static bool TryGetPath(Guid guid, out string path)
+        {
+            if (guidToAsset.TryGetValue(guid, out var entry))
+            {
+                path = entry.AssetPath;
+                return true;
+            }
+
+            path = "";
+            return false;
+        }
+
         public static string GetPath(Guid guid)
         {
             return guidToAsset[guid].AssetPath;
@@ -51,20 +63,79 @@ namespace DevoidEngine.Engine.AssetPipeline
             ScanAssets();
         }
 
-        internal static Guid RegisterAsset(string assetPath)
+        //internal static Guid RegisterAsset(string assetPath)
+        //{
+        //    var metaPath = assetPath + ".meta";
+
+        //    AssetMeta meta;
+
+        //    bool created = false;
+        //    var absolutePath = Path.Combine(ProjectManager.Current!.AssetPath, assetPath);
+        //    var metaAbsolutePath = absolutePath + ".meta";
+
+        //    if (!File.Exists(metaAbsolutePath))
+        //    {
+        //        meta = CreateMeta(assetPath, metaAbsolutePath);
+        //        created = true;
+        //    }
+        //    else
+        //    {
+        //        meta = LoadMeta(metaAbsolutePath, assetPath);
+        //    }
+
+        //    var entry = new AssetEntry
+        //    {
+        //        Guid = Guid.Parse(meta.Guid),
+        //        AssetPath = assetPath,
+        //        MetaPath = metaPath
+        //    };
+
+        //    Console.WriteLine(assetPath);
+        //    guidToAsset[entry.Guid] = entry;
+        //    pathToAsset[assetPath] = entry;
+
+        //    var ext = Path.GetExtension(assetPath).ToLower();
+        //    var importer = ImporterRegistry.GetImporter(ext);
+
+        //    if (meta.Version != importer.SettingsVersion)
+        //    {
+        //        Console.WriteLine($"[Asset] Importer settings changed for {assetPath}, regenerating.");
+
+        //        meta.Settings = importer.CreateDefaultSettings();
+        //        meta.Version = importer.SettingsVersion;
+
+        //        SaveMeta(metaAbsolutePath, meta);
+        //    }
+
+        //    if (created || NeedsReimport(assetPath, meta, entry.Guid))
+        //    {
+        //        var output = Path.Combine(
+        //            ProjectManager.Current.CachePath,
+        //            GetLibraryPath(entry.Guid, importer.OutputExtension)
+        //        );
+
+        //        importer.Import(absolutePath, entry.Guid, meta.Settings, output);
+
+        //        meta.SourceTimestamp = File.GetLastWriteTimeUtc(absolutePath).Ticks;
+
+        //        //SaveMeta(metaPath, meta);
+        //        SaveMeta(metaAbsolutePath, meta);
+        //    }
+        //    return entry.Guid;
+        //}
+
+        internal static Guid RegisterAssetMetaOnly(string assetPath)
         {
             var metaPath = assetPath + ".meta";
 
-            AssetMeta meta;
-
-            bool created = false;
             var absolutePath = Path.Combine(ProjectManager.Current!.AssetPath, assetPath);
             var metaAbsolutePath = absolutePath + ".meta";
+
+            AssetMeta meta;
 
             if (!File.Exists(metaAbsolutePath))
             {
                 meta = CreateMeta(assetPath, metaAbsolutePath);
-                created = true;
             }
             else
             {
@@ -81,34 +152,38 @@ namespace DevoidEngine.Engine.AssetPipeline
             guidToAsset[entry.Guid] = entry;
             pathToAsset[assetPath] = entry;
 
-            var ext = Path.GetExtension(assetPath).ToLower();
-            var importer = ImporterRegistry.GetImporter(ext);
-
-            if (meta.Version != importer.SettingsVersion)
-            {
-                Console.WriteLine($"[Asset] Importer settings changed for {assetPath}, regenerating.");
-
-                meta.Settings = importer.CreateDefaultSettings();
-                meta.Version = importer.SettingsVersion;
-
-                SaveMeta(metaAbsolutePath, meta);
-            }
-
-            if (created || NeedsReimport(assetPath, meta, entry.Guid))
-            {
-                var output = Path.Combine(
-                    ProjectManager.Current.CachePath,
-                    GetLibraryPath(entry.Guid, importer.OutputExtension)
-                );
-
-                importer.Import(absolutePath, entry.Guid, meta.Settings, output);
-
-                meta.SourceTimestamp = File.GetLastWriteTimeUtc(absolutePath).Ticks;
-
-                //SaveMeta(metaPath, meta);
-                SaveMeta(metaAbsolutePath, meta);
-            }
             return entry.Guid;
+        }
+
+        internal static void ImportAsset(AssetEntry entry)
+        {
+            var project = ProjectManager.Current!;
+            string assetPath = entry.AssetPath;
+
+            string absolutePath = Path.Combine(project.AssetPath, assetPath);
+
+            var meta = LoadMeta(
+                Path.Combine(project.AssetPath, entry.MetaPath),
+                assetPath
+            );
+
+            var importer = ImporterRegistry.GetImporter(
+                Path.GetExtension(assetPath).ToLower()
+            );
+
+            if (!NeedsReimport(assetPath, meta, entry.Guid))
+                return;
+
+            string output = Path.Combine(
+                project.CachePath,
+                GetLibraryPath(entry.Guid, importer.OutputExtension)
+            );
+
+            importer.Import(absolutePath, entry.Guid, meta.Settings, output);
+
+            meta.SourceTimestamp = File.GetLastWriteTimeUtc(absolutePath).Ticks;
+
+            SaveMeta(Path.Combine(project.AssetPath, entry.MetaPath), meta);
         }
 
         private static AssetMeta CreateMeta(string assetPath, string metaPath)
@@ -270,16 +345,21 @@ namespace DevoidEngine.Engine.AssetPipeline
                 if (file.EndsWith(".meta"))
                     continue;
 
-                string relative = Path.GetRelativePath(assetRoot, file);
-                relative = relative.Replace('\\', '/');
+                string relative = Path.GetRelativePath(assetRoot, file).Replace('\\', '/');
 
                 var ext = Path.GetExtension(relative).ToLower();
 
                 if (!ImporterRegistry.HasImporter(ext))
                     continue;
 
-                Guid guid = RegisterAsset(relative);
+                Guid guid = RegisterAssetMetaOnly(relative);
                 discovered.Add(guid);
+            }
+
+            // SECOND PASS
+            foreach (var guid in discovered)
+            {
+                ImportAsset(guidToAsset[guid]);
             }
 
             CleanupLibrary(discovered);
