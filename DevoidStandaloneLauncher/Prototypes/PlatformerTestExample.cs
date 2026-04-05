@@ -4,6 +4,7 @@ using DevoidEngine.Engine.Components;
 using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.Physics;
 using DevoidEngine.Engine.ProjectSystem;
+using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.Serialization;
 using DevoidEngine.Engine.UI.Nodes;
 using DevoidEngine.Engine.UI.Theme;
@@ -24,6 +25,7 @@ namespace DevoidStandaloneLauncher.Prototypes
     {
         public override void OnInit()
         {
+            DebugRenderSystem.AllowDebugDraw = true;
             DefaultInput.ConfigureInput();
 
             Scene scene = new Scene();
@@ -46,13 +48,31 @@ namespace DevoidStandaloneLauncher.Prototypes
             Model model = Asset.Load<Model>("icosphere.gltf");
             GameObject icosphereObject = model.Instantiate(scene);
 
-            icosphereObject.Transform.Position = new Vector3(0, 0, 5);
+            icosphereObject.Transform.Position = new Vector3(0, 5, 5);
 
-            RigidBodyComponent icospherePhysics = icosphereObject.AddComponent<RigidBodyComponent>();
-            icospherePhysics.Shape = new PhysicsShapeDescription()
+            //RigidBodyComponent icospherePhysics = icosphereObject.AddComponent<RigidBodyComponent>();
+            //icospherePhysics.Mass = 100;
+            //icospherePhysics.Shape = new PhysicsShapeDescription()
+            //{
+            //    Type = PhysicsShapeType.Sphere,
+            //    Radius = 1,
+            //};
+
+
+            Model platformModel = Asset.Load<Model>("platform.gltf");
+            GameObject platformObject = platformModel.Instantiate(scene);
+
+            StaticColliderComponent platformPhysics = platformObject.AddComponent<StaticColliderComponent>();
+            
+            platformPhysics.Shape = new PhysicsShapeDescription()
             {
-                Type = PhysicsShapeType.Sphere,
-                Radius = 1,
+                Size = new Vector3(10, 0.2f, 10) * 2,
+                Type = PhysicsShapeType.Box,
+            };
+            platformPhysics.Material = new PhysicsMaterial()
+            {
+                Friction = 1,
+                Restitution = 0,
             };
 
 

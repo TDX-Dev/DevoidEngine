@@ -16,6 +16,7 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
 
         public Type SettingsType => typeof(TSettings);
         public int SettingsVersion => 0;
+        public virtual int Priority => 100;
 
         public abstract TSettings DefaultSettings();
 

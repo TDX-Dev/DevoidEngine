@@ -90,6 +90,7 @@ namespace DevoidEngine.Engine.Physics
 
                 var go = pair.Value;
 
+                // apply new physics pose
                 go.Transform.Position = body.Position;
                 go.Transform.Rotation = body.Rotation;
             }

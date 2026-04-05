@@ -20,6 +20,8 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
 
         public override string OutputExtension => "texture";
 
+        public override int Priority => 100;
+
         public override TextureImportSettings DefaultSettings()
         {
             return new TextureImportSettings();

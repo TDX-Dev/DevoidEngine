@@ -212,7 +212,6 @@ namespace DevoidEngine.Engine.Core
         void FixedUpdate(float deltaTime)
         {
             layerHandler.FixedUpdateLayers(deltaTime);
-
             EngineSingleton.Instance.PhysicsSystem.Step(deltaTime);
             EngineSingleton.Instance.PhysicsSystem.SyncTransforms();
             EngineSingleton.Instance.PhysicsSystem.ResolveFrameCollisions();

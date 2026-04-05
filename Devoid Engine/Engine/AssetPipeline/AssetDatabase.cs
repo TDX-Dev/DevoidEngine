@@ -374,9 +374,25 @@ namespace DevoidEngine.Engine.AssetPipeline
             }
 
             // SECOND PASS
-            foreach (var guid in discovered)
+            //foreach (var guid in discovered)
+            //{
+            //    ImportAsset(guidToAsset[guid]);
+            //}
+
+            var ordered = discovered
+                .Select(g => guidToAsset[g])
+                .OrderBy(e =>
+                {
+                    var importer = ImporterRegistry.GetImporter(
+                        Path.GetExtension(e.AssetPath).ToLower()
+                    );
+
+                    return importer.Priority;
+                });
+
+            foreach (var entry in ordered)
             {
-                ImportAsset(guidToAsset[guid]);
+                ImportAsset(entry);
             }
 
             CleanupLibrary(discovered);

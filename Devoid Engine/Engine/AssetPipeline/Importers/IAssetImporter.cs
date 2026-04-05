@@ -15,6 +15,7 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
 
         Type SettingsType { get; }
         int SettingsVersion { get; }
+        int Priority { get; }
 
         byte[] CreateDefaultSettings();
 

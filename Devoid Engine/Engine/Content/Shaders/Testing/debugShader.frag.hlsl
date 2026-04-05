@@ -15,5 +15,5 @@ struct PSInput
 float4 PSMain(PSInput input) : SV_TARGET
 {
     
-    return float4(200,200,200, 100); 
+    return float4(20,20,20, 20); 
 }

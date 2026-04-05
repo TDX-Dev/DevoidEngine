@@ -76,7 +76,10 @@ namespace DevoidEngine.Engine.Core
 
         public void Render()
         {
-           
+           for (int i = 0;i < GameObjects.Count; i++)
+            {
+                GameObjects[i].OnRender();
+            }
         }
 
         public GameObject AddGameObject(string name = "GameObject")

@@ -50,9 +50,6 @@ namespace DevoidEngine.Engine.Physics.Bepu
             }
         }
 
-        public Vector3 PrevPosition { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public Quaternion PrevRotation { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
         public void Remove()
         {
             simulation.Statics.Remove(Handle);

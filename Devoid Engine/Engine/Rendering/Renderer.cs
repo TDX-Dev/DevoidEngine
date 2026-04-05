@@ -95,11 +95,10 @@ namespace DevoidEngine.Engine.Rendering
             }
             RenderUI(ctx.renderItemsUI);
             Framebuffer activeFrameBuffer = ActiveRenderTechnique.Render(ctx);
+            DebugRenderSystem.Render(ctx.cameraData, activeFrameBuffer);
             var Output = (Texture2D)activeFrameBuffer.GetRenderTexture(0);
             Texture2D finalColor = PostProcessor.Run(Output);
             RenderAPI.RenderToBuffer(finalColor, ctx.cameraTargetSurface);
-
-            DebugRenderSystem.Render(ctx.cameraData, activeFrameBuffer);
 
             Renderer.GraphicsDevice.UnbindAllShaderResources();
 

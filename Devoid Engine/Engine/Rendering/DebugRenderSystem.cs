@@ -173,7 +173,7 @@ namespace DevoidEngine.Engine.Rendering
 
             cameraRenderSurface.Bind();
 
-            Renderer.SetupCamera(cameraData); // 🔥 THIS IS MISSING
+            Renderer.SetupCamera(cameraData);
 
             List<RenderItem> renderItems3D = new List<RenderItem>();
 
@@ -232,6 +232,7 @@ namespace DevoidEngine.Engine.Rendering
             renderItems3D.Clear();
             renderItems2D.Clear();
             ClearDebugShapes();
+
         }
 
         public static void ClearDebugShapes()

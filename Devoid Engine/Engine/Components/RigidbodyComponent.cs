@@ -182,6 +182,10 @@ namespace DevoidEngine.Engine.Components
 
         public override void OnUpdate(float dt)
         {
+            Matrix4x4 model = Matrix4x4.CreateFromQuaternion(Rotation) * Matrix4x4.CreateScale(Shape.Size) * Matrix4x4.CreateTranslation(gameObject.Transform.Position);
+
+            DebugRenderSystem.DrawCube(model);
+
             if (internalBody == null)
                 return;
 
@@ -220,11 +224,8 @@ namespace DevoidEngine.Engine.Components
             //}
         }
 
-        public override void OnRender(float dt)
+        public override void OnRender()
         {
-            Matrix4x4 model = Matrix4x4.CreateTranslation(gameObject.Transform.Position) * Matrix4x4.CreateScale(Shape.Size) * Matrix4x4.CreateFromQuaternion(Rotation);
-
-            DebugRenderSystem.DrawCube(model);
         }
 
         public override void OnDestroy()

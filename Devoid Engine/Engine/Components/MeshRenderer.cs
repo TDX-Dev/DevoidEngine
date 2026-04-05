@@ -41,7 +41,7 @@ namespace DevoidEngine.Engine.Components
             return mesh;
         }
 
-        public override void OnRender(float dt)
+        public override void OnRender()
         {
             //DebugRenderSystem.DrawCube(mesh.LocalBounds.min, mesh.LocalBounds.max, gameObject.Transform.WorldMatrix);
             //DebugRenderSystem.DrawMesh(mesh, gameObject.transform.WorldMatrix);

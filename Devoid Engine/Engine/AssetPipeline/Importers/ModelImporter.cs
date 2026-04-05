@@ -26,6 +26,7 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
             new[] { ".fbx", ".gltf", ".glb", ".obj" };
 
         public override string OutputExtension => "model";
+        public override int Priority => 200;
 
         public override ModelImportSettings DefaultSettings()
         {

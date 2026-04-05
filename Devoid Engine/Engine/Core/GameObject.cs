@@ -244,11 +244,11 @@ namespace DevoidEngine.Engine.Core
         }
 
 
-        public void OnRender(float dt)
+        public void OnRender()
         {
             for (int i = 0; i < Components.Count; i++)
             {
-                Components[i].OnRender(dt);
+                Components[i].OnRender();
             }
 
 

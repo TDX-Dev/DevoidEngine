@@ -10,7 +10,6 @@ namespace DevoidEngine.Engine.Physics
         float Mass { get; }
         bool IsKinematic { get; set; }
 
-        void UpdatePose(Vector3 position, Quaternion rotation);
         void AddForce(Vector3 force);
         void AddImpulse(Vector3 impulse);
         void AddTorque(Vector3 torque);
