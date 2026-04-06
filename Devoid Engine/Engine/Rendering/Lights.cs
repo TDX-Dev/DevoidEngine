@@ -270,7 +270,10 @@ namespace DevoidEngine.Engine.Rendering
         public float innerCutoff;
         public float outerCutoff;
 
-        public Vector2 padding; // must match shader
+        public int shadowIndex;
+
+
+        public float padding; // must match shader
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 16)]

@@ -147,6 +147,7 @@ float4 PSMain(PSInput input) : SV_TARGET
     roughness = max(roughness, 0.04); // avoid zero roughness
     
     float3 N = GetNormalFromMap(input);
+    // Position is camera position!
     float3 V = normalize(Position - input.WorldspacePosition);
     
     float3 F0 = lerp(float3(0.04, 0.04, 0.04), albedo, metallic);
@@ -174,7 +175,7 @@ float4 PSMain(PSInput input) : SV_TARGET
         if (SpotLights[i].position.w == 0)
             continue;
 
-        Lo += ComputeSpotLight(
+        float lightContribution = ComputeSpotLight(
             SpotLights[i],
             input.WorldspacePosition,
             N,
@@ -184,6 +185,15 @@ float4 PSMain(PSInput input) : SV_TARGET
             roughness,
             F0
         );
+        
+        float shadow = 0;
+
+        if (SpotLights[i].shadowIndex != -1)
+        {
+            shadow = ComputeShadow(SpotLights[i].shadowIndex, input.WorldspacePosition);
+        }
+
+        Lo += (1 - shadow) * lightContribution;
     }
 
     for (uint i = 0; i < directionalLightCount; i++)

@@ -114,6 +114,7 @@ namespace DevoidGPU.DX11
         private IDX11Texture[] _boundCS_SRVs = new IDX11Texture[16];
         private IDX11Texture[] _boundCS_UAVs = new IDX11Texture[8];
         private IDX11Texture[] _boundRTVs = new IDX11Texture[8];
+        private IDX11Texture _boundDSV;
 
         internal void TrackSRVBind(int slot, DX11Texture2D texture, ShaderStage stage)
         {
@@ -127,39 +128,6 @@ namespace DevoidGPU.DX11
                 _boundCS_SRVs[slot] = texture;
         }
 
-        //private void ResolveTextureHazard(DX11Texture2D texture)
-        //{
-        //    for (int i = 0; i < 16; i++)
-        //    {
-        //        if (_boundPS_SRVs[i] == texture)
-        //        {
-        //            deviceContext.PixelShader.SetShaderResource(i, null);
-        //            _boundPS_SRVs[i] = null;
-        //        }
-
-        //        if (_boundVS_SRVs[i] == texture)
-        //        {
-        //            deviceContext.VertexShader.SetShaderResource(i, null);
-        //            _boundVS_SRVs[i] = null;
-        //        }
-
-        //        if (_boundCS_SRVs[i] == texture)
-        //        {
-        //            deviceContext.ComputeShader.SetShaderResource(i, null);
-        //            _boundCS_SRVs[i] = null;
-        //        }
-        //    }
-
-        //    for (int i = 0; i < 8; i++)
-        //    {
-        //        if (_boundCS_UAVs[i] == texture)
-        //        {
-        //            deviceContext.ComputeShader.SetUnorderedAccessView(i, null);
-        //            _boundCS_UAVs[i] = null;
-        //        }
-        //    }
-        //}
-
         void ResolveForSRV(IDX11Texture tex)
         {
             for (int i = 0; i < 8; i++)
@@ -169,6 +137,13 @@ namespace DevoidGPU.DX11
                     deviceContext.ComputeShader.SetUnorderedAccessView(i, null);
                     _boundCS_UAVs[i] = null;
                 }
+            }
+
+            if (_boundDSV == tex)
+            {
+                deviceContext.OutputMerger.SetRenderTargets(null, (RenderTargetView[])null);
+                _boundDSV = null;
+                Array.Clear(_boundRTVs);
             }
         }
 
@@ -307,8 +282,17 @@ namespace DevoidGPU.DX11
             }
 
             DepthStencilView dsv = null;
+
             if (fb.DepthAttachment is DX11Texture2D depthTex)
+            {
+                ResolveForRTV(depthTex);
+                _boundDSV = depthTex;
                 dsv = depthTex.DepthStencilView;
+            }
+            else
+            {
+                _boundDSV = null;
+            }
 
             deviceContext.OutputMerger.SetRenderTargets(dsv, rtvs);
         }
@@ -316,6 +300,8 @@ namespace DevoidGPU.DX11
         public void UnbindFramebuffer()
         {
             deviceContext.OutputMerger.SetRenderTargets(null, (RenderTargetView[])null);
+            _boundDSV = null;
+            Array.Clear(_boundRTVs);
         }
 
         public Matrix4x4 AdjustProjectionMatrix(Matrix4x4 projection)

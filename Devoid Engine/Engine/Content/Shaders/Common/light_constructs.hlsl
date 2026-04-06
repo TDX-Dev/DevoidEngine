@@ -12,13 +12,22 @@ struct GPUSpotLight
     float4 direction; // xyz direction, w = range
     float innerCutoff;
     float outerCutoff;
-    float2 padding;
+    int shadowIndex;
+    float padding;
 };
 
 struct GPUDirectionalLight
 {
     float4 Direction; // xyz dir, w = enabled
     float4 Color; // rgb color, w = intensity
+};
+
+struct ShadowData
+{
+    float4x4 LightViewProj;
+    float2 AtlasOffset;
+    float2 AtlasScale;
+    float2 Padding;
 };
 
 #include "../Common/math_constants.hlsl"
@@ -38,6 +47,51 @@ cbuffer SceneData : register(b2)
 StructuredBuffer<GPUPointLight> PointLights : register(t10);
 StructuredBuffer<GPUDirectionalLight> DirectionalLights : register(t11);
 StructuredBuffer<GPUSpotLight> SpotLights : register(t12);
+
+StructuredBuffer<ShadowData> ShadowBuffer : register(t13);
+
+Texture2D ShadowAtlas : register(t9);
+SamplerState ShadowSampler : register(s9);
+
+float ComputeShadow(int shadowIndex, float3 worldPos)
+{
+    ShadowData shadow = ShadowBuffer[shadowIndex];
+
+    float4 lightSpace = mul(float4(worldPos, 1), shadow.LightViewProj);
+
+    float3 proj = lightSpace.xyz / lightSpace.w;
+
+    proj = proj * 0.5 + 0.5;
+    proj.y = 1.0 - proj.y;
+
+    if (proj.x < 0 || proj.x > 1 ||
+        proj.y < 0 || proj.y > 1 ||
+        proj.z < 0 || proj.z > 1)
+        return 0;
+
+    proj.xy = shadow.AtlasOffset + proj.xy * shadow.AtlasScale;
+
+    float closest = ShadowAtlas.Sample(ShadowSampler, proj.xy).r;
+
+    float bias = 0.005;
+
+    return proj.z > closest + bias ? 1.0 : 0.0;
+}
+
+//float ComputeShadow(int shadowIndex, float3 worldPos)
+//{
+//    ShadowData shadow = ShadowBuffer[shadowIndex];
+
+//    float4 lightSpace = mul(shadow.LightViewProj, float4(worldPos, 1));
+
+//    float3 proj = lightSpace.xyz / lightSpace.w;
+
+//    proj = proj * 0.5 + 0.5;
+
+//    proj.xy = shadow.AtlasOffset + proj.xy * shadow.AtlasScale;
+
+//    return frac(worldPos.x * 0.1);
+//}
 
 
 float3 ComputeBRDF(

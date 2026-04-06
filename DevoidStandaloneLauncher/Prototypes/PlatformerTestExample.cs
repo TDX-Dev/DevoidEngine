@@ -27,13 +27,25 @@ namespace DevoidStandaloneLauncher.Prototypes
         Scene scene;
         public override void OnInit()
         {
-            DebugRenderSystem.AllowDebugDraw = false;
+            DebugRenderSystem.AllowDebugDraw = true;
             DefaultInput.ConfigureInput();
 
             scene = new Scene();
             loader.CurrentScene = scene;
             SceneManager.LoadScene(scene);
             scene.AddGameObject("Skybox").AddComponent<SkyboxComponent>();
+
+
+
+            GameObject spotLight = scene.AddGameObject("Origin Light");
+            LightComponent spotLightComponent = spotLight.AddComponent<LightComponent>();
+            spotLightComponent.Intensity = 100;
+            spotLightComponent.LightType = LightType.SpotLight;
+            spotLightComponent.CastShadows = true;
+            spotLightComponent.InnerCutoff = 18;
+            spotLightComponent.OuterCutoff = 30;
+            spotLight.Transform.LocalPosition = new Vector3(0, 10, 0);
+            spotLight.Transform.EulerAngles = new Vector3(90, 0, 0);
 
 
 

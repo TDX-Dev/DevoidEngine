@@ -1,6 +1,7 @@
 ﻿using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.Rendering.GPUResource;
 using DevoidEngine.Engine.Rendering.PostProcessing;
+using DevoidEngine.Engine.Rendering.Shadows;
 using DevoidEngine.Engine.UI;
 using DevoidGPU;
 using SharpDX.DXGI;
@@ -18,6 +19,7 @@ namespace DevoidEngine.Engine.Rendering
         public static IGraphicsDevice GraphicsDevice { get; internal set; } = null!;
         public static IRenderTechnique? ActiveRenderTechnique;
         public static SkyboxRenderer SkyboxRenderer = null!;
+        public static ShadowSystem ShadowSystem = null!;
         public static PostProcessor PostProcessor = null!;
 
         internal static ResourceManager ResourceManager = new ResourceManager();
@@ -76,6 +78,8 @@ namespace DevoidEngine.Engine.Rendering
 
             SkyboxRenderer = new SkyboxRenderer();
 
+            ShadowSystem = new ShadowSystem();
+            ShadowSystem.Initialize();
 
             RenderingDefaults.Initialize();
 
@@ -94,6 +98,7 @@ namespace DevoidEngine.Engine.Rendering
                 return;
             }
             RenderUI(ctx.renderItemsUI);
+            ShadowSystem.RenderShadowMaps(ctx);
             Framebuffer activeFrameBuffer = ActiveRenderTechnique.Render(ctx);
             DebugRenderSystem.Render(ctx.cameraData, activeFrameBuffer);
             var Output = (Texture2D)activeFrameBuffer.GetRenderTexture(0);

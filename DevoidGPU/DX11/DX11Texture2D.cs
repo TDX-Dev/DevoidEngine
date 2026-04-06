@@ -56,8 +56,15 @@ namespace DevoidGPU.DX11
         {
 
             var textureFormat = format;
-            if (IsDepthStencil && format == Format.D24_UNorm_S8_UInt)
-                textureFormat = Format.R24G8_Typeless;
+
+            if (IsDepthStencil)
+            {
+                if (format == Format.D24_UNorm_S8_UInt)
+                    textureFormat = Format.R24G8_Typeless;
+
+                if (format == Format.D32_Float)
+                    textureFormat = Format.R32_Typeless;
+            }
 
             var desc = new Texture2DDescription
             {
@@ -81,18 +88,36 @@ namespace DevoidGPU.DX11
             RenderTargetView = IsRenderTarget ? new RenderTargetView(device, Texture) : null;
             if (IsDepthStencil)
             {
+                Format dsvFormat;
+                Format srvFormat;
+
+                if (format == Format.D32_Float)
+                {
+                    dsvFormat = Format.D32_Float;
+                    srvFormat = Format.R32_Float;
+                }
+                else
+                {
+                    dsvFormat = Format.D24_UNorm_S8_UInt;
+                    srvFormat = Format.R24_UNorm_X8_Typeless;
+                }
+
                 var dsvDesc = new DepthStencilViewDescription
                 {
-                    Format = Format.D24_UNorm_S8_UInt,
+                    Format = dsvFormat,
                     Dimension = DepthStencilViewDimension.Texture2D,
                     Flags = DepthStencilViewFlags.None,
-                    Texture2D = new DepthStencilViewDescription.Texture2DResource { MipSlice = 0 }
+                    Texture2D = new DepthStencilViewDescription.Texture2DResource
+                    {
+                        MipSlice = 0
+                    }
                 };
+
                 DepthStencilView = new DepthStencilView(device, Texture, dsvDesc);
 
                 var srvDesc = new ShaderResourceViewDescription
                 {
-                    Format = Format.R24_UNorm_X8_Typeless,
+                    Format = srvFormat,
                     Dimension = ShaderResourceViewDimension.Texture2D,
                     Texture2D = new ShaderResourceViewDescription.Texture2DResource
                     {
@@ -100,6 +125,7 @@ namespace DevoidGPU.DX11
                         MipLevels = 1
                     }
                 };
+
                 ShaderResourceView = new ShaderResourceView(device, Texture, srvDesc);
             }
             else

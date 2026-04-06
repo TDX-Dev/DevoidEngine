@@ -20,6 +20,9 @@ namespace DevoidEngine.Engine.Components
         public float intensity = 10f;
         public float radius = 30f;
 
+        public bool castShadows = false;
+        public int shadowResolution = 1024;
+
         public float outerCutoff = MathHelper.DegToRad(71);
         public float innerCutoff = MathHelper.DegToRad(52);
 
@@ -38,6 +41,19 @@ namespace DevoidEngine.Engine.Components
                 if (lightType != value)
                 {
                     lightType = value;
+                    dirty = true;
+                }
+            }
+        }
+
+        public bool CastShadows
+        {
+            get => castShadows;
+            set
+            {
+                if (castShadows != value)
+                {
+                    castShadows = value;
                     dirty = true;
                 }
             }
@@ -144,6 +160,7 @@ namespace DevoidEngine.Engine.Components
                     gpuSpot.direction = new Vector4(forward, radius);
                     gpuSpot.innerCutoff = innerCutoff;
                     gpuSpot.outerCutoff = outerCutoff;
+                    gpuSpot.shadowIndex = CastShadows ? 0 : -1;
                     break;
 
                 case LightType.DirectionalLight:
