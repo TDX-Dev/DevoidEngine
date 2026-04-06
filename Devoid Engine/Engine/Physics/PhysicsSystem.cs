@@ -1,4 +1,6 @@
-﻿using DevoidEngine.Engine.Core;
+﻿using BepuPhysics;
+using DevoidEngine.Engine.Core;
+using System.Numerics;
 
 namespace DevoidEngine.Engine.Physics
 {
@@ -78,7 +80,7 @@ namespace DevoidEngine.Engine.Physics
             currentPairs.Clear();
         }
 
-        public void SyncTransforms()
+        public void SyncTransforms(float dt)
         {
             foreach (var pair in objectMap)
             {
@@ -89,8 +91,34 @@ namespace DevoidEngine.Engine.Physics
 
                 if (body.IsKinematic)
                 {
-                    body.Position = go.Transform.Position;
-                    body.Rotation = go.Transform.Rotation;
+                    Vector3 targetPos = go.Transform.Position;
+                    Quaternion targetRot = go.Transform.Rotation;
+
+                    Vector3 currentPos = body.Position;
+                    Quaternion currentRot = body.Rotation;
+
+                    // Linear velocity
+                    Vector3 linearVelocity = (targetPos - currentPos) / dt;
+
+                    // Quaternion delta
+                    Quaternion delta = targetRot * Quaternion.Inverse(currentRot);
+                    delta = Quaternion.Normalize(delta);
+
+                    // Convert to axis-angle
+                    float angle = 2f * MathF.Acos(delta.W);
+                    float sinHalfAngle = MathF.Sqrt(1f - delta.W * delta.W);
+
+                    Vector3 axis;
+                    if (sinHalfAngle < 0.0001f)
+                        axis = Vector3.UnitX;
+                    else
+                        axis = new Vector3(delta.X, delta.Y, delta.Z) / sinHalfAngle;
+
+                    // Angular velocity
+                    Vector3 angularVelocity = axis * (angle / dt);
+
+                    body.LinearVelocity = linearVelocity;
+                    body.AngularVelocity = angularVelocity;
 
                 } else
                 {

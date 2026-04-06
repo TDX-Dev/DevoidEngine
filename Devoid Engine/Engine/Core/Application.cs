@@ -213,7 +213,7 @@ namespace DevoidEngine.Engine.Core
         {
             layerHandler.FixedUpdateLayers(deltaTime);
             EngineSingleton.Instance.PhysicsSystem.Step(deltaTime);
-            EngineSingleton.Instance.PhysicsSystem.SyncTransforms();
+            EngineSingleton.Instance.PhysicsSystem.SyncTransforms(deltaTime);
             EngineSingleton.Instance.PhysicsSystem.ResolveFrameCollisions();
         }
 

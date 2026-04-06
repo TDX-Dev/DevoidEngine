@@ -1,11 +1,7 @@
 ﻿using DevoidEngine.Engine.Components;
 using DevoidEngine.Engine.Core;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DevoidStandaloneLauncher.Scripts
 {
@@ -13,9 +9,14 @@ namespace DevoidStandaloneLauncher.Scripts
     {
         public override string Type => nameof(MovingCollider);
 
-
         RigidBodyComponent body;
-        Vector3 movingAxis = Vector3.UnitX;
+
+        Vector3 localAxis = Vector3.UnitX;
+
+        Vector3 startingPos;
+        float timer = 0;
+
+        public float MoveSpeed = 2;
 
         public override void OnStart()
         {
@@ -23,8 +24,6 @@ namespace DevoidStandaloneLauncher.Scripts
             startingPos = gameObject.Transform.Position;
         }
 
-        Vector3 startingPos;
-        float timer = 0;
         public override void OnFixedUpdate(float dt)
         {
             if (body == null)
@@ -32,8 +31,14 @@ namespace DevoidStandaloneLauncher.Scripts
 
             timer += dt;
 
-            //gameObject.Transform.Position = startingPos + (movingAxis * (float)(Math.Sin(timer * 10) * 5));
-        }
+            // Convert local axis to world axis
+            Vector3 worldAxis = Vector3.Transform(localAxis, gameObject.Transform.Rotation);
 
+            float distance = (float)Math.Sin(timer * 2) * 2f;
+            float amplitude = Vector3.Dot(localAxis, gameObject.Transform.Scale) * 2f;
+
+            gameObject.Transform.Position =
+                startingPos + worldAxis * (float)Math.Sin(timer * MoveSpeed) * amplitude;
+        }
     }
 }

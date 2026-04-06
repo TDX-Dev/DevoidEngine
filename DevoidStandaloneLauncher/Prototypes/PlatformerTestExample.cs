@@ -23,42 +23,34 @@ namespace DevoidStandaloneLauncher.Prototypes
 {
     public class PlatformerTestExample : Prototype
     {
+
+        Scene scene;
         public override void OnInit()
         {
-            DebugRenderSystem.AllowDebugDraw = true;
+            DebugRenderSystem.AllowDebugDraw = false;
             DefaultInput.ConfigureInput();
 
-            Scene scene = new Scene();
+            scene = new Scene();
             loader.CurrentScene = scene;
             SceneManager.LoadScene(scene);
-
             scene.AddGameObject("Skybox").AddComponent<SkyboxComponent>();
 
-            //GameObject player = scene.AddGameObject("Player Camera");
-            //CameraComponent3D playerCamera = player.AddComponent<CameraComponent3D>();
-            //player.AddComponent<FreeCameraComponent>();
-            //playerCamera.isDefault = true;
 
-            //RigidBodyComponent icospherePhysics = icosphereObject.AddComponent<RigidBodyComponent>();
-            //icospherePhysics.Mass = 100;
-            //icospherePhysics.Shape = new PhysicsShapeDescription()
-            //{
-            //    Type = PhysicsShapeType.Sphere,
-            //    Radius = 1,
-            //};
 
             Model demoModel = Asset.Load<Model>("cubey_boi/cubey_boi.gltf");
             GameObject demoObject = demoModel.Instantiate(scene);
+            demoObject.Name = "Player";
             demoObject.Transform.Scale = Vector3.One;
             demoObject.Transform.Position = new Vector3(0, 5, 0);
 
-            ThirdPersonController controller = demoObject.AddComponent<ThirdPersonController>();
+            controller = demoObject.AddComponent<ThirdPersonController>();
 
             // Player physics
             RigidBodyComponent rigidBodyPlayer = demoObject.AddComponent<RigidBodyComponent>();
             rigidBodyPlayer.LockRotationX = true;
             rigidBodyPlayer.LockRotationY = false;
             rigidBodyPlayer.LockRotationZ = true;
+            rigidBodyPlayer.Mass = 20;
             rigidBodyPlayer.Shape = new PhysicsShapeDescription()
             {
                 Size = demoObject.Transform.Scale * 2,
@@ -97,28 +89,51 @@ namespace DevoidStandaloneLauncher.Prototypes
 
             SetPhysicsForColliderPlatforms(platformObject);
 
-            //StaticColliderComponent platformPhysics = platformObject.AddComponent<StaticColliderComponent>();
 
-            //platformPhysics.Shape = new PhysicsShapeDescription()
-            //{
-            //    Size = new Vector3(10, 0.2f, 10) * 2,
-            //    Type = PhysicsShapeType.Box,
-            //};
-            //platformPhysics.Material = new PhysicsMaterial()
-            //{
-            //    Friction = 1,
-            //    Restitution = 0,
-            //};
+            GameObject canvasObject = scene.AddGameObject("canvas");
+            CanvasComponent canvasComp = canvasObject.AddComponent<CanvasComponent>();
+            canvasComp.Canvas.Align = AlignItems.Start;
+            canvasComp.Canvas.Justify = JustifyContent.Start;
 
+            ContainerNode UIContainer = new ContainerNode()
+            {
+
+            };
+
+            FlexboxNode orbInfoContainer = new FlexboxNode()
+            {
+                Align = AlignItems.Center,
+                Justify = JustifyContent.Start,
+                Padding = Padding.GetAll(10),
+                Gap = 10
+            };
+
+            orbLabel = new LabelNode("Collected: 0", 16);
+            ContainerNode orbTexture = new ContainerNode() { Size = new Vector2(50, 50) };
+            orbTexture.AddStyleBoxOverride(StyleKeys.Normal, new StyleBoxTexture()
+            {
+                Texture = Asset.Load<Texture2D>("orb/orb.png")
+            });
+
+            orbInfoContainer.Add(orbTexture);
+            orbInfoContainer.Add(orbLabel);
+            UIContainer.Add(orbInfoContainer);
+
+            canvasComp.Canvas.Add(UIContainer);
 
             scene.Play();
+        }
+        LabelNode orbLabel;
+        ThirdPersonController controller;
 
+        public override void OnFixedUpdate(float delta)
+        {
+            orbLabel.Text = $"Collected: {controller.OrbsCollected}";
         }
 
 
         void SetPhysicsForColliderPlatforms(GameObject gameObject)
         {
-            Console.WriteLine(gameObject.Name);
             if (IsCollideable(gameObject.Name))
             {
                 var meshRenderer = gameObject.GetComponent<MeshRenderer>();
@@ -131,8 +146,22 @@ namespace DevoidStandaloneLauncher.Prototypes
                         Type = PhysicsShapeType.Box
                     };
 
+
+                    Model orbModel = Asset.Load<Model>("orb/orb.gltf");
+                    GameObject orbObject = orbModel.Instantiate(scene);
+                    orbObject.Transform.Position = gameObject.Transform.Position + new Vector3(0, 2, 0);
+
+                    AreaComponent areaCollider = orbObject.AddComponent<AreaComponent>();
+                    areaCollider.Shape = new PhysicsShapeDescription()
+                    {
+                        Type = PhysicsShapeType.Box,
+                        Size = orbObject.Transform.Scale * 2,
+                    };
+
+                    orbObject.AddComponent<OrbComponent>();
+
                 }
-            } else if (IsMovingCollider(gameObject.Name))
+            } else if (IsMovingCollider(gameObject.Name, out int type))
             {
                 var collider = gameObject.AddComponent<RigidBodyComponent>();
                 
@@ -144,11 +173,23 @@ namespace DevoidStandaloneLauncher.Prototypes
                 };
                 collider.Material = new PhysicsMaterial()
                 {
-                    Restitution = 1,
+                    AngularDamping = 1,
+                    LinearDamping = 1,
                     Friction = 1,
+                    Restitution = 0,
                 };
-                collider.Mass = 100;
-                gameObject.AddComponent<MovingCollider>();
+                var movCollider = gameObject.AddComponent<MovingCollider>();
+
+                movCollider.MoveSpeed = movColliderType[type];
+
+            } else if (IsRigidbody(gameObject.Name))
+            {
+                var collider = gameObject.AddComponent<RigidBodyComponent>();
+                collider.Shape = new PhysicsShapeDescription()
+                {
+                    Size = gameObject.Transform.Scale * 2,
+                    Type = PhysicsShapeType.Box
+                };
             }
 
             foreach (var child in gameObject.children)
@@ -157,14 +198,46 @@ namespace DevoidStandaloneLauncher.Prototypes
             }
         }
 
+        Dictionary<int, int> movColliderType = new Dictionary<int, int>()
+        {
+            { 1, 2 },
+            { 2, 1 },
+            { 3, 4 },
+        };
+
+        bool IsRigidbody(string name)
+        {
+            return name == "Collideable_Rigidbody" || name.StartsWith("Collideable_Rigidbody.");
+        }
+
         bool IsCollideable(string name)
         {
             return name == "Collideable" || name.StartsWith("Collideable.");
         }
 
-        bool IsMovingCollider(string name)
+        bool IsMovingCollider(string name, out int type)
         {
-            return name == "Collideable_MP" || name.StartsWith("Collideable_MP.");
+            type = -1;
+
+            if (!name.StartsWith("Collideable_MP"))
+                return false;
+
+            // Remove Blender duplicate suffix
+            int dotIndex = name.IndexOf('.');
+            if (dotIndex != -1)
+                name = name.Substring(0, dotIndex);
+
+            // Find _T
+            int typeIndex = name.IndexOf("_T");
+            if (typeIndex == -1)
+                return true; // valid moving collider but no type
+
+            string typeStr = name.Substring(typeIndex + 2);
+
+            if (int.TryParse(typeStr, out type))
+                return true;
+
+            return true;
         }
 
     }

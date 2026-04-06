@@ -1,6 +1,7 @@
 ﻿using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.Physics;
 using DevoidEngine.Engine.Rendering;
+using DevoidEngine.Engine.Utilities;
 using System.Numerics;
 
 namespace DevoidEngine.Engine.Components
@@ -177,6 +178,7 @@ namespace DevoidEngine.Engine.Components
                 Shape = Shape,
                 Material = Material,
                 AllowSleep = allowSleep,
+                IsTrigger = false,
                 AllowRotationX = !LockRotationX,
                 AllowRotationY = !LockRotationY,
                 AllowRotationZ = !LockRotationZ,
@@ -187,7 +189,7 @@ namespace DevoidEngine.Engine.Components
 
         public override void OnUpdate(float dt)
         {
-            Matrix4x4 model = Matrix4x4.CreateFromQuaternion(internalBody?.Rotation ?? Quaternion.Identity) * Matrix4x4.CreateScale(Shape.Size) * Matrix4x4.CreateTranslation(internalBody?.Position ?? new Vector3(0));
+            Matrix4x4 model = Helper.BuildModel(internalBody!.Position, Shape.Size, internalBody!.Rotation);
 
             DebugRenderSystem.DrawCube(model);
 
@@ -206,33 +208,10 @@ namespace DevoidEngine.Engine.Components
             //if (internalBody == null)
             //    return;
 
-
             //if (internalBody.IsKinematic)
             //{
             //    internalBody.Position = gameObject.Transform.Position;
             //    internalBody.Rotation = gameObject.Transform.Rotation;
-            //}
-
-            //if (!internalBody.IsKinematic)
-            //{
-            //    // Freeze rotations by zeroing angular velocity
-            //    Vector3 angVel = internalBody.AngularVelocity;
-
-            //    if (FreezeRotationX) angVel.X = 0f;
-            //    if (FreezeRotationY) angVel.Y = 0f;
-            //    if (FreezeRotationZ) angVel.Z = 0f;
-
-            //    internalBody.AngularVelocity = angVel;
-
-            //    //gameObject.Transform.Position = internalBody.Position;
-            //    if (OverrideRotation)
-            //    {
-            //        internalBody.Rotation = gameObject.Transform.Rotation;
-            //    }
-            //    else
-            //    {
-            //        //gameObject.Transform.Rotation = internalBody.Rotation;
-            //    }
             //}
         }
 

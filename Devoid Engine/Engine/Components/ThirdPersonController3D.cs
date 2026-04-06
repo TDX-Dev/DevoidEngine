@@ -7,12 +7,12 @@ using DevoidEngine.Engine.Utilities;
 using System;
 using System.Numerics;
 
-namespace DevoidStandaloneLauncher.Scripts
+namespace DevoidEngine.Engine.Components
 {
 
-    public class ThirdPersonController : Component
+    public class ThirdPersonController3D : Component
     {
-        public override string Type => nameof(ThirdPersonController);
+        public override string Type => nameof(ThirdPersonController3D);
 
         // Movement
         public float MoveSpeed = 10f;
@@ -26,11 +26,11 @@ namespace DevoidStandaloneLauncher.Scripts
         public float RotationSpeed = 12f;
 
         // Camera
-        public Transform3D Camera;
-        public Transform3D CameraPitch;
-        public Transform3D CameraFollowTarget;
+        public Transform3D? Camera;
+        public Transform3D? CameraPitch;
+        public Transform3D? CameraFollowTarget;
 
-        private RigidBodyComponent body;
+        private RigidBodyComponent? body;
 
         private Vector2 movementInput;
         private bool jumpPressed;
@@ -43,8 +43,6 @@ namespace DevoidStandaloneLauncher.Scripts
         int jumpsUsed = 0;
         public int MaxJumps = 2;
         bool wasGrounded = false;
-
-        public int OrbsCollected = 0;
 
         public override void OnStart()
         {
@@ -81,7 +79,8 @@ namespace DevoidStandaloneLauncher.Scripts
                 if (state == CursorState.Normal)
                 {
                     Cursor.SetCursorState(CursorState.Grabbed);
-                } else
+                }
+                else
                 {
                     Cursor.SetCursorState(CursorState.Normal);
                 }
@@ -138,7 +137,7 @@ namespace DevoidStandaloneLauncher.Scripts
             Quaternion targetRotation =
                 Quaternion.CreateFromAxisAngle(Vector3.UnitY, targetAngle + modelForwardOffset);
 
-            body.Rotation =
+            body!.Rotation =
                 Quaternion.Slerp(body.Rotation, targetRotation, RotationSpeed * dt);
 
             body.AngularVelocity = Vector3.Zero;
@@ -205,7 +204,7 @@ namespace DevoidStandaloneLauncher.Scripts
             bool grounded = IsGrounded();
             float control = grounded ? 1f : AirControl;
 
-            Vector3 velocity = body.LinearVelocity;
+            Vector3 velocity = body!.LinearVelocity;
             Vector3 targetVelocity = moveDir * MoveSpeed;
 
             velocity.X = MathHelper.Lerp(
@@ -236,7 +235,7 @@ namespace DevoidStandaloneLauncher.Scripts
             if (jumpsUsed >= MaxJumps)
                 return;
 
-            Vector3 vel = body.LinearVelocity;
+            Vector3 vel = body!.LinearVelocity;
 
             // reset downward velocity so jumps feel responsive
             if (vel.Y < 0)

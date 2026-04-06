@@ -6,6 +6,18 @@ namespace DevoidEngine.Engine.Utilities
 {
     public static class Helper
     {
+        public static Matrix4x4 BuildModel(
+            Vector3 position,
+            Vector3 scale,
+            Quaternion rotation
+        )
+        {
+            return
+                Matrix4x4.CreateScale(scale) *
+                Matrix4x4.CreateFromQuaternion(rotation) *
+                Matrix4x4.CreateTranslation(position);
+        }
+
         public static Vector4 RGBANormalize(Vector4 color) => color / 255;
 
         public static float SRGBToLinear(float v)

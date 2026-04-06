@@ -129,7 +129,6 @@ namespace DevoidEngine.Engine.Physics.Bepu
             }
         }
 
-
         public void AddImpulse(Vector3 impulse)
         {
             var body = GetBody();
