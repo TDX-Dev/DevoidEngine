@@ -56,9 +56,12 @@ SamplerState ShadowSampler : register(s9);
 float ComputeShadow(int shadowIndex, float3 worldPos, float3 N, float3 L)
 {
     ShadowData shadow = ShadowBuffer[shadowIndex];
-
-    float4 lightSpace = mul(float4(worldPos, 1), shadow.LightViewProj);
-
+    
+    float ndotl = saturate(dot(N, L));
+    float normalBias = 0.001 * (1.0 - ndotl);
+    float3 biasedPos = worldPos + N * normalBias;
+    
+    float4 lightSpace = mul(float4(biasedPos, 1), shadow.LightViewProj);
     float3 proj = lightSpace.xyz / lightSpace.w;
 
     proj.xy = proj.xy * 0.5 + 0.5;
@@ -71,11 +74,31 @@ float ComputeShadow(int shadowIndex, float3 worldPos, float3 N, float3 L)
 
     proj.xy = shadow.AtlasOffset + proj.xy * shadow.AtlasScale;
 
-    float closest = ShadowAtlas.Sample(ShadowSampler, proj.xy).r;
-    
-    float bias = 0.0059;
+    float bias = max(0.001 * (1.0 - dot(N, L)), 0.00001);
 
-    return proj.z > closest + bias ? 1.0 : 0.0;
+    float shadowAccum = 0.0;
+
+    float2 texelSize = 1.0 / float2(2048.0, 1024.0);
+
+    [unroll]
+    for (int x = -1; x <= 1; x++)
+    {
+        [unroll]
+        for (int y = -1; y <= 1; y++)
+        {
+            float2 offset = float2(x, y) * texelSize;
+
+            float closest = ShadowAtlas.Sample(
+                ShadowSampler,
+                proj.xy + offset
+            ).r;
+
+            shadowAccum += (proj.z > closest + bias) ? 1.0 : 0.0;
+        }
+    }
+
+    // Average result
+    return shadowAccum / 9.0;
 }
 
 //float ComputeShadow(int shadowIndex, float3 worldPos)

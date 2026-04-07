@@ -10,7 +10,8 @@ namespace DevoidEngine.Engine.Rendering.Shadows
     {
         struct ShadowViewData
         {
-            public Matrix4x4 lightMVP;
+            public Matrix4x4 Model;
+            public Matrix4x4 LightVP;
         }
 
         static ShadowAtlas atlas = null!;
@@ -139,12 +140,11 @@ namespace DevoidEngine.Engine.Rendering.Shadows
             {
                 Matrix4x4 model = item.Model;
 
-                Matrix4x4 mvp = model * lightVP;
-
 
                 viewData = new ShadowViewData()
                 {
-                    lightMVP = mvp
+                    Model = model,
+                    LightVP = lightVP
                 };
 
                 shadowViewInfoBuffer.SetData(viewData);

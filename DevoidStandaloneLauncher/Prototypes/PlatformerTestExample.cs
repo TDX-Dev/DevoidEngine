@@ -36,20 +36,19 @@ namespace DevoidStandaloneLauncher.Prototypes
             scene.AddGameObject("Skybox").AddComponent<SkyboxComponent>();
 
 
-
             GameObject spotLight = scene.AddGameObject("Origin Light");
             LightComponent spotLightComponent = spotLight.AddComponent<LightComponent>();
-            spotLightComponent.Intensity = 100;
+            spotLightComponent.Intensity = 50;
             spotLightComponent.LightType = LightType.SpotLight;
             spotLightComponent.CastShadows = true;
             spotLightComponent.InnerCutoff = 18;
             spotLightComponent.OuterCutoff = 30;
-            spotLight.Transform.LocalPosition = new Vector3(0, 10, 0);
-            spotLight.Transform.EulerAngles = new Vector3(90, 0, 0);
+            spotLight.Transform.LocalPosition = new Vector3(0, 10, -5);
+            spotLight.Transform.EulerAngles = new Vector3(45, 0, 0);
 
 
-
-            Model demoModel = Asset.Load<Model>("cubey_boi/cubey_boi.gltf");
+            Model demoModel = Asset.Load<Model>("goblin_j/practice.gltf");
+            //Model demoModel = Asset.Load<Model>("cubey_boi/cubey_boi.gltf");
             GameObject demoObject = demoModel.Instantiate(scene);
             demoObject.Name = "Player";
             demoObject.Transform.Scale = Vector3.One;
@@ -140,7 +139,7 @@ namespace DevoidStandaloneLauncher.Prototypes
 
         public override void OnFixedUpdate(float delta)
         {
-            //orbLabel.Text = $"Collected: {controller.OrbsCollected}";
+            orbLabel.Text = $"Collected: {controller.OrbsCollected}";
         }
 
 
