@@ -36,8 +36,11 @@ namespace DevoidStandaloneLauncher
             AssetDatabase.Initialize();
 
             application.Initialize(applicationSpecification);
-            application.TargetFrameRate = 60;
+
+
+            application.TargetFrameRate = 120;
             EngineSingleton.Instance.UseInterpolation = true;
+            
             application.AddLayer(new PrototypeLoader());
 
 

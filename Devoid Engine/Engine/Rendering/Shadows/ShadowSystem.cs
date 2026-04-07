@@ -141,6 +141,7 @@ namespace DevoidEngine.Engine.Rendering.Shadows
 
                 Matrix4x4 mvp = model * lightVP;
 
+
                 viewData = new ShadowViewData()
                 {
                     lightMVP = mvp

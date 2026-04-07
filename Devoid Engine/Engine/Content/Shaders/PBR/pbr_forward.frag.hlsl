@@ -190,7 +190,16 @@ float4 PSMain(PSInput input) : SV_TARGET
 
         if (SpotLights[i].shadowIndex != -1)
         {
-            shadow = ComputeShadow(SpotLights[i].shadowIndex, input.WorldspacePosition);
+            
+            float3 toLight = SpotLights[i].position.xyz - input.WorldspacePosition;
+            float3 L = normalize(toLight);
+
+            shadow = ComputeShadow(
+                SpotLights[i].shadowIndex,
+                input.WorldspacePosition,
+                N,
+                L
+            );
         }
 
         Lo += (1 - shadow) * lightContribution;

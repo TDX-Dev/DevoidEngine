@@ -4,6 +4,7 @@ using DevoidEngine.Engine.InputSystem;
 using DevoidEngine.Engine.Physics;
 using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.Utilities;
+using SoLoud;
 using System;
 using System.Numerics;
 
@@ -17,7 +18,7 @@ namespace DevoidStandaloneLauncher.Scripts
         // Movement
         public float MoveSpeed = 10f;
         public float Acceleration = 20f;
-        public float AirControl = 0.35f;
+        public float AirControl = 0.2f;
 
         // Jump
         public float JumpForce = 6f;
@@ -59,7 +60,7 @@ namespace DevoidStandaloneLauncher.Scripts
                 return;
             }
 
-            if (gameObject.Transform.Position.Y < -100)
+            if (gameObject.Transform.Position.Y < -20)
             {
 
                 body.Position = new(0, 5, 0);
@@ -181,6 +182,10 @@ namespace DevoidStandaloneLauncher.Scripts
 
         void HandleMovement(float dt)
         {
+
+
+
+
             float yawRad = cameraYaw * (MathF.PI / 180f);
 
             Vector3 camForward = new Vector3(
@@ -219,6 +224,14 @@ namespace DevoidStandaloneLauncher.Scripts
                 targetVelocity.Z,
                 Acceleration * control * dt
             );
+
+            //      if is_on_floor():
+            //          if direction:
+            //              velocity.x = direction.x * SPEED
+            //              velocity.z = direction.z * SPEED
+            //      else:
+            //              velocity.x = lerp(velocity.x, direction.x * SPEED, delta * 2)
+            //              velocity.z = lerp(velocity.z, direction.z * SPEED, delta * 2)
 
             body.LinearVelocity = velocity;
 

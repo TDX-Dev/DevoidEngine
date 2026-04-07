@@ -27,7 +27,7 @@ namespace DevoidStandaloneLauncher.Prototypes
         Scene scene;
         public override void OnInit()
         {
-            DebugRenderSystem.AllowDebugDraw = true;
+            DebugRenderSystem.AllowDebugDraw = false;
             DefaultInput.ConfigureInput();
 
             scene = new Scene();
