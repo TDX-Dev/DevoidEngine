@@ -24,6 +24,7 @@ namespace DevoidEngine.Engine.UI.Nodes
 
         internal UINode? _parent;
         internal readonly List<UINode> _children = new();
+        protected readonly List<UINode> _layoutChildren = new();
 
         public UITransform Rect { get; protected set; } = default!;
         public UITransform VisualRect { get; protected set; } = default!;
@@ -102,6 +103,19 @@ namespace DevoidEngine.Engine.UI.Nodes
 
             foreach (var child in _children)
                 child.Initialize();
+        }
+
+        protected List<UINode> GetLayoutChildren()
+        {
+            _layoutChildren.Clear();
+
+            foreach (var child in _children)
+            {
+                if (child.Visible && child.ParticipatesInLayout)
+                    _layoutChildren.Add(child);
+            }
+
+            return _layoutChildren;
         }
 
         void RegisterTheme()

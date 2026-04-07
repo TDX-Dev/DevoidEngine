@@ -7,78 +7,106 @@ namespace DevoidEngine.Engine.Rendering.GPUResource
     public class FramebufferManager
     {
         private uint _nextFramebufferHandleID = 0;
-        private Dictionary<uint, IFramebuffer> _frameBuffers = new Dictionary<uint, IFramebuffer>();
+
+        internal Dictionary<uint, IFramebuffer> _frameBuffers = new();
+
+        private RenderCommandPool<CreateFramebufferCommand> _createPool = new();
+        private RenderCommandPool<BindFramebufferCommand> _bindPool = new();
+        private RenderCommandPool<AttachRenderTextureCommand> _attachTexPool = new();
+        private RenderCommandPool<AttachRenderTextureCubeCommand> _attachCubePool = new();
+        private RenderCommandPool<AttachDepthTextureCommand> _attachDepthPool = new();
+        private RenderCommandPool<ClearFramebufferColorCommand> _clearColorPool = new();
+        private RenderCommandPool<ClearFramebufferDepthCommand> _clearDepthPool = new();
 
 
         public FrameBufferHandle CreateFramebuffer()
         {
             uint id = ++_nextFramebufferHandleID;
-            FrameBufferHandle handle = new FrameBufferHandle(id);
-            RenderThread.Enqueue(() =>
-            {
-                _frameBuffers[id]
-                    = Renderer.GraphicsDevice.BufferFactory.CreateFramebuffer();
-            });
+            FrameBufferHandle handle = new(id);
+
+            var cmd = _createPool.Get();
+
+            cmd.Manager = this;
+            cmd.Handle = handle;
+
+            RenderThread.Enqueue(cmd);
+
             return handle;
         }
 
+
         public void BindFramebuffer(FrameBufferHandle handle)
         {
-            RenderThread.Enqueue(() =>
-            {
-                Renderer.GraphicsDevice.BindFramebuffer(_frameBuffers[handle.Id]);
-            });
+            var cmd = _bindPool.Get();
+
+            cmd.Manager = this;
+            cmd.Handle = handle;
+
+            RenderThread.Enqueue(cmd);
         }
+
 
         public void AttachRenderTexture(FrameBufferHandle handle, TextureHandle texture, int index = 0)
         {
-            RenderThread.Enqueue(() =>
-            {
-                _frameBuffers[handle.Id].AddColorAttachment(
-                    (ITexture2D)Renderer.ResourceManager.TextureManager.GetDeviceTexture(texture),
-                    index
-                );
-            });
+            var cmd = _attachTexPool.Get();
+
+            cmd.Manager = this;
+            cmd.Handle = handle;
+            cmd.Texture = texture;
+            cmd.Index = index;
+
+            RenderThread.Enqueue(cmd);
         }
+
 
         public void AttachRenderTextureCube(FrameBufferHandle handle, TextureHandle texture, CubeFace faceIndex, int mipLevel = 0, int index = 0)
         {
-            RenderThread.Enqueue(() =>
-            {
-                _frameBuffers[handle.Id].AddColorAttachment(
-                    (ITextureCube)Renderer.ResourceManager.TextureManager.GetDeviceTexture(texture),
-                    faceIndex,
-                    mipLevel,
-                    index
-                );
-            });
+            var cmd = _attachCubePool.Get();
+
+            cmd.Manager = this;
+            cmd.Handle = handle;
+            cmd.Texture = texture;
+            cmd.FaceIndex = faceIndex;
+            cmd.MipLevel = mipLevel;
+            cmd.Index = index;
+
+            RenderThread.Enqueue(cmd);
         }
+
 
         public void AttachDepthTexture(FrameBufferHandle handle, TextureHandle texture)
         {
-            RenderThread.Enqueue(() =>
-            {
-                _frameBuffers[handle.Id].AddDepthAttachment(
-                    (ITexture2D)Renderer.ResourceManager.TextureManager.GetDeviceTexture(texture)
-                );
-            });
+            var cmd = _attachDepthPool.Get();
+
+            cmd.Manager = this;
+            cmd.Handle = handle;
+            cmd.Texture = texture;
+
+            RenderThread.Enqueue(cmd);
         }
+
 
         public void ClearFramebufferColor(FrameBufferHandle handle, Vector4 color)
         {
-            RenderThread.Enqueue(() =>
-            {
-                _frameBuffers[handle.Id].ClearColor(color);
-            });
+            var cmd = _clearColorPool.Get();
+
+            cmd.Manager = this;
+            cmd.Handle = handle;
+            cmd.Color = color;
+
+            RenderThread.Enqueue(cmd);
         }
+
 
         public void ClearFramebufferDepth(FrameBufferHandle handle, int value)
         {
-            RenderThread.Enqueue(() =>
-            {
-                _frameBuffers[handle.Id].ClearDepth(value);
-            });
-        }
+            var cmd = _clearDepthPool.Get();
 
+            cmd.Manager = this;
+            cmd.Handle = handle;
+            cmd.Value = value;
+
+            RenderThread.Enqueue(cmd);
+        }
     }
 }

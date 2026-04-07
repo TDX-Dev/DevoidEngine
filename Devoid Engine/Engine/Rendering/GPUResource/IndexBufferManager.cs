@@ -6,51 +6,64 @@ namespace DevoidEngine.Engine.Rendering.GPUResource
     public class IndexBufferManager
     {
         public uint _nextIndexBufferHandleID = 0;
-        private Dictionary<uint, IIndexBuffer> _indexBuffers = new Dictionary<uint, IIndexBuffer>();
+
+        internal Dictionary<uint, IIndexBuffer> _indexBuffers = new();
+
+        private RenderCommandPool<CreateIndexBufferCommand> _createPool = new();
+        private RenderCommandPool<BindIndexBufferCommand> _bindPool = new();
+        private RenderCommandPool<SetIndexBufferDataCommand> _setDataPool = new();
+        private RenderCommandPool<DeleteIndexBufferCommand> _deletePool = new();
+
 
         public IndexBufferHandle CreateIndexBuffer(BufferUsage usage, int indexCount)
         {
             uint id = ++_nextIndexBufferHandleID;
-            IndexBufferHandle resourceHandle = new IndexBufferHandle(id);
+            IndexBufferHandle handle = new(id);
 
-            RenderThread.Enqueue(() =>
-            {
+            var cmd = _createPool.Get();
 
-                _indexBuffers[resourceHandle.Id]
-                    = Renderer.GraphicsDevice.BufferFactory.CreateIndexBuffer(
-                        indexCount, usage
-                    );
-            });
+            cmd.Manager = this;
+            cmd.Handle = handle;
+            cmd.Usage = usage;
+            cmd.IndexCount = indexCount;
 
-            return resourceHandle;
+            RenderThread.Enqueue(cmd);
+
+            return handle;
         }
+
 
         public void BindIndexBuffer(IndexBufferHandle handle)
         {
-            RenderThread.Enqueue(() =>
-            {
-                _indexBuffers[handle.Id].Bind();
-            });
+            var cmd = _bindPool.Get();
+
+            cmd.Manager = this;
+            cmd.Handle = handle;
+
+            RenderThread.Enqueue(cmd);
         }
+
 
         public void SetIndexBufferData(IndexBufferHandle handle, int[] data)
         {
-            RenderThread.Enqueue(() =>
-            {
-                _indexBuffers[handle.Id].SetData(data);
-            });
-        }
-        public void DeleteIndexBuffer(IndexBufferHandle handle)
-        {
-            RenderThread.EnqueueDelayedDelete(() =>
-            {
-                if (_indexBuffers.TryGetValue(handle.Id, out var ib))
-                {
-                    ib.Dispose();
-                    _indexBuffers.Remove(handle.Id);
-                }
-            });
+            var cmd = _setDataPool.Get();
+
+            cmd.Manager = this;
+            cmd.Handle = handle;
+            cmd.Data = data;
+
+            RenderThread.Enqueue(cmd);
         }
 
+
+        public void DeleteIndexBuffer(IndexBufferHandle handle)
+        {
+            var cmd = _deletePool.Get();
+
+            cmd.Manager = this;
+            cmd.Handle = handle;
+
+            RenderThread.EnqueueDelayedDelete(cmd);
+        }
     }
 }

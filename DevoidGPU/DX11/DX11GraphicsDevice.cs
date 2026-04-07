@@ -66,6 +66,10 @@ namespace DevoidGPU.DX11
             BufferFactory = new DX11BufferFactory(device, deviceContext);
             ShaderFactory = new DX11ShaderFactory(device, deviceContext);
             TextureFactory = new DX11TextureFactory(device, deviceContext);
+
+            for (int i = 0; i < _nullUAVCounts.Length; i++)
+                _nullUAVCounts[i] = -1;
+
         }
 
         public void DrawIndexed(int indexCount, int startIndexLocation, int baseVertexLocation)
@@ -109,6 +113,7 @@ namespace DevoidGPU.DX11
             return TextureManager.Resolve(handle);
         }
 
+        // Hazard tracking i implemented hastily, fails in some cases. Future me's problem.
         private IDX11Texture[] _boundPS_SRVs = new IDX11Texture[16];
         private IDX11Texture[] _boundVS_SRVs = new IDX11Texture[16];
         private IDX11Texture[] _boundCS_SRVs = new IDX11Texture[16];
@@ -117,6 +122,10 @@ namespace DevoidGPU.DX11
         private IDX11Texture _boundDSV;
 
         private RenderTargetView[] _rtvCache = new RenderTargetView[8];
+
+        private readonly ShaderResourceView[] _nullSRVs = new ShaderResourceView[16];
+        private readonly UnorderedAccessView[] _nullUAVs = new UnorderedAccessView[8];
+        private readonly int[] _nullUAVCounts = new int[8];
 
         internal void TrackSRVBind(int slot, DX11Texture2D texture, ShaderStage stage)
         {
@@ -322,13 +331,14 @@ namespace DevoidGPU.DX11
 
         public void UnbindAllShaderResources()
         {
-            ShaderResourceView[] nullSRVs = new ShaderResourceView[16];
-            UnorderedAccessView[] nullUAVs = new UnorderedAccessView[7];
+            deviceContext.PixelShader.SetShaderResources(0, 16, _nullSRVs);
+            deviceContext.VertexShader.SetShaderResources(0, 16, _nullSRVs);
 
-            deviceContext.PixelShader.SetShaderResources(0, 16, nullSRVs);
-            deviceContext.VertexShader.SetShaderResources(0, 16, nullSRVs);
-
-            deviceContext.ComputeShader.SetUnorderedAccessViews(0, nullUAVs);
+            deviceContext.ComputeShader.SetUnorderedAccessViews(
+                0,
+                _nullUAVs,
+                _nullUAVCounts
+            );
 
             Array.Clear(_boundPS_SRVs);
             Array.Clear(_boundVS_SRVs);

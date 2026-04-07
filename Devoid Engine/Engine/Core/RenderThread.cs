@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using DevoidEngine.Engine.Rendering.GPUResource;
 
 namespace DevoidEngine.Engine.Core
 {
@@ -7,94 +8,103 @@ namespace DevoidEngine.Engine.Core
         public static int mainThreadID = -1;
         public static volatile bool MainThreadStarted = false;
 
-        private static ConcurrentQueue<Action> _queue = new ConcurrentQueue<Action>();
-        private static ConcurrentQueue<Action> _queueFrameEnd = new ConcurrentQueue<Action>();
-
+        private static ConcurrentQueue<RenderCommand> _queue = new();
+        private static ConcurrentQueue<RenderCommand> _queueFrameEnd = new();
 
         private static int uploadBudgetPerFrame = 7;
-        private static ConcurrentQueue<Action> _gpuUploadQueue = new();
+        private static ConcurrentQueue<RenderCommand> _gpuUploadQueue = new();
 
-
-        // We add atleast a 3 frame buffer to ensure objects are not being used after queueing for deletion. 
         private static readonly int DeleteDelayFrames = 3;
-        private static readonly Queue<Action>[] _deleteBuckets = new Queue<Action>[DeleteDelayFrames];
+        private static readonly Queue<RenderCommand>[] _deleteBuckets = new Queue<RenderCommand>[DeleteDelayFrames];
         private static int _frameIndex = 0;
 
         static RenderThread()
         {
             for (int i = 0; i < DeleteDelayFrames; i++)
-                _deleteBuckets[i] = new Queue<Action>();
+                _deleteBuckets[i] = new Queue<RenderCommand>();
         }
 
         public static bool IsRenderThread() => Thread.CurrentThread.ManagedThreadId == mainThreadID;
 
-        public static void Enqueue(Action action)
+        public static void Enqueue(RenderCommand cmd)
         {
             if (IsRenderThread())
             {
-                action();
+                cmd.Execute();
+                cmd.Release();
                 return;
             }
-            _queue.Enqueue(action);
+
+            _queue.Enqueue(cmd);
         }
 
-        public static void EnqueueDelayedDelete(Action action)
+        public static void EnqueueDelayedDelete(RenderCommand cmd)
         {
             int targetFrame = (_frameIndex + DeleteDelayFrames - 1) % DeleteDelayFrames;
-            _deleteBuckets[targetFrame].Enqueue(action);
+            _deleteBuckets[targetFrame].Enqueue(cmd);
         }
 
-        public static void EnqueueFrameEnd(Action action)
+        public static void EnqueueFrameEnd(RenderCommand cmd)
         {
             if (IsRenderThread())
             {
-                action();
+                cmd.Execute();
+                cmd.Release();
                 return;
             }
-            _queueFrameEnd.Enqueue(action);
+
+            _queueFrameEnd.Enqueue(cmd);
         }
 
-        public static void EnqueueUpload(Action action)
+        public static void EnqueueUpload(RenderCommand cmd)
         {
             if (IsRenderThread())
             {
-                action();
+                cmd.Execute();
+                cmd.Release();
                 return;
             }
-            _gpuUploadQueue.Enqueue(action);
-        }
 
+            _gpuUploadQueue.Enqueue(cmd);
+        }
 
         public static void Execute()
         {
-            while (_queue.TryDequeue(out var action))
-                action();
+            while (_queue.TryDequeue(out var cmd))
+            {
+                cmd.Execute();
+                cmd.Release();
+            }
 
             for (int i = 0; i < uploadBudgetPerFrame; i++)
             {
-                if (_gpuUploadQueue.TryDequeue(out var job))
+                if (_gpuUploadQueue.TryDequeue(out var cmd))
                 {
-                    job();
+                    cmd.Execute();
+                    cmd.Release();
                 }
                 else break;
             }
-
         }
 
         public static void ExecuteFrameEnd()
         {
-            while (_queueFrameEnd.TryDequeue(out var action))
-                action();
+            while (_queueFrameEnd.TryDequeue(out var cmd))
+            {
+                cmd.Execute();
+                cmd.Release();
+            }
 
             int bucket = _frameIndex % DeleteDelayFrames;
 
             while (_deleteBuckets[bucket].Count > 0)
             {
-                _deleteBuckets[bucket].Dequeue().Invoke();
+                var cmd = _deleteBuckets[bucket].Dequeue();
+                cmd.Execute();
+                cmd.Release();
             }
 
             _frameIndex++;
         }
-
     }
 }

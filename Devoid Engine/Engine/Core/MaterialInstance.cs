@@ -45,9 +45,10 @@ namespace DevoidEngine.Engine.Core
                 gpuBuffer.Bind(BaseMaterial.MaterialBufferBindSlot, ShaderStage.Fragment | ShaderStage.Vertex);
             BaseMaterial.Shader.Use();
 
-            foreach (var texName in BaseMaterial.GetTextureNames())
+            foreach (var kv in BaseMaterial.GetTextureBindings())
             {
-                var binding = BaseMaterial.GetTextureBinding(texName);
+                var texName = kv.Key;
+                var binding = kv.Value;
 
                 Texture texture =
                     textureOverrides.TryGetValue(texName, out var overrideTex)

@@ -7,42 +7,52 @@ namespace DevoidEngine.Engine.Rendering.GPUResource
     public class SamplerManager
     {
         private uint _nextSamplerHandleID = 0;
-        private Dictionary<uint, ISampler> _samplers = new Dictionary<uint, ISampler>();
+
+        internal Dictionary<uint, ISampler> _samplers = new();
+
+        private RenderCommandPool<CreateSamplerCommand> _createPool;
+        private RenderCommandPool<DeleteSamplerCommand> _deletePool;
+
+        public SamplerManager()
+        {
+            _createPool = new();
+            _deletePool = new();
+        }
+
 
         public void BindSampler(SamplerHandle handle, int slot)
         {
             Debug.Assert(RenderThread.IsRenderThread());
+
             _samplers[handle.Id].Bind(slot);
         }
+
 
         public SamplerHandle CreateSampler(SamplerDescription samplerDescription)
         {
             uint id = ++_nextSamplerHandleID;
-            SamplerHandle samplerHandle = new SamplerHandle(id);
+            SamplerHandle handle = new(id);
 
-            RenderThread.Enqueue(() =>
-            {
+            var cmd = _createPool.Get();
 
+            cmd.Manager = this;
+            cmd.Handle = handle;
+            cmd.Description = samplerDescription;
 
-                _samplers[samplerHandle.Id]
-                    = Renderer.GraphicsDevice.CreateSampler(
-                        samplerDescription
-                    );
-            });
+            RenderThread.Enqueue(cmd);
 
-            return samplerHandle;
+            return handle;
         }
 
 
         public void DeleteSampler(SamplerHandle handle)
         {
-            RenderThread.Enqueue(() =>
-            {
-                ISampler samplerInternal = _samplers[handle.Id];
-                samplerInternal.Dispose();
-            });
+            var cmd = _deletePool.Get();
+
+            cmd.Manager = this;
+            cmd.Handle = handle;
+
+            RenderThread.Enqueue(cmd);
         }
-
-
     }
 }

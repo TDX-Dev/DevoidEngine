@@ -34,20 +34,6 @@ namespace DevoidEngine.Engine.UI.Nodes
             debugMaterial = UISystem.DebugMaterial;
         }
 
-
-        private List<UINode> GetLayoutChildren()
-        {
-            List<UINode> children = new List<UINode>();
-
-            foreach (var child in _children)
-            {
-                if (child.Visible && child.ParticipatesInLayout)
-                    children.Add(child);
-            }
-
-            return children;
-        }
-
         protected override void InitializeCore()
         {
             

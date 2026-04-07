@@ -80,8 +80,8 @@ namespace DevoidEngine.Engine.Core
         public ReadOnlySpan<byte> GetDefaultMaterialBuffer()
             => defaultBuffer;
 
-        public IEnumerable<string> GetTextureNames()
-            => textureBindings.Keys;
+        public Dictionary<string, TextureBindingInfo> GetTextureBindings()
+            => textureBindings;
 
         public void SetTexture(string name, Texture texture)
         {

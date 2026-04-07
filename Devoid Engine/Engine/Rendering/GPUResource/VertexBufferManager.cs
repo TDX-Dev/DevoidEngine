@@ -6,64 +6,96 @@ namespace DevoidEngine.Engine.Rendering.GPUResource
     public class VertexBufferManager
     {
         private uint _nextVertexBufferHandleID = 0;
-        internal Dictionary<uint, IVertexBuffer> _vertexBuffers = new Dictionary<uint, IVertexBuffer>();
 
-        private RenderCommandPool<BindVertexBufferCommand> bindCmdPool;
+        internal Dictionary<uint, IVertexBuffer> _vertexBuffers = new();
+
+        private RenderCommandPool<CreateVertexBufferCommand> _createPool;
+        private Dictionary<Type, object> _setDataPools = new();
+        private RenderCommandPool<BindVertexBufferCommand> _bindPool;
+        private RenderCommandPool<DeleteVertexBufferCommand> _deletePool;
 
         public VertexBufferManager()
         {
-            bindCmdPool = new RenderCommandPool<BindVertexBufferCommand>();
+            _createPool = new();
+            _setDataPools = new();
+            _bindPool = new();
+            _deletePool = new();
         }
+
+        private RenderCommandPool<SetVertexBufferDataCommand<T>> GetSetDataPool<T>() where T : struct
+        {
+            var type = typeof(T);
+
+            if (!_setDataPools.TryGetValue(type, out var poolObj))
+            {
+                var newPool = new RenderCommandPool<SetVertexBufferDataCommand<T>>();
+                _setDataPools[type] = newPool;
+                return newPool;
+            }
+
+            return (RenderCommandPool<SetVertexBufferDataCommand<T>>)poolObj;
+        }
+
 
         public VertexBufferHandle CreateVertexBuffer(BufferUsage usage, VertexInfo vInfo, int vertexCount)
         {
             uint id = ++_nextVertexBufferHandleID;
-            VertexBufferHandle resourceHandle = new VertexBufferHandle(id);
+            VertexBufferHandle handle = new(id);
 
-            RenderThread.Enqueue(() =>
-            {
+            var cmd = _createPool.Get();
 
-                _vertexBuffers[resourceHandle.Id]
-                    = Renderer.GraphicsDevice.BufferFactory.CreateVertexBuffer(
-                        usage, vInfo, vertexCount
-                    );
-            });
+            cmd.Manager = this;
+            cmd.Handle = handle;
+            cmd.Usage = usage;
+            cmd.VertexInfo = vInfo;
+            cmd.VertexCount = vertexCount;
 
-            return resourceHandle;
+            RenderThread.Enqueue(cmd);
+
+            return handle;
         }
+
 
         public VertexInfo GetVertexBufferLayout(VertexBufferHandle handle)
         {
             return _vertexBuffers[handle.Id].Layout;
         }
 
+
         public void SetVertexBufferData<T>(VertexBufferHandle handle, T[] data) where T : struct
         {
-            RenderThread.Enqueue(() =>
-            {
-                _vertexBuffers[handle.Id].SetData(data);
-            });
+            var pool = GetSetDataPool<T>();
+            var cmd = pool.Get();
+
+            cmd.Manager = this;
+            cmd.Handle = handle;
+            cmd.Data = data;
+
+            RenderThread.Enqueue(cmd);
         }
+
 
         public void BindVertexBuffer(VertexBufferHandle handle, int slot = 0, int offset = 0)
         {
-            RenderThread.Enqueue(() =>
-            {
-                if (_vertexBuffers.ContainsKey(handle.Id))
-                    _vertexBuffers[handle.Id].Bind(slot, offset);
-            });
+            var cmd = _bindPool.Get();
+
+            cmd.Manager = this;
+            cmd.Handle = handle;
+            cmd.Slot = slot;
+            cmd.Offset = offset;
+
+            RenderThread.Enqueue(cmd);
         }
+
 
         public void DeleteVertexBuffer(VertexBufferHandle handle)
         {
-            RenderThread.EnqueueDelayedDelete(() =>
-            {
-                if (_vertexBuffers.TryGetValue(handle.Id, out var vb))
-                {
-                    vb.Dispose();
-                    _vertexBuffers.Remove(handle.Id);
-                }
-            });
+            var cmd = _deletePool.Get();
+
+            cmd.Manager = this;
+            cmd.Handle = handle;
+
+            RenderThread.EnqueueDelayedDelete(cmd);
         }
     }
 }

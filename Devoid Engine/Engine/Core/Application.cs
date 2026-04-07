@@ -55,6 +55,7 @@ namespace DevoidEngine.Engine.Core
         private uint numFrames = 0;
 
         private List<CameraRenderContext> renderContexts = new List<CameraRenderContext>();
+        private Pool<CameraRenderContext> cameraRenderContextPool = new Pool<CameraRenderContext>();
 
         //private ImGuiRenderer imGuiRenderer;
 
@@ -231,15 +232,15 @@ namespace DevoidEngine.Engine.Core
 
         void Render()
         {
+            long before = GC.GetAllocatedBytesForCurrentThread();
+
             layerHandler.RenderLayers();
 
             if (SceneManager.CurrentScene != null)
             {
                 List<IRenderComponent> renderables = SceneManager.CurrentScene.GetRenderables();
                 List<CameraComponent3D> cameraComponents = SceneManager.CurrentScene.GetCameras3D();
-                renderContexts.Clear();
 
-                long before = GC.GetAllocatedBytesForCurrentThread();
                 for (int i = 0; i < cameraComponents.Count; i++)
                 {
                     CameraRenderContext ctx;
@@ -251,39 +252,38 @@ namespace DevoidEngine.Engine.Core
                     }
                     else
                     {
-                        ctx = new CameraRenderContext();
+                        ctx = cameraRenderContextPool.Get();
                         renderContexts.Add(ctx);
                     }
 
                     var cameraComponent = cameraComponents[i];
-                    ctx.cameraData = cameraComponent.Camera.GetCameraData();
-                    if (cameraComponent.Camera.RenderTarget == null)
-                        return;
-                    ctx.cameraTargetSurface = cameraComponent.Camera.RenderTarget;
 
+                    if (cameraComponent.Camera.RenderTarget == null)
+                        continue;
+
+                    ctx.cameraData = cameraComponent.Camera.GetCameraData();
+                    ctx.cameraTargetSurface = cameraComponent.Camera.RenderTarget;
 
                     foreach (var renderable in renderables)
                     {
                         renderable.Collect(cameraComponent, ctx);
                     }
-
-                    renderContexts.Add(ctx);
-
                 }
-                long after = GC.GetAllocatedBytesForCurrentThread();
 
-                for (int i = 0; i < renderContexts.Count; i++)
+                for (int i = 0; i < cameraComponents.Count; i++)
                 {
-                    var ctx = renderContexts[i];
-                    Renderer.Render(ctx);
+                    Renderer.Render(renderContexts[i]);
                 }
-                Console.WriteLine(after - before);
             }
 
             layerHandler.PostRenderLayers();
 
             Renderer.GraphicsDevice.MainSurface.Bind();
             Renderer.GraphicsDevice.MainSurface.Present();
+
+            long after = GC.GetAllocatedBytesForCurrentThread();
+
+            Console.WriteLine(after - before);
         }
 
         void UpdateCursor()

@@ -21,6 +21,7 @@ namespace DevoidEngine.Engine.Core
         public List<Component> Components;
 
         private bool DestroyOnLoad = true;
+        private readonly List<Component> _componentSnapshot = new();
 
         public Scene Scene
         {
@@ -264,33 +265,36 @@ namespace DevoidEngine.Engine.Core
 
         internal void InvokeCollisionEnter(GameObject other)
         {
-            var snapshot = new List<Component>(Components);
+            _componentSnapshot.Clear();
+            _componentSnapshot.AddRange(Components);
 
-            foreach (var comp in snapshot)
+            for (int i = 0; i < _componentSnapshot.Count; i++)
             {
-                if (comp is ICollisionListener listener)
+                if (_componentSnapshot[i] is ICollisionListener listener)
                     listener.OnCollisionEnter(other);
             }
         }
 
         internal void InvokeCollisionStay(GameObject other)
         {
-            var snapshot = new List<Component>(Components);
+            _componentSnapshot.Clear();
+            _componentSnapshot.AddRange(Components);
 
-            foreach (var comp in snapshot)
+            for (int i = 0; i < _componentSnapshot.Count; i++)
             {
-                if (comp is ICollisionListener listener)
+                if (_componentSnapshot[i] is ICollisionListener listener)
                     listener.OnCollisionStay(other);
             }
         }
 
         internal void InvokeCollisionExit(GameObject other)
         {
-            var snapshot = new List<Component>(Components);
+            _componentSnapshot.Clear();
+            _componentSnapshot.AddRange(Components);
 
-            foreach (var comp in snapshot)
+            for (int i = 0; i < _componentSnapshot.Count; i++)
             {
-                if (comp is ICollisionListener listener)
+                if (_componentSnapshot[i] is ICollisionListener listener)
                     listener.OnCollisionExit(other);
             }
         }

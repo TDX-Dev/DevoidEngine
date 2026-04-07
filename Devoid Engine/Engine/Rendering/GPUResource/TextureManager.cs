@@ -7,23 +7,41 @@ namespace DevoidEngine.Engine.Rendering.GPUResource
     public class TextureManager
     {
         private uint _nextTextureHandleID = 0;
-        private Dictionary<uint, ITexture> _textures = new Dictionary<uint, ITexture>();
+
+        internal Dictionary<uint, ITexture> _textures = new();
+
+        private RenderCommandPool<CreateTextureCommand> _createPool;
+        private RenderCommandPool<UploadTextureData2DCommand> _upload2DPool;
+        private RenderCommandPool<UploadTextureDataCubeCommand> _uploadCubePool;
+        private RenderCommandPool<GenerateMipmapsCommand> _mipmapPool;
+        private RenderCommandPool<DeleteTextureCommand> _deletePool;
+
+        public TextureManager()
+        {
+            _createPool = new();
+            _upload2DPool = new();
+            _uploadCubePool = new();
+            _mipmapPool = new();
+            _deletePool = new();
+        }
+
 
         public TextureHandle CreateTexture(TextureDescription textureDescription)
         {
             uint id = ++_nextTextureHandleID;
-            TextureHandle textureHandle = new TextureHandle(id);
+            TextureHandle handle = new(id);
 
-            RenderThread.Enqueue(() =>
-            {
-                _textures[textureHandle.Id]
-                    = Renderer.GraphicsDevice.TextureFactory.CreateTexture(
-                        textureDescription
-                    );
-            });
+            var cmd = _createPool.Get();
 
-            return textureHandle;
+            cmd.Manager = this;
+            cmd.Handle = handle;
+            cmd.Description = textureDescription;
+
+            RenderThread.Enqueue(cmd);
+
+            return handle;
         }
+
 
         public ITexture GetDeviceTexture(TextureHandle handle)
         {
@@ -31,60 +49,68 @@ namespace DevoidEngine.Engine.Rendering.GPUResource
             return _textures[handle.Id];
         }
 
+
         public void UploadTextureData2D(TextureHandle handle, byte[] data)
         {
+            var cmd = _upload2DPool.Get();
 
-            RenderThread.Enqueue(() =>
-            {
-                ITexture2D textureInternal = (ITexture2D)_textures[handle.Id];
-                textureInternal.SetData(data);
-            });
+            cmd.Manager = this;
+            cmd.Handle = handle;
+            cmd.Data = data;
+
+            RenderThread.Enqueue(cmd);
         }
+
 
         public void UploadTextureDataCube(TextureHandle handle, CubeFace face, byte[] data)
         {
+            var cmd = _uploadCubePool.Get();
 
-            RenderThread.Enqueue(() =>
-            {
-                ITextureCube textureInternal = (ITextureCube)_textures[handle.Id];
-                textureInternal.SetData(face, data);
-            });
+            cmd.Manager = this;
+            cmd.Handle = handle;
+            cmd.Face = face;
+            cmd.Data = data;
+
+            RenderThread.Enqueue(cmd);
         }
+
 
         public void GenerateMipmaps(TextureHandle handle)
         {
-            RenderThread.Enqueue(() =>
-            {
-                ITexture textureInternal = _textures[handle.Id];
-                textureInternal.GenerateMipmaps();
-            });
+            var cmd = _mipmapPool.Get();
+
+            cmd.Manager = this;
+            cmd.Handle = handle;
+
+            RenderThread.Enqueue(cmd);
         }
+
 
         public void DeleteTexture(TextureHandle handle)
         {
-            RenderThread.Enqueue(() =>
-            {
-                ITexture textureInternal = _textures[handle.Id];
-                textureInternal.Dispose();
-            });
+            var cmd = _deletePool.Get();
+
+            cmd.Manager = this;
+            cmd.Handle = handle;
+
+            RenderThread.Enqueue(cmd);
         }
+
 
         public void BindTexture(TextureHandle handle, int slot, ShaderStage stage = ShaderStage.Fragment, BindMode mode = BindMode.ReadOnly)
         {
             Debug.Assert(RenderThread.IsRenderThread());
+
             if (mode == BindMode.ReadOnly)
                 Renderer.GraphicsDevice.BindTexture(_textures[handle.Id], slot, stage);
             else
                 Renderer.GraphicsDevice.BindTextureMutable(_textures[handle.Id], slot);
-
         }
+
 
         public void UnBindTexture(TextureHandle handle, int slot, ShaderStage stage = ShaderStage.Fragment, BindMode mode = BindMode.ReadOnly)
         {
             Debug.Assert(RenderThread.IsRenderThread());
-            //_textures[handle.Id].UnBind(slot);
         }
-
-
     }
 }
