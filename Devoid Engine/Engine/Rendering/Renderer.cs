@@ -173,13 +173,22 @@ namespace DevoidEngine.Engine.Rendering
                     currentMaterial.Bind();
                 }
 
-                if (item.Mesh != currentMesh) { currentMesh = item.Mesh; }
-                if (currentMesh == null) continue;
+                if (item.Mesh != currentMesh)
+                {
+                    currentMesh = item.Mesh;
+
+                    if (currentMesh != null)
+                    {
+                        currentMesh.Bind();
+                        GetInputLayout(currentMesh, currentShader!)?.Bind();
+                    }
+                }
+                if (currentMesh == null)
+                    continue;
 
                 UpdatePerObjectData(item.Model);
 
                 currentMesh.Bind();
-                GetInputLayout(currentMesh, currentShader!)?.Bind();
 
                 currentMesh.Draw();
             }

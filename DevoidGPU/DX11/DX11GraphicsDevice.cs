@@ -116,6 +116,8 @@ namespace DevoidGPU.DX11
         private IDX11Texture[] _boundRTVs = new IDX11Texture[8];
         private IDX11Texture _boundDSV;
 
+        private RenderTargetView[] _rtvCache = new RenderTargetView[8];
+
         internal void TrackSRVBind(int slot, DX11Texture2D texture, ShaderStage stage)
         {
             if ((stage & ShaderStage.Fragment) != 0)
@@ -255,29 +257,25 @@ namespace DevoidGPU.DX11
 
         public void BindFramebuffer(IFramebuffer fb)
         {
-            Array.Clear(_boundRTVs);
-            for (int i = 0; i < fb.ColorAttachments.Count; i++)
-            {
-                if (fb.ColorAttachments[i] is DX11Texture2D tex)
-                {
-                    ResolveForRTV(tex);
-                    _boundRTVs[i] = tex;
-                }
-            }
+            int count = fb.ColorAttachments.Count;
 
-            var rtvs = new RenderTargetView[fb.ColorAttachments.Count];
-            for (int i = 0; i < fb.ColorAttachments.Count; i++)
+            // clear previous bindings
+            for (int i = 0; i < _rtvCache.Length; i++)
+                _rtvCache[i] = null;
+
+            for (int i = 0; i < count; i++)
             {
-                if (fb.ColorAttachments[i] != null)
+                var attachment = fb.ColorAttachments[i];
+
+                if (attachment is DX11Texture2D tex2D)
                 {
-                    if (fb.ColorAttachments[i] is DX11Texture2D tex2D)
-                    {
-                        rtvs[i] = tex2D.RenderTargetView;
-                    } 
-                    else if (fb.ColorAttachments[i] is DX11TextureCube texCube)
-                    {
-                        rtvs[i] = texCube.RenderTargetView;
-                    }
+                    ResolveForRTV(tex2D);
+                    _boundRTVs[i] = tex2D;
+                    _rtvCache[i] = tex2D.RenderTargetView;
+                }
+                else if (attachment is DX11TextureCube texCube)
+                {
+                    _rtvCache[i] = texCube.RenderTargetView;
                 }
             }
 
@@ -294,7 +292,7 @@ namespace DevoidGPU.DX11
                 _boundDSV = null;
             }
 
-            deviceContext.OutputMerger.SetRenderTargets(dsv, rtvs);
+            deviceContext.OutputMerger.SetRenderTargets(dsv, _rtvCache);
         }
 
         public void UnbindFramebuffer()

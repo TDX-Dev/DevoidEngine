@@ -6,6 +6,19 @@ namespace DevoidEngine.Engine.Utilities
 {
     public static class Helper
     {
+        public static void Measure(string name, Action action)
+        {
+            long before = GC.GetAllocatedBytesForCurrentThread();
+
+            action();
+
+            long after = GC.GetAllocatedBytesForCurrentThread();
+            long alloc = after - before;
+
+            if (alloc > 0)
+                Console.WriteLine($"{name}: {alloc} B");
+        }
+
         public static Matrix4x4 BuildModel(
             Vector3 position,
             Vector3 scale,

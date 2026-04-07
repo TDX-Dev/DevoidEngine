@@ -164,6 +164,7 @@ namespace DevoidEngine.Engine.Core
             layerHandler.AttachLayers();
             while (isRunning)
             {
+
                 float deltaTime = (float)frameTimer.GetElapsedSeconds();
                 EngineSingleton.Instance.FrameCount = numFrames;
 
@@ -188,6 +189,7 @@ namespace DevoidEngine.Engine.Core
 
 
                 Update(deltaTime * timeScale);
+
                 Render();
 
                 //imGuiRenderer.PerFrame(deltaTime);
@@ -205,6 +207,8 @@ namespace DevoidEngine.Engine.Core
                 Resize();
 
                 numFrames++;
+
+
             }
             layerHandler.DetachLayers();
         }
@@ -235,11 +239,23 @@ namespace DevoidEngine.Engine.Core
                 List<CameraComponent3D> cameraComponents = SceneManager.CurrentScene.GetCameras3D();
                 renderContexts.Clear();
 
+                long before = GC.GetAllocatedBytesForCurrentThread();
                 for (int i = 0; i < cameraComponents.Count; i++)
                 {
-                    var cameraComponent = cameraComponents[i];
+                    CameraRenderContext ctx;
 
-                    CameraRenderContext ctx = new CameraRenderContext();
+                    if (i < renderContexts.Count)
+                    {
+                        ctx = renderContexts[i];
+                        ctx.Clear();
+                    }
+                    else
+                    {
+                        ctx = new CameraRenderContext();
+                        renderContexts.Add(ctx);
+                    }
+
+                    var cameraComponent = cameraComponents[i];
                     ctx.cameraData = cameraComponent.Camera.GetCameraData();
                     if (cameraComponent.Camera.RenderTarget == null)
                         return;
@@ -254,12 +270,14 @@ namespace DevoidEngine.Engine.Core
                     renderContexts.Add(ctx);
 
                 }
+                long after = GC.GetAllocatedBytesForCurrentThread();
 
                 for (int i = 0; i < renderContexts.Count; i++)
                 {
                     var ctx = renderContexts[i];
                     Renderer.Render(ctx);
                 }
+                Console.WriteLine(after - before);
             }
 
             layerHandler.PostRenderLayers();

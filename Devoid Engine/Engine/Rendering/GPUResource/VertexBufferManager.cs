@@ -6,7 +6,14 @@ namespace DevoidEngine.Engine.Rendering.GPUResource
     public class VertexBufferManager
     {
         private uint _nextVertexBufferHandleID = 0;
-        private Dictionary<uint, IVertexBuffer> _vertexBuffers = new Dictionary<uint, IVertexBuffer>();
+        internal Dictionary<uint, IVertexBuffer> _vertexBuffers = new Dictionary<uint, IVertexBuffer>();
+
+        private RenderCommandPool<BindVertexBufferCommand> bindCmdPool;
+
+        public VertexBufferManager()
+        {
+            bindCmdPool = new RenderCommandPool<BindVertexBufferCommand>();
+        }
 
         public VertexBufferHandle CreateVertexBuffer(BufferUsage usage, VertexInfo vInfo, int vertexCount)
         {
@@ -58,6 +65,5 @@ namespace DevoidEngine.Engine.Rendering.GPUResource
                 }
             });
         }
-
     }
 }

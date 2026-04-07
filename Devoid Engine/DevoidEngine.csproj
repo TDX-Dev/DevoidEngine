@@ -29,6 +29,22 @@
 		<NoWarn>$(NoWarn);MsgPack003</NoWarn>
 	</PropertyGroup>
 
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+	  <IsAotCompatible>True</IsAotCompatible>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+	  <IsAotCompatible>True</IsAotCompatible>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+	  <IsAotCompatible>True</IsAotCompatible>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+	  <IsAotCompatible>True</IsAotCompatible>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<None Include="./Engine/Content/**/*.*" CopyToOutputDirectory="PreserveNewest" Visible="true" />
 	</ItemGroup>
