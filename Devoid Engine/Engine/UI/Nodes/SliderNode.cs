@@ -81,8 +81,8 @@ namespace DevoidEngine.Engine.UI.Nodes
         {
             Rect = finalRect;
 
-            float width = Rect.size.X;
-            float height = Rect.size.Y;
+            float width = Rect.Size.X;
+            float height = Rect.Size.Y;
 
             float trackHeight = height * TrackThicknessRatio;
             float thumbSize = height * ThumbSizeRatio;
@@ -90,8 +90,8 @@ namespace DevoidEngine.Engine.UI.Nodes
             // center track
             Vector2 trackSize = new(width, trackHeight);
             Vector2 trackPos = new(
-                Rect.position.X,
-                Rect.position.Y + (height - trackHeight) * 0.5f
+                Rect.Position.X,
+                Rect.Position.Y + (height - trackHeight) * 0.5f
             );
 
             track.Arrange(new UITransform(trackPos, trackSize));
@@ -104,22 +104,20 @@ namespace DevoidEngine.Engine.UI.Nodes
 
         private void UpdateThumb()
         {
-            if (Rect == null || thumb.Size == null)
-                return;
 
             float t = (Value - Min) / (Max - Min);
             t = Math.Clamp(t, 0f, 1f);
 
-            float thumbSize = thumb.Size.Value.X;
+            Vector2 thumbSize = thumb.Size.GetValueOrDefault();
 
-            float x = Rect.position.X + t * (Rect.size.X - thumbSize);
+            float x = Rect.Position.X + t * (Rect.Size.X - thumbSize.X);
 
             Vector2 pos = new(
                 x,
-                Rect.position.Y + (Rect.size.Y - thumbSize) * 0.5f
+                Rect.Position.Y + (Rect.Size.Y - thumbSize.X) * 0.5f
             );
 
-            thumb.Arrange(new UITransform(pos, thumb.Size.Value));
+            thumb.Arrange(new UITransform(pos, thumbSize));
         }
 
         protected override void RenderCore(List<RenderItem> renderList, Matrix4x4 canvasModel, int order)
@@ -137,10 +135,8 @@ namespace DevoidEngine.Engine.UI.Nodes
 
         float MouseToValue(Vector2 mouse)
         {
-            if (Rect == null)
-                return Value;
 
-            float t = (mouse.X - Rect.position.X) / Rect.size.X;
+            float t = (mouse.X - Rect.Position.X) / Rect.Size.X;
             t = Math.Clamp(t, 0f, 1f);
 
             float value = Min + t * (Max - Min);

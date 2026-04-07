@@ -26,8 +26,8 @@ namespace DevoidEngine.Engine.UI.Nodes
         internal readonly List<UINode> _children = new();
         protected readonly List<UINode> _layoutChildren = new();
 
-        public UITransform Rect { get; protected set; } = default!;
-        public UITransform VisualRect { get; protected set; } = default!;
+        public UITransform Rect;
+        public UITransform VisualRect;
 
         public Vector2 DesiredSize { get; private set; }
 
@@ -281,11 +281,14 @@ namespace DevoidEngine.Engine.UI.Nodes
             if (!ParticipatesInLayout && !Size.HasValue)
             {
                 Vector2 desired = Measure(new(float.PositiveInfinity));
-                finalRect = new UITransform(finalRect.position, desired);
+                finalRect = new UITransform(finalRect.Position, desired);
             }
 
+            bool firstLayout = Rect.Size == Vector2.Zero && Rect.Position == Vector2.Zero;
+
             Rect = finalRect;
-            if (VisualRect == null)
+
+            if (firstLayout)
                 VisualRect = finalRect;
 
             ArrangeCore(Rect);
@@ -310,15 +313,12 @@ namespace DevoidEngine.Engine.UI.Nodes
 
         public void Update(float dt)
         {
-            if (VisualRect == null)
-                return;
-
             if (AnimateLayout)
             {
                 float t = 1 - MathF.Exp(-25f * dt);
 
-                VisualRect.position = Vector2.Lerp(VisualRect.position, Rect.position, t);
-                VisualRect.size = Vector2.Lerp(VisualRect.size, Rect.size, t);
+                VisualRect.Position = Vector2.Lerp(VisualRect.Position, Rect.Position, t);
+                VisualRect.Size = Vector2.Lerp(VisualRect.Size, Rect.Size, t);
             }
             else
             {

@@ -34,7 +34,7 @@ namespace DevoidEngine.Engine.UI.Nodes
 
                 var rect = child.Rect;
 
-                rect.position.Y -= ScrollOffset.Y;
+                rect.Position.Y -= ScrollOffset.Y;
 
                 child.Arrange(rect);
             }

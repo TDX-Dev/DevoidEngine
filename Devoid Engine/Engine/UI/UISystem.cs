@@ -458,13 +458,11 @@ namespace DevoidEngine.Engine.UI
                 return null;
 
             var rect = node.Rect;
-            if (node.Rect == null)
-                return null;
 
-            if (position.X >= rect.position.X &&
-                position.X <= rect.position.X + rect.size.X &&
-                position.Y >= rect.position.Y &&
-                position.Y <= rect.position.Y + rect.size.Y)
+            if (position.X >= rect.Position.X &&
+                position.X <= rect.Position.X + rect.Size.X &&
+                position.Y >= rect.Position.Y &&
+                position.Y <= rect.Position.Y + rect.Size.Y)
             {
                 return node;
             }
@@ -496,15 +494,15 @@ namespace DevoidEngine.Engine.UI
         public static Matrix4x4 BuildModel(UITransform t)
         {
             return
-                Matrix4x4.CreateScale(t.size.X, t.size.Y, 1f) *
-                Matrix4x4.CreateTranslation(t.position.X, t.position.Y, 0f);
+                Matrix4x4.CreateScale(t.Size.X, t.Size.Y, 1f) *
+                Matrix4x4.CreateTranslation(t.Position.X, t.Position.Y, 0f);
         }
 
         public static Matrix4x4 BuildTranslationModel(UITransform t)
         {
             return Matrix4x4.CreateTranslation(
-                t.position.X,
-                t.position.Y,
+                t.Position.X,
+                t.Position.Y,
                 0f
             );
         }

@@ -57,13 +57,13 @@ namespace DevoidEngine.Engine.UI.Nodes
 
             if (Orientation == ScrollbarOrientation.Vertical)
             {
-                trackStart = Rect.position.Y + Padding.Top;
-                trackLength = Rect.size.Y - Padding.Vertical;
+                trackStart = Rect.Position.Y + Padding.Top;
+                trackLength = Rect.Size.Y - Padding.Vertical;
             }
             else
             {
-                trackStart = Rect.position.X + Padding.Left;
-                trackLength = Rect.size.X - Padding.Horizontal;
+                trackStart = Rect.Position.X + Padding.Left;
+                trackLength = Rect.Size.X - Padding.Horizontal;
             }
 
             float thumbLength = ComputeThumbLength(trackLength);
@@ -74,20 +74,20 @@ namespace DevoidEngine.Engine.UI.Nodes
 
             if (Orientation == ScrollbarOrientation.Vertical)
             {
-                size = new Vector2(Rect.size.X - Padding.Horizontal, thumbLength);
+                size = new Vector2(Rect.Size.X - Padding.Horizontal, thumbLength);
 
                 pos = new Vector2(
-                    Rect.position.X + Padding.Left,
+                    Rect.Position.X + Padding.Left,
                     trackStart + thumbPos
                 );
             }
             else
             {
-                size = new Vector2(thumbLength, Rect.size.Y - Padding.Vertical);
+                size = new Vector2(thumbLength, Rect.Size.Y - Padding.Vertical);
 
                 pos = new Vector2(
                     trackStart + thumbPos,
-                    Rect.position.Y + Padding.Top
+                    Rect.Position.Y + Padding.Top
                 );
             }
 
@@ -133,19 +133,19 @@ namespace DevoidEngine.Engine.UI.Nodes
 
             if (Orientation == ScrollbarOrientation.Vertical)
             {
-                trackStart = Rect.position.Y + Padding.Top;
-                trackLength = Rect.size.Y - Padding.Vertical;
+                trackStart = Rect.Position.Y + Padding.Top;
+                trackLength = Rect.Size.Y - Padding.Vertical;
             }
             else
             {
-                trackStart = Rect.position.X + Padding.Left;
-                trackLength = Rect.size.X - Padding.Horizontal;
+                trackStart = Rect.Position.X + Padding.Left;
+                trackLength = Rect.Size.X - Padding.Horizontal;
             }
 
             float thumbLength =
                 Orientation == ScrollbarOrientation.Vertical
-                ? Thumb.Rect.size.Y
-                : Thumb.Rect.size.X;
+                ? Thumb.Rect.Size.Y
+                : Thumb.Rect.Size.X;
 
             float usableTrack = trackLength - thumbLength;
 

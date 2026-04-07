@@ -101,7 +101,7 @@ namespace DevoidEngine.Engine.UI.Nodes
         {
             Rect = finalRect;
 
-            Vector2 viewportSize = Rect.size;
+            Vector2 viewportSize = Rect.Size;
 
             // ensure content size is up to date
             InnerContainer.Measure(new Vector2(
@@ -120,7 +120,7 @@ namespace DevoidEngine.Engine.UI.Nodes
 
             // arrange content
             InnerContainer.Arrange(new UITransform(
-                Rect.position,
+                Rect.Position,
                 viewportSize
             ));
 
@@ -142,7 +142,7 @@ namespace DevoidEngine.Engine.UI.Nodes
                 ScrollOffset.Y = VScrollbar.ScrollValue;
 
                 VScrollbar.Arrange(new UITransform(
-                    new Vector2(Rect.position.X + viewportSize.X, Rect.position.Y),
+                    new Vector2(Rect.Position.X + viewportSize.X, Rect.Position.Y),
                     new Vector2(ScrollbarSize, viewportSize.Y)
                 ));
 
@@ -159,7 +159,7 @@ namespace DevoidEngine.Engine.UI.Nodes
                 ScrollOffset.X = HScrollbar.ScrollValue;
 
                 HScrollbar.Arrange(new UITransform(
-                    new Vector2(Rect.position.X, Rect.position.Y + viewportSize.Y),
+                    new Vector2(Rect.Position.X, Rect.Position.Y + viewportSize.Y),
                     new Vector2(viewportSize.X, ScrollbarSize)
                 ));
 
@@ -170,10 +170,10 @@ namespace DevoidEngine.Engine.UI.Nodes
         public override void Render(List<RenderItem> renderList, Matrix4x4 canvas, int order)
         {
             UIScissorStack.Push(
-                Rect.position.X,
-                Rect.position.Y,
-                Rect.size.X,
-                Rect.size.Y
+                Rect.Position.X,
+                Rect.Position.Y,
+                Rect.Size.X,
+                Rect.Size.Y
             );
 
             InnerContainer.Render(renderList, canvas, order);
@@ -193,8 +193,8 @@ namespace DevoidEngine.Engine.UI.Nodes
             ScrollOffset.Y -= scroll.Y * ScrollSpeed;
             ScrollOffset.X -= scroll.X * ScrollSpeed;
 
-            float maxScrollY = Math.Max(0, InnerContainer.ContentSize.Y - Rect.size.Y);
-            float maxScrollX = Math.Max(0, InnerContainer.ContentSize.X - Rect.size.X);
+            float maxScrollY = Math.Max(0, InnerContainer.ContentSize.Y - Rect.Size.Y);
+            float maxScrollX = Math.Max(0, InnerContainer.ContentSize.X - Rect.Size.X);
 
             ScrollOffset.Y = Math.Clamp(ScrollOffset.Y, 0, maxScrollY);
             ScrollOffset.X = Math.Clamp(ScrollOffset.X, 0, maxScrollX);

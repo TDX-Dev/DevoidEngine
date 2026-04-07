@@ -32,7 +32,7 @@ namespace DevoidEngine.Engine.Rendering
 
 
 
-        // --- Data for GPU ---
+        // Data for GPU
         public CameraData GetCameraData()
         {
 
@@ -50,7 +50,7 @@ namespace DevoidEngine.Engine.Rendering
             };
         }
 
-        // --- Mutators ---
+        // Mutators
         public void SetClearColor(Vector4 color) => ClearColor = color;
 
         public void SetProjectionMatrix(Matrix4x4 proj) => _projectionMatrix = proj;

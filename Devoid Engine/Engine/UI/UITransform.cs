@@ -2,16 +2,16 @@
 
 namespace DevoidEngine.Engine.UI
 {
-    public class UITransform
+    public struct UITransform
     {
-        public Vector2 position;
-        public Vector2 size;
+        public Vector2 Position;
+        public Vector2 Size;
 
         public UITransform() { }
         public UITransform(Vector2 start, Vector2 end)
         {
-            this.position = start;
-            this.size = end;
+            Position = start;
+            Size = end;
         }
     }
 }

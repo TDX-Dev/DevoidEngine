@@ -133,12 +133,13 @@ namespace DevoidEngine.Engine.DebugTools
 
         }
 
+
+        List<RenderItem> renderItems = new List<RenderItem>();
         public override void OnPostRender()
         {
             var defaultCamera = SceneManager.CurrentScene?.GetDefaultCamera3D()?.Camera;
             if (defaultCamera == null) return;
-
-            List<RenderItem> renderItems = new List<RenderItem>();
+            renderItems.Clear();
             debugCanvas.Render(renderItems, Matrix4x4.Identity, 0);
 
             Framebuffer renderTarget = defaultCamera.RenderTarget!;

@@ -60,7 +60,7 @@ namespace DevoidEngine.Engine.UI.Nodes
             if (Material == null)
                 return;
 
-            Material.SetVector2("RECT_SIZE", Rect?.size ?? Vector2.One);
+            Material.SetVector2("RECT_SIZE", Rect.Size);
 
             Material.SetInt("useTexture", _useTexture ? 1 : 0);
             if (_useTexture && _texture != null)
@@ -84,13 +84,13 @@ namespace DevoidEngine.Engine.UI.Nodes
         protected override void RenderCore(List<RenderItem> renderList, Matrix4x4 canvasModel, int order)
         {
             if (Material == null) return;
-            Material.SetVector2("RECT_SIZE", Rect?.size ?? Vector2.One);
-            Vector2 size = VisualRect?.size ?? Vector2.One;
-            Vector2 pos = VisualRect?.position ?? Vector2.One;
 
-            // convert pivot (0–1) → pixels
+            Material.SetVector2("RECT_SIZE", Rect.Size);
+
+            Vector2 size = VisualRect.Size;
+            Vector2 pos = VisualRect.Position;
+
             Vector2 pivotOffset = (Pivot - new Vector2(0.5f)) * size;
-
             Vector2 centerPos = pos + size * 0.5f;
 
             Matrix4x4 model =
@@ -118,7 +118,6 @@ namespace DevoidEngine.Engine.UI.Nodes
             }
 
             renderList.Add(renderItem);
-            //DebugRenderSystem.DrawRectUI(model);
         }
     }
 }

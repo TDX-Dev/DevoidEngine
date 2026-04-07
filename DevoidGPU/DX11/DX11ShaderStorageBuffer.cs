@@ -115,27 +115,23 @@ namespace DevoidGPU.DX11
                     ? MapMode.WriteDiscard
                     : MapMode.WriteNoOverwrite;
 
-                DataStream stream;
-
-                deviceContext.MapSubresource(
+                var box = deviceContext.MapSubresource(
                     buffer,
                     0,
                     mode,
-                    MapFlags.None,
-                    out stream);
-
-                stream.Position = byteOffset;
+                    MapFlags.None);
 
                 unsafe
                 {
-                    fixed (byte* ptr = data)
+                    byte* dst = (byte*)box.DataPointer + byteOffset;
+
+                    fixed (byte* src = data)
                     {
-                        stream.WriteRange((IntPtr)ptr, data.Length);
+                        System.Buffer.MemoryCopy(src, dst, data.Length, data.Length);
                     }
                 }
 
                 deviceContext.UnmapSubresource(buffer, 0);
-                stream.Dispose();
             }
             else
             {

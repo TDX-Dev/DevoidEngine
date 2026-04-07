@@ -77,7 +77,10 @@ namespace DevoidEngine.Engine.Components
 
         public override void OnUpdate(float dt)
         {
+
             var transform = gameObject.Transform;
+            if (!transform.hasMoved && IsInitialized)
+                return;
 
             Vector3 position = transform.Position;
 

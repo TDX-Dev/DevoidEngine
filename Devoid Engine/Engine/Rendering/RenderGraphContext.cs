@@ -4,7 +4,7 @@ namespace DevoidEngine.Engine.Rendering
 {
     public class RenderGraphContext
     {
-        Dictionary<string, Texture2D> textures = new();
+        private readonly Dictionary<string, Texture2D> textures = new();
 
         public void SetTexture(string name, Texture2D texture)
         {
@@ -14,13 +14,14 @@ namespace DevoidEngine.Engine.Rendering
         public Texture2D GetTexture(string name)
         {
             if (textures.TryGetValue(name, out var tex))
-            {
                 return tex;
-            }
-            else
-            {
-                return Texture2D.BlackTexture;
-            }
+
+            return Texture2D.BlackTexture;
+        }
+
+        public void Reset()
+        {
+            textures.Clear();
         }
     }
 }

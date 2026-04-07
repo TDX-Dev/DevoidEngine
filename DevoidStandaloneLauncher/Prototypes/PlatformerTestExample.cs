@@ -140,7 +140,7 @@ namespace DevoidStandaloneLauncher.Prototypes
 
         public override void OnFixedUpdate(float delta)
         {
-            orbLabel.Text = $"Collected: {controller.OrbsCollected}";
+            //orbLabel.Text = $"Collected: {controller.OrbsCollected}";
         }
 
 

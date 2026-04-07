@@ -131,7 +131,7 @@ namespace DevoidEngine.Engine.UI.Nodes
             if (header == null)
                 return;
 
-            float popupWidth = Rect.size.X;
+            float popupWidth = Rect.Size.X;
 
             // let options measure itself
             options.Measure(new Vector2(popupWidth, float.PositiveInfinity));
@@ -139,8 +139,8 @@ namespace DevoidEngine.Engine.UI.Nodes
             float popupHeight = options.DesiredSize.Y;
 
             Vector2 popupPos = new(
-                header.Rect.position.X,
-                header.Rect.position.Y + header.Rect.size.Y
+                header.Rect.Position.X,
+                header.Rect.Position.Y + header.Rect.Size.Y
             );
 
             popup.Arrange(new UITransform(

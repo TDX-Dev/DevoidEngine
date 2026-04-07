@@ -123,7 +123,7 @@ namespace DevoidEngine.Engine.UI.Nodes
             if (Font == null || string.IsNullOrEmpty(Text))
                 return;
 
-            float widthConstraint = finalRect.size.X;
+            float widthConstraint = finalRect.Size.X;
 
             //if (widthConstraint <= 0)
             //    widthConstraint = float.PositiveInfinity;
@@ -141,13 +141,13 @@ namespace DevoidEngine.Engine.UI.Nodes
             if (Font == null || string.IsNullOrEmpty(Text) || _mesh == null || Material == null)
                 return;
 
-            Vector2 pos = VisualRect!.position;
+            Vector2 pos = VisualRect!.Position;
 
             pos.X = MathF.Round(pos.X);
             pos.Y = MathF.Round(pos.Y);
 
             Matrix4x4 local =
-                UISystem.BuildTranslationModel(new UITransform(pos, Rect!.size)) *
+                UISystem.BuildTranslationModel(new UITransform(pos, VisualRect!.Size)) *
                 Matrix4x4.CreateTranslation(Pivot.X, Pivot.Y, 0) *
                 Matrix4x4.CreateRotationX(Rotation);
 

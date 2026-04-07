@@ -24,12 +24,12 @@ namespace DevoidEngine.Engine.UI.Nodes
             if (scrollbar.Orientation == ScrollbarOrientation.Vertical)
             {
                 dragStartMouse = mouse.Y;
-                dragStartThumb = Rect.position.Y;
+                dragStartThumb = Rect.Position.Y;
             }
             else
             {
                 dragStartMouse = mouse.X;
-                dragStartThumb = Rect.position.X;
+                dragStartThumb = Rect.Position.X;
             }
         }
 
@@ -42,18 +42,18 @@ namespace DevoidEngine.Engine.UI.Nodes
 
             float trackStart =
                 scrollbar.Orientation == ScrollbarOrientation.Vertical
-                ? scrollbar.Rect.position.Y + scrollbar.Padding.Top
-                : scrollbar.Rect.position.X + scrollbar.Padding.Left;
+                ? scrollbar.Rect.Position.Y + scrollbar.Padding.Top
+                : scrollbar.Rect.Position.X + scrollbar.Padding.Left;
 
             float trackLength =
                 scrollbar.Orientation == ScrollbarOrientation.Vertical
-                ? scrollbar.Rect.size.Y - scrollbar.Padding.Vertical
-                : scrollbar.Rect.size.X - scrollbar.Padding.Horizontal;
+                ? scrollbar.Rect.Size.Y - scrollbar.Padding.Vertical
+                : scrollbar.Rect.Size.X - scrollbar.Padding.Horizontal;
 
             float thumbLength =
                 scrollbar.Orientation == ScrollbarOrientation.Vertical
-                ? Rect.size.Y
-                : Rect.size.X;
+                ? Rect.Size.Y
+                : Rect.Size.X;
 
             float usableTrack = trackLength - thumbLength;
 

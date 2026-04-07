@@ -61,7 +61,7 @@ float ComputeShadow(int shadowIndex, float3 worldPos, float3 N, float3 L)
 
     float3 proj = lightSpace.xyz / lightSpace.w;
 
-    proj = proj * 0.5 + 0.5;
+    proj.xy = proj.xy * 0.5 + 0.5;
     proj.y = 1.0 - proj.y;
 
     if (proj.x < 0 || proj.x > 1 ||
@@ -73,7 +73,7 @@ float ComputeShadow(int shadowIndex, float3 worldPos, float3 N, float3 L)
 
     float closest = ShadowAtlas.Sample(ShadowSampler, proj.xy).r;
     
-    float bias = 0.005;
+    float bias = 0.0059;
 
     return proj.z > closest + bias ? 1.0 : 0.0;
 }

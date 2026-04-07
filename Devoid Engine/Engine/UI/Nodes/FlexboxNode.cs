@@ -130,13 +130,13 @@ namespace DevoidEngine.Engine.UI.Nodes
             Rect = finalRect;
 
             Vector2 contentPos = new Vector2(
-                finalRect.position.X + Padding.Left,
-                finalRect.position.Y + Padding.Top
+                finalRect.Position.X + Padding.Left,
+                finalRect.Position.Y + Padding.Top
             );
 
             Vector2 contentSize = new Vector2(
-                Math.Max(0, finalRect.size.X - Padding.Left - Padding.Right),
-                Math.Max(0, finalRect.size.Y - Padding.Top - Padding.Bottom)
+                Math.Max(0, finalRect.Size.X - Padding.Left - Padding.Right),
+                Math.Max(0, finalRect.Size.Y - Padding.Top - Padding.Bottom)
             );
 
             float containerMain = FlexboxTools.Main(contentSize, Direction);
@@ -264,13 +264,13 @@ namespace DevoidEngine.Engine.UI.Nodes
             Rect = finalRect;
 
             Vector2 contentPos = new Vector2(
-                finalRect.position.X + Padding.Left,
-                finalRect.position.Y + Padding.Top
+                finalRect.Position.X + Padding.Left,
+                finalRect.Position.Y + Padding.Top
             );
 
             Vector2 contentSize = new Vector2(
-                Math.Max(0, finalRect.size.X - Padding.Left - Padding.Right),
-                Math.Max(0, finalRect.size.Y - Padding.Top - Padding.Bottom)
+                Math.Max(0, finalRect.Size.X - Padding.Left - Padding.Right),
+                Math.Max(0, finalRect.Size.Y - Padding.Top - Padding.Bottom)
             );
 
             float containerMain = FlexboxTools.Main(contentSize, Direction);
@@ -503,8 +503,8 @@ namespace DevoidEngine.Engine.UI.Nodes
         {
             if (!UISystem.DebugDraw)
                 return;
-            Vector2 size = VisualRect!.size;
-            Vector2 pos = VisualRect!.position;
+            Vector2 size = VisualRect!.Size;
+            Vector2 pos = VisualRect!.Position;
 
             Vector2 pivotOffset = (Pivot - new Vector2(0.5f)) * size;
             Vector2 centerPos = pos + size * 0.5f;

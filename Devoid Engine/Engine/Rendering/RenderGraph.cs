@@ -1,165 +1,153 @@
 ﻿using DevoidEngine.Engine.Core;
+using DevoidEngine.Engine.Rendering;
 
-namespace DevoidEngine.Engine.Rendering
+public class RenderGraph
 {
-    public class RenderGraph
+    readonly List<RenderGraphPass> passes = new();
+    readonly List<RenderGraphPass> compiledPasses = new();
+
+    readonly Dictionary<string, RenderGraphPass> producers = new();
+
+    readonly Dictionary<RenderGraphPass, List<RenderGraphPass>> edges = new();
+    readonly Dictionary<RenderGraphPass, int> incoming = new();
+    readonly Queue<RenderGraphPass> ready = new();
+
+    readonly RenderGraphContext ctx = new();
+
+    bool dirty = true;
+
+    public void AddPass(RenderGraphPass pass)
     {
-        List<RenderGraphPass> passes = new();
-        List<RenderGraphPass> compiledPasses = new();
+        pass.Setup();
+        passes.Add(pass);
+        dirty = true;
+    }
 
-        Dictionary<string, RenderGraphPass> producers = new();
+    public void RemovePass(RenderGraphPass pass)
+    {
+        passes.Remove(pass);
+        dirty = true;
+    }
 
-        bool dirty = true;
+    public List<RenderGraphPass> GetPasses() => passes;
 
-        public void AddPass(RenderGraphPass pass)
+    public void Clear()
+    {
+        passes.Clear();
+        compiledPasses.Clear();
+        producers.Clear();
+        dirty = true;
+    }
+
+    public void Compile()
+    {
+        producers.Clear();
+
+        for (int i = 0; i < passes.Count; i++)
         {
-            pass.Setup();
-            passes.Add(pass);
-            dirty = true;
-        }
+            var pass = passes[i];
 
-        public void RemovePass(RenderGraphPass pass)
-        {
-            passes.Remove(pass);
-            dirty = true;
-        }
-
-        public List<RenderGraphPass> GetPasses()
-        {
-            return passes;
-        }
-
-        public void Clear()
-        {
-            passes.Clear();
-            compiledPasses.Clear();
-            producers.Clear();
-            dirty = true;
-        }
-
-        public void Compile()
-        {
-            producers.Clear();
-
-            foreach (var pass in passes)
+            for (int w = 0; w < pass.Writes.Count; w++)
             {
-                foreach (var write in pass.Writes)
-                {
-                    producers[write] = pass;
-                }
-            }
-
-            compiledPasses = ResolvePassOrder();
-            dirty = false;
-            //PrintExecutionOrder();
-        }
-
-        public Texture2D Execute(Texture2D sceneColor)
-        {
-            if (dirty)
-                Compile();
-
-            var ctx = new RenderGraphContext();
-
-            ctx.SetTexture("SceneColor", sceneColor);
-
-            string? lastWritten = null;
-
-            foreach (var pass in compiledPasses)
-            {
-                pass.Execute(ctx);
-
-                if (pass.Writes.Count > 0)
-                    lastWritten = pass.Writes[pass.Writes.Count - 1];
-            }
-
-            if (lastWritten != null)
-                return ctx.GetTexture(lastWritten);
-
-            return sceneColor;
-        }
-
-        public void Resize(int width, int height)
-        {
-            foreach (var pass in passes)
-            {
-                pass.Resize(width, height);
+                producers[pass.Writes[w]] = pass;
             }
         }
 
-        List<RenderGraphPass> ResolvePassOrder()
+        ResolvePassOrder();
+        dirty = false;
+    }
+
+    public Texture2D Execute(Texture2D sceneColor)
+    {
+        if (dirty)
+            Compile();
+
+        ctx.Reset();
+        ctx.SetTexture("SceneColor", sceneColor);
+
+        Texture2D lastTexture = sceneColor;
+
+        for (int i = 0; i < compiledPasses.Count; i++)
         {
-            Dictionary<RenderGraphPass, List<RenderGraphPass>> edges = new();
-            Dictionary<RenderGraphPass, int> incoming = new();
+            var pass = compiledPasses[i];
+            pass.Execute(ctx);
 
-            foreach (var pass in passes)
+            if (pass.Writes.Count > 0)
             {
-                edges[pass] = new();
-                incoming[pass] = 0;
+                var name = pass.Writes[pass.Writes.Count - 1];
+                lastTexture = ctx.GetTexture(name);
             }
-
-            foreach (var pass in passes)
-            {
-                foreach (var read in pass.Reads)
-                {
-                    if (!producers.TryGetValue(read, out var producer))
-                        continue;
-
-                    if (producer == pass)
-                        continue;
-
-                    edges[producer].Add(pass);
-                    incoming[pass]++;
-                }
-            }
-
-            Queue<RenderGraphPass> ready = new();
-
-            foreach (var pass in passes)
-                if (incoming[pass] == 0)
-                    ready.Enqueue(pass);
-
-            List<RenderGraphPass> result = new();
-
-            while (ready.Count > 0)
-            {
-                var p = ready.Dequeue();
-                result.Add(p);
-
-                foreach (var dep in edges[p])
-                {
-                    incoming[dep]--;
-
-                    if (incoming[dep] == 0)
-                        ready.Enqueue(dep);
-                }
-            }
-
-            if (result.Count != passes.Count)
-                throw new Exception("RenderGraph contains a cycle.");
-
-            return result;
         }
 
-        public void PrintExecutionOrder()
+        return lastTexture;
+    }
+
+    public void Resize(int width, int height)
+    {
+        for (int i = 0; i < passes.Count; i++)
+            passes[i].Resize(width, height);
+    }
+
+    void ResolvePassOrder()
+    {
+        edges.Clear();
+        incoming.Clear();
+        ready.Clear();
+        compiledPasses.Clear();
+
+        for (int i = 0; i < passes.Count; i++)
         {
-
-            Console.WriteLine("=== RenderGraph Execution Order ===");
-
-            for (int i = 0; i < compiledPasses.Count; i++)
-            {
-                var pass = compiledPasses[i];
-
-                Console.WriteLine($"{i}: {pass.GetType().Name}");
-
-                if (pass.Reads.Count > 0)
-                    Console.WriteLine($"   Reads : {string.Join(", ", pass.Reads)}");
-
-                if (pass.Writes.Count > 0)
-                    Console.WriteLine($"   Writes: {string.Join(", ", pass.Writes)}");
-            }
-
-            Console.WriteLine("===================================");
+            var pass = passes[i];
+            edges[pass] = new List<RenderGraphPass>();
+            incoming[pass] = 0;
         }
+
+        for (int i = 0; i < passes.Count; i++)
+        {
+            var pass = passes[i];
+
+            for (int r = 0; r < pass.Reads.Count; r++)
+            {
+                var read = pass.Reads[r];
+
+                if (!producers.TryGetValue(read, out var producer))
+                    continue;
+
+                if (producer == pass)
+                    continue;
+
+                edges[producer].Add(pass);
+                incoming[pass]++;
+            }
+        }
+
+        for (int i = 0; i < passes.Count; i++)
+        {
+            var pass = passes[i];
+
+            if (incoming[pass] == 0)
+                ready.Enqueue(pass);
+        }
+
+        while (ready.Count > 0)
+        {
+            var p = ready.Dequeue();
+            compiledPasses.Add(p);
+
+            var deps = edges[p];
+
+            for (int i = 0; i < deps.Count; i++)
+            {
+                var dep = deps[i];
+
+                incoming[dep]--;
+
+                if (incoming[dep] == 0)
+                    ready.Enqueue(dep);
+            }
+        }
+
+        if (compiledPasses.Count != passes.Count)
+            throw new Exception("RenderGraph contains a cycle.");
     }
 }

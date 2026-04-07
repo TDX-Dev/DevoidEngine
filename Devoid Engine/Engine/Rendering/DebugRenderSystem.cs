@@ -163,6 +163,9 @@ namespace DevoidEngine.Engine.Rendering
                 Matrix4x4.CreateTranslation(pos.X, pos.Y, 0);
         }
 
+        static List<RenderItem> renderItems3D = new();
+        static List<RenderItem> renderItems2D = new();
+
         public static void Render(CameraData cameraData, Framebuffer cameraRenderSurface)
         {
             if (!AllowDebugDraw)
@@ -171,15 +174,15 @@ namespace DevoidEngine.Engine.Rendering
                 return;
             }
 
+            renderItems3D.Clear();
+            renderItems2D.Clear();
+
             cameraRenderSurface.Bind();
-
             Renderer.SetupCamera(cameraData);
-
-            List<RenderItem> renderItems3D = new List<RenderItem>();
 
             for (int i = 0; i < cubes.Count; i++)
             {
-                renderItems3D.Add(new RenderItem()
+                renderItems3D.Add(new RenderItem
                 {
                     Material = debugMaterial,
                     Mesh = debugCube,
@@ -189,7 +192,7 @@ namespace DevoidEngine.Engine.Rendering
 
             for (int i = 0; i < meshes.Count; i++)
             {
-                renderItems3D.Add(new RenderItem()
+                renderItems3D.Add(new RenderItem
                 {
                     Material = debugMaterial,
                     Mesh = meshes[i].mesh,
@@ -199,14 +202,13 @@ namespace DevoidEngine.Engine.Rendering
 
             Renderer.ExecuteDrawList(renderItems3D, debug3DRenderState);
 
-            List<RenderItem> renderItems2D = new List<RenderItem>();
-
             Renderer.SetupCamera(UISystem.ScreenData);
 
             for (int i = 0; i < rects.Count; i++)
             {
                 if (rects[i].materialOverride != null) continue;
-                renderItems2D.Add(new RenderItem()
+
+                renderItems2D.Add(new RenderItem
                 {
                     Material = debugMaterial,
                     Mesh = debugQuad,
@@ -219,7 +221,8 @@ namespace DevoidEngine.Engine.Rendering
             for (int i = 0; i < rects.Count; i++)
             {
                 if (rects[i].materialOverride == null) continue;
-                renderItems2D.Add(new RenderItem()
+
+                renderItems2D.Add(new RenderItem
                 {
                     Material = rects[i].materialOverride,
                     Mesh = debugQuadFilled,
@@ -229,10 +232,7 @@ namespace DevoidEngine.Engine.Rendering
 
             Renderer.ExecuteDrawList(renderItems2D, debug2DRenderState);
 
-            renderItems3D.Clear();
-            renderItems2D.Clear();
             ClearDebugShapes();
-
         }
 
         public static void ClearDebugShapes()

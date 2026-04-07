@@ -89,17 +89,14 @@ namespace DevoidEngine.Engine.UI.Nodes
         {
             Rect = finalRect;
 
-            float innerWidth = finalRect.size.X - Padding.Left - Padding.Right;
+            float innerWidth = finalRect.Size.X - Padding.Left - Padding.Right;
 
             label.LayoutOptions.MaxWidth = innerWidth;
             hintLabel.LayoutOptions.MaxWidth = innerWidth;
 
             base.ArrangeCore(finalRect);
 
-            if (label.Rect != null)
-            {
-                hintLabel.Arrange(new UITransform(label.Rect.position, label.Rect.size));
-            }
+            hintLabel.Arrange(new UITransform(label.Rect.Position, label.Rect.Size));
         }
 
         protected override void ApplyTheme()
@@ -145,20 +142,18 @@ namespace DevoidEngine.Engine.UI.Nodes
 
         void UpdateCaretPosition()
         {
-            if (label.Rect == null)
-                return;
 
             CaretIndex = Math.Clamp(CaretIndex, 0, Text.Length);
 
-            float maxWidth = label.Rect.size.X;
+            float maxWidth = label.Rect.Size.X;
 
-            float wrapWidth = Rect.size.X - Padding.Left - Padding.Right;
+            float wrapWidth = Rect.Size.X - Padding.Left - Padding.Right;
             Vector2 pos = label.GetCursorPosition(CaretIndex, wrapWidth);
 
             caret.Arrange(new UITransform(
                 new Vector2(
-                    label.Rect.position.X + pos.X,
-                    label.Rect.position.Y + pos.Y
+                    label.Rect.Position.X + pos.X,
+                    label.Rect.Position.Y + pos.Y
                 ),
                 caret.Size ?? new Vector2(2, caretHeight)
             ));
@@ -240,12 +235,10 @@ namespace DevoidEngine.Engine.UI.Nodes
 
         public override void OnClick()
         {
-            if (label.Rect == null)
-                return;
 
             Vector2 mouse = UISystem.mousePosition;
 
-            float wrapWidth = Rect.size.X - Padding.Left - Padding.Right;
+            float wrapWidth = Rect.Size.X - Padding.Left - Padding.Right;
 
             int bestIndex = 0;
             float bestDist = float.MaxValue;
@@ -255,8 +248,8 @@ namespace DevoidEngine.Engine.UI.Nodes
                 Vector2 cursor = label.GetCursorPosition(i, wrapWidth);
 
                 Vector2 worldPos = new Vector2(
-                    label.Rect.position.X + cursor.X,
-                    label.Rect.position.Y + cursor.Y
+                    label.Rect.Position.X + cursor.X,
+                    label.Rect.Position.Y + cursor.Y
                 );
 
                 float dist = Vector2.Distance(mouse, worldPos);

@@ -97,10 +97,13 @@ namespace DevoidEngine.Engine.Rendering
                 Console.WriteLine("[Renderer]: Render technique was not set. No Object rendered.");
                 return;
             }
+
             RenderUI(ctx.renderItemsUI);
             ShadowSystem.RenderShadowMaps(ctx);
             Framebuffer activeFrameBuffer = ActiveRenderTechnique.Render(ctx);
+
             DebugRenderSystem.Render(ctx.cameraData, activeFrameBuffer);
+
             var Output = (Texture2D)activeFrameBuffer.GetRenderTexture(0);
             Texture2D finalColor = PostProcessor.Run(Output);
             RenderAPI.RenderToBuffer(finalColor, ctx.cameraTargetSurface);
@@ -108,6 +111,7 @@ namespace DevoidEngine.Engine.Rendering
             Renderer.GraphicsDevice.UnbindAllShaderResources();
 
             RenderAPI.RenderToBuffer(UIRenderOutput, ctx.cameraTargetSurface);
+
         }
 
         public static void RenderUI(List<RenderItem> renderItems)

@@ -227,13 +227,12 @@ namespace DevoidEngine.Engine.Core
             UpdateCursor();
 
             layerHandler.UpdateLayers(deltaTime);
+
             UISystem.Update(deltaTime);
         }
 
         void Render()
         {
-            long before = GC.GetAllocatedBytesForCurrentThread();
-
             layerHandler.RenderLayers();
 
             if (SceneManager.CurrentScene != null)
@@ -269,21 +268,15 @@ namespace DevoidEngine.Engine.Core
                         renderable.Collect(cameraComponent, ctx);
                     }
                 }
-
                 for (int i = 0; i < cameraComponents.Count; i++)
                 {
                     Renderer.Render(renderContexts[i]);
                 }
             }
-
             layerHandler.PostRenderLayers();
 
             Renderer.GraphicsDevice.MainSurface.Bind();
             Renderer.GraphicsDevice.MainSurface.Present();
-
-            long after = GC.GetAllocatedBytesForCurrentThread();
-
-            Console.WriteLine(after - before);
         }
 
         void UpdateCursor()

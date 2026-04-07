@@ -15,6 +15,8 @@ namespace DevoidEngine.Engine.Physics
         private readonly Dictionary<(IPhysicsObject, IPhysicsObject), int> contactStates
             = new();
 
+        private readonly List<(IPhysicsObject, IPhysicsObject)> toRemove = new();
+
         private const int ExitGraceFrames = 1;
 
 
@@ -54,7 +56,7 @@ namespace DevoidEngine.Engine.Physics
             }
 
             // 2️⃣ Process missing contacts
-            var toRemove = new List<(IPhysicsObject, IPhysicsObject)>();
+            toRemove.Clear();
 
             foreach (var kvp in contactStates)
             {

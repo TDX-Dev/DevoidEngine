@@ -120,11 +120,20 @@ namespace DevoidEngine.Engine.Components
             dirty = false;
         }
 
+        //private void MarkDirty()
+        //{
+        //    dirty = true;
+        //    hasMoved = true;
+        //    RecalculateWorldMatrix();
+
+        //    foreach (var child in children)
+        //        child.MarkDirty();
+        //}
+
         private void MarkDirty()
         {
             dirty = true;
             hasMoved = true;
-            RecalculateWorldMatrix();
 
             foreach (var child in children)
                 child.MarkDirty();

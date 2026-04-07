@@ -88,7 +88,7 @@ namespace DevoidEngine.Engine.Rendering.Shadows
             }
 
             if (shadowData.Count > 0)
-                shadowBuffer.SetData(shadowData.ToArray());
+                shadowBuffer.SetData(shadowData, shadowData.Count);
 
             shadowBuffer.Bind(13, ShaderStage.Vertex | ShaderStage.Fragment);
             atlas.DepthTexture.Bind(9);

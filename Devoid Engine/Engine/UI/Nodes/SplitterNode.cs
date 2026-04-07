@@ -40,8 +40,8 @@ namespace DevoidEngine.Engine.UI.Nodes
             startMouse = mouse;
 
             startBasis = Vertical
-                ? Target.Rect.size.Y
-                : Target.Rect.size.X;
+                ? Target.Rect.Size.Y
+                : Target.Rect.Size.X;
 
             Target.Layout.FlexBasis = startBasis;
             Target.Layout.FlexGrowMain = 0;
