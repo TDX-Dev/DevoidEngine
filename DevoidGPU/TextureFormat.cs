@@ -11,6 +11,8 @@
         RGBA16_Float,
         RGBA32_Float,
 
+        R32_Float,
+
         R8_UInt,
         R8_UNorm,
 

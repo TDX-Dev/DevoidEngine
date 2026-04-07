@@ -25,14 +25,14 @@ namespace DevoidEngine.Engine.Rendering.Shadows
             {
                 Width = atlasSize,
                 Height = atlasSize,
-                Format = TextureFormat.Depth32_Float,
-                IsDepthStencil = true,
-                IsRenderTarget = false,
+                Format = TextureFormat.R32_Float,
+                IsDepthStencil = false,
+                IsRenderTarget = true,
                 MipLevels = 1
             });
 
             Framebuffer = new Framebuffer();
-            Framebuffer.AttachDepthTexture(DepthTexture);
+            Framebuffer.AttachRenderTexture(DepthTexture);
         }
 
         public void Reset()

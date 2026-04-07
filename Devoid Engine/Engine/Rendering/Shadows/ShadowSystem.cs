@@ -12,6 +12,9 @@ namespace DevoidEngine.Engine.Rendering.Shadows
         {
             public Matrix4x4 Model;
             public Matrix4x4 LightVP;
+
+            public Vector3 LightPosition;
+            public float LightRange;
         }
 
         static ShadowAtlas atlas = null!;
@@ -46,8 +49,7 @@ namespace DevoidEngine.Engine.Rendering.Shadows
             shadowData.Clear();
 
             atlas.Framebuffer.Bind();
-            atlas.Framebuffer.Clear();
-            Renderer.GraphicsDevice.SetDepthState(DepthTest.LessEqual, true);
+            Renderer.GraphicsDevice.SetDepthState(DepthTest.Disabled, false);
 
             int shadowIndex = 0;
 
@@ -68,16 +70,18 @@ namespace DevoidEngine.Engine.Rendering.Shadows
                     out float scale);
 
                 atlas.SetViewport(tile);
+                atlas.Framebuffer.Clear(new Vector4(1));
 
                 Matrix4x4 lightViewProj = ComputeLightMatrix(light);
 
-                RenderDepth(lightViewProj, ctx);
+                RenderDepth(lightViewProj, light.position.AsVector3(), light.direction.W, ctx);
 
                 shadowData.Add(new ShadowData
                 {
                     LightViewProj = Matrix4x4.Transpose(lightViewProj),
                     AtlasOffset = new Vector2(offsetX, offsetY),
-                    AtlasScale = new Vector2(scale, scale)
+                    AtlasScale = new Vector2(scale, scale),
+                    LightPosition = light.position.AsVector3()
                 });
 
                 // assign shadow index to light
@@ -92,6 +96,7 @@ namespace DevoidEngine.Engine.Rendering.Shadows
                 shadowBuffer.SetData(shadowData, shadowData.Count);
 
             shadowBuffer.Bind(13, ShaderStage.Vertex | ShaderStage.Fragment);
+            Renderer.GraphicsDevice.UnbindFramebuffer();
             atlas.DepthTexture.Bind(9);
         }
 
@@ -130,21 +135,23 @@ namespace DevoidEngine.Engine.Rendering.Shadows
             return view * proj;
         }
 
-        void RenderDepth(Matrix4x4 lightVP, CameraRenderContext ctx)
+        void RenderDepth(Matrix4x4 lightVP, Vector3 lightPosition, float lightRange, CameraRenderContext ctx)
         {
             shadowShader.Use();
 
-            shadowViewInfoBuffer.Bind(0, ShaderStage.Vertex);
+            shadowViewInfoBuffer.Bind(0, ShaderStage.Vertex | ShaderStage.Fragment);
 
             foreach (var item in ctx.renderItems3D)
             {
                 Matrix4x4 model = item.Model;
 
 
-                viewData = new ShadowViewData()
+                viewData = new ShadowViewData
                 {
                     Model = model,
-                    LightVP = lightVP
+                    LightVP = lightVP,
+                    LightPosition = lightPosition,
+                    LightRange = lightRange
                 };
 
                 shadowViewInfoBuffer.SetData(viewData);

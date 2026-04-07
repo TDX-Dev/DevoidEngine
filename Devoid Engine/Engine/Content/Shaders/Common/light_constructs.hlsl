@@ -1,4 +1,4 @@
-struct GPUPointLight
+﻿struct GPUPointLight
 {
     float4 position; // xyz position, w = enabled
     float4 color; // rgb color, w = intensity
@@ -27,7 +27,8 @@ struct ShadowData
     float4x4 LightViewProj;
     float2 AtlasOffset;
     float2 AtlasScale;
-    float4 Padding;
+    float3 LightPosition;
+    float Padding;
 };
 
 #include "../Common/math_constants.hlsl"
@@ -53,52 +54,30 @@ StructuredBuffer<ShadowData> ShadowBuffer : register(t13);
 Texture2D ShadowAtlas : register(t9);
 SamplerState ShadowSampler : register(s9);
 
-float ComputeShadow(int shadowIndex, float3 worldPos, float3 N, float3 L)
+float ComputeShadow(int shadowIndex, float3 worldPos)
 {
     ShadowData shadow = ShadowBuffer[shadowIndex];
-    
-    float ndotl = saturate(dot(N, L));
-    float normalBias = 0.001 * (1.0 - ndotl);
-    float3 biasedPos = worldPos + N * normalBias;
-    
-    float4 lightSpace = mul(float4(biasedPos, 1), shadow.LightViewProj);
+
+    float4 lightSpace = mul(float4(worldPos, 1), shadow.LightViewProj);
     float3 proj = lightSpace.xyz / lightSpace.w;
 
     proj.xy = proj.xy * 0.5 + 0.5;
     proj.y = 1.0 - proj.y;
 
     if (proj.x < 0 || proj.x > 1 ||
-        proj.y < 0 || proj.y > 1 ||
-        proj.z < 0 || proj.z > 1)
+        proj.y < 0 || proj.y > 1)
         return 0;
 
     proj.xy = shadow.AtlasOffset + proj.xy * shadow.AtlasScale;
 
-    float bias = max(0.001 * (1.0 - dot(N, L)), 0.00001);
+    float dist = length(worldPos - shadow.LightPosition);
 
-    float shadowAccum = 0.0;
+    float storedDist = ShadowAtlas.Sample(
+        ShadowSampler,
+        proj.xy
+    ).r;
 
-    float2 texelSize = 1.0 / float2(2048.0, 1024.0);
-
-    [unroll]
-    for (int x = -1; x <= 1; x++)
-    {
-        [unroll]
-        for (int y = -1; y <= 1; y++)
-        {
-            float2 offset = float2(x, y) * texelSize;
-
-            float closest = ShadowAtlas.Sample(
-                ShadowSampler,
-                proj.xy + offset
-            ).r;
-
-            shadowAccum += (proj.z > closest + bias) ? 1.0 : 0.0;
-        }
-    }
-
-    // Average result
-    return shadowAccum / 9.0;
+    return dist > storedDist ? 1.0 : 0.0;
 }
 
 //float ComputeShadow(int shadowIndex, float3 worldPos)

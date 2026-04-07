@@ -263,9 +263,9 @@ namespace DevoidEngine.Engine.Rendering
     [StructLayout(LayoutKind.Sequential)]
     public struct GPUSpotLight
     {
-        public Vector4 position;
-        public Vector4 color;
-        public Vector4 direction;
+        public Vector4 position; // W component is enabled/disabled
+        public Vector4 color; // W component is intensity
+        public Vector4 direction; // W component is radius
 
         public float innerCutoff;
         public float outerCutoff;

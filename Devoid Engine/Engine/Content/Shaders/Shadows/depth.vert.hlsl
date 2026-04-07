@@ -31,6 +31,7 @@ struct PSInput
 
 PSInput VSMain(VSInput input)
 {
+    
     PSInput o;
 
     float4 worldPos = mul(Model, float4(input.Position, 1));

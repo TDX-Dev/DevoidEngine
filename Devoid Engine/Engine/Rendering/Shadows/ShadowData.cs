@@ -9,6 +9,7 @@ namespace DevoidEngine.Engine.Rendering.Shadows
         public Matrix4x4 LightViewProj;
         public Vector2 AtlasOffset;
         public Vector2 AtlasScale;
-        public Vector4 Padding;
+        public Vector3 LightPosition;
+        public float Padding;
     }
 }

@@ -150,6 +150,8 @@ namespace DevoidGPU.DX11
                 }
             }
 
+
+
             if (_boundDSV == tex)
             {
                 deviceContext.OutputMerger.SetRenderTargets(null, (RenderTargetView[])null);

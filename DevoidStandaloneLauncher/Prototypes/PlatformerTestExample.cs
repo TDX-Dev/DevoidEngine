@@ -25,6 +25,7 @@ namespace DevoidStandaloneLauncher.Prototypes
     {
 
         Scene scene;
+        GameObject spotLight;
         public override void OnInit()
         {
             DebugRenderSystem.AllowDebugDraw = false;
@@ -36,7 +37,7 @@ namespace DevoidStandaloneLauncher.Prototypes
             scene.AddGameObject("Skybox").AddComponent<SkyboxComponent>();
 
 
-            GameObject spotLight = scene.AddGameObject("Origin Light");
+            spotLight = scene.AddGameObject("Origin Light");
             LightComponent spotLightComponent = spotLight.AddComponent<LightComponent>();
             spotLightComponent.Intensity = 50;
             spotLightComponent.LightType = LightType.SpotLight;
@@ -47,8 +48,8 @@ namespace DevoidStandaloneLauncher.Prototypes
             spotLight.Transform.EulerAngles = new Vector3(45, 0, 0);
 
 
-            Model demoModel = Asset.Load<Model>("goblin_j/practice.gltf");
-            //Model demoModel = Asset.Load<Model>("cubey_boi/cubey_boi.gltf");
+            //Model demoModel = Asset.Load<Model>("goblin_j/practice.gltf");
+            Model demoModel = Asset.Load<Model>("cubey_boi/cubey_boi.gltf");
             GameObject demoObject = demoModel.Instantiate(scene);
             demoObject.Name = "Player";
             demoObject.Transform.Scale = Vector3.One;
@@ -136,6 +137,21 @@ namespace DevoidStandaloneLauncher.Prototypes
         }
         LabelNode orbLabel;
         ThirdPersonController controller;
+
+        private float time = 0f;
+
+        public override void OnUpdate(float delta)
+        {
+            time += delta;
+
+            float bob = MathF.Sin(time) * 3f; // amplitude = 3 units
+
+            spotLight.Transform.LocalPosition = new Vector3(
+                0,
+                10 + bob,
+                -5
+            );
+        }
 
         public override void OnFixedUpdate(float delta)
         {
