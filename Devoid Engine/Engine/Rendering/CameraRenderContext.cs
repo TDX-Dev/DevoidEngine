@@ -8,6 +8,7 @@ namespace DevoidEngine.Engine.Rendering
 {
     public class CameraRenderContext
     {
+        public Camera camera = null!;
         public CameraData cameraData;
         public Framebuffer cameraTargetSurface = null!;
 

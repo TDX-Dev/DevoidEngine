@@ -16,6 +16,69 @@ namespace DevoidEngine.Engine.Utilities
             }
         }
 
+        public static void GenerateCone(
+        int segments,
+        out Vertex[] vertices,
+        out uint[] indices)
+        {
+            List<Vertex> verts = new();
+            List<uint> inds = new();
+
+            float radius = 1.0f;
+            float height = 1.0f;
+
+            Vector3 tip = new Vector3(0, 0, 0);
+            Vector3 baseCenter = new Vector3(0, 0, height);
+
+            // Tip vertex
+            verts.Add(new Vertex(tip, Vector3.UnitZ, Vector2.Zero));
+            int tipIndex = 0;
+
+            // Base center vertex
+            verts.Add(new Vertex(baseCenter, -Vector3.UnitZ, Vector2.Zero));
+            int baseCenterIndex = 1;
+
+            int baseStart = verts.Count;
+
+            // Base ring vertices
+            for (int i = 0; i < segments; i++)
+            {
+                float angle = (float)(i * Math.PI * 2.0 / segments);
+
+                float x = MathF.Cos(angle) * radius;
+                float y = MathF.Sin(angle) * radius;
+
+                Vector3 pos = new Vector3(x, y, height);
+
+                Vector3 normal = Vector3.Normalize(new Vector3(x, y, radius));
+
+                verts.Add(new Vertex(pos, normal, new Vector2((float)i / segments, 1)));
+            }
+
+            // Side triangles
+            for (int i = 0; i < segments; i++)
+            {
+                int next = (i + 1) % segments;
+
+                inds.Add((uint)tipIndex);
+                inds.Add((uint)(baseStart + next));
+                inds.Add((uint)(baseStart + i));
+            }
+
+            // Base triangles
+            for (int i = 0; i < segments; i++)
+            {
+                int next = (i + 1) % segments;
+
+                inds.Add((uint)baseCenterIndex);
+                inds.Add((uint)(baseStart + i));
+                inds.Add((uint)(baseStart + next));
+            }
+
+            vertices = verts.ToArray();
+            indices = inds.ToArray();
+        }
+
         public static Vertex[] GetSphereVertices(int latSegments = 32, int lonSegments = 32, float radius = 0.5f)
         {
             List<Vertex> vertices = new List<Vertex>();

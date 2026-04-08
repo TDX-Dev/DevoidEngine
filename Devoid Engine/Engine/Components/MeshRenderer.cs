@@ -52,20 +52,20 @@ namespace DevoidEngine.Engine.Components
             if (mesh == null || !gameObject.Enabled || material == null)
                 return;
 
-            Vector3 worldMin, worldMax;
+            //Vector3 worldMin, worldMax;
 
-            BoundingBox.TransformAABB(
-                mesh.LocalBounds.min,
-                mesh.LocalBounds.max,
-                gameObject.Transform.WorldMatrix,
-                out worldMin,
-                out worldMax
-            );
+            //BoundingBox.TransformAABB(
+            //    mesh.LocalBounds.min,
+            //    mesh.LocalBounds.max,
+            //    gameObject.Transform.WorldMatrix,
+            //    out worldMin,
+            //    out worldMax
+            //);
 
-            if (!camera.Camera.IntersectsAABB(worldMin, worldMax))
-            {
-                return;
-            }
+            //if (!camera.Camera.IntersectsAABB(worldMin, worldMax))
+            //{
+            //    return;
+            //}
 
             bool isTransparent = material.BaseMaterial.BlendMode == DevoidGPU.BlendMode.AlphaBlend;
 

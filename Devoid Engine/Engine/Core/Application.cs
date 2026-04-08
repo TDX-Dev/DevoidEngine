@@ -260,6 +260,7 @@ namespace DevoidEngine.Engine.Core
                     if (cameraComponent.Camera.RenderTarget == null)
                         continue;
 
+                    ctx.camera = cameraComponent.Camera;
                     ctx.cameraData = cameraComponent.Camera.GetCameraData();
                     ctx.cameraTargetSurface = cameraComponent.Camera.RenderTarget;
 

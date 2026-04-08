@@ -2,6 +2,7 @@
 using DevoidEngine.Engine.UI;
 using DevoidEngine.Engine.Utilities;
 using SharpFont;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 
 namespace DevoidEngine.Engine.Rendering
@@ -23,6 +24,8 @@ namespace DevoidEngine.Engine.Rendering
 
         SceneData sceneData;
 
+        List<RenderItem> visibleItems = null!;
+
 
         public RenderState renderStateOverride = RenderState.DefaultRenderState;
         public void Dispose()
@@ -36,6 +39,8 @@ namespace DevoidEngine.Engine.Rendering
             directionalLightBuffer = new StorageBuffer<GPUDirectionalLight>(MAX_DIRECTIONALLIGHTS, DevoidGPU.BufferUsage.Dynamic, false);
             spotLightBuffer = new StorageBuffer<GPUSpotLight>(MAX_SPOTLIGHTS, DevoidGPU.BufferUsage.Dynamic, false);
             sceneDataBuffer = new UniformBuffer(Unsafe.SizeOf<SceneData>(), DevoidGPU.BufferUsage.Dynamic);
+
+            visibleItems = new List<RenderItem>();
 
             finalOutputBuffer = new Framebuffer();
 
@@ -69,15 +74,49 @@ namespace DevoidEngine.Engine.Rendering
             Renderer.GraphicsDevice.SetViewport(0, 0, (int)Screen.Size.X, (int)Screen.Size.Y);
 
             Renderer.SkyboxRenderer.Render(ctx);
-            
+
             UploadLights(ctx);
             UploadSceneData(ctx);
 
             Renderer.SetupCamera(ctx.cameraData);
-            Renderer.ExecuteDrawList(ctx.renderItems3D, renderStateOverride);
 
+            BuildVisibleList(ctx);
+
+            Renderer.ExecuteDrawList(visibleItems, renderStateOverride);
 
             return finalOutputBuffer;
+        }
+
+        void BuildVisibleList(CameraRenderContext ctx)
+        {
+            int culledCount = 0;
+            visibleItems.Clear();
+
+            var camera = ctx.camera;
+
+            foreach (var item in ctx.renderItems3D)
+            {
+                if (item.Mesh == null)
+                    continue;
+
+                Vector3 worldMin, worldMax;
+
+                BoundingBox.TransformAABB(
+                    item.Mesh.LocalBounds.min,
+                    item.Mesh.LocalBounds.max,
+                    item.Model,
+                    out worldMin,
+                    out worldMax
+                );
+
+                if (!camera.IntersectsAABB(worldMin, worldMax))
+                {
+                    culledCount++;
+                    continue;
+                }
+
+                visibleItems.Add(item);
+            }
         }
 
         void UploadSceneData(CameraRenderContext ctx)
