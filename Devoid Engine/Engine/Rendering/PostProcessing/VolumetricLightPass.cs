@@ -1,25 +1,43 @@
 ﻿using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.DebugTools;
+using DevoidEngine.Engine.Utilities;
 using DevoidGPU;
+using System.Numerics;
+using System.Runtime.InteropServices;
 
 namespace DevoidEngine.Engine.Rendering.PostProcessing
 {
     public class VolumetricLightPass : RenderGraphPass
     {
+        [StructLayout(LayoutKind.Sequential)]
+        struct VolumetricLightIndex
+        {
+            int currentLightIndex;
+        }
+
         Texture2D output;
         Framebuffer framebuffer;
 
+        UniformBuffer volumetricLightIndex;
+
+        Shader volumetricShader;
         MaterialInstance material;
+        Mesh ConeMesh;
         public override Texture2D OutputTexture => output;
 
-        private float exposure = 0.7f;
-        private float bloomIntensity = 0.35f;
 
         public VolumetricLightPass(int width, int height)
         {
-            material = new MaterialInstance(new Material(new Shader("Engine/Content/Shaders/Testing/tonemap")));
-            material.SetFloat("exposure", exposure);
-            material.SetFloat("bloomIntensity", bloomIntensity);
+            volumetricShader = new Shader("Engine/Content/Shaders/Volumetric/volumetric");
+            material = new MaterialInstance(new Material(volumetricShader));
+
+            volumetricLightIndex = new UniformBuffer(Marshal.SizeOf<VolumetricLightIndex>());
+
+            Primitives.GenerateCone(32, out Vertex[] vertices, out int[] indices);
+            ConeMesh = new Mesh();
+            ConeMesh.SetVertices(vertices);
+            ConeMesh.SetIndices(indices);
+
 
             output = new Texture2D(new TextureDescription()
             {
@@ -37,22 +55,63 @@ namespace DevoidEngine.Engine.Rendering.PostProcessing
 
         public override void Setup()
         {
-            Read("SceneColor");
-            Read("BloomOutput");
-            Write("ToneMapped");
+            Write("VolumetricOutput");
         }
 
         public override void Execute(RenderGraphContext ctx)
         {
-            var input = ctx.GetTexture("SceneColor");
-            var bloomInput = ctx.GetTexture("BloomOutput");
+            Renderer.GraphicsDevice.SetBlendState(BlendMode.Additive);
+            Renderer.GraphicsDevice.SetRasterizerState(CullMode.Front);
 
-            material.SetTexture("MAT_SceneColor", input);
-            material.SetTexture("MAT_BloomColor", bloomInput);
-            RenderAPI.RenderToBuffer(material, framebuffer);
+            framebuffer.Bind();
+            framebuffer.Clear(new Vector4(0));
+            volumetricLightIndex.Bind(3, ShaderStage.Fragment);
+
+            Renderer.GetInputLayout(ConeMesh, volumetricShader);
+            for (int i = 0; i < ctx.FrameContext.spotLights.Count; i++)
+            {
+                GPUSpotLight spotLight = ctx.FrameContext.spotLights[i];
+                Matrix4x4 spotModel = GetSpotlightModel(spotLight);
+
+                Renderer.SetupCamera(ctx.FrameContext.cameraData);
+                Renderer.UpdatePerObjectData(spotModel);
+                volumetricLightIndex.SetData(i);
+
+                volumetricShader.Use();
+                ConeMesh.Bind();
+                ConeMesh.Draw();
+            }
+
+
+
             //RenderAPI.RenderToBuffer(input, framebuffer);
+            Renderer.GraphicsDevice.SetBlendState(BlendMode.Opaque);
+            ctx.SetTexture("VolumetricOutput", output);
+        }
 
-            ctx.SetTexture("ToneMapped", output);
+        Matrix4x4 GetSpotlightModel(GPUSpotLight light)
+        {
+            float range = light.direction.W;
+
+            float angle = light.outerCutoff; // already radians
+
+            float radius = range * MathF.Tan(angle);
+
+            Matrix4x4 scale = Matrix4x4.CreateScale(radius, radius, range);
+
+            Vector3 dir = Vector3.Normalize(light.direction.AsVector3());
+
+            Vector3 up = Vector3.UnitY;
+
+            if (MathF.Abs(Vector3.Dot(dir, up)) > 0.999f)
+                up = Vector3.UnitX;
+
+            Matrix4x4 rotation = Matrix4x4.CreateWorld(Vector3.Zero, dir, up);
+
+            Matrix4x4 translation =
+                Matrix4x4.CreateTranslation(light.position.AsVector3());
+
+            return scale * rotation * translation;
         }
 
         public override void Resize(int width, int height)

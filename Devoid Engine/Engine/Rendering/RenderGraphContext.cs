@@ -5,6 +5,7 @@ namespace DevoidEngine.Engine.Rendering
     public class RenderGraphContext
     {
         private readonly Dictionary<string, Texture2D> textures = new();
+        public CameraRenderContext FrameContext = null!;
 
         public void SetTexture(string name, Texture2D texture)
         {

@@ -20,9 +20,11 @@ cbuffer Material : register(b2)
 
 Texture2D MAT_SceneColor : register(t0);
 Texture2D MAT_BloomColor : register(t1);
+Texture2D MAT_VolumetricColor : register(t2);
 
 SamplerState MAT_SceneColorSampler : register(s0);
 SamplerState MAT_BloomColorSampler : register(s1);
+SamplerState MAT_VolumetricColorSampler : register(s2);
 
 static const float3x3 ACESInputMat =
 {
@@ -102,12 +104,14 @@ float4 PSMain(PSInput input) : SV_TARGET
 {
     float3 hdr = MAT_SceneColor.Sample(MAT_SceneColorSampler, input.UV0).rgb;
     float3 bloom = MAT_BloomColor.Sample(MAT_BloomColorSampler, input.UV0).rgb;
+    float3 volumetric = MAT_VolumetricColor.Sample(MAT_VolumetricColorSampler, input.UV0).rgb;
 
     //float exposure = 1;
     hdr *= exposure;
 
     float bloomStrength = 0.04;
     hdr += bloom * bloomStrength * bloomIntensity;
+    hdr += volumetric;
     
     float3 color = ACESFitted(hdr);
     //color = pow(color, 1.0 / 2.2);
@@ -117,4 +121,5 @@ float4 PSMain(PSInput input) : SV_TARGET
     //return float4(color, 1);
     
     return float4(color, 1.0);
+    //return float4(volumetric, 1);
 }

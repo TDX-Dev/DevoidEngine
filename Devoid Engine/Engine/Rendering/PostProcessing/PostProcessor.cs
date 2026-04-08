@@ -33,9 +33,9 @@ namespace DevoidEngine.Engine.Rendering.PostProcessing
             graph.Resize(width, height);
         }
 
-        public Texture2D Run(Texture2D input)
+        public Texture2D Run(Texture2D sceneColor, CameraRenderContext ctx)
         {
-            return graph.Execute(input);
+            return graph.Execute(sceneColor, ctx);
         }
     }
 }

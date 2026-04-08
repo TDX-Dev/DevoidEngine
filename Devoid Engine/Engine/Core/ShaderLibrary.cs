@@ -13,6 +13,7 @@
             shaders["Screen/RENDER_SCREEN"] = new Shader("Engine/Content/Shaders/Screen/renderToScreen");
             shaders["Screen/CLEAR_SCREEN"] = new Shader("Engine/Content/Shaders/Screen/clearView");
             shaders["Shadow/DEPTH_ONLY"] = new Shader("Engine/Content/Shaders/Shadows/depth");
+            shaders["Screen/GBUFFER"] = new Shader("Engine/Content/Shaders/Screen/gbuffer");
         }
 
         public static void RegisterShader(string name, Shader shader)

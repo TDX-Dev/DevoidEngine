@@ -32,6 +32,13 @@ namespace DevoidEngine.Engine.Rendering
         static Framebuffer UIFramebuffer = null!;
         static Texture2D UIRenderOutput = null!;
 
+        static Framebuffer GBufferFramebuffer = null!;
+        //static Texture2D GBufferPosition = null!;
+        //static Texture2D GBufferNormal = null!;
+        static Texture2D GBufferDepth = null!;
+        static RenderState GBufferRenderState = null!;
+        static Shader GBufferShader = null!;
+
         public static IInputLayout GetInputLayout(Mesh mesh, Shader shader)
         {
             if (mesh.VertexBuffer == null)
@@ -50,6 +57,19 @@ namespace DevoidEngine.Engine.Rendering
         {
             if (GraphicsDevice == null)
                 throw new Exception("Graphics device has not been set.");
+
+            GBufferRenderState = new RenderState()
+            {
+                BlendMode = BlendMode.Opaque,
+                DepthTest = DepthTest.LessEqual,
+                DepthWrite = true,
+                CullMode = CullMode.Back,
+                PrimitiveType = PrimitiveType.Triangles,
+                FillMode = FillMode.Solid
+            };
+
+            GBufferShader = ShaderLibrary.GetShader("Screen/GBUFFER") ?? throw new Exception("GBuffer shader not loaded");
+
             meshRenderData = new MeshRenderData();
             meshRenderDataBuffer = new UniformBuffer(sizeof(MeshRenderData));
 
@@ -71,6 +91,20 @@ namespace DevoidEngine.Engine.Rendering
 
             UIFramebuffer.SetRenderTexture(UIRenderOutput, 0);
 
+            GBufferFramebuffer = new Framebuffer();
+            GBufferDepth = new Texture2D(new TextureDescription()
+            {
+                Width = width,
+                Height = height,
+                Format = TextureFormat.Depth32_Float,
+                IsDepthStencil = true,
+                GenerateMipmaps = false,
+                MipLevels = 1,
+                IsRenderTarget = false,
+                Type = TextureType.Texture2D,
+            });
+            GBufferFramebuffer.AttachDepthTexture(GBufferDepth);
+
             // TESTING
             ActiveRenderTechnique = new ForwardRenderTechnique();
 
@@ -85,8 +119,10 @@ namespace DevoidEngine.Engine.Rendering
 
             PostProcessor = new PostProcessor();
             var bloomPass = new BloomPass(width, height);
+            var volumetricPass = new VolumetricLightPass(width, height);
             var tonemapPass = new TonemapPass(width, height);
             PostProcessor.AddPass(bloomPass);
+            PostProcessor.AddPass(volumetricPass);
             PostProcessor.AddPass(tonemapPass);
         }
 
@@ -99,13 +135,14 @@ namespace DevoidEngine.Engine.Rendering
             }
 
             RenderUI(ctx.renderItemsUI);
+            RenderGBuffer(ctx.renderItems3D, ctx);
             ShadowSystem.RenderShadowMaps(ctx);
             Framebuffer activeFrameBuffer = ActiveRenderTechnique.Render(ctx);
 
             DebugRenderSystem.Render(ctx.cameraData, activeFrameBuffer);
 
             var Output = (Texture2D)activeFrameBuffer.GetRenderTexture(0);
-            Texture2D finalColor = PostProcessor.Run(Output);
+            Texture2D finalColor = PostProcessor.Run(Output, ctx);
             RenderAPI.RenderToBuffer(finalColor, ctx.cameraTargetSurface);
 
             Renderer.GraphicsDevice.UnbindAllShaderResources();
@@ -121,6 +158,38 @@ namespace DevoidEngine.Engine.Rendering
             GraphicsDevice.SetViewport(0, 0, (int)Screen.Size.X, (int)Screen.Size.Y);
             Renderer.SetupCamera(UISystem.ScreenData);
             Renderer.ExecuteDrawList(renderItems, UISystem.RenderState);
+        }
+
+        public static void RenderGBuffer(List<RenderItem> renderItems, CameraRenderContext ctx)
+        {
+            GBufferFramebuffer.Bind();
+            GBufferFramebuffer.Clear();
+
+            GraphicsDevice.SetViewport(0, 0, (int)Screen.Size.X, (int)Screen.Size.Y);
+
+            Renderer.SetupCamera(ctx.cameraData);
+            ApplyRenderState(GBufferRenderState);
+
+            GBufferShader.Use();
+
+            Mesh? currentMesh = null;
+
+            for (int i = 0; i < renderItems.Count; i++)
+            {
+                var item = renderItems[i];
+
+                UpdatePerObjectData(item.Model);
+
+                if (item.Mesh != currentMesh)
+                {
+                    currentMesh = item.Mesh;
+
+                    currentMesh.Bind();
+                    GetInputLayout(currentMesh, GBufferShader)?.Bind();
+                }
+
+                currentMesh.Draw();
+            }
         }
 
         public static void ExecuteDrawList(List<RenderItem> items, RenderState renderState)
@@ -206,7 +275,7 @@ namespace DevoidEngine.Engine.Rendering
             PostProcessor.Resize(width, height);
             UISystem.Resize(width, height);
         }
-        static void UpdatePerObjectData(Matrix4x4 model)
+        public static void UpdatePerObjectData(Matrix4x4 model)
         {
             Matrix4x4.Invert(model, out var ModelMatrixInv);
 

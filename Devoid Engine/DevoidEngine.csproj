@@ -89,9 +89,5 @@
     </None>
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Engine\Rendering\PostProcessing\" />
-  </ItemGroup>
-
 
 </Project>

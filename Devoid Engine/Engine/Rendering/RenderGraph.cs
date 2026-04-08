@@ -55,14 +55,17 @@ public class RenderGraph
 
         ResolvePassOrder();
         dirty = false;
+
+        //PrintExecutionOrder();
     }
 
-    public Texture2D Execute(Texture2D sceneColor)
+    public Texture2D Execute(Texture2D sceneColor, CameraRenderContext frame)
     {
         if (dirty)
             Compile();
 
         ctx.Reset();
+        ctx.FrameContext = frame;
         ctx.SetTexture("SceneColor", sceneColor);
 
         Texture2D lastTexture = sceneColor;
@@ -149,5 +152,26 @@ public class RenderGraph
 
         if (compiledPasses.Count != passes.Count)
             throw new Exception("RenderGraph contains a cycle.");
+    }
+
+    public void PrintExecutionOrder()
+    {
+
+        Console.WriteLine("=== RenderGraph Execution Order ===");
+
+        for (int i = 0; i < compiledPasses.Count; i++)
+        {
+            var pass = compiledPasses[i];
+
+            Console.WriteLine($"{i}: {pass.GetType().Name}");
+
+            if (pass.Reads.Count > 0)
+                Console.WriteLine($"   Reads : {string.Join(", ", pass.Reads)}");
+
+            if (pass.Writes.Count > 0)
+                Console.WriteLine($"   Writes: {string.Join(", ", pass.Writes)}");
+        }
+
+        Console.WriteLine("===================================");
     }
 }

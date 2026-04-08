@@ -79,6 +79,7 @@ namespace DevoidEngine.Engine.Rendering.PostProcessing
         {
             Read("SceneColor");
             Read("BloomOutput");
+            Read("VolumetricOutput");
             Write("ToneMapped");
         }
 
@@ -86,9 +87,11 @@ namespace DevoidEngine.Engine.Rendering.PostProcessing
         {
             var input = ctx.GetTexture("SceneColor");
             var bloomInput = ctx.GetTexture("BloomOutput");
+            var volumetricInput = ctx.GetTexture("VolumetricOutput");
 
             material.SetTexture("MAT_SceneColor", input);
             material.SetTexture("MAT_BloomColor", bloomInput);
+            material.SetTexture("MAT_VolumetricColor", volumetricInput);
             RenderAPI.RenderToBuffer(material, framebuffer);
             //RenderAPI.RenderToBuffer(input, framebuffer);
 

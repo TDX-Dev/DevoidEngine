@@ -43,8 +43,8 @@ namespace DevoidStandaloneLauncher.Prototypes
             spotLightComponent.Radius = 100;
             spotLightComponent.LightType = LightType.SpotLight;
             spotLightComponent.CastShadows = true;
-            spotLightComponent.InnerCutoff = 18;
-            spotLightComponent.OuterCutoff = 30;
+            spotLightComponent.InnerCutoff = 15;
+            spotLightComponent.OuterCutoff = 20;
             spotLight.Transform.LocalPosition = new Vector3(0, 10, -5);
             spotLight.Transform.EulerAngles = new Vector3(45, 0, 0);
 
@@ -55,8 +55,8 @@ namespace DevoidStandaloneLauncher.Prototypes
             spotLightComponent1.Radius = 20;
             spotLightComponent1.LightType = LightType.SpotLight;
             spotLightComponent1.CastShadows = true;
-            spotLightComponent1.InnerCutoff = 18;
-            spotLightComponent1.OuterCutoff = 30;
+            spotLightComponent1.InnerCutoff = 6;
+            spotLightComponent1.OuterCutoff = 10;
             spotLight1.Transform.LocalPosition = new Vector3(2, 4, -7);
             spotLight1.Transform.EulerAngles = new Vector3(20, 45, 0);
 
