@@ -1,6 +1,8 @@
 ﻿using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.Utilities;
 using DevoidGPU;
+using System.Numerics;
+using System.Runtime.InteropServices;
 
 namespace DevoidEngine.Engine.Rendering
 {
@@ -9,12 +11,17 @@ namespace DevoidEngine.Engine.Rendering
         static Mesh mesh;
         static IInputLayout layout;
         static Shader screenShader;
+        static Shader clearShader;
         static int vertexCount;
+        static UniformBuffer clearViewColorBuffer;
 
         static RenderAPI()
         {
             screenShader = ShaderLibrary.GetShader("Screen/RENDER_SCREEN")
                 ?? throw new Exception("Screen shader not loaded");
+
+            clearShader = ShaderLibrary.GetShader("Screen/CLEAR_SCREEN")
+                ?? throw new Exception("Clear shader not loaded");
 
             mesh = RenderConstants.Quad
                 ?? throw new Exception("Quad mesh not available");
@@ -24,6 +31,8 @@ namespace DevoidEngine.Engine.Rendering
 
             vertexCount = mesh.GetVertices()?.Length
                 ?? throw new Exception("Mesh vertices missing");
+
+            clearViewColorBuffer = new UniformBuffer(Marshal.SizeOf<Vector4>(), BufferUsage.Dynamic);
         }
 
         static void SetupFullscreenState()
@@ -136,6 +145,17 @@ namespace DevoidEngine.Engine.Rendering
             mesh.Bind();
 
             Renderer.GraphicsDevice.Draw(vertexCount, 0);
+        }
+
+        public static void ClearView(Vector4 Color)
+        {
+            SetupFullscreenState();
+            clearViewColorBuffer.SetData(Color);
+            clearViewColorBuffer.Bind(0, ShaderStage.Fragment);
+            clearShader.Use();
+            layout.Bind();
+            mesh.Bind();
+            mesh.Draw();
         }
     }
 }

@@ -24,19 +24,21 @@ namespace DevoidEngine.Engine.Rendering
             Renderer.ResourceManager.FramebufferManager.BindFramebuffer(_frameBuffer);
         }
 
-        public void Clear()
+        public void Clear(bool clearDepth = true)
         {
             Vector4 clearColor = new Vector4(0, 0, 0, 1);
-            int clearDepth = 1;
+            int clearDepthValue = 1;
 
             Renderer.ResourceManager.FramebufferManager.ClearFramebufferColor(_frameBuffer, clearColor);
-            Renderer.ResourceManager.FramebufferManager.ClearFramebufferDepth(_frameBuffer, clearDepth);
+            if (clearDepth)
+                Renderer.ResourceManager.FramebufferManager.ClearFramebufferDepth(_frameBuffer, clearDepthValue);
         }
 
-        public void Clear(Vector4 clearColor, int clearDepth = 1)
+        public void Clear(Vector4 clearColor, bool clearDepth = true, int clearDepthValue = 1)
         {
             Renderer.ResourceManager.FramebufferManager.ClearFramebufferColor(_frameBuffer, clearColor);
-            Renderer.ResourceManager.FramebufferManager.ClearFramebufferDepth(_frameBuffer, clearDepth);
+            if (clearDepth)
+                Renderer.ResourceManager.FramebufferManager.ClearFramebufferDepth(_frameBuffer, clearDepthValue);
         }
 
         public Texture GetRenderTexture(int index)

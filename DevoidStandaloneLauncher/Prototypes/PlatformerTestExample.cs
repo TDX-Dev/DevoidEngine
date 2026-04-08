@@ -28,7 +28,7 @@ namespace DevoidStandaloneLauncher.Prototypes
         GameObject spotLight;
         public override void OnInit()
         {
-            DebugRenderSystem.AllowDebugDraw = false;
+            DebugRenderSystem.AllowDebugDraw = true;
             DefaultInput.ConfigureInput();
 
             scene = new Scene();
@@ -40,12 +40,25 @@ namespace DevoidStandaloneLauncher.Prototypes
             spotLight = scene.AddGameObject("Origin Light");
             LightComponent spotLightComponent = spotLight.AddComponent<LightComponent>();
             spotLightComponent.Intensity = 50;
+            spotLightComponent.Radius = 100;
             spotLightComponent.LightType = LightType.SpotLight;
             spotLightComponent.CastShadows = true;
             spotLightComponent.InnerCutoff = 18;
             spotLightComponent.OuterCutoff = 30;
             spotLight.Transform.LocalPosition = new Vector3(0, 10, -5);
             spotLight.Transform.EulerAngles = new Vector3(45, 0, 0);
+
+
+            GameObject spotLight1 = scene.AddGameObject("Origin Light");
+            LightComponent spotLightComponent1 = spotLight1.AddComponent<LightComponent>();
+            spotLightComponent1.Intensity = 50;
+            spotLightComponent1.Radius = 20;
+            spotLightComponent1.LightType = LightType.SpotLight;
+            spotLightComponent1.CastShadows = true;
+            spotLightComponent1.InnerCutoff = 18;
+            spotLightComponent1.OuterCutoff = 30;
+            spotLight1.Transform.LocalPosition = new Vector3(2, 4, -7);
+            spotLight1.Transform.EulerAngles = new Vector3(20, 45, 0);
 
 
             //Model demoModel = Asset.Load<Model>("goblin_j/practice.gltf");
@@ -140,21 +153,18 @@ namespace DevoidStandaloneLauncher.Prototypes
 
         private float time = 0f;
 
-        public override void OnUpdate(float delta)
+        public override void OnFixedUpdate(float delta)
         {
             time += delta;
 
             float bob = MathF.Sin(time) * 3f; // amplitude = 3 units
 
-            spotLight.Transform.LocalPosition = new Vector3(
+            spotLight.Transform.Position = new Vector3(
                 0,
                 10 + bob,
                 -5
             );
-        }
 
-        public override void OnFixedUpdate(float delta)
-        {
             orbLabel.Text = $"Collected: {controller.OrbsCollected}";
         }
 

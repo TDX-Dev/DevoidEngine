@@ -1,4 +1,5 @@
-﻿using DevoidEngine.Engine.Core;
+﻿using Assimp;
+using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.Utilities;
 using DevoidGPU;
 using System.Numerics;
@@ -49,7 +50,7 @@ namespace DevoidEngine.Engine.Rendering.Shadows
             shadowData.Clear();
 
             atlas.Framebuffer.Bind();
-            Renderer.GraphicsDevice.SetDepthState(DepthTest.Disabled, false);
+            atlas.Framebuffer.Clear(new Vector4(1), true);
 
             int shadowIndex = 0;
 
@@ -70,18 +71,23 @@ namespace DevoidEngine.Engine.Rendering.Shadows
                     out float scale);
 
                 atlas.SetViewport(tile);
-                atlas.Framebuffer.Clear(new Vector4(1));
+                Renderer.GraphicsDevice.SetDepthState(DepthTest.Disabled, false);
+                RenderAPI.ClearView(new Vector4(light.direction.W));
+                Renderer.GraphicsDevice.SetDepthState(DepthTest.Less, true);
+                //atlas.Framebuffer.Clear(new Vector4(light.direction.W), false);
+
+                Vector3 position = new Vector3(light.position.X, light.position.Y, light.position.Z);
 
                 Matrix4x4 lightViewProj = ComputeLightMatrix(light);
 
-                RenderDepth(lightViewProj, light.position.AsVector3(), light.direction.W, ctx);
+                RenderDepth(lightViewProj, position, light.direction.W, ctx);
 
                 shadowData.Add(new ShadowData
                 {
                     LightViewProj = Matrix4x4.Transpose(lightViewProj),
                     AtlasOffset = new Vector2(offsetX, offsetY),
                     AtlasScale = new Vector2(scale, scale),
-                    LightPosition = light.position.AsVector3()
+                    LightPosition = position
                 });
 
                 // assign shadow index to light
@@ -97,7 +103,7 @@ namespace DevoidEngine.Engine.Rendering.Shadows
 
             shadowBuffer.Bind(13, ShaderStage.Vertex | ShaderStage.Fragment);
             Renderer.GraphicsDevice.UnbindFramebuffer();
-            atlas.DepthTexture.Bind(9);
+            atlas.DistanceTexture.Bind(9);
         }
 
         Matrix4x4 ComputeLightMatrix(GPUSpotLight light)
@@ -125,11 +131,13 @@ namespace DevoidEngine.Engine.Rendering.Shadows
                 pos + dir,
                 up);
 
+            float far = radius;
+
             Matrix4x4 proj = Matrix4x4.CreatePerspectiveFieldOfView(
                 light.outerCutoff * 2,
                 1.0f,
                 0.1f,
-                radius);
+                far);
 
 
             return view * proj;
@@ -139,7 +147,8 @@ namespace DevoidEngine.Engine.Rendering.Shadows
         {
             shadowShader.Use();
 
-            shadowViewInfoBuffer.Bind(0, ShaderStage.Vertex | ShaderStage.Fragment);
+            shadowViewInfoBuffer.Bind(1, ShaderStage.Vertex | ShaderStage.Fragment);
+            Renderer.GraphicsDevice.SetRasterizerState(CullMode.Front);
 
             foreach (var item in ctx.renderItems3D)
             {
@@ -156,7 +165,7 @@ namespace DevoidEngine.Engine.Rendering.Shadows
 
                 shadowViewInfoBuffer.SetData(viewData);
 
-
+                Renderer.GetInputLayout(item.Mesh, shadowShader).Bind();
 
                 item.Mesh.Bind();
                 item.Mesh.Draw();

@@ -64,18 +64,17 @@ float ComputeShadow(int shadowIndex, float3 worldPos)
     proj.xy = proj.xy * 0.5 + 0.5;
     proj.y = 1.0 - proj.y;
 
-    if (proj.x < 0 || proj.x > 1 ||
-        proj.y < 0 || proj.y > 1)
-        return 0;
+    if (proj.z > 1.0 || proj.z < 0.0)
+        return 0.0;
+
+    if (proj.x < 0.0 || proj.x > 1.0 || proj.y < 0.0 || proj.y > 1.0)
+        return 0.0;
 
     proj.xy = shadow.AtlasOffset + proj.xy * shadow.AtlasScale;
 
     float dist = length(worldPos - shadow.LightPosition);
 
-    float storedDist = ShadowAtlas.Sample(
-        ShadowSampler,
-        proj.xy
-    ).r;
+    float storedDist = ShadowAtlas.Sample(ShadowSampler, proj.xy).r;
 
     return dist > storedDist ? 1.0 : 0.0;
 }

@@ -1,13 +1,4 @@
-﻿cbuffer Shadow : register(b0)
-{
-    float4x4 Model;
-    float4x4 LightVP;
-
-    float3 LightPosition;
-    float LightRange;
-}
-
-struct VSInput
+﻿struct VSInput
 {
     float3 Position : POSITION;
     float3 Normal : NORMAL;
@@ -27,6 +18,16 @@ struct PSInput
     float2 UV1 : TEXCOORD1;
     float3 WorldspacePosition : TEXCOORD3;
 };
+
+cbuffer Shadow : register(b1)
+{
+    float4x4 Model;
+    float4x4 LightVP;
+
+    float3 LightPosition;
+    float LightRange;
+}
+
 
 
 PSInput VSMain(VSInput input)

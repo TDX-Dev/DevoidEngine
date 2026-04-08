@@ -8,7 +8,7 @@
     float3 WorldspacePosition : TEXCOORD3;
 };
 
-cbuffer Shadow : register(b0)
+cbuffer Shadow : register(b1)
 {
     float4x4 Model;
     float4x4 LightVP;
@@ -18,8 +18,9 @@ cbuffer Shadow : register(b0)
 }
 
 
-float4 PSMain(PSInput input) : SV_Target
+float PSMain(PSInput input) : SV_Target
 {
     float d = distance(input.WorldspacePosition, LightPosition);
-    return float4(d + fwidth(d), 1,1,1);
+    float bias = fwidth(d);
+    return float(bias + d);
 }

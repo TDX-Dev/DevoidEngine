@@ -5,6 +5,7 @@ namespace DevoidEngine.Engine.Rendering.Shadows
 {
     public class ShadowAtlas
     {
+        public Texture2D DistanceTexture;
         public Texture2D DepthTexture;
         public Framebuffer Framebuffer;
 
@@ -21,7 +22,7 @@ namespace DevoidEngine.Engine.Rendering.Shadows
 
             tilesPerRow = atlasSize / tileSize;
 
-            DepthTexture = new Texture2D(new TextureDescription()
+            DistanceTexture = new Texture2D(new TextureDescription()
             {
                 Width = atlasSize,
                 Height = atlasSize,
@@ -31,8 +32,19 @@ namespace DevoidEngine.Engine.Rendering.Shadows
                 MipLevels = 1
             });
 
+            DepthTexture = new Texture2D(new TextureDescription()
+            {
+                Width = atlasSize,
+                Height = atlasSize,
+                Format = TextureFormat.Depth32_Float,
+                IsDepthStencil = true,
+                IsRenderTarget = false,
+                MipLevels = 1
+            });
+
             Framebuffer = new Framebuffer();
-            Framebuffer.AttachRenderTexture(DepthTexture);
+            Framebuffer.AttachRenderTexture(DistanceTexture);
+            Framebuffer.AttachDepthTexture(DepthTexture);
         }
 
         public void Reset()
@@ -65,6 +77,15 @@ namespace DevoidEngine.Engine.Rendering.Shadows
                 y * tileSize,
                 tileSize,
                 tileSize);
+
+            Renderer.GraphicsDevice.SetScissorRectangle(
+                x * tileSize,
+                y * tileSize,
+                tileSize,
+                tileSize
+            );
+
+            Renderer.GraphicsDevice.SetScissorState(true);
         }
     }
 }
