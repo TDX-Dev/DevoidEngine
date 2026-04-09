@@ -46,6 +46,8 @@ namespace DevoidEngine.Engine.Rendering.Shadows
 
         public void RenderShadowMaps(CameraRenderContext ctx)
         {
+            if (ctx.renderItems3D.Count == 0)
+                return;
             atlas.Reset();
             shadowData.Clear();
 

@@ -34,7 +34,7 @@ namespace DevoidEngine.Engine.DebugTools
 
         CursorState prevCursorState;
 
-        public bool Handle(InputEvent e)
+        public bool Handle(ref InputEvent e)
         {
             if (e.Control == (ushort)InputSystem.InputDevices.Keys.F7 && e.Value == 1f)
             {
@@ -145,9 +145,17 @@ namespace DevoidEngine.Engine.DebugTools
             renderItems.Clear();
             debugCanvas.Render(renderItems, Matrix4x4.Identity, 0);
 
-            Renderer.GraphicsDevice.MainSurface.Bind();
-            Renderer.GraphicsDevice.SetViewport(0, 0, (int)Screen.Size.X, (int)Screen.Size.Y);
-            Renderer.SetupCamera(UISystem.ScreenData);
+            Framebuffer? renderTargetCamera = SceneManager.CurrentScene?.GetDefaultCamera3D()?.Camera.RenderTarget;
+            if (renderTargetCamera != null)
+            {
+                renderTargetCamera.Bind();
+            } else
+            {
+                Renderer.GraphicsDevice.MainSurface.Bind();
+                Renderer.GraphicsDevice.SetViewport(0, 0, (int)Screen.Size.X, (int)Screen.Size.Y);
+            }
+
+                Renderer.SetupCamera(UISystem.ScreenData);
             Renderer.ExecuteDrawList(renderItems, debugRenderState);
 
         }

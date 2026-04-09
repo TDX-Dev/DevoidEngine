@@ -2,6 +2,6 @@
 {
     public interface IInputLayer
     {
-        bool Handle(InputEvent e); // true = consume
+        bool Handle(ref InputEvent e); // true = consume
     }
 }

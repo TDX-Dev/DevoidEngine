@@ -16,6 +16,8 @@ namespace ElementalEditor
             panels = new List<IEditorPanel>();
             context = new EditorContext();
             panels.Add(new SceneViewportPanel());
+            panels.Add(new HierarchyPanel());
+            panels.Add(new InspectorPanel());
 
             var scene = new Scene();
             SceneManager.LoadScene(scene);
@@ -47,6 +49,7 @@ namespace ElementalEditor
             if (SceneManager.CurrentScene != null)
             {
                 context.SceneViewportTarget = (Texture2D)SceneManager.CurrentScene.GetDefaultCamera3D()?.Camera.RenderTarget.GetRenderTexture(0);
+                context.Scene = SceneManager.CurrentScene;
             }
 
             foreach (var panel in panels)

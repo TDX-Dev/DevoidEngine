@@ -495,7 +495,7 @@ namespace DevoidEngine.Engine.Imgui
             graphicsDevice.SetRasterizerState(CullMode.Back);
         }
 
-        public bool Handle(InputEvent e)
+        public bool Handle(ref InputEvent e)
         {
             if (e.DeviceType == InputDeviceType.Mouse)
             {

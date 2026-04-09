@@ -129,6 +129,8 @@ namespace DevoidEngine.Engine.Rendering
         {
             panorama = hdr;
             dirty = true;
+
+            Update();
         }
         public void Update()
         {
@@ -146,8 +148,6 @@ namespace DevoidEngine.Engine.Rendering
         public void Render(CameraRenderContext ctx)
         {
             if (SkyboxTexture == null) return;
-
-            Update();
 
             Renderer.SetupCamera(ctx.cameraData);
             Renderer.ApplyRenderState(skyboxRenderState);
@@ -246,7 +246,6 @@ namespace DevoidEngine.Engine.Rendering
 
             SkyboxTexture.GenerateMipmaps();
 
-            Renderer.GraphicsDevice.MainSurface.Bind();
 
             Renderer.PopViewport();
         }
@@ -278,7 +277,6 @@ namespace DevoidEngine.Engine.Rendering
                 cubeMesh.Draw();
             }
 
-            Renderer.GraphicsDevice.MainSurface.Bind();
 
             Renderer.PopViewport();
         }
@@ -324,8 +322,6 @@ namespace DevoidEngine.Engine.Rendering
                 Renderer.PopViewport();
             }
 
-            Renderer.GraphicsDevice.MainSurface.Bind();
-
             Renderer.PopViewport();
         }
 
@@ -343,9 +339,6 @@ namespace DevoidEngine.Engine.Rendering
             brdfLutShader.Use();
 
             RenderAPI.RenderFullScreen(brdfLutShader);
-
-            Renderer.GraphicsDevice.MainSurface.Bind();
-
             Renderer.PopViewport();
         }
     }

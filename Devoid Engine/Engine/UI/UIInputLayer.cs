@@ -13,7 +13,7 @@ namespace DevoidEngine.Engine.UI
     {
         private Vector2 mouse;
 
-        public bool Handle(InputEvent e)
+        public bool Handle(ref InputEvent e)
         {
             if (e.DeviceType == InputDeviceType.Mouse)
             {
