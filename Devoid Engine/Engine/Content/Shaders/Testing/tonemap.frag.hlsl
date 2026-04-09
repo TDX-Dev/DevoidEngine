@@ -111,7 +111,7 @@ float4 PSMain(PSInput input) : SV_TARGET
 
     float bloomStrength = 0.04;
     hdr += bloom * bloomStrength * bloomIntensity;
-    hdr += volumetric;
+    //hdr += volumetric;
     
     float3 color = ACESFitted(hdr);
     //color = pow(color, 1.0 / 2.2);

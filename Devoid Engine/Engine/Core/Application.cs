@@ -1,4 +1,5 @@
-﻿using DevoidEngine.Engine.AssetPipeline;
+﻿using Assimp;
+using DevoidEngine.Engine.AssetPipeline;
 using DevoidEngine.Engine.AudioSystem;
 using DevoidEngine.Engine.AudioSystem.SoLoud;
 using DevoidEngine.Engine.Components;
@@ -99,7 +100,7 @@ namespace DevoidEngine.Engine.Core
             EngineSingleton.Instance.PhysicsSystem = new PhysicsSystem(new BepuPhysicsBackend());
             EngineSingleton.Instance.TargetFrameRate = targetFramerate;
 
-            Screen.Size = new Vector2(applicationSpecification.Width, applicationSpecification.Height);
+            //Screen.Size = new Vector2(applicationSpecification.Width, applicationSpecification.Height);
 
             Renderer.GraphicsDevice = applicationSpecification.graphicsDevice;
             RenderThread.mainThreadID = Thread.CurrentThread.ManagedThreadId;
@@ -128,6 +129,20 @@ namespace DevoidEngine.Engine.Core
             isRunning = true;
         }
 
+        public void ApplyProjectSettings()
+        {
+            var project = ProjectManager.Current;
+            if (project == null)
+                throw new Exception("You need to initialize a project before trying to apply project settings");
+
+            Screen.Size = new Vector2(project.Settings.RenderWidth, project.Settings.RenderHeight);
+            Renderer.Resize(project.Settings.RenderWidth, project.Settings.RenderHeight);
+            SceneManager.CurrentScene?.ResizeCameras(
+                project.Settings.RenderWidth,
+                project.Settings.RenderHeight
+            );
+        }
+
         public void AddLayer(Layer layer)
         {
             layer.Application = this;
@@ -151,12 +166,10 @@ namespace DevoidEngine.Engine.Core
             int width = pendingWidth;
             int height = pendingHeight;
 
-            Screen.Size = new Vector2(width, height);
-
+            //Screen.Size = new Vector2(width, height);
+            //Renderer.Resize(width, height);
             Renderer.GraphicsDevice.MainSurface.Resize(width, height);
-
             layerHandler.ResizeLayers(width, height);
-
             isResizePending = false;
         }
 

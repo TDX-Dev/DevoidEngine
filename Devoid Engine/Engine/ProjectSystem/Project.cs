@@ -1,4 +1,6 @@
-﻿using System;
+﻿using DevoidEngine.Engine.Core;
+using DevoidEngine.Engine.Rendering;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -27,6 +29,7 @@ namespace DevoidEngine.Engine.ProjectSystem
         public string SettingsPath = null!;
 
         public ProjectConfig Config = null!;
+        public ProjectSettings Settings = new();
 
         private static void EnsureDirectories(Project p)
         {
@@ -61,6 +64,7 @@ namespace DevoidEngine.Engine.ProjectSystem
             };
 
             EnsureDirectories(project);
+            ConfigureSettings(project);
 
             return project;
         }
@@ -87,6 +91,35 @@ namespace DevoidEngine.Engine.ProjectSystem
             var project = Load(projectFile);
 
             return project;
+        }
+
+        static void ConfigureSettings(Project project)
+        {
+            string settingsFile = Path.Combine(project.SettingsPath, "ProjectSettings.json");
+
+            if (!File.Exists(settingsFile))
+            {
+                SaveSettings(settingsFile, project.Settings);
+            }
+            else
+            {
+                var json = File.ReadAllText(settingsFile);
+                project.Settings = JsonSerializer.Deserialize(
+                    json,
+                    ProjectJsonContext.Default.ProjectSettings
+                ) ?? new ProjectSettings();
+            }
+        }
+
+        static void SaveSettings(string path, ProjectSettings settings)
+        {
+
+            var json = JsonSerializer.Serialize(
+                settings,
+                ProjectJsonContext.Default.ProjectSettings
+            );
+
+            File.WriteAllText(path, json);
         }
     }
 }

@@ -9,6 +9,7 @@ namespace DevoidEngine.Engine.ProjectSystem
 {
     [JsonSourceGenerationOptions(WriteIndented = true)]
     [JsonSerializable(typeof(ProjectConfig))]
+    [JsonSerializable(typeof(ProjectSettings))]
     internal partial class ProjectJsonContext : JsonSerializerContext
     {
     }

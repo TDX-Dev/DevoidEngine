@@ -37,6 +37,11 @@ namespace ElementalEditor
             SceneManager.CurrentScene?.Render();
         }
 
+        public override void OnResize(int width, int height)
+        {
+            base.OnResize(width, height);
+        }
+
         public override void OnGUIRender()
         {
             if (SceneManager.CurrentScene != null)

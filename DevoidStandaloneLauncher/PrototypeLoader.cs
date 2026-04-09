@@ -95,13 +95,13 @@ namespace DevoidStandaloneLauncher
             RenderAPI.RenderToScreen(renderOutput);
         }
 
-        public override void OnResize(int width, int height)
-        {
-            CurrentScene?.ResizeCameras(width, height);
-            if (prototypeLoaded)
-            {
-                GamePrototype.Resize(width, height);
-            }
-        }
+        //public override void OnResize(int width, int height)
+        //{
+        //    CurrentScene?.ResizeCameras(width, height);
+        //    if (prototypeLoaded)
+        //    {
+        //        GamePrototype.Resize(width, height);
+        //    }
+        //}
     }
 }

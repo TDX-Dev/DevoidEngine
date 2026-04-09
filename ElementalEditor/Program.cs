@@ -64,6 +64,7 @@ namespace ElementalEditor
             EngineSingleton.Instance.UseInterpolation = true;
 
             application.AddLayer(new EditorLayer());
+            application.ApplyProjectSettings();
 
             application.Run();
         }

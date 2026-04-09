@@ -137,6 +137,8 @@ namespace DevoidEngine.Engine.DebugTools
         List<RenderItem> renderItems = new List<RenderItem>();
         public override void OnRender()
         {
+            if (!debugCanvas.Visible)
+                return;
 
             //var defaultCamera = SceneManager.CurrentScene?.GetDefaultCamera3D()?.Camera;
             //if (defaultCamera == null) return;

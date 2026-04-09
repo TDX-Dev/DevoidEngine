@@ -91,7 +91,7 @@ namespace DevoidEngine.Engine.Rendering.PostProcessing
 
             material.SetTexture("MAT_SceneColor", input);
             material.SetTexture("MAT_BloomColor", bloomInput);
-            material.SetTexture("MAT_VolumetricColor", volumetricInput);
+            //material.SetTexture("MAT_VolumetricColor", volumetricInput);
             RenderAPI.RenderToBuffer(material, framebuffer);
             //RenderAPI.RenderToBuffer(input, framebuffer);
 

@@ -49,6 +49,10 @@ namespace DevoidEngine.Engine.Rendering
         public static void PushViewport(int x, int y, int width, int height)
         {
             var current = GraphicsDevice.GetViewport();
+
+            if (current.Item3 == 0 || current.Item4 == 0)
+                current = (0, 0, width, height);
+
             viewportStack.Push(current);
 
             GraphicsDevice.SetViewport(x, y, width, height);
@@ -153,10 +157,10 @@ namespace DevoidEngine.Engine.Rendering
 
             PostProcessor = new PostProcessor();
             var bloomPass = new BloomPass(width, height);
-            var volumetricPass = new VolumetricLightPass(width, height);
+            //var volumetricPass = new VolumetricLightPass(width, height);
             var tonemapPass = new TonemapPass(width, height);
             PostProcessor.AddPass(bloomPass);
-            PostProcessor.AddPass(volumetricPass);
+            //PostProcessor.AddPass(volumetricPass);
             PostProcessor.AddPass(tonemapPass);
         }
 
@@ -196,7 +200,7 @@ namespace DevoidEngine.Engine.Rendering
         {
             UIFramebuffer.Bind();
             UIFramebuffer.Clear(Vector4.Zero);
-            GraphicsDevice.SetViewport(0, 0, (int)Screen.Size.X, (int)Screen.Size.Y);
+            //GraphicsDevice.SetViewport(0, 0, (int)Screen.Size.X, (int)Screen.Size.Y);
             Renderer.SetupCamera(UISystem.ScreenData);
             Renderer.ExecuteDrawList(renderItems, UISystem.RenderState);
         }
@@ -308,11 +312,12 @@ namespace DevoidEngine.Engine.Rendering
 
         public static void Resize(int width, int height)
         {
-            GraphicsDevice.MainSurface.Resize(width, height);
+            //GraphicsDevice.MainSurface.Resize(width, height);
             UIFramebuffer.Resize(width, height);
             ActiveRenderTechnique?.Resize(width, height);
             PostProcessor.Resize(width, height);
             UISystem.Resize(width, height);
+            Console.WriteLine("Renderer Resize Call: " + new Vector2(width, height));
         }
         public static void UpdatePerObjectData(Matrix4x4 model)
         {

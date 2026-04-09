@@ -35,8 +35,8 @@ namespace DevoidEngine.Engine.Components
 
             Camera.RenderTarget = new Framebuffer();
 
-            width = 1280;
-            height = 720;
+            width = (int)Screen.Size.X;
+            height = (int)Screen.Size.Y;
             CreateRenderTarget(width, height);
 
             UpdateProjection();
@@ -51,7 +51,9 @@ namespace DevoidEngine.Engine.Components
                 Width = w,
                 Height = h,
                 Format = TextureFormat.RGBA16_Float,
-                IsRenderTarget = true
+                IsRenderTarget = true,
+                GenerateMipmaps = false,
+                MipLevels = 1
             }));
 
             Camera.RenderTarget.AttachDepthTexture(new Texture2D(new TextureDescription
@@ -59,8 +61,12 @@ namespace DevoidEngine.Engine.Components
                 Width = w,
                 Height = h,
                 Format = TextureFormat.Depth24_Stencil8,
-                IsDepthStencil = true
+                IsDepthStencil = true,
+                GenerateMipmaps = false,
+                MipLevels = 1
             }));
+
+            Console.WriteLine("Created Render Target with dimensions: " + new Vector2(w, h));
         }
 
         public override void OnStart()
@@ -136,6 +142,8 @@ namespace DevoidEngine.Engine.Components
             Camera.RenderTarget!.Resize(width, height);
 
             UpdateProjection();
+
+            Console.WriteLine("Camera Resize Call: " + new Vector2(width, height));
         }
 
         private void UpdateProjection()

@@ -84,6 +84,10 @@ namespace DevoidGPU.DX11
 
         public void SetViewport(int x, int y, int width, int height)
         {
+            if (width == 0 && height == 0)
+            {
+                Console.WriteLine(new System.Diagnostics.StackTrace(true));
+            }
             if (viewportSize == (x, y, width, height)) return;
             deviceContext.Rasterizer.SetViewport(x, y, width, height);
             viewportSize = (x, y, width, height);
