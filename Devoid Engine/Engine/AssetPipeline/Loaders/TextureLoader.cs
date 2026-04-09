@@ -10,7 +10,15 @@ namespace DevoidEngine.Engine.AssetPipeline.Loaders
     {
         public Texture2D Load(ReadOnlySpan<byte> data)
         {
-            var asset = MessagePackSerializer.Deserialize<TextureAsset>(data.ToArray());
+            TextureAsset asset;
+            try
+            {
+                asset = MessagePackSerializer.Deserialize<TextureAsset>(data.ToArray());
+            } catch (Exception e)
+            {
+                Console.WriteLine($"[Texture Loader]: Error Loading Texture {e.Message}");
+                return Texture2D.WhiteTexture;
+            }
             if (asset.PixelData.Length != asset.Width * asset.Height * 4)
                 throw new Exception("Invalid pixel count");
             Texture2D texture = new Texture2D(new TextureDescription()

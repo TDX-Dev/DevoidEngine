@@ -57,7 +57,7 @@ namespace DevoidEngine.Engine.Core
         private List<CameraRenderContext> renderContexts = new List<CameraRenderContext>();
         private Pool<CameraRenderContext> cameraRenderContextPool = new Pool<CameraRenderContext>();
 
-        //private ImGuiRenderer imGuiRenderer;
+        private ImGuiRenderer imGuiRenderer = null!;
 
         private bool isRunning = false;
         private bool isResizePending = false;
@@ -116,11 +116,12 @@ namespace DevoidEngine.Engine.Core
             targetWindow.TextInput += c =>
             {
                 UISystem.TextInput((char)c.Unicode);
+                imGuiRenderer.OnTextInput((char)c.Unicode);
             };
 
-            //imGuiRenderer = new ImGuiRenderer(Renderer.GraphicsDevice);
-            //imGuiRenderer.Initialize();
-            //imGuiRenderer.OnGUI += () => { layerHandler.OnGUILayers(); };
+            imGuiRenderer = new ImGuiRenderer(Renderer.GraphicsDevice, targetWindow);
+            imGuiRenderer.Initialize();
+            imGuiRenderer.OnGUI += () => { layerHandler.OnGUILayers(); };
 
             AddLayer(new DebugConsole());
 
@@ -190,10 +191,9 @@ namespace DevoidEngine.Engine.Core
 
 
                 Update(deltaTime * timeScale);
-
+                imGuiRenderer.BeginFrame(deltaTime);
                 Render();
 
-                //imGuiRenderer.PerFrame(deltaTime);
                 Input.EndFrame();
                 RenderThread.ExecuteFrameEnd();
 
@@ -233,6 +233,8 @@ namespace DevoidEngine.Engine.Core
 
         void Render()
         {
+            Renderer.GraphicsDevice.MainSurface.ClearColor(new Vector4(0,0,0,1));
+
             layerHandler.RenderLayers();
 
             if (SceneManager.CurrentScene != null)
@@ -275,6 +277,8 @@ namespace DevoidEngine.Engine.Core
                 }
             }
             layerHandler.PostRenderLayers();
+
+            imGuiRenderer.EndFrame();
 
             Renderer.GraphicsDevice.MainSurface.Bind();
             Renderer.GraphicsDevice.MainSurface.Present();

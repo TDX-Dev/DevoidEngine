@@ -1,11 +1,17 @@
 ﻿using DevoidEngine.Engine.Core;
+using DevoidEngine.Engine.InputSystem;
 using DevoidEngine.Engine.InputSystem.InputDevices;
 using DevoidEngine.Engine.Rendering;
 using DevoidGPU;
 using ImGuiNET;
+using OpenTK.Windowing.GraphicsLibraryFramework;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+
+using Keys = OpenTK.Windowing.GraphicsLibraryFramework.Keys;
+using MouseButton = OpenTK.Windowing.GraphicsLibraryFramework.MouseButton;
+using Window = DevoidEngine.Engine.Core.Window;
 
 namespace DevoidEngine.Engine.Imgui
 {
@@ -33,7 +39,7 @@ namespace DevoidEngine.Engine.Imgui
     }
 
 
-    public class ImGuiRenderer
+    public class ImGuiRenderer : IInputLayer
     {
         IGraphicsDevice graphicsDevice;
 
@@ -56,10 +62,13 @@ namespace DevoidEngine.Engine.Imgui
         private int _fontsCount = -1;
         private ImFontPtr DefaultFont;
 
+        private MouseState Mouse;
+        private KeyboardState Keyboard;
+
         public Action? OnGUI;
 
 
-        public ImGuiRenderer(IGraphicsDevice graphicsDevice)
+        public ImGuiRenderer(IGraphicsDevice graphicsDevice, Window window)
         {
             this.graphicsDevice = graphicsDevice;
             this.guiShader = new Shader("Engine/Content/Shaders/Imgui/gui");
@@ -82,6 +91,10 @@ namespace DevoidEngine.Engine.Imgui
                 MinLOD = 0.0f,
                 MaxLOD = 0.0f
             });
+
+            this.Keyboard = window.KeyboardState;
+            this.Mouse = window.MouseState;
+            Input.Router.Push(this);
         }
 
         private unsafe void DumpImGuiVertices(ImDrawDataPtr drawData, int count = 5)
@@ -249,19 +262,78 @@ namespace DevoidEngine.Engine.Imgui
 
         }
 
+        static ImGuiKey MapKey(Keys key)
+        {
+            return key switch
+            {
+                Keys.Tab => ImGuiKey.Tab,
+                Keys.Left => ImGuiKey.LeftArrow,
+                Keys.Right => ImGuiKey.RightArrow,
+                Keys.Up => ImGuiKey.UpArrow,
+                Keys.Down => ImGuiKey.DownArrow,
+                Keys.PageUp => ImGuiKey.PageUp,
+                Keys.PageDown => ImGuiKey.PageDown,
+                Keys.Home => ImGuiKey.Home,
+                Keys.End => ImGuiKey.End,
+                Keys.Insert => ImGuiKey.Insert,
+                Keys.Delete => ImGuiKey.Delete,
+                Keys.Backspace => ImGuiKey.Backspace,
+                Keys.Space => ImGuiKey.Space,
+                Keys.Enter => ImGuiKey.Enter,
+                Keys.Escape => ImGuiKey.Escape,
+
+                Keys.A => ImGuiKey.A,
+                Keys.C => ImGuiKey.C,
+                Keys.V => ImGuiKey.V,
+                Keys.X => ImGuiKey.X,
+                Keys.Y => ImGuiKey.Y,
+                Keys.Z => ImGuiKey.Z,
+
+                _ => ImGuiKey.None
+            };
+        }
+
 
         public void UpdateInput()
         {
             ImGuiIOPtr io = ImGui.GetIO();
 
-            //io.MousePos = Input.MousePosition;
-            //io.MouseDown[0] = Input.GetMouse(MouseButton.Left);
-            //io.MouseDown[1] = Input.GetMouse(MouseButton.Right);
-            //io.MouseDown[2] = Input.GetMouse(MouseButton.Middle);
-            //io.MouseWheel = Input.MouseScrollDelta.Y;
-            //io.MouseWheelH = Input.MouseScrollDelta.X;
+            var mouse = Mouse.GetSnapshot();
+            var keyboard = Keyboard.GetSnapshot();
 
+            // Mouse position
+            io.MousePos = new Vector2(mouse.Position.X, mouse.Position.Y);
 
+            // Mouse buttons
+            io.MouseDown[0] = mouse.IsButtonDown(MouseButton.Left);
+            io.MouseDown[1] = mouse.IsButtonDown(MouseButton.Right);
+            io.MouseDown[2] = mouse.IsButtonDown(MouseButton.Middle);
+
+            // Scroll
+            io.MouseWheel = mouse.ScrollDelta.Y;
+            io.MouseWheelH = mouse.ScrollDelta.X;
+
+            // Keyboard
+            foreach (Keys key in Enum.GetValues<Keys>())
+            {
+                var imguiKey = MapKey(key);
+                if (imguiKey == ImGuiKey.None)
+                    continue;
+
+                io.AddKeyEvent(imguiKey, keyboard.IsKeyDown(key));
+            }
+
+            // Modifiers
+            io.AddKeyEvent(ImGuiKey.ModCtrl, keyboard.IsKeyDown(Keys.LeftControl) || keyboard.IsKeyDown(Keys.RightControl));
+            io.AddKeyEvent(ImGuiKey.ModShift, keyboard.IsKeyDown(Keys.LeftShift) || keyboard.IsKeyDown(Keys.RightShift));
+            io.AddKeyEvent(ImGuiKey.ModAlt, keyboard.IsKeyDown(Keys.LeftAlt) || keyboard.IsKeyDown(Keys.RightAlt));
+            io.AddKeyEvent(ImGuiKey.ModSuper, keyboard.IsKeyDown(Keys.LeftSuper) || keyboard.IsKeyDown(Keys.RightSuper));
+        }
+
+        public void OnTextInput(char c)
+        {
+            ImGuiIOPtr io = ImGui.GetIO();
+            io.AddInputCharacter(c);
         }
 
         public void UpdatePerFrameParameters(float delta)
@@ -277,24 +349,48 @@ namespace DevoidEngine.Engine.Imgui
             }
         }
 
-
-        public void PerFrame(float delta = 1 / 60f)
+        public void BeginFrame(float delta)
         {
             UpdatePerFrameParameters(delta);
             UpdateDisplay();
+            UpdateInput();
 
             ImGui.NewFrame();
+
             ImGui.PushFont(DefaultFont);
 
             CreateDockspace();
 
             OnGUI?.Invoke();
 
-
             ImGui.PopFont();
+        }
+
+        public void EndFrame()
+        {
             ImGui.Render();
             RenderImDrawData(ImGui.GetDrawData());
         }
+
+        //public void PerFrame(float delta = 1 / 60f)
+        //{
+        //    UpdatePerFrameParameters(delta);
+        //    UpdateDisplay();
+        //    UpdateInput();   // <---- add this
+
+        //    ImGui.NewFrame();
+
+        //    ImGui.PushFont(DefaultFont);
+
+        //    CreateDockspace();
+
+        //    OnGUI?.Invoke();
+
+        //    ImGui.PopFont();
+
+        //    ImGui.Render();
+        //    RenderImDrawData(ImGui.GetDrawData());
+        //}
 
         public void RenderImDrawData(ImDrawDataPtr drawData)
         {
@@ -317,7 +413,7 @@ namespace DevoidEngine.Engine.Imgui
             ImShaderData.DPIScaling = 1.0f;
 
             graphicsDevice.MainSurface.Bind();
-            graphicsDevice.MainSurface.ClearColor(new Vector4(0, 0, 0, 1));
+            //graphicsDevice.MainSurface.ClearColor(new Vector4(0, 0, 0, 1));
             graphicsDevice.SetPrimitiveType(PrimitiveType.Triangles);
 
             guiShader.Use();
@@ -325,7 +421,7 @@ namespace DevoidEngine.Engine.Imgui
             ShaderConstantBuffer.Bind(0, ShaderStage.Vertex);
 
             graphicsDevice.MainSurface.Bind();
-
+            //graphicsDevice.MainSurface.ClearColor(new Vector4(0, 0, 0, 1));
             graphicsDevice.SetViewport(0, 0, fbWidth, fbHeight);
             graphicsDevice.SetBlendState(BlendMode.AlphaBlend);
             graphicsDevice.SetDepthState(DepthTest.Disabled, false);
@@ -399,7 +495,20 @@ namespace DevoidEngine.Engine.Imgui
             graphicsDevice.SetRasterizerState(CullMode.Back);
         }
 
+        public bool Handle(InputEvent e)
+        {
+            if (e.DeviceType == InputDeviceType.Mouse)
+            {
+                if (ImGui.GetIO().WantCaptureMouse)
+                    return true;
+            }
+            if (e.DeviceType == InputDeviceType.Keyboard)
+            {
+                if (ImGui.GetIO().WantCaptureKeyboard)
+                    return true;
+            }
 
-
+            return false;
+        }
     }
 }

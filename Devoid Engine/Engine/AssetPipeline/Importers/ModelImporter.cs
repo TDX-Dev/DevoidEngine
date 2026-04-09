@@ -39,7 +39,8 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
             ModelImportSettings settings,
             string outputPath)
         {
-            Console.WriteLine($"Importing model {assetPath}");
+            string modelPath = AssetDatabase.GetProjectPath(assetPath);
+            Console.WriteLine($"Importing model {modelPath}");
 
             AssimpContext ctx = new();
 
@@ -256,7 +257,7 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
                     out var tex);
 
                 Console.WriteLine(tex.FilePath);
-                Guid texGuid = ImportTexture(tex.FilePath);
+                Guid texGuid = ImportTexture(tex.FilePath, currentModelPath);
 
                 asset.Textures["MAT_AlbedoMap"] = texGuid;
             }
@@ -268,7 +269,7 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
                     0,
                     out var tex);
 
-                Guid texGuid = ImportTexture(tex.FilePath);
+                Guid texGuid = ImportTexture(tex.FilePath, currentModelPath);
 
                 asset.Textures["MAT_NormalMap"] = texGuid;
             }
@@ -282,8 +283,10 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
             return asset;
         }
 
-        Guid ImportTexture(string texturePath)
+        Guid ImportTexture(string texturePath, string currentModelPath)
         {
+            Console.WriteLine(currentModelPath);
+
             Console.WriteLine("[Model Importer]: " + texturePath);
 
             if (AssetDatabase.TryGetGuid(texturePath, out var guid))

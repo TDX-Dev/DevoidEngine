@@ -63,6 +63,12 @@ namespace DevoidEngine.Engine.AssetPipeline
         {
             return $"{guid:N}.{extension}";
         }
+        public static string GetProjectPath(string path)
+        {
+            if (ProjectManager.Current == null)
+                throw new Exception("Project has not been initialized, tried to use AssetDatabase.");
+            return Path.GetRelativePath(ProjectManager.Current.AssetPath, path);
+        }
 
         public static void Initialize()
         {
