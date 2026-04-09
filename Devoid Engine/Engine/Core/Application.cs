@@ -147,11 +147,16 @@ namespace DevoidEngine.Engine.Core
         private void Resize()
         {
             if (!isResizePending) return;
+
             int width = pendingWidth;
             int height = pendingHeight;
+
             Screen.Size = new Vector2(width, height);
-            Renderer.Resize(width, height);
+
+            Renderer.GraphicsDevice.MainSurface.Resize(width, height);
+
             layerHandler.ResizeLayers(width, height);
+
             isResizePending = false;
         }
 

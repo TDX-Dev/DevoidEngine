@@ -35,7 +35,7 @@ namespace DevoidEngine.Engine.Rendering
         // Data for GPU
         public CameraData GetCameraData()
         {
-
+            var renderTexture = RenderTarget!.GetRenderTexture(0);
             return new CameraData
             {
                 View = _viewMatrix,
@@ -46,7 +46,7 @@ namespace DevoidEngine.Engine.Rendering
                 Position = Position,
                 NearClip = NearClip,
                 FarClip = FarClip,
-                ScreenSize = Screen.Size
+                ScreenSize = new Vector2(renderTexture.Width, renderTexture.Height),
             };
         }
 

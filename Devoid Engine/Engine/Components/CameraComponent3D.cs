@@ -2,6 +2,7 @@
 using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.Serialization;
 using DevoidEngine.Engine.Utilities;
+using DevoidGPU;
 using System.Numerics;
 
 namespace DevoidEngine.Engine.Components
@@ -34,33 +35,32 @@ namespace DevoidEngine.Engine.Components
 
             Camera.RenderTarget = new Framebuffer();
 
-            Camera.RenderTarget.AttachRenderTexture(new Texture2D(new DevoidGPU.TextureDescription()
-            {
-                Width = (int)Screen.Size.X,
-                Height = (int)Screen.Size.Y,
-                Format = DevoidGPU.TextureFormat.RGBA16_Float,
-                GenerateMipmaps = false,
-                MipLevels = 1,
-                IsDepthStencil = false,
-                IsRenderTarget = true,
-                IsMutable = false,
-            }));
-
-            Camera.RenderTarget.AttachDepthTexture(new Texture2D(new DevoidGPU.TextureDescription()
-            {
-                Width = (int)Screen.Size.X,
-                Height = (int)Screen.Size.Y,
-                Format = DevoidGPU.TextureFormat.Depth24_Stencil8,
-                GenerateMipmaps = false,
-                IsDepthStencil = true,
-                IsRenderTarget = false,
-                IsMutable = false
-            }));
-
-            width = (int)Screen.Size.X;
-            height = (int)Screen.Size.Y;
+            width = 1280;
+            height = 720;
+            CreateRenderTarget(width, height);
 
             UpdateProjection();
+        }
+
+        private void CreateRenderTarget(int w, int h)
+        {
+            Camera.RenderTarget = new Framebuffer();
+
+            Camera.RenderTarget.AttachRenderTexture(new Texture2D(new TextureDescription
+            {
+                Width = w,
+                Height = h,
+                Format = TextureFormat.RGBA16_Float,
+                IsRenderTarget = true
+            }));
+
+            Camera.RenderTarget.AttachDepthTexture(new Texture2D(new TextureDescription
+            {
+                Width = w,
+                Height = h,
+                Format = TextureFormat.Depth24_Stencil8,
+                IsDepthStencil = true
+            }));
         }
 
         public override void OnStart()
@@ -127,11 +127,14 @@ namespace DevoidEngine.Engine.Components
 
         public void SetViewportSize(int newWidth, int newHeight)
         {
-            if (newWidth == width && newHeight == height && Camera.RenderTarget == null) return;
+            if (newWidth == width && newHeight == height)
+                return;
 
             width = newWidth;
             height = newHeight;
+
             Camera.RenderTarget!.Resize(width, height);
+
             UpdateProjection();
         }
 

@@ -39,6 +39,40 @@ namespace DevoidEngine.Engine.Rendering
         static RenderState GBufferRenderState = null!;
         static Shader GBufferShader = null!;
 
+        static Stack<(int x, int y, int w, int h)> viewportStack = new Stack<(int, int, int, int)>();
+
+        public static void SetViewport(int x, int y, int width, int height)
+        {
+            GraphicsDevice.SetViewport(x,y,width,height);
+        }
+
+        public static void PushViewport(int x, int y, int width, int height)
+        {
+            var current = GraphicsDevice.GetViewport();
+            viewportStack.Push(current);
+
+            GraphicsDevice.SetViewport(x, y, width, height);
+        }
+
+        public static void RestoreViewport()
+        {
+            if (viewportStack.Count == 0)
+                throw new Exception("Viewport stack is empty");
+
+            var vp = viewportStack.Peek();
+            GraphicsDevice.SetViewport(vp.Item1, vp.Item2, vp.Item3, vp.Item4);
+        }
+
+        public static void PopViewport(bool popOnly = false)
+        {
+            if (viewportStack.Count == 0)
+                throw new Exception("Viewport stack underflow");
+
+            var vp = viewportStack.Pop();
+            if (!popOnly)
+                GraphicsDevice.SetViewport(vp.Item1, vp.Item2, vp.Item3, vp.Item4);
+        }
+
         public static IInputLayout GetInputLayout(Mesh mesh, Shader shader)
         {
             if (mesh.VertexBuffer == null)
@@ -134,6 +168,8 @@ namespace DevoidEngine.Engine.Rendering
                 return;
             }
 
+            PushViewport(0, 0, (int)ctx.cameraData.ScreenSize.X, (int)ctx.cameraData.ScreenSize.Y);
+
             RenderUI(ctx.renderItemsUI);
             RenderGBuffer(ctx.renderItems3D, ctx);
             ShadowSystem.RenderShadowMaps(ctx);
@@ -149,6 +185,11 @@ namespace DevoidEngine.Engine.Rendering
 
             RenderAPI.RenderToBuffer(UIRenderOutput, ctx.cameraTargetSurface);
 
+            PopViewport();
+
+
+            if (viewportStack.Count > 0)
+                throw new Exception("Viewport stack was not popped within render frame");
         }
 
         public static void RenderUI(List<RenderItem> renderItems)
@@ -164,8 +205,6 @@ namespace DevoidEngine.Engine.Rendering
         {
             GBufferFramebuffer.Bind();
             GBufferFramebuffer.Clear();
-
-            GraphicsDevice.SetViewport(0, 0, (int)Screen.Size.X, (int)Screen.Size.Y);
 
             Renderer.SetupCamera(ctx.cameraData);
             ApplyRenderState(GBufferRenderState);

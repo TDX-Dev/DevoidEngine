@@ -22,8 +22,15 @@ namespace DevoidEngine.Engine.Rendering.PostProcessing
         public int BloomMipCount { get; set; } = 8;
         public float BloomFilterRadius { get; set; } = 0f;
 
-        Shader BloomUpsampleShader = new Shader("Engine/Content/Shaders/Screen/bloom_base.vert.hlsl", "Engine/Content/Shaders/Screen/bloom_upsample.frag.hlsl");
-        Shader BloomDownsampleShader = new Shader("Engine/Content/Shaders/Screen/bloom_base.vert.hlsl", "Engine/Content/Shaders/Screen/bloom_downsample.frag.hlsl");
+        Shader BloomUpsampleShader = new Shader(
+            "Engine/Content/Shaders/Screen/bloom_base.vert.hlsl",
+            "Engine/Content/Shaders/Screen/bloom_upsample.frag.hlsl"
+        );
+
+        Shader BloomDownsampleShader = new Shader(
+            "Engine/Content/Shaders/Screen/bloom_base.vert.hlsl",
+            "Engine/Content/Shaders/Screen/bloom_downsample.frag.hlsl"
+        );
 
         Framebuffer bloomFrameBuffer;
         UniformBuffer mipShaderDataBuffer;
@@ -45,6 +52,7 @@ namespace DevoidEngine.Engine.Rendering.PostProcessing
                 DevoidGPU.BufferUsage.Dynamic
             );
         }
+
         public override void Setup()
         {
             Read("SceneColor");
@@ -53,15 +61,15 @@ namespace DevoidEngine.Engine.Rendering.PostProcessing
 
         public override void Execute(RenderGraphContext ctx)
         {
-            (int, int, int, int) ViewportSize = Renderer.GraphicsDevice.GetViewport();
-
             mipShaderDataBuffer.Bind(2);
+
             bloomFrameBuffer.Bind();
+
             RenderDownsamples(ctx.GetTexture("SceneColor"));
             RenderUpsamples();
+
             ctx.SetTexture("BloomOutput", bloomMipList[0].texture);
 
-            Renderer.GraphicsDevice.SetViewport(ViewportSize.Item1, ViewportSize.Item2, ViewportSize.Item3, ViewportSize.Item4);
             Renderer.GraphicsDevice.SetBlendState(DevoidGPU.BlendMode.Opaque);
         }
 
@@ -105,7 +113,6 @@ namespace DevoidEngine.Engine.Rendering.PostProcessing
                 bloomMip.texture = mipTexture;
                 bloomMipList.Add(bloomMip);
 
-                // stop AFTER adding at least one mip
                 if (width == 1 || height == 1)
                     break;
             }
@@ -113,7 +120,6 @@ namespace DevoidEngine.Engine.Rendering.PostProcessing
 
         public override void Resize(int width, int height)
         {
-
             screenSize = new Vector2(width, height);
 
             foreach (var mip in bloomMipList)
@@ -122,7 +128,6 @@ namespace DevoidEngine.Engine.Rendering.PostProcessing
             }
 
             bloomMipList.Clear();
-
             BuildMipChain();
         }
 
@@ -135,15 +140,16 @@ namespace DevoidEngine.Engine.Rendering.PostProcessing
                 BloomMip sourceMip = bloomMipList[i];
                 BloomMip destMip = bloomMipList[i - 1];
 
-                Renderer.GraphicsDevice.SetViewport(
+                Renderer.PushViewport(
                     0,
                     0,
                     (int)destMip.size.X,
-                    (int)destMip.size.Y);
-
+                    (int)destMip.size.Y
+                );
 
                 bloomFrameBuffer.SetRenderTexture(destMip.texture, 0);
                 bloomFrameBuffer.Bind();
+
                 Renderer.GraphicsDevice.SetBlendState(DevoidGPU.BlendMode.Additive);
 
                 sourceMip.texture.Bind(0);
@@ -158,6 +164,8 @@ namespace DevoidEngine.Engine.Rendering.PostProcessing
                 mipShaderDataBuffer.SetData(mipData);
 
                 RenderAPI.RenderFullScreen(BloomUpsampleShader);
+
+                Renderer.PopViewport();
             }
         }
 
@@ -169,7 +177,12 @@ namespace DevoidEngine.Engine.Rendering.PostProcessing
             {
                 BloomMip bloomMip = bloomMipList[i];
 
-                Renderer.GraphicsDevice.SetViewport(0, 0, (int)bloomMip.size.X, (int)bloomMip.size.Y);
+                Renderer.PushViewport(
+                    0,
+                    0,
+                    (int)bloomMip.size.X,
+                    (int)bloomMip.size.Y
+                );
 
                 bloomFrameBuffer.SetRenderTexture(bloomMip.texture, 0);
                 bloomFrameBuffer.Bind();
@@ -200,6 +213,8 @@ namespace DevoidEngine.Engine.Rendering.PostProcessing
                 mipShaderDataBuffer.SetData(bloomMipData);
 
                 RenderAPI.RenderFullScreen(BloomDownsampleShader);
+
+                Renderer.PopViewport();
             }
         }
     }

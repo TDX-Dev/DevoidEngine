@@ -104,6 +104,8 @@ namespace DevoidEngine.Engine.Rendering.Shadows
             shadowBuffer.Bind(13, ShaderStage.Vertex | ShaderStage.Fragment);
             Renderer.GraphicsDevice.UnbindFramebuffer();
             atlas.DistanceTexture.Bind(9);
+
+            Renderer.RestoreViewport();
         }
 
         Matrix4x4 ComputeLightMatrix(GPUSpotLight light)

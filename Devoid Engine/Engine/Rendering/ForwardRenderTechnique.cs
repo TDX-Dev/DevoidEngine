@@ -71,8 +71,6 @@ namespace DevoidEngine.Engine.Rendering
             finalOutputBuffer.Bind();
             finalOutputBuffer.Clear();
 
-            Renderer.GraphicsDevice.SetViewport(0, 0, (int)Screen.Size.X, (int)Screen.Size.Y);
-
             Renderer.SkyboxRenderer.Render(ctx);
 
             UploadLights(ctx);

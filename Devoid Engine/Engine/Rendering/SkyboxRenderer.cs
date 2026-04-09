@@ -219,8 +219,9 @@ namespace DevoidEngine.Engine.Rendering
         private void ConvertPanoramaToCubemap()
         {
             if (panorama == null) return;
-            (int,int,int,int) prevViewportSize = Renderer.GraphicsDevice.GetViewport();
-            Renderer.GraphicsDevice.SetViewport(0, 0, SKY_SIZE, SKY_SIZE);
+
+            Renderer.PushViewport(0, 0, SKY_SIZE, SKY_SIZE);
+
             Renderer.GraphicsDevice.SetPrimitiveType(PrimitiveType.Triangles);
             Renderer.GraphicsDevice.SetDepthState(DepthTest.Disabled, false);
             Renderer.GraphicsDevice.SetRasterizerState(CullMode.None);
@@ -235,6 +236,7 @@ namespace DevoidEngine.Engine.Rendering
             {
                 conversionCameraData.View = captureViews[face];
                 Renderer.SetupCamera(conversionCameraData);
+
                 cubemapCreationFB.SetRenderTexture(SkyboxTexture, (CubeFace)face, 0, 0);
                 cubemapCreationFB.Bind();
 
@@ -243,14 +245,16 @@ namespace DevoidEngine.Engine.Rendering
             }
 
             SkyboxTexture.GenerateMipmaps();
+
             Renderer.GraphicsDevice.MainSurface.Bind();
-            Renderer.GraphicsDevice.SetViewport(0, 0, prevViewportSize.Item3, prevViewportSize.Item4);
+
+            Renderer.PopViewport();
         }
 
         private void GenerateIrradiance()
         {
-            (int, int, int, int) prevViewportSize = Renderer.GraphicsDevice.GetViewport();
-            Renderer.GraphicsDevice.SetViewport(0, 0, IRR_SIZE, IRR_SIZE);
+            Renderer.PushViewport(0, 0, IRR_SIZE, IRR_SIZE);
+
             Renderer.GraphicsDevice.SetPrimitiveType(PrimitiveType.Triangles);
             Renderer.GraphicsDevice.SetDepthState(DepthTest.Disabled, false);
             Renderer.GraphicsDevice.SetRasterizerState(CullMode.None);
@@ -275,13 +279,14 @@ namespace DevoidEngine.Engine.Rendering
             }
 
             Renderer.GraphicsDevice.MainSurface.Bind();
-            Renderer.GraphicsDevice.SetViewport(prevViewportSize.Item1, prevViewportSize.Item2, prevViewportSize.Item3, prevViewportSize.Item4);
+
+            Renderer.PopViewport();
         }
 
         private void GeneratePrefilter()
         {
-            (int, int, int, int) prevViewportSize = Renderer.GraphicsDevice.GetViewport();
-            Renderer.GraphicsDevice.SetViewport(0, 0, PREF_SIZE, PREF_SIZE);
+            Renderer.PushViewport(0, 0, PREF_SIZE, PREF_SIZE);
+
             Renderer.GraphicsDevice.SetPrimitiveType(PrimitiveType.Triangles);
             Renderer.GraphicsDevice.SetDepthState(DepthTest.Disabled, false);
             Renderer.GraphicsDevice.SetRasterizerState(CullMode.None);
@@ -296,7 +301,8 @@ namespace DevoidEngine.Engine.Rendering
             for (int mip = 0; mip < PREF_MIPS; mip++)
             {
                 int size = PREF_SIZE >> mip;
-                Renderer.GraphicsDevice.SetViewport(0, 0, size, size);
+
+                Renderer.PushViewport(0, 0, size, size);
 
                 float roughness = (float)mip / (PREF_MIPS - 1);
                 prefilterMaterial.SetFloat("Roughness", roughness);
@@ -314,27 +320,33 @@ namespace DevoidEngine.Engine.Rendering
                     cubeMesh.Bind();
                     cubeMesh.Draw();
                 }
+
+                Renderer.PopViewport();
             }
 
             Renderer.GraphicsDevice.MainSurface.Bind();
-            Renderer.GraphicsDevice.SetViewport(prevViewportSize.Item1, prevViewportSize.Item2, prevViewportSize.Item3, prevViewportSize.Item4);
+
+            Renderer.PopViewport();
         }
 
         private void GenerateBRDF()
         {
-            (int, int, int, int) prevViewportSize = Renderer.GraphicsDevice.GetViewport();
-            Renderer.GraphicsDevice.SetViewport(0, 0, BRDF_SIZE, BRDF_SIZE);
+            Renderer.PushViewport(0, 0, BRDF_SIZE, BRDF_SIZE);
+
             Renderer.GraphicsDevice.SetDepthState(DepthTest.Disabled, false);
             Renderer.GraphicsDevice.SetRasterizerState(CullMode.None);
             Renderer.GraphicsDevice.SetBlendState(BlendMode.Opaque);
 
             brdfLutFB.SetRenderTexture(BrdfLutTexture, 0);
             brdfLutFB.Bind();
+
             brdfLutShader.Use();
+
             RenderAPI.RenderFullScreen(brdfLutShader);
 
             Renderer.GraphicsDevice.MainSurface.Bind();
-            Renderer.GraphicsDevice.SetViewport(prevViewportSize.Item1, prevViewportSize.Item2, prevViewportSize.Item3, prevViewportSize.Item4);
+
+            Renderer.PopViewport();
         }
     }
 }
