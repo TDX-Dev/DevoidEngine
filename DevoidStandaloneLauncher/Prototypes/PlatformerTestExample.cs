@@ -69,7 +69,7 @@ namespace DevoidStandaloneLauncher.Prototypes
             demoObject.Transform.Scale = Vector3.One;
             demoObject.Transform.Position = new Vector3(0, 5, 0);
 
-            controller = demoObject.AddComponent<ThirdPersonController>();
+            controller = demoObject.AddComponent<ThirdPersonController3D>();
 
             // Player physics
             RigidBodyComponent rigidBodyPlayer = demoObject.AddComponent<RigidBodyComponent>();
@@ -152,7 +152,7 @@ namespace DevoidStandaloneLauncher.Prototypes
             File.WriteAllBytes(ProjectManager.Current.AssetPath + "\\mainscene.scene", MessagePackSerializer.Serialize(SceneSerializer.Serialize(scene)));
         }
         LabelNode orbLabel;
-        ThirdPersonController controller;
+        ThirdPersonController3D controller;
 
         private float time = 0f;
 
@@ -168,7 +168,7 @@ namespace DevoidStandaloneLauncher.Prototypes
                 -5
             );
 
-            orbLabel.Text = $"Collected: {controller.OrbsCollected}";
+            //orbLabel.Text = $"Collected: {controller.OrbsCollected}";
         }
 
 
@@ -198,7 +198,7 @@ namespace DevoidStandaloneLauncher.Prototypes
                         Size = orbObject.Transform.Scale * 2,
                     };
 
-                    orbObject.AddComponent<OrbComponent>();
+                    //orbObject.AddComponent<OrbComponent>();
 
                 }
             } else if (IsMovingCollider(gameObject.Name, out int type))
@@ -218,9 +218,9 @@ namespace DevoidStandaloneLauncher.Prototypes
                     Friction = 1,
                     Restitution = 0,
                 };
-                var movCollider = gameObject.AddComponent<MovingCollider>();
+                //var movCollider = gameObject.AddComponent<MovingCollider>();
 
-                movCollider.MoveSpeed = movColliderType[type];
+                //movCollider.MoveSpeed = movColliderType[type];
 
             } else if (IsRigidbody(gameObject.Name))
             {

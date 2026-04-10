@@ -105,6 +105,8 @@ namespace DevoidEngine.Engine.Components
 
         public override void OnRender()
         {
+            if (internalBody == null)
+                return;
             Matrix4x4 model = Helper.BuildModel(internalBody!.Position, Shape.Size, internalBody!.Rotation);
 
             DebugRenderSystem.DrawCube(model);

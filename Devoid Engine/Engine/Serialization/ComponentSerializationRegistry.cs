@@ -1,4 +1,5 @@
 ﻿using DevoidEngine.Engine.Components;
+using DevoidEngine.Engine.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -48,6 +49,17 @@ namespace DevoidEngine.Engine.Serialization
                 Console.WriteLine($"[Serialization] Failed to deserialize {type}: {e.Message}");
                 return null;
             }
+        }
+
+        public static Component? FindComponent(GameObject go, string typeName)
+        {
+            foreach (var c in go.Components)
+            {
+                if (c.GetType().AssemblyQualifiedName == typeName)
+                    return c;
+            }
+
+            return null;
         }
     }
 }

@@ -59,8 +59,11 @@ namespace DevoidEngine.Engine.Serialization
                 if (!map.TryGetValue(goData.Parent, out var parent))
                     continue;
 
-                child.Transform.SetParent(parent.Transform);
+                //child.Transform.SetParent(parent.Transform);
+                child.SetParent(parent);
             }
+
+            GameObjectSerializer.ResolveComponentReferences(scene);
 
             return scene;
         }

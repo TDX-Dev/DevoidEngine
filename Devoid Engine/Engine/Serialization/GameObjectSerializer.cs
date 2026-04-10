@@ -3,6 +3,7 @@ using DevoidEngine.Engine.Core;
 
 namespace DevoidEngine.Engine.Serialization
 {
+    public delegate void ComponentFieldSetter(Component owner, Component value);
     public static class GameObjectSerializer
     {
         public static GameObjectData Serialize(GameObject go)
@@ -31,6 +32,51 @@ namespace DevoidEngine.Engine.Serialization
             }
 
             return data;
+        }
+
+        class PendingComponentReference
+        {
+            public Component Owner = null!;
+            public ComponentFieldSetter Setter = null!;
+            public Guid GameObjectId;
+            public string ComponentType = "";
+        }
+
+        static readonly List<PendingComponentReference> pending = new();
+
+        public static void RegisterComponentReference(
+            Component owner,
+            ComponentFieldSetter setter,
+            Guid goId,
+            string type)
+        {
+            pending.Add(new PendingComponentReference
+            {
+                Owner = owner,
+                Setter = setter,
+                GameObjectId = goId,
+                ComponentType = type
+            });
+        }
+
+        public static void ResolveComponentReferences(Scene scene)
+        {
+            foreach (var p in pending)
+            {
+                var go = scene.GetGameObject(p.GameObjectId);
+                if (go == null)
+                    continue;
+
+                var component =
+                    ComponentSerializationRegistry.FindComponent(go, p.ComponentType);
+
+                if (component == null)
+                    continue;
+
+                p.Setter(p.Owner, component);
+            }
+
+            pending.Clear();
         }
 
         public static GameObject Deserialize(

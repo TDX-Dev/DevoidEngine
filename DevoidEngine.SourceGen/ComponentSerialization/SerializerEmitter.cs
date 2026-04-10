@@ -38,180 +38,241 @@ internal static class SerializerEmitter
         StringBuilder serializeBody = new();
         StringBuilder deserializeBody = new();
 
-        int fieldCount = fields.Length;
-
-        serializeBody.AppendLine($"writer.WriteArrayHeader({fieldCount});");
+        serializeBody.AppendLine($"writer.WriteArrayHeader({fields.Length});");
 
         foreach (var field in fields)
         {
             string fieldName = field.Name;
             string type = field.Type.ToDisplayString();
 
-            serializeBody.AppendLine($"// Serialize field: {fieldName} ({type})");
+            serializeBody.AppendLine($"// Serialize field: {fieldName}");
+
+            // ---------------- ASSET REFERENCES ----------------
 
             if (IsAssetType(field.Type))
             {
-                //serializeBody.AppendLine(
-                //    $"MessagePack.MessagePackSerializer.Serialize(ref writer, value.{fieldName}?.Guid ?? Guid.Empty, MessagePack.MessagePackSerializerOptions.Standard);");
-
-                serializeBody.AppendLine(
-                    "try\n" +
-                    "{\n" +
-                    $"    MessagePack.MessagePackSerializer.Serialize(ref writer, value.{fieldName}?.Guid ?? Guid.Empty, MessagePack.MessagePackSerializerOptions.Standard);\n" +
-                    "}\n" +
-                    "catch (Exception e)\n" +
-                    "{\n" +
-                    $"    Console.WriteLine(\"[Serialization] Failed to serialize asset field '{fieldName}' in {componentName}: \" + e.Message);\n" +
-                    "    writer.WriteNil();\n" +
-                "}");
-
-
-                //deserializeBody.AppendLine(
-                //    $"var guid_{fieldName} = MessagePack.MessagePackSerializer.Deserialize<Guid>(ref reader, MessagePack.MessagePackSerializerOptions.Standard);");
-
-                //deserializeBody.AppendLine(
-                //    $"component.{fieldName} = guid_{fieldName} == Guid.Empty ? default : AssetManager.Load<{type}>(guid_{fieldName});");
+                serializeBody.AppendLine($$"""
+                try
+                {
+                    MessagePack.MessagePackSerializer.Serialize(
+                        ref writer,
+                        value.{{fieldName}}?.Guid ?? Guid.Empty,
+                        MessagePack.MessagePackSerializerOptions.Standard);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("[Serialization] Failed to serialize asset field '{{fieldName}}' in {{componentName}}: " + e.Message);
+                    writer.WriteNil();
+                }
+                """);
 
                 deserializeBody.AppendLine($$"""
-                    if (!reader.End)
+                if (!reader.End)
+                {
+                    try
                     {
-                        try
+                        var guid_{{fieldName}} =
+                            MessagePack.MessagePackSerializer.Deserialize<Guid>(
+                                ref reader,
+                                MessagePack.MessagePackSerializerOptions.Standard);
+
+                        component.{{fieldName}} =
+                            guid_{{fieldName}} == Guid.Empty
+                                ? default
+                                : AssetManager.Load<{{type}}>(guid_{{fieldName}});
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("[Serialization] Failed to deserialize asset field '{{fieldName}}' in {{componentName}}: " + e.Message);
+                    }
+                }
+                """);
+            }
+
+            // ---------------- COMPONENT REFERENCES ----------------
+
+            else if (IsComponentType(field.Type))
+            {
+                serializeBody.AppendLine($$"""
+                try
+                {
+                    if (value.{{fieldName}} == null)
+                    {
+                        writer.WriteNil();
+                    }
+                    else
+                    {
+                        writer.WriteArrayHeader(2);
+
+                        MessagePack.MessagePackSerializer.Serialize(
+                            ref writer,
+                            value.{{fieldName}}.gameObject.Id,
+                            MessagePack.MessagePackSerializerOptions.Standard);
+
+                        writer.Write(value.{{fieldName}}.GetType().AssemblyQualifiedName);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("[Serialization] Failed to serialize component reference '{{fieldName}}' in {{componentName}}: " + e.Message);
+                    writer.WriteNil();
+                }
+                """);
+
+                deserializeBody.AppendLine($$"""
+                if (!reader.End)
+                {
+                    try
+                    {
+                        if (reader.TryReadNil())
                         {
-                            var guid_{{fieldName}} =
+                            component.{{fieldName}} = null;
+                        }
+                        else
+                        {
+                            reader.ReadArrayHeader();
+
+                            var goId =
                                 MessagePack.MessagePackSerializer.Deserialize<Guid>(
                                     ref reader,
                                     MessagePack.MessagePackSerializerOptions.Standard);
 
-                            component.{{fieldName}} =
-                                guid_{{fieldName}} == Guid.Empty
-                                    ? default
-                                    : AssetManager.Load<{{type}}>(guid_{{fieldName}});
-                        }
-                        catch (Exception e)
-                        {
-                            Console.WriteLine($"[Serialization] Failed to deserialize asset field '{{fieldName}}' in {{componentName}}: " + e.Message);
-                            component.{{fieldName}} = default;
+                            string compType = reader.ReadString() ?? "";
+
+                            GameObjectSerializer.RegisterComponentReference(
+                                component,
+                                (owner, value) =>
+                                {
+                                    (({{namespaceName}}.{{componentName}})owner).{{fieldName}} =
+                                        ({{type}})value;
+                                },
+                                goId,
+                                compType
+                            );
                         }
                     }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("[Serialization] Failed to deserialize component reference '{{fieldName}}' in {{componentName}}: " + e.Message);
+                    }
+                }
                 """);
             }
-            else if (IsComponentType(field.Type))
-            {
-                // serialize component reference
-            }
+
+            // ---------------- PRIMITIVES ----------------
+
             else if (IsPrimitive(field.Type))
             {
-                //serializeBody.AppendLine($"writer.Write(value.{fieldName});");
+                serializeBody.AppendLine($$"""
+                try
+                {
+                    writer.Write(value.{{fieldName}});
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("[Serialization] Failed to serialize field '{{fieldName}}' in {{componentName}}: " + e.Message);
+                    writer.WriteNil();
+                }
+                """);
 
-                serializeBody.AppendLine(
-                    "try\n" +
-                    "{\n" +
-                    $"    writer.Write(value.{fieldName});\n" +
-                    "}\n" +
-                    "catch (Exception e)\n" +
-                    "{\n" +
-                    $"    Console.WriteLine(\"[Serialization] Failed to serialize field '{fieldName}' in {componentName}: \" + e.Message);\n" +
-                    "    writer.WriteNil();\n" +
-                    "}");
-
-                deserializeBody.AppendLine($"// Deserialize field: {fieldName} ({type})");
-                //deserializeBody.AppendLine($"component.{fieldName} = reader.Read{GetPrimitiveReader(type)}();");
-                deserializeBody.AppendLine(
-                    $"if (!reader.End) {{ try {{ component.{fieldName} = reader.Read{GetPrimitiveReader(field.Type)}(); }} catch (Exception e) {{ Console.WriteLine(\"[Serialization] Failed to deserialize field '{fieldName}' in {componentName}: \" + e.Message); }} }}"
-                );
+                deserializeBody.AppendLine($$"""
+                if (!reader.End)
+                {
+                    try
+                    {
+                        component.{{fieldName}} = reader.Read{{GetPrimitiveReader(field.Type)}}();
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("[Serialization] Failed to deserialize field '{{fieldName}}' in {{componentName}}: " + e.Message);
+                    }
+                }
+                """);
             }
+
+            // ---------------- OTHER TYPES ----------------
+
             else
             {
-                //serializeBody.AppendLine($"MessagePack.MessagePackSerializer.Serialize(ref writer, value.{fieldName}, MessagePack.MessagePackSerializerOptions.Standard);");
-                serializeBody.AppendLine(
-                    "try\n" +
-                    "{\n" +
-                    $"    MessagePack.MessagePackSerializer.Serialize(ref writer, value.{fieldName}, MessagePack.MessagePackSerializerOptions.Standard);\n" +
-                    "}\n" +
-                    "catch (Exception e)\n" +
-                    "{\n" +
-                    $"    Console.WriteLine(\"[Serialization] Failed to serialize field '{fieldName}' in {componentName}: \" + e.Message);\n" +
-                    "    writer.WriteNil();\n" +
-                    "}");
+                serializeBody.AppendLine($$"""
+                try
+                {
+                    MessagePack.MessagePackSerializer.Serialize(
+                        ref writer,
+                        value.{{fieldName}},
+                        MessagePack.MessagePackSerializerOptions.Standard);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("[Serialization] Failed to serialize field '{{fieldName}}' in {{componentName}}: " + e.Message);
+                    writer.WriteNil();
+                }
+                """);
 
-                deserializeBody.AppendLine($"// Deserialize field: {fieldName} ({type})");
-                //deserializeBody.AppendLine($"component.{fieldName} = MessagePack.MessagePackSerializer.Deserialize<{type}>(ref reader, MessagePack.MessagePackSerializerOptions.Standard);");
                 deserializeBody.AppendLine($$"""
-                    if (!reader.End)
+                if (!reader.End)
+                {
+                    try
                     {
-                        try
-                        {
-                            component.{{fieldName}} =
-                                MessagePack.MessagePackSerializer.Deserialize<{{type}}>(
-                                    ref reader,
-                                    MessagePack.MessagePackSerializerOptions.Standard);
-                        }
-                        catch (Exception e) 
-                        {
-                            Console.WriteLine("[Serialization] Failed to deserialize field '{{fieldName}}' in {{componentName}}: " + e.Message);
-                        }
+                        component.{{fieldName}} =
+                            MessagePack.MessagePackSerializer.Deserialize<{{type}}>(
+                                ref reader,
+                                MessagePack.MessagePackSerializerOptions.Standard);
                     }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("[Serialization] Failed to deserialize field '{{fieldName}}' in {{componentName}}: " + e.Message);
+                    }
+                }
                 """);
             }
         }
 
         deserializeBody.AppendLine("""
-            while (!reader.End)
-            {
-                try
-                {
-                    reader.Skip();
-                }
-                catch
-                {
-                    break;
-                }
-            }
-            """);
+        while (!reader.End)
+        {
+            try { reader.Skip(); }
+            catch { break; }
+        }
+        """);
 
         string source = $$"""
-            #nullable enable
-            using MessagePack;
-            using System.Buffers;
-            using DevoidEngine.Engine.AssetPipeline;
+        #nullable enable
+        using MessagePack;
+        using System.Buffers;
+        using DevoidEngine.Engine.AssetPipeline;
+        using DevoidEngine.Engine.Serialization;
 
-            namespace DevoidEngine.Engine.Serialization.Generated
+        namespace DevoidEngine.Engine.Serialization.Generated
+        {
+            internal static class {{serializerName}}
             {
-                internal static class {{serializerName}}
+                public static byte[] Serialize({{namespaceName}}.{{componentName}} value)
                 {
-                    public static byte[] Serialize({{namespaceName}}.{{componentName}} value)
-                    {
-                        var buffer = new ArrayBufferWriter<byte>();
-                        var writer = new MessagePackWriter(buffer);
+                    var buffer = new ArrayBufferWriter<byte>();
+                    var writer = new MessagePackWriter(buffer);
 
-                        {{serializeBody}}
+                    {{serializeBody}}
 
-                        writer.Flush();
-                        return buffer.WrittenSpan.ToArray();
-                    }
+                    writer.Flush();
+                    return buffer.WrittenSpan.ToArray();
+                }
 
-                    public static {{namespaceName}}.{{componentName}} Deserialize(byte[] data)
-                    {
-                        var reader = new MessagePackReader(data);
+                public static {{namespaceName}}.{{componentName}} Deserialize(byte[] data)
+                {
+                    var reader = new MessagePackReader(data);
 
-                        var component = new {{namespaceName}}.{{componentName}}();
+                    var component = new {{namespaceName}}.{{componentName}}();
 
-                        int count;
-                        try
-                        {
-                            count = reader.ReadArrayHeader();
-                        }
-                        catch
-                        {
-                            return component;
-                        }
+                    try { reader.ReadArrayHeader(); }
+                    catch { return component; }
 
-                        {{deserializeBody}}
+                    {{deserializeBody}}
 
-                        return component;
-                    }
+                    return component;
                 }
             }
+        }
         """;
 
         context.AddSource($"{componentName}.ComponentSerializer.g.cs", source);
@@ -219,24 +280,12 @@ internal static class SerializerEmitter
 
     private static bool HasSerializeFieldAttribute(IFieldSymbol field)
     {
-        foreach (var attr in field.GetAttributes())
-        {
-            if (attr.AttributeClass?.Name == "SerializeField")
-                return true;
-        }
-
-        return false;
+        return field.GetAttributes().Any(a => a.AttributeClass?.Name == "SerializeField");
     }
 
     private static bool HasDontSerializeAttribute(IFieldSymbol field)
     {
-        foreach (var attr in field.GetAttributes())
-        {
-            if (attr.AttributeClass?.Name == "DontSerialize")
-                return true;
-        }
-
-        return false;
+        return field.GetAttributes().Any(a => a.AttributeClass?.Name == "DontSerialize");
     }
 
     private static bool IsAssetType(ITypeSymbol type)
@@ -251,31 +300,15 @@ internal static class SerializerEmitter
 
         return false;
     }
+
     private static bool IsComponentType(ITypeSymbol type)
     {
         while (type != null)
         {
-            if (type.Name == "Component")
+            if (type.ToDisplayString() == "DevoidEngine.Engine.Components.Component")
                 return true;
 
             type = type.BaseType;
-        }
-
-        return false;
-    }
-
-    private static bool ContainsGameObject(ITypeSymbol type)
-    {
-        if (type.ToDisplayString() == "DevoidEngine.Engine.Core.GameObject")
-            return true;
-
-        if (type is INamedTypeSymbol named)
-        {
-            foreach (var member in named.GetMembers().OfType<IFieldSymbol>())
-            {
-                if (member.Type.ToDisplayString() == "DevoidEngine.Engine.Core.GameObject")
-                    return true;
-            }
         }
 
         return false;
@@ -304,19 +337,6 @@ internal static class SerializerEmitter
             SpecialType.System_Double => "Double",
             SpecialType.System_String => "String",
             _ => throw new Exception("Unsupported primitive")
-        };
-    }
-
-    private static string GetPrimitiveReader(string type)
-    {
-        return type switch
-        {
-            "int" => "Int32",
-            "float" => "Single",
-            "bool" => "Boolean",
-            "double" => "Double",
-            "string" => "String",
-            _ => "Object"
         };
     }
 }

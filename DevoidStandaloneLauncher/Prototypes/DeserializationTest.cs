@@ -63,7 +63,7 @@ namespace DevoidStandaloneLauncher.Prototypes
 
         public Scene DeserializeScene()
         {
-            return Asset.Load<Scene>("deserialized.scene") ?? new Scene();
+            return Asset.Load<Scene>("mainscene.scene") ?? new Scene();
         }
 
         public void SerializeComponent(Component comp)

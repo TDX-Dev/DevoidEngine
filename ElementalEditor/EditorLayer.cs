@@ -38,7 +38,7 @@ namespace ElementalEditor
 
             var scene = new Scene();
             SceneManager.LoadScene(scene);
-            scene.Play(false);
+            scene.Play(true);
 
             //scene.AddGameObject("Camera").AddComponent<CameraComponent3D>().IsDefault = true;
             scene.AddGameObject("Skybox").AddComponent<SkyboxComponent>();

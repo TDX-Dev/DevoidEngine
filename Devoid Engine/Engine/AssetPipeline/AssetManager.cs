@@ -44,7 +44,17 @@ namespace DevoidEngine.Engine.AssetPipeline
             }
 
             if (entry != null && entry.ContainerGuid != null)
-                return ResolveSubAsset<T>(guid, entry.ContainerGuid.Value, entry.LocalId);
+            {
+                T? subAsset = ResolveSubAsset<T>(guid, entry.ContainerGuid.Value, entry.LocalId);
+                if (subAsset == null)
+                {
+                    Console.WriteLine($"[Asset] Missing subasset {guid}");
+                } else
+                {
+                    Console.WriteLine($"[Asset] Fetched subasset {guid}");
+                }
+                    return subAsset;
+            }
 
             if (!AssetLoaderRegistry.TryGet<T>(out var loader) || loader == null)
             {

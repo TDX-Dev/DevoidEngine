@@ -101,6 +101,7 @@ namespace DevoidStandaloneLauncher.Scripts
 
         void UpdateCameraOrbit()
         {
+            Console.WriteLine("Camera should be moving now if this is false: " + (Camera == null || CameraPitch == null));
             if (Camera == null || CameraPitch == null)
                 return;
 

@@ -131,6 +131,13 @@ namespace ElementalEditor.Panels
                     model.Instantiate(context.Scene);
                 }
             }
+
+            if (ext == ".scene")
+            {
+                var scene = Asset.Load<Scene>(relativePath);
+                context.Scene = scene;
+                SceneManager.LoadScene(scene);
+            }
         }
 
         void DrawToolbar(EditorContext context)

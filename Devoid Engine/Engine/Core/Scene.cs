@@ -115,6 +115,16 @@ namespace DevoidEngine.Engine.Core
             GameObjects.Remove(gameObject);
         }
 
+        public GameObject? GetGameObject(Guid id)
+        {
+            for (int i = 0; i < GameObjects.Count; i++)
+            {
+                if (GameObjects[i].Id == id)
+                    return GameObjects[i];
+            }
+            return null;
+        }
+
         public List<T> GetComponentsOfType<T>() where T : Component
         {
             List<T> components = new List<T>();
