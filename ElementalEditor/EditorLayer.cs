@@ -41,9 +41,9 @@ namespace ElementalEditor
             scene.Play(true);
 
             //scene.AddGameObject("Camera").AddComponent<CameraComponent3D>().IsDefault = true;
-            scene.AddGameObject("Skybox").AddComponent<SkyboxComponent>();
-            Asset.Load<Model>("platform/platform.gltf").Instantiate(scene);
-            Asset.Load<Model>("cubey_boi/cubey_boi.gltf").Instantiate(scene);
+            //scene.AddGameObject("Skybox").AddComponent<SkyboxComponent>();
+            //Asset.Load<Model>("platform/platform.gltf").Instantiate(scene);
+            //Asset.Load<Model>("cubey_boi/cubey_boi.gltf").Instantiate(scene);
 
         }
 

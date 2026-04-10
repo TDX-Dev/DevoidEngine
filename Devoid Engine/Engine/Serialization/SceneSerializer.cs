@@ -60,7 +60,7 @@ namespace DevoidEngine.Engine.Serialization
                     continue;
 
                 //child.Transform.SetParent(parent.Transform);
-                child.SetParent(parent);
+                child.SetParent(parent, false);
             }
 
             GameObjectSerializer.ResolveComponentReferences(scene);

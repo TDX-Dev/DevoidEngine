@@ -36,7 +36,7 @@ namespace ElementalEditor
             ProcessStartInfo start = new ProcessStartInfo
             {
                 FileName = runtimeExe,
-                Arguments = $"--project \"{ProjectManager.Current.ProjectFile}\"",
+                Arguments = $"--project \"{ProjectManager.Current.ProjectFile}\" --mode editor",
                 UseShellExecute = true
             };
 

@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -7,6 +8,12 @@ namespace DevoidEngine.SourceGen.ComponentSerialization;
 
 internal static class SerializerEmitter
 {
+    static readonly HashSet<string> AllowedTypes = new()
+        {
+            "DevoidEngine.Engine.Rendering.LightType",
+            "DevoidEngine.Engine.Rendering.LightAttenuationType"
+        };
+
     public static void Emit(SourceProductionContext context, INamedTypeSymbol component)
     {
         string namespaceName = component.ContainingNamespace.ToDisplayString();
@@ -21,12 +28,14 @@ internal static class SerializerEmitter
                 !HasDontSerializeAttribute(f) &&
                 (
                     f.DeclaredAccessibility == Accessibility.Public ||
+                    f.DeclaredAccessibility == Accessibility.Internal ||
                     HasSerializeFieldAttribute(f)
                 ) &&
                 f.Name != "gameObject" &&
                 f.Type.ToDisplayString() != "DevoidEngine.Engine.Core.GameObject" &&
                 (
                     IsAssetType(f.Type) ||
+                    IsWhitelisted(f.Type) ||
                     (
                         !f.Type.ToDisplayString().StartsWith("DevoidEngine.Engine.Core") &&
                         !f.Type.ToDisplayString().StartsWith("DevoidEngine.Engine.Rendering") &&
@@ -312,6 +321,11 @@ internal static class SerializerEmitter
         }
 
         return false;
+    }
+
+    private static bool IsWhitelisted(ITypeSymbol type)
+    {
+        return AllowedTypes.Contains(type.ToDisplayString());
     }
 
     private static bool IsPrimitive(ITypeSymbol type)

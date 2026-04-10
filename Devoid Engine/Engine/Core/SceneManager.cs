@@ -1,4 +1,6 @@
-﻿using System;
+﻿using DevoidEngine.Engine.AssetPipeline;
+using DevoidEngine.Engine.ProjectSystem;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,6 +25,26 @@ namespace DevoidEngine.Engine.Core
             scene.Physics = EngineSingleton.Instance.PhysicsSystem;
             // 2. Set new scene
             CurrentScene = scene;
+        }
+
+        public static void LoadStartupScene()
+        {
+            var project = ProjectManager.Current;
+
+            if (project == null)
+                throw new Exception("Project not loaded");
+
+            string scenePath = project.Settings.StartupScene;
+
+            if (string.IsNullOrEmpty(scenePath))
+                throw new Exception("Startup scene not defined in project settings");
+
+            var scene = Asset.Load<Scene>(scenePath);
+
+            if (scene == null)
+                throw new Exception($"Failed to load startup scene: {scenePath}");
+
+            LoadScene(scene);
         }
 
     }

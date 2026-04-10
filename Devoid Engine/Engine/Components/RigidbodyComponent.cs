@@ -1,6 +1,7 @@
 ﻿using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.Physics;
 using DevoidEngine.Engine.Rendering;
+using DevoidEngine.Engine.Serialization;
 using DevoidEngine.Engine.Utilities;
 using System.Numerics;
 
@@ -11,20 +12,10 @@ namespace DevoidEngine.Engine.Components
         public override string Type => nameof(RigidBodyComponent);
 
         // ===============================
-        // Settings
+        // Serialized Settings
         // ===============================
 
-        public float Mass
-        {
-            get => _mass;
-            set
-            {
-                _mass = value;
-
-                if (internalBody != null)
-                    CreateBody();
-            }
-        }
+        public float Mass = 100f;
 
         public bool StartKinematic = false;
 
@@ -34,39 +25,38 @@ namespace DevoidEngine.Engine.Components
         public bool LockRotationY = false;
         public bool LockRotationZ = false;
 
-        public PhysicsShapeDescription Shape
-        {
-            get => internalShape;
-            set
-            {
-                internalShape = value;
-                CreateBody();
-            }
-        }
-
-        public PhysicsMaterial Material = PhysicsMaterial.Default;
-
-        // ===============================
-        // Internal Physics Handle
-        // ===============================
-
-        private IPhysicsBody? internalBody;
-
-        private PhysicsShapeDescription internalShape = new PhysicsShapeDescription
+        public PhysicsShapeDescription Shape = new PhysicsShapeDescription
         {
             Type = PhysicsShapeType.Box,
             Size = new Vector3(1, 1, 1)
         };
 
+        public PhysicsMaterial Material = PhysicsMaterial.Default;
+
+        public bool allowSleep = true;
+
+        // Optional save-state physics
+        public Vector3 SavedLinearVelocity;
+        public Vector3 SavedAngularVelocity;
+
         // ===============================
-        // Public Physics API
+        // Runtime Physics Handle
+        // ===============================
+
+        [DontSerialize]
+        private IPhysicsBody? internalBody;
+
+        // ===============================
+        // Runtime Physics API
         // ===============================
 
         public Vector3 LinearVelocity
         {
-            get => internalBody != null ? internalBody.LinearVelocity : Vector3.Zero;
+            get => internalBody != null ? internalBody.LinearVelocity : SavedLinearVelocity;
             set
             {
+                SavedLinearVelocity = value;
+
                 if (internalBody != null)
                 {
                     internalBody.WakeUp();
@@ -77,9 +67,11 @@ namespace DevoidEngine.Engine.Components
 
         public Vector3 AngularVelocity
         {
-            get => internalBody != null ? internalBody.AngularVelocity : Vector3.Zero;
+            get => internalBody != null ? internalBody.AngularVelocity : SavedAngularVelocity;
             set
             {
+                SavedAngularVelocity = value;
+
                 if (internalBody != null)
                 {
                     internalBody.WakeUp();
@@ -94,9 +86,7 @@ namespace DevoidEngine.Engine.Components
             set
             {
                 if (internalBody != null)
-                {
                     internalBody.Position = value;
-                }
             }
         }
 
@@ -110,21 +100,8 @@ namespace DevoidEngine.Engine.Components
             }
         }
 
-        public bool AllowSleep
-        {
-            get => allowSleep;
-            set
-            {
-                allowSleep = value;
-                CreateBody();
-            }
-        }
-
-        private float _mass = 100;
         public bool IsKinematic =>
             internalBody != null && internalBody.IsKinematic;
-
-        public bool allowSleep = true;
 
         // ===============================
         // Lifecycle
@@ -133,6 +110,12 @@ namespace DevoidEngine.Engine.Components
         public override void OnStart()
         {
             CreateBody();
+
+            if (internalBody != null)
+            {
+                internalBody.LinearVelocity = SavedLinearVelocity;
+                internalBody.AngularVelocity = SavedAngularVelocity;
+            }
         }
 
         public void SetKinematic(bool value)
@@ -157,21 +140,24 @@ namespace DevoidEngine.Engine.Components
 
         private void CreateBody()
         {
+            if (gameObject.Scene == null)
+                return;
+
             if (internalBody != null)
             {
                 gameObject.Scene.Physics.RemoveBody(internalBody);
             }
 
-            if (internalShape.Type == PhysicsShapeType.Box && Shape.Size == Vector3.Zero)
+            if (Shape.Type == PhysicsShapeType.Box && Shape.Size == Vector3.Zero)
             {
-                internalShape.Size = new Vector3(1, 1, 1);
+                Shape.Size = new Vector3(1, 1, 1);
             }
 
             var desc = new PhysicsBodyDescription
             {
                 Position = gameObject.Transform.Position,
                 Rotation = gameObject.Transform.Rotation,
-                Mass = _mass,
+                Mass = Mass,
                 IsKinematic = StartKinematic,
                 Shape = Shape,
                 Material = Material,
@@ -189,30 +175,17 @@ namespace DevoidEngine.Engine.Components
         {
             if (internalBody == null)
                 return;
-            Matrix4x4 model = Helper.BuildModel(internalBody!.Position, Shape.Size, internalBody!.Rotation);
+
+            Matrix4x4 model = Helper.BuildModel(
+                internalBody.Position,
+                Shape.Size,
+                internalBody.Rotation);
 
             DebugRenderSystem.DrawCube(model);
-
-            //if (internalBody == null)
-            //    return;
-
-            //if (internalBody.IsKinematic)
-            //{
-            //    internalBody.Position = gameObject.Transform.Position;
-            //    internalBody.Rotation = gameObject.Transform.Rotation;
-            //}
         }
 
         public override void OnFixedUpdate(float dt)
         {
-            //if (internalBody == null)
-            //    return;
-
-            //if (internalBody.IsKinematic)
-            //{
-            //    internalBody.Position = gameObject.Transform.Position;
-            //    internalBody.Rotation = gameObject.Transform.Rotation;
-            //}
         }
 
         public override void OnRender()
@@ -221,9 +194,19 @@ namespace DevoidEngine.Engine.Components
 
         public override void OnDestroy()
         {
-            internalBody?.Remove();
-            internalBody = null;
+            if (internalBody != null)
+            {
+                SavedLinearVelocity = internalBody.LinearVelocity;
+                SavedAngularVelocity = internalBody.AngularVelocity;
+
+                internalBody.Remove();
+                internalBody = null;
+            }
         }
+
+        // ===============================
+        // Physics API
+        // ===============================
 
         public void AddImpulse(Vector3 impulse)
         {
@@ -232,8 +215,7 @@ namespace DevoidEngine.Engine.Components
 
         public void AddForce(Vector3 force)
         {
-            if (internalBody != null)
-                internalBody.AddForce(force);
+            internalBody?.AddForce(force);
         }
 
         public void AddTorque(Vector3 torque)

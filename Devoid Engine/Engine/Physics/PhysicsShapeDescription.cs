@@ -1,22 +1,27 @@
-﻿using System.Numerics;
+﻿using MessagePack;
+using System.Numerics;
 
 namespace DevoidEngine.Engine.Physics
 {
+    [MessagePackObject]
     public struct PhysicsShapeDescription
     {
+        [Key(0)]
         public PhysicsShapeType Type;
 
-        // Box
+        [Key(1)]
         public Vector3 Size;
 
-        // Sphere
+        [Key(2)]
         public float Radius;
 
-        // Capsule
+        [Key(3)]
         public float Height;
 
-        // Convex / Mesh
+        [Key(4)]
         public Vector3[] Vertices;
-        public int[] Indices; // Needed for Mesh
+
+        [Key(5)]
+        public int[] Indices;
     }
 }

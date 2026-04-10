@@ -48,10 +48,10 @@ namespace DevoidEngine.Engine.AssetPipeline
                 T? subAsset = ResolveSubAsset<T>(guid, entry.ContainerGuid.Value, entry.LocalId);
                 if (subAsset == null)
                 {
-                    Console.WriteLine($"[Asset] Missing subasset {guid}");
+                    //Console.WriteLine($"[Asset] Missing subasset {guid}");
                 } else
                 {
-                    Console.WriteLine($"[Asset] Fetched subasset {guid}");
+                    //Console.WriteLine($"[Asset] Fetched subasset {guid}");
                 }
                     return subAsset;
             }
