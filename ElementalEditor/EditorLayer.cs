@@ -1,8 +1,11 @@
-﻿using DevoidEngine.Engine.Components;
+﻿using DevoidEngine.Engine.AssetPipeline;
+using DevoidEngine.Engine.Components;
 using DevoidEngine.Engine.Core;
+using DevoidEngine.Engine.InputSystem;
 using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.Utilities;
 using ElementalEditor.Panels;
+using ElementalEditor.Utils;
 using ImGuiNET;
 using System.Numerics;
 
@@ -11,19 +14,17 @@ namespace ElementalEditor
     class EditorLayer : Layer
     {
         EditorContext context;
+        EditorCamera editorCamera;
 
         List<IEditorPanel> panels;
 
         public override void OnAttach()
         {
+            editorCamera = new EditorCamera(1280, 720);
+            Input.Router.Push(new EditorInputLayer(editorCamera));
+
             panels = new List<IEditorPanel>();
             context = new EditorContext();
-
-            context.EditorCameraTransform = new Transform3D();
-            context.EditorCameraTransform.Position = new Vector3(0, 2, 5);
-
-            context.EditorCamera = new Camera();
-            context.EditorCamera.FovY = MathHelper.DegToRad(60);
 
 
             panels.Add(new SceneViewportPanel());
@@ -35,64 +36,44 @@ namespace ElementalEditor
 
             var scene = new Scene();
             SceneManager.LoadScene(scene);
-            scene.Play(true);
+            scene.Play(false);
 
-            scene.AddGameObject("Camera").AddComponent<CameraComponent3D>().IsDefault = true;
+            //scene.AddGameObject("Camera").AddComponent<CameraComponent3D>().IsDefault = true;
             scene.AddGameObject("Skybox").AddComponent<SkyboxComponent>();
+            Asset.Load<Model>("platform/platform.gltf").Instantiate(scene);
+            Asset.Load<Model>("cubey_boi/cubey_boi.gltf").Instantiate(scene);
 
-
-        }
-
-        void DrawToolbar()
-        {
-
-            ImGui.SetNextWindowSize(new Vector2(100, 30));
-
-            ImGui.Begin("##Toolbar",
-                ImGuiWindowFlags.NoDecoration |
-                ImGuiWindowFlags.NoScrollbar |
-                ImGuiWindowFlags.NoScrollWithMouse);
-
-            ImGui.SetCursorPosX(ImGui.GetWindowWidth() * 0.5f - 60);
-
-            bool playing = context.PlayState == ScenePlayState.Play;
-            bool paused = context.PlayState == ScenePlayState.Pause;
-
-            if (ImGui.Button(playing ? "Stop" : "Play"))
-            {
-                if (playing)
-                {
-                    context.PlayState = ScenePlayState.Edit;
-                    context.Scene.Play(false);
-                }
-                else
-                {
-                    context.PlayState = ScenePlayState.Play;
-                    context.Scene.Play(true);
-                }
-            }
-
-            ImGui.SameLine();
-
-            if (ImGui.Button("Pause"))
-            {
-                if (context.PlayState == ScenePlayState.Play)
-                {
-                    context.PlayState = ScenePlayState.Pause;
-                }
-            }
-
-            ImGui.End();
         }
 
         public override void OnUpdate(float deltaTime)
         {
             SceneManager.CurrentScene?.Update(deltaTime);
         }
+        public override void OnFixedUpdate(float deltaTime)
+        {
+            SceneManager.CurrentScene?.FixedUpdate(deltaTime);
+        }
 
         public override void OnRender()
         {
             SceneManager.CurrentScene?.Render();
+            var cam = editorCamera.Camera;
+
+            CameraRenderContext ctx = new CameraRenderContext();
+            ctx.Clear();
+
+            ctx.camera = cam;
+            ctx.cameraData = cam.GetCameraData();
+            ctx.cameraTargetSurface = cam.RenderTarget;
+
+            var renderables = SceneManager.CurrentScene.GetRenderables();
+
+            foreach (var r in renderables)
+            {
+                r.Collect(cam, ctx);
+            }
+
+            Renderer.Render(ctx);
         }
 
         public override void OnResize(int width, int height)
@@ -104,9 +85,9 @@ namespace ElementalEditor
         {
             if (SceneManager.CurrentScene != null)
             {
-                context.SceneViewportTarget = (Texture2D)SceneManager.CurrentScene.GetDefaultCamera3D()?.Camera.RenderTarget.GetRenderTexture(0);
 
                 context.Scene = SceneManager.CurrentScene;
+                context.EditorCamera = editorCamera;
             }
 
             foreach (var panel in panels)

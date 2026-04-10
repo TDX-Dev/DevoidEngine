@@ -54,7 +54,7 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
                 PostProcessSteps.FlipWindingOrder
             );
 
-            var model = ConvertScene(scene, settings, assetPath);
+            var model = ConvertScene(scene, settings, modelPath);
 
             model.MeshGuids = new Guid[model.Meshes.Length];
             model.MaterialGuids = new Guid[model.Materials.Length];
@@ -85,7 +85,7 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
                 MessagePackSerializer.Serialize(model));
         }
 
-        private ModelAsset ConvertScene(AssimpScene scene, ModelImportSettings settings, string outputPath)
+        private ModelAsset ConvertScene(AssimpScene scene, ModelImportSettings settings, string modelPath)
         {
             List<ModelNode> nodes = new();
             List<MeshAsset> meshes = new();
@@ -97,7 +97,7 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
 
             foreach (var mat in scene.Materials)
             {
-                MaterialAsset matAsset = ConvertMaterial(mat, outputPath);
+                MaterialAsset matAsset = ConvertMaterial(mat, modelPath);
                 materials.Add(matAsset);
             }
 
@@ -196,7 +196,7 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
             return asset;
         }
 
-        MaterialAsset ConvertMaterial(Assimp.Material mat, string currentModelPath)
+        MaterialAsset ConvertMaterial(Assimp.Material mat, string modelPath)
         {
             MaterialAsset asset = new();
 
@@ -257,7 +257,7 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
                     out var tex);
 
                 Console.WriteLine(tex.FilePath);
-                Guid texGuid = ImportTexture(tex.FilePath, currentModelPath);
+                Guid texGuid = ImportTexture(tex.FilePath, modelPath);
 
                 asset.Textures["MAT_AlbedoMap"] = texGuid;
             }
@@ -269,7 +269,7 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
                     0,
                     out var tex);
 
-                Guid texGuid = ImportTexture(tex.FilePath, currentModelPath);
+                Guid texGuid = ImportTexture(tex.FilePath, modelPath);
 
                 asset.Textures["MAT_NormalMap"] = texGuid;
             }
@@ -285,14 +285,14 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
 
         Guid ImportTexture(string texturePath, string currentModelPath)
         {
-            Console.WriteLine(currentModelPath);
+            string resolvedPath = Path.Combine(Path.GetDirectoryName(currentModelPath)!, texturePath);
 
-            Console.WriteLine("[Model Importer]: " + texturePath);
+            Console.WriteLine("[Model Importer]: " + resolvedPath);
 
-            if (AssetDatabase.TryGetGuid(texturePath, out var guid))
+            if (AssetDatabase.TryGetGuid(resolvedPath, out var guid))
                 return guid;
 
-            Console.WriteLine($"Texture not found in AssetDatabase: {texturePath}");
+            Console.WriteLine($"Texture not found in AssetDatabase: {resolvedPath}");
             return Guid.Empty;
         }
     }

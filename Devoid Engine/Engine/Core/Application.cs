@@ -254,7 +254,16 @@ namespace DevoidEngine.Engine.Core
             Renderer.GraphicsDevice.MainSurface.ClearColor(new Vector4(0,0,0,1));
 
             layerHandler.RenderLayers();
+            // RenderScene must be called somewhere (or not) in RenderLayers();
+            layerHandler.PostRenderLayers();
+            imGuiRenderer.EndFrame();
 
+            Renderer.GraphicsDevice.MainSurface.Bind();
+            Renderer.GraphicsDevice.MainSurface.Present();
+        }
+
+        public void RenderScene()
+        {
             if (SceneManager.CurrentScene != null)
             {
                 List<IRenderComponent> renderables = SceneManager.CurrentScene.GetRenderables();
@@ -286,7 +295,7 @@ namespace DevoidEngine.Engine.Core
 
                     foreach (var renderable in renderables)
                     {
-                        renderable.Collect(cameraComponent, ctx);
+                        renderable.Collect(cameraComponent.Camera, ctx);
                     }
                 }
                 for (int i = 0; i < cameraComponents.Count; i++)
@@ -294,13 +303,8 @@ namespace DevoidEngine.Engine.Core
                     Renderer.Render(renderContexts[i]);
                 }
             }
-            layerHandler.PostRenderLayers();
-
-            imGuiRenderer.EndFrame();
-
-            Renderer.GraphicsDevice.MainSurface.Bind();
-            Renderer.GraphicsDevice.MainSurface.Present();
         }
+
 
         void UpdateCursor()
         {

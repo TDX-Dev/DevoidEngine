@@ -149,7 +149,7 @@ namespace DevoidStandaloneLauncher.Prototypes
 
             scene.Play();
 
-            File.WriteAllBytes(ProjectManager.Current.AssetPath + "\\mainscene.scene", MessagePackSerializer.Serialize(SceneSerializer.Serialize(scene)));
+            //File.WriteAllBytes(ProjectManager.Current.AssetPath + "\\mainscene.scene", MessagePackSerializer.Serialize(SceneSerializer.Serialize(scene)));
         }
         LabelNode orbLabel;
         ThirdPersonController controller;

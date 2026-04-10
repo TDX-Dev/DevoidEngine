@@ -67,12 +67,12 @@ namespace DevoidEngine.Engine.Components
             return gameObject.Transform.WorldMatrix;
         }
 
-        public void Collect(CameraComponent3D camera, CameraRenderContext viewData)
+        public void Collect(Camera camera, CameraRenderContext viewData)
         {
             if (!isEnabled) return;
             if (RenderMode == CanvasRenderMode.ScreenSpace)
             {
-                if (CameraConstraint != null && CameraConstraint != camera)
+                if (CameraConstraint != null && CameraConstraint.Camera != camera)
                     return;
 
                 Canvas.Render(viewData.renderItemsUI, Matrix4x4.Identity, Order);

@@ -82,7 +82,7 @@ namespace DevoidStandaloneLauncher
             {
                 GamePrototype.OnRender();
             }
-
+            Application.RenderScene();
         }
 
         public override void OnPostRender()

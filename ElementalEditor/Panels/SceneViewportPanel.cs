@@ -1,4 +1,5 @@
-﻿using ImGuiNET;
+﻿using DevoidEngine.Engine.Core;
+using ImGuiNET;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,7 +29,7 @@ namespace ElementalEditor.Panels
                 return;
             }
 
-            if (context.SceneViewportTarget == null)
+            if (context.EditorCamera == null)
             {
                 ImGui.End();
                 return;
@@ -38,7 +39,7 @@ namespace ElementalEditor.Panels
             panelSize.Y -= ToolbarHeight;
             ViewportSize = panelSize;
 
-            var texture = context.SceneViewportTarget;
+            var texture = (Texture2D)context.EditorCamera.Camera.RenderTarget.GetRenderTexture(0);
             Vector2 renderSize = new(texture.Width, texture.Height);
 
             // Calculate scale

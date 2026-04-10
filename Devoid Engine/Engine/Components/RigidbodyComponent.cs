@@ -167,8 +167,6 @@ namespace DevoidEngine.Engine.Components
                 internalShape.Size = new Vector3(1, 1, 1);
             }
 
-            Console.WriteLine($"GameObject: {gameObject.Name}: " + StartKinematic);
-
             var desc = new PhysicsBodyDescription
             {
                 Position = gameObject.Transform.Position,

@@ -20,6 +20,8 @@ namespace DevoidEngine.Engine.AssetPipeline
 
         public static bool TryGetGuid(string assetPath, out Guid guid)
         {
+            assetPath = NormalizePath(assetPath);
+
             if (pathToAsset.TryGetValue(assetPath, out var entry))
             {
                 guid = entry.Guid;
@@ -67,7 +69,8 @@ namespace DevoidEngine.Engine.AssetPipeline
         {
             if (ProjectManager.Current == null)
                 throw new Exception("Project has not been initialized, tried to use AssetDatabase.");
-            return Path.GetRelativePath(ProjectManager.Current.AssetPath, path);
+
+            return NormalizePath(Path.GetRelativePath(ProjectManager.Current.AssetPath, path));
         }
 
         public static void Initialize()
@@ -102,7 +105,11 @@ namespace DevoidEngine.Engine.AssetPipeline
                 pathToAsset.Clear();
 
                 foreach (var entry in guidToAsset.Values)
-                    pathToAsset[entry.AssetPath] = entry;
+                {
+                    entry.AssetPath = NormalizePath(entry.AssetPath);
+                    //pathToAsset[entry.AssetPath] = entry;
+                    pathToAsset[NormalizePath(entry.AssetPath)] = entry;
+                }
             }
             catch
             {
@@ -126,6 +133,8 @@ namespace DevoidEngine.Engine.AssetPipeline
 
         internal static Guid RegisterAssetMetaOnly(string assetPath)
         {
+            assetPath = NormalizePath(assetPath);
+
             var metaPath = assetPath + ".meta";
 
             var absolutePath = Path.Combine(ProjectManager.Current!.AssetPath, assetPath);
@@ -152,7 +161,7 @@ namespace DevoidEngine.Engine.AssetPipeline
             };
 
             guidToAsset[entry.Guid] = entry;
-            pathToAsset[assetPath] = entry;
+            pathToAsset[NormalizePath(assetPath)] = entry;
 
             return entry.Guid;
         }
@@ -193,6 +202,8 @@ namespace DevoidEngine.Engine.AssetPipeline
             ulong localId,
             string assetPath)
         {
+            assetPath = NormalizePath(assetPath);
+
             Guid guid = Guid.NewGuid();
 
             var entry = new AssetEntry
@@ -368,7 +379,7 @@ namespace DevoidEngine.Engine.AssetPipeline
                 if (file.EndsWith(".meta"))
                     continue;
 
-                string relative = Path.GetRelativePath(assetRoot, file).Replace('\\', '/');
+                string relative = NormalizePath(Path.GetRelativePath(assetRoot, file));
 
                 var ext = Path.GetExtension(relative).ToLower();
 
@@ -437,6 +448,20 @@ namespace DevoidEngine.Engine.AssetPipeline
                     File.Delete(file);
                 }
             }
+        }
+
+        private static string NormalizePath(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+                return path;
+
+            path = path.Replace('\\', '/');
+
+            // remove leading ./
+            if (path.StartsWith("./"))
+                path = path.Substring(2);
+
+            return path;
         }
     }
 }

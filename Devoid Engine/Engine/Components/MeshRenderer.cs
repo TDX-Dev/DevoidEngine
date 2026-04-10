@@ -47,7 +47,7 @@ namespace DevoidEngine.Engine.Components
             //DebugRenderSystem.DrawMesh(mesh, gameObject.transform.WorldMatrix);
         }
 
-        public void Collect(CameraComponent3D camera, CameraRenderContext viewData)
+        public void Collect(Camera camera, CameraRenderContext viewData)
         {
             if (mesh == null || !gameObject.Enabled || material == null)
                 return;

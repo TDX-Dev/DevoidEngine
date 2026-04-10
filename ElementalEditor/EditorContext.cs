@@ -22,7 +22,7 @@ namespace ElementalEditor
         public Scene Scene;
         public GameObject SelectedObject;
 
-        public EditorCamera EditorCamera = new();
+        public EditorCamera EditorCamera;
 
         public Texture2D SceneViewportTarget;
 

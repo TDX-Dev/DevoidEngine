@@ -1,82 +1,145 @@
-﻿using DevoidEngine.Engine.InputSystem;
+﻿using DevoidEngine.Engine.Core;
+using DevoidEngine.Engine.Rendering;
+using DevoidGPU;
 using System.Numerics;
 
 namespace ElementalEditor.Utils
 {
     public class EditorCamera
     {
+        public Camera Camera { get; private set; }
+
         public Vector3 Position = new(0, 2, 5);
         public float Pitch;
         public float Yaw = -90f;
 
-        public float MoveSpeed = 10f;
         public float MouseSensitivity = 0.15f;
+        public float MoveSpeed = 10f;
         public float Fov = 60f;
-        public float AspectRatio = 1.77f;
 
-        public void Update(float dt)
+        public int Width;
+        public int Height;
+
+        bool rotating;
+        bool panning;
+
+        public EditorCamera(int width, int height)
         {
+            Width = width;
+            Height = height;
 
-            Vector2 delta = new Vector2(Input.GetAction("LookX"),Input.GetAction("LookY"));
+            Camera = new Camera();
+            Camera.RenderTarget = new Framebuffer();
 
-            Yaw += delta.X * MouseSensitivity;
-            Pitch -= delta.Y * MouseSensitivity;
+            Camera.RenderTarget.AttachRenderTexture(new Texture2D(new TextureDescription
+            {
+                Width = width,
+                Height = height,
+                Format = TextureFormat.RGBA16_Float,
+                IsRenderTarget = true,
+                GenerateMipmaps = false,
+                MipLevels = 1
+            }));
 
-            Pitch = Math.Clamp(Pitch, -89f, 89f);
+            Camera.RenderTarget.AttachDepthTexture(new Texture2D(new TextureDescription
+            {
+                Width = width,
+                Height = height,
+                Format = TextureFormat.Depth24_Stencil8,
+                IsDepthStencil = true,
+                GenerateMipmaps = false,
+                MipLevels = 1
+            }));
 
-            Vector3 forward = GetForward();
-            Vector3 right = GetRight();
-
-            if (Input.GetActionDown("Forward"))
-                Position += forward * MoveSpeed * dt;
-
-            //if (Input.KeyDown(Keys.S))
-            //    Position -= forward * MoveSpeed * dt;
-
-            //if (Input.KeyDown(Keys.A))
-            //    Position -= right * MoveSpeed * dt;
-
-            //if (Input.KeyDown(Keys.D))
-            //    Position += right * MoveSpeed * dt;
+            UpdateProjection();
+            UpdateView();
         }
 
-        public Matrix4x4 GetViewMatrix()
+        public void SetViewportSize(int width, int height)
         {
-            Vector3 forward = GetForward();
+            if (width == Width && height == Height)
+                return;
 
-            return Matrix4x4.CreateLookAt(
+            Width = width;
+            Height = height;
+
+            Camera.RenderTarget.Resize(width, height);
+
+            UpdateProjection();
+        }
+
+        public void StartRotate() => rotating = true;
+        public void StopRotate() => rotating = false;
+
+        public void StartPan() => panning = true;
+        public void StopPan() => panning = false;
+
+        public void MouseDelta(float dx, float dy)
+        {
+            bool changed = false;
+
+            if (rotating)
+            {
+                Yaw += dx * MouseSensitivity;
+                Pitch -= dy * MouseSensitivity;
+                Pitch = Math.Clamp(Pitch, -89f, 89f);
+                changed = true;
+            }
+
+            if (panning)
+            {
+                Vector3 right = GetRight();
+                Vector3 up = Vector3.UnitY;
+
+                Position -= right * dx * 0.02f;
+                Position += up * dy * 0.02f;
+                changed = true;
+            }
+
+            if (changed)
+                UpdateView();
+        }
+
+        public void Scroll(float delta)
+        {
+            Position += GetForward() * delta;
+            UpdateView();
+        }
+
+        void UpdateView()
+        {
+            Camera.UpdateView(
                 Position,
-                Position + forward,
+                GetForward(),
                 Vector3.UnitY
             );
         }
 
-        public Matrix4x4 GetProjectionMatrix()
+        void UpdateProjection()
         {
-            return Matrix4x4.CreatePerspectiveFieldOfView(
-                MathF.PI / 180f * Fov,
-                AspectRatio,
-                0.01f,
-                1000f
-            );
+            float aspect = (float)Width / Height;
+
+            Camera.FovY = MathF.PI / 180f * Fov;
+            Camera.UpdateProjectionMatrix(aspect);
         }
 
-        public Vector3 GetForward()
+        Vector3 GetForward()
         {
+            float yaw = MathF.PI / 180f * Yaw;
+            float pitch = MathF.PI / 180f * Pitch;
+
             Vector3 forward;
 
-            forward.X = MathF.Cos(Deg2Rad(Yaw)) * MathF.Cos(Deg2Rad(Pitch));
-            forward.Y = MathF.Sin(Deg2Rad(Pitch));
-            forward.Z = MathF.Sin(Deg2Rad(Yaw)) * MathF.Cos(Deg2Rad(Pitch));
+            forward.X = MathF.Cos(yaw) * MathF.Cos(pitch);
+            forward.Y = MathF.Sin(pitch);
+            forward.Z = MathF.Sin(yaw) * MathF.Cos(pitch);
 
             return Vector3.Normalize(forward);
         }
 
-        public Vector3 GetRight()
+        Vector3 GetRight()
         {
             return Vector3.Normalize(Vector3.Cross(GetForward(), Vector3.UnitY));
         }
-
-        float Deg2Rad(float deg) => deg * (MathF.PI / 180f);
     }
 }

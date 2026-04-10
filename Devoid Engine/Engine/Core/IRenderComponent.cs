@@ -10,6 +10,6 @@ namespace DevoidEngine.Engine.Core
 {
     public interface IRenderComponent
     {
-        public void Collect(CameraComponent3D camera, CameraRenderContext viewData);
+        public void Collect(Camera camera, CameraRenderContext viewData);
     }
 }

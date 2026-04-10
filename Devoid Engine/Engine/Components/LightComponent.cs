@@ -259,7 +259,7 @@ namespace DevoidEngine.Engine.Components
 
 
         // Called during render collection phase
-        public void Collect(CameraComponent3D camera, CameraRenderContext ctx)
+        public void Collect(Camera camera, CameraRenderContext ctx)
         {
             if (!enabled)
                 return;
