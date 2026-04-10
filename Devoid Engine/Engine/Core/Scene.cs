@@ -51,7 +51,7 @@ namespace DevoidEngine.Engine.Core
         }
         public void Update(float deltaTime)
         {
-            if (!isPlaying) { return; }
+            //if (!isPlaying) { return; }
 
             for (int i = 0; i < GameObjects.Count; i++)
             {
@@ -72,6 +72,10 @@ namespace DevoidEngine.Engine.Core
             {
                 GameObjects[i].OnFixedUpdate(deltaTime);
             }
+
+            Physics.Step(deltaTime);
+            Physics.SyncTransforms(deltaTime);
+            Physics.ResolveFrameCollisions();
         }
 
         public void Render()

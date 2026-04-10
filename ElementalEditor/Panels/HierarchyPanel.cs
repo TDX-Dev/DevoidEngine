@@ -5,6 +5,8 @@ namespace ElementalEditor.Panels
 {
     public class HierarchyPanel : IEditorPanel
     {
+        private List<GameObject> deleteQueue = new();
+
         public void Draw(EditorContext context)
         {
             if (!ImGui.Begin("Hierarchy"))
@@ -26,6 +28,17 @@ namespace ElementalEditor.Panels
                 if (obj.parentObject == null)
                     DrawGameObjectNode(obj, context);
             }
+
+
+            foreach (var obj in deleteQueue)
+            {
+                context.Scene.DestroyGameObject(obj);
+
+                if (context.SelectedObject == obj)
+                    context.SelectedObject = null;
+            }
+
+            deleteQueue.Clear();
 
             ImGui.End();
         }
@@ -97,10 +110,7 @@ namespace ElementalEditor.Panels
 
                 if (ImGui.MenuItem("Delete"))
                 {
-                    context.Scene.DestroyGameObject(obj);
-
-                    if (context.SelectedObject == obj)
-                        context.SelectedObject = null;
+                    deleteQueue.Add(obj);
                 }
 
                 ImGui.EndPopup();

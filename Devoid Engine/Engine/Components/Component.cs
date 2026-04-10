@@ -1,9 +1,11 @@
 ﻿using DevoidEngine.Engine.Core;
+using DevoidEngine.Engine.Serialization;
 
 namespace DevoidEngine.Engine.Components
 {
     public abstract partial class Component
     {
+        [DontSerialize]
         public bool IsInitialized;
 
         internal void InternalStart()

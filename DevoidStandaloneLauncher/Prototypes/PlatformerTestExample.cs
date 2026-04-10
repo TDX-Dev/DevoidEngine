@@ -1,4 +1,5 @@
 ﻿using DevoidEngine.Engine.AssetPipeline;
+using DevoidEngine.Engine.Assets;
 using DevoidEngine.Engine.AudioSystem;
 using DevoidEngine.Engine.Components;
 using DevoidEngine.Engine.Core;
@@ -28,7 +29,7 @@ namespace DevoidStandaloneLauncher.Prototypes
         GameObject spotLight;
         public override void OnInit()
         {
-            DebugRenderSystem.AllowDebugDraw = true;
+            DebugRenderSystem.AllowDebugDraw = false;
             DefaultInput.ConfigureInput();
 
             scene = new Scene();
@@ -147,6 +148,8 @@ namespace DevoidStandaloneLauncher.Prototypes
             canvasComp.Canvas.Add(UIContainer);
 
             scene.Play();
+
+            File.WriteAllBytes(ProjectManager.Current.AssetPath + "\\mainscene.scene", MessagePackSerializer.Serialize(SceneSerializer.Serialize(scene)));
         }
         LabelNode orbLabel;
         ThirdPersonController controller;

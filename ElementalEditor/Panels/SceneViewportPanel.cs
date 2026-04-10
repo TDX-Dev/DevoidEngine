@@ -18,6 +18,8 @@ namespace ElementalEditor.Panels
         public Vector2 GameMousePosition;
         public bool MouseInsideViewport;
 
+        const float ToolbarHeight = 36f;
+
         public void Draw(EditorContext context)
         {
             if (!ImGui.Begin("Scene"))
@@ -33,6 +35,7 @@ namespace ElementalEditor.Panels
             }
 
             Vector2 panelSize = ImGui.GetContentRegionAvail();
+            panelSize.Y -= ToolbarHeight;
             ViewportSize = panelSize;
 
             var texture = context.SceneViewportTarget;
@@ -51,6 +54,9 @@ namespace ElementalEditor.Panels
 
             ViewportOffset = offset;
 
+
+            DrawToolbar(context);
+
             // Content region origin in screen space
             Vector2 contentMin = ImGui.GetCursorScreenPos();
             Vector2 contentMax = contentMin + panelSize;
@@ -63,6 +69,7 @@ namespace ElementalEditor.Panels
                 contentMax,
                 ImGui.GetColorU32(new Vector4(0, 0, 0, 1))
             );
+
 
             // Move cursor relative to window
             ImGui.SetCursorPos(ImGui.GetCursorPos() + offset);
@@ -90,7 +97,55 @@ namespace ElementalEditor.Panels
                 GameMousePosition = local / scale;
             }
 
+
+
             ImGui.End();
+        }
+
+        void DrawToolbar(EditorContext context)
+        {
+            var drawList = ImGui.GetWindowDrawList();
+
+            Vector2 windowMin = ImGui.GetCursorScreenPos();
+            float width = ImGui.GetWindowSize().X;
+
+            Vector2 barMin = windowMin;
+            Vector2 barMax = barMin + new Vector2(width, ToolbarHeight);
+
+            drawList.AddRectFilled(
+                barMin,
+                barMax,
+                ImGui.GetColorU32(new Vector4(0.12f, 0.12f, 0.12f, 0.95f))
+            );
+
+            float padding = 6f;
+            float buttonSize = ToolbarHeight - padding * 2;
+
+            ImGui.SetCursorScreenPos(barMin + new Vector2(padding, padding));
+
+            bool playing = context.PlayState == ScenePlayState.Play;
+
+            if (ImGui.Button(playing ? "■" : "▶", new Vector2(buttonSize, buttonSize)))
+            {
+                if (playing)
+                {
+                    context.PlayState = ScenePlayState.Edit;
+                    context.Scene.Play(false);
+                }
+                else
+                {
+                    context.PlayState = ScenePlayState.Play;
+                    context.Scene.Play(true);
+                }
+            }
+
+            ImGui.SameLine();
+
+            if (ImGui.Button("⏸", new Vector2(buttonSize, buttonSize)))
+            {
+                if (context.PlayState == ScenePlayState.Play)
+                    context.PlayState = ScenePlayState.Pause;
+            }
         }
     }
 }

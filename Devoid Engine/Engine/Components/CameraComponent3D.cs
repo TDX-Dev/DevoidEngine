@@ -28,6 +28,7 @@ namespace DevoidEngine.Engine.Components
         public bool isDefault;
         private int width;
         private int height;
+        private bool dirty = true;
 
         public CameraComponent3D()
         {
@@ -85,7 +86,7 @@ namespace DevoidEngine.Engine.Components
         {
 
             var transform = gameObject.Transform;
-            if (!transform.hasMoved && IsInitialized)
+            if (!transform.hasMoved && IsInitialized && !dirty)
                 return;
 
             Vector3 position = transform.Position;
@@ -100,7 +101,7 @@ namespace DevoidEngine.Engine.Components
 
             Camera.UpdateView(position, forward, up);
 
-
+            dirty = false;
         }
 
         public override void OnDestroy()
@@ -116,19 +117,20 @@ namespace DevoidEngine.Engine.Components
             {
                 Camera.FovY = MathHelper.DegToRad(Math.Clamp(value, 1f, 179f));
                 UpdateProjection();
+                dirty = true;
             }
         }
 
         public float NearPlane
         {
             get => Camera.NearClip;
-            set { Camera.NearClip = value; UpdateProjection(); }
+            set { Camera.NearClip = value; UpdateProjection(); dirty = true; }
         }
 
         public float FarPlane
         {
             get => Camera.FarClip;
-            set { Camera.FarClip = value; UpdateProjection(); }
+            set { Camera.FarClip = value; UpdateProjection(); dirty = true; }
         }
 
         public void SetViewportSize(int newWidth, int newHeight)

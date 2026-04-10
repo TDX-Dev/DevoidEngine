@@ -38,7 +38,7 @@ namespace DevoidStandaloneLauncher
             application.Initialize(applicationSpecification);
             application.ApplyProjectSettings();
 
-            application.TargetFrameRate = 120;
+            application.TargetFrameRate = 60;
             EngineSingleton.Instance.UseInterpolation = true;
             
             application.AddLayer(new PrototypeLoader());

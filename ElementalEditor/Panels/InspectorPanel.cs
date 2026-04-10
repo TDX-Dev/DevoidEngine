@@ -1,11 +1,12 @@
-﻿using ElementalEditor.Utils;
+﻿using DevoidEngine.Engine.Components;
+using DevoidEngine.Engine.Core;
+using DevoidEngine.Engine.Serialization;
+using ElementalEditor.Utils;
 using ImGuiNET;
 using System;
 using System.Linq;
-using System.Reflection;
 using System.Numerics;
-using DevoidEngine.Engine.Core;
-using DevoidEngine.Engine.Components;
+using System.Reflection;
 
 namespace ElementalEditor.Panels
 {
@@ -61,6 +62,9 @@ namespace ElementalEditor.Panels
 
                     foreach (var field in fields)
                     {
+                        if (Attribute.IsDefined(field, typeof(DontSerialize)))
+                            continue;
+
                         EditorUI.BeginProperty(field.Name);
                         EditorUI.DrawGenericField(field, component);
                         EditorUI.EndProperty();
@@ -68,6 +72,9 @@ namespace ElementalEditor.Panels
 
                     foreach (var prop in props)
                     {
+                        if (Attribute.IsDefined(prop, typeof(DontSerialize)))
+                            continue;
+
                         EditorUI.BeginProperty(prop.Name);
                         EditorUI.DrawGenericProperty(prop, component);
                         EditorUI.EndProperty();
