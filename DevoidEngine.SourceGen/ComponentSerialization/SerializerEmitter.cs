@@ -94,7 +94,11 @@ internal static class SerializerEmitter
                         }
                     }
                 """);
-            } 
+            }
+            else if (IsComponentType(field.Type))
+            {
+                // serialize component reference
+            }
             else if (IsPrimitive(field.Type))
             {
                 //serializeBody.AppendLine($"writer.Write(value.{fieldName});");
@@ -247,6 +251,19 @@ internal static class SerializerEmitter
 
         return false;
     }
+    private static bool IsComponentType(ITypeSymbol type)
+    {
+        while (type != null)
+        {
+            if (type.Name == "Component")
+                return true;
+
+            type = type.BaseType;
+        }
+
+        return false;
+    }
+
     private static bool ContainsGameObject(ITypeSymbol type)
     {
         if (type.ToDisplayString() == "DevoidEngine.Engine.Core.GameObject")

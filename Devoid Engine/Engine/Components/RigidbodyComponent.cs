@@ -52,7 +52,7 @@ namespace DevoidEngine.Engine.Components
 
         private IPhysicsBody? internalBody;
 
-        public PhysicsShapeDescription internalShape = new PhysicsShapeDescription
+        private PhysicsShapeDescription internalShape = new PhysicsShapeDescription
         {
             Type = PhysicsShapeType.Box,
             Size = new Vector3(1, 1, 1)

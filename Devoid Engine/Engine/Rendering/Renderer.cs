@@ -173,9 +173,8 @@ namespace DevoidEngine.Engine.Rendering
             }
 
             PushViewport(0, 0, (int)ctx.cameraData.ScreenSize.X, (int)ctx.cameraData.ScreenSize.Y);
-
             RenderUI(ctx.renderItemsUI);
-            RenderGBuffer(ctx.renderItems3D, ctx);
+            //RenderGBuffer(ctx.renderItems3D, ctx);
             ShadowSystem.RenderShadowMaps(ctx);
             Framebuffer activeFrameBuffer = ActiveRenderTechnique.Render(ctx);
 

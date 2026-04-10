@@ -48,6 +48,14 @@ namespace DevoidEngine.Engine.Rendering.Shadows
         {
             if (ctx.renderItems3D.Count == 0)
                 return;
+
+            Renderer.PushViewport(
+                0,
+                0,
+                (int)ctx.cameraData.ScreenSize.X,
+                (int)ctx.cameraData.ScreenSize.Y
+            );
+
             atlas.Reset();
             shadowData.Clear();
 
@@ -107,7 +115,7 @@ namespace DevoidEngine.Engine.Rendering.Shadows
             Renderer.GraphicsDevice.UnbindFramebuffer();
             atlas.DistanceTexture.Bind(9);
 
-            Renderer.RestoreViewport();
+            Renderer.PopViewport();
         }
 
         Matrix4x4 ComputeLightMatrix(GPUSpotLight light)

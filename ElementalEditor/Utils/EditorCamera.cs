@@ -57,6 +57,9 @@ namespace ElementalEditor.Utils
 
         public void SetViewportSize(int width, int height)
         {
+            if (width <= 0 || height <= 0)
+                return;
+
             if (width == Width && height == Height)
                 return;
 
@@ -64,6 +67,8 @@ namespace ElementalEditor.Utils
             Height = height;
 
             Camera.RenderTarget.Resize(width, height);
+
+            Renderer.Resize(width, height);
 
             UpdateProjection();
         }
@@ -121,6 +126,8 @@ namespace ElementalEditor.Utils
 
             Camera.FovY = MathF.PI / 180f * Fov;
             Camera.UpdateProjectionMatrix(aspect);
+
+            Console.WriteLine($"{Width}x{Height} aspect {(float)Width / Height}");
         }
 
         public Vector3 GetForward()

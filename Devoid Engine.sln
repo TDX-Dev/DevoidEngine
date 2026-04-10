@@ -12,6 +12,11 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DevoidEngine.SourceGen", "DevoidEngine.SourceGen\DevoidEngine.SourceGen.csproj", "{100B3A0E-C044-4302-8F62-BDDE2F06B46C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElementalEditor", "ElementalEditor\ElementalEditor.csproj", "{757B5D9C-0A9A-43E5-B743-BBA8C60C0516}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4F9CE006-8877-45F3-80BF-0F445AA750AF} = {4F9CE006-8877-45F3-80BF-0F445AA750AF}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DevoidRuntime", "DevoidRuntime\DevoidRuntime.csproj", "{4F9CE006-8877-45F3-80BF-0F445AA750AF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -61,6 +66,14 @@ Global
 		{757B5D9C-0A9A-43E5-B743-BBA8C60C0516}.Release|Any CPU.Build.0 = Release|Any CPU
 		{757B5D9C-0A9A-43E5-B743-BBA8C60C0516}.Release|x64.ActiveCfg = Release|Any CPU
 		{757B5D9C-0A9A-43E5-B743-BBA8C60C0516}.Release|x64.Build.0 = Release|Any CPU
+		{4F9CE006-8877-45F3-80BF-0F445AA750AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F9CE006-8877-45F3-80BF-0F445AA750AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F9CE006-8877-45F3-80BF-0F445AA750AF}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4F9CE006-8877-45F3-80BF-0F445AA750AF}.Debug|x64.Build.0 = Debug|Any CPU
+		{4F9CE006-8877-45F3-80BF-0F445AA750AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F9CE006-8877-45F3-80BF-0F445AA750AF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4F9CE006-8877-45F3-80BF-0F445AA750AF}.Release|x64.ActiveCfg = Release|Any CPU
+		{4F9CE006-8877-45F3-80BF-0F445AA750AF}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,21 +1,16 @@
-﻿using DevoidEngine.Engine.Core;
+﻿using DevoidEngine.Engine.AssetPipeline;
+using DevoidEngine.Engine.Core;
 using ImGuiNET;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace ElementalEditor.Panels
 {
     public class SceneViewportPanel : IEditorPanel
     {
         private Vector2 lastViewportSize;
-        public Vector2 ViewportSize;
-        public Vector2 ViewportOffset;
-        public float ViewportScale;
 
+        public Vector2 ViewportSize;
         public Vector2 GameMousePosition;
         public bool MouseInsideViewport;
 
@@ -23,68 +18,86 @@ namespace ElementalEditor.Panels
 
         public void Draw(EditorContext context)
         {
+            ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Vector2.Zero);
             if (!ImGui.Begin("Scene"))
             {
+                ImGui.PopStyleVar();
                 ImGui.End();
                 return;
             }
 
             if (context.EditorCamera == null)
             {
-                ImGui.End();
+                ImGui.PopStyleVar();
+                ImGui.End(); 
                 return;
             }
 
-            Vector2 panelSize = ImGui.GetContentRegionAvail();
-            panelSize.Y -= ToolbarHeight;
-            ViewportSize = panelSize;
-
-            var texture = (Texture2D)context.EditorCamera.Camera.RenderTarget.GetRenderTexture(0);
-            Vector2 renderSize = new(texture.Width, texture.Height);
-
-            // Calculate scale
-            float scale = MathF.Min(
-                panelSize.X / renderSize.X,
-                panelSize.Y / renderSize.Y
-            );
-
-            ViewportScale = scale;
-
-            Vector2 finalSize = renderSize * scale;
-            Vector2 offset = (panelSize - finalSize) * 0.5f;
-
-            ViewportOffset = offset;
-
-
             DrawToolbar(context);
 
-            // Content region origin in screen space
+            Vector2 panelSize = ImGui.GetContentRegionAvail();
+            //panelSize.Y -= ToolbarHeight;
+
+            ViewportSize = panelSize;
+
+            int width = (int)ViewportSize.X;
+            int height = (int)ViewportSize.Y;
+
+            if (width > 0 && height > 0)
+            {
+                if (lastViewportSize.X != width || lastViewportSize.Y != height)
+                {
+                    context.EditorCamera.SetViewportSize(width, height);
+                    lastViewportSize = new Vector2(width, height);
+                    Screen.Size = new Vector2(width, height);
+                }
+            }
+
+            var texture = (Texture2D)context.EditorCamera.Camera.RenderTarget.GetRenderTexture(0);
+
             Vector2 contentMin = ImGui.GetCursorScreenPos();
-            Vector2 contentMax = contentMin + panelSize;
+            Vector2 contentMax = contentMin + ViewportSize;
 
             var drawList = ImGui.GetWindowDrawList();
 
-            // Draw background (letterbox bars)
             drawList.AddRectFilled(
                 contentMin,
                 contentMax,
                 ImGui.GetColorU32(new Vector4(0, 0, 0, 1))
             );
 
-
-            // Move cursor relative to window
-            ImGui.SetCursorPos(ImGui.GetCursorPos() + offset);
-
             ImGui.Image(
                 texture.GetDeviceTexture().GetHandle(),
-                finalSize
+                ViewportSize
             );
 
-            // --- Mouse conversion ---
+            if (ImGui.BeginDragDropTarget())
+            {
+                var payload = ImGui.AcceptDragDropPayload("ASSET_PATH");
+
+                unsafe
+                {
+                    if (payload.NativePtr != null)
+                    {
+                        unsafe
+                        {
+                            string path = Encoding.UTF8.GetString(
+                                (byte*)payload.Data,
+                                payload.DataSize
+                            );
+
+                            HandleAssetDrop(context, path);
+                        }
+                    }
+                }
+
+                ImGui.EndDragDropTarget();
+            }
+
             Vector2 mousePos = ImGui.GetMousePos();
 
-            Vector2 viewportMin = contentMin + offset;
-            Vector2 viewportMax = viewportMin + finalSize;
+            Vector2 viewportMin = contentMin;
+            Vector2 viewportMax = contentMin + ViewportSize;
 
             MouseInsideViewport =
                 mousePos.X >= viewportMin.X &&
@@ -94,13 +107,30 @@ namespace ElementalEditor.Panels
 
             if (MouseInsideViewport)
             {
-                Vector2 local = mousePos - viewportMin;
-                GameMousePosition = local / scale;
+                GameMousePosition = mousePos - viewportMin;
             }
 
+            context.ViewportFocused =
+                MouseInsideViewport &&
+                ImGui.IsWindowFocused(ImGuiFocusedFlags.RootAndChildWindows);
 
-
+            ImGui.PopStyleVar();
             ImGui.End();
+        }
+
+        void HandleAssetDrop(EditorContext context, string relativePath)
+        {
+            string ext = Path.GetExtension(relativePath).ToLower();
+
+            if (ext == ".gltf" || ext == ".glb")
+            {
+                var model = Asset.Load<Model>(relativePath);
+
+                if (model != null)
+                {
+                    model.Instantiate(context.Scene);
+                }
+            }
         }
 
         void DrawToolbar(EditorContext context)
@@ -120,35 +150,29 @@ namespace ElementalEditor.Panels
             );
 
             float padding = 6f;
-            float buttonSize = ToolbarHeight - padding * 2;
+            float buttonHeight = ToolbarHeight - padding * 2;
 
             ImGui.SetCursorScreenPos(barMin + new Vector2(padding, padding));
 
-            bool playing = context.PlayState == ScenePlayState.Play;
+            bool playing = EditorRuntime.IsRunning;
 
-            if (ImGui.Button(playing ? "■" : "▶", new Vector2(buttonSize, buttonSize)))
+            if (!playing)
             {
-                if (playing)
+                if (ImGui.Button("Play", new Vector2(0, buttonHeight)))
                 {
-                    context.PlayState = ScenePlayState.Edit;
-                    context.Scene.Play(false);
+                    EditorRuntime.Launch();
                 }
-                else
+            }
+            else
+            {
+                if (ImGui.Button("Stop", new Vector2(0, buttonHeight)))
                 {
-                    context.PlayState = ScenePlayState.Play;
-                    context.Scene.Play(true);
+                    EditorRuntime.Stop();
                 }
             }
 
-            ImGui.SameLine();
-
-            if (ImGui.Button("⏸", new Vector2(buttonSize, buttonSize)))
-            {
-                if (context.PlayState == ScenePlayState.Play)
-                    context.PlayState = ScenePlayState.Pause;
-            }
-
-            context.ViewportFocused = MouseInsideViewport && ImGui.IsWindowFocused(ImGuiFocusedFlags.RootAndChildWindows);
+            // Move cursor below toolbar so viewport draws correctly
+            ImGui.SetCursorScreenPos(new Vector2(windowMin.X, windowMin.Y + ToolbarHeight));
         }
     }
 }
