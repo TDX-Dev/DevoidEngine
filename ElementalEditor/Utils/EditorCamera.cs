@@ -106,7 +106,7 @@ namespace ElementalEditor.Utils
             UpdateView();
         }
 
-        void UpdateView()
+        public void UpdateView()
         {
             Camera.UpdateView(
                 Position,
@@ -123,7 +123,7 @@ namespace ElementalEditor.Utils
             Camera.UpdateProjectionMatrix(aspect);
         }
 
-        Vector3 GetForward()
+        public Vector3 GetForward()
         {
             float yaw = MathF.PI / 180f * Yaw;
             float pitch = MathF.PI / 180f * Pitch;
@@ -137,9 +137,14 @@ namespace ElementalEditor.Utils
             return Vector3.Normalize(forward);
         }
 
-        Vector3 GetRight()
+        public Vector3 GetRight()
         {
             return Vector3.Normalize(Vector3.Cross(GetForward(), Vector3.UnitY));
+        }
+
+        public Vector3 GetUp()
+        {
+            return Vector3.UnitY;
         }
     }
 }

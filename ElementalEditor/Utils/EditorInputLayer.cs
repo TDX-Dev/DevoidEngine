@@ -1,5 +1,8 @@
-﻿using DevoidEngine.Engine.InputSystem;
+﻿using Assimp;
+using DevoidEngine.Engine.Core;
+using DevoidEngine.Engine.InputSystem;
 using DevoidEngine.Engine.InputSystem.InputDevices;
+using System.Numerics;
 
 namespace ElementalEditor.Utils
 {
@@ -10,15 +13,68 @@ namespace ElementalEditor.Utils
         bool rightDown;
         bool shiftDown;
 
+        public bool ViewportActive = false;
+        bool forward;
+        bool backward;
+        bool left;
+        bool right;
+        bool up;
+        bool down;
+
+        public bool IsNavigating => rightDown;
+
         public EditorInputLayer(EditorCamera cam)
         {
             camera = cam;
         }
 
+        public void Update(float dt)
+        {
+            if (!ViewportActive && !rightDown)
+            {
+                forward = backward = left = right = up = down = false;
+                return;
+            }
+
+            Vector3 move = Vector3.Zero;
+
+            Vector3 forwardDir = camera.GetForward();
+            Vector3 rightDir = camera.GetRight();
+            Vector3 upDir = camera.GetUp();
+
+            if (forward) move += forwardDir;
+            if (backward) move -= forwardDir;
+            if (right) move += rightDir;
+            if (left) move -= rightDir;
+            if (up) move += upDir;
+            if (down) move -= upDir;
+
+            if (move.LengthSquared() > 0)
+            {
+                move = Vector3.Normalize(move);
+                camera.Position += move * camera.MoveSpeed * dt;
+                camera.UpdateView();
+            }
+        }
+
         public bool Handle(ref InputEvent e)
         {
+            if (!ViewportActive && !rightDown)
+                return false;
+
             if (e.DeviceType == InputDeviceType.Keyboard)
             {
+                if (e.Control == (ushort)Keys.W)
+                    forward = e.Value > 0;
+
+                if (e.Control == (ushort)Keys.S)
+                    backward = e.Value > 0;
+
+                if (e.Control == (ushort)Keys.A)
+                    left = e.Value > 0;
+
+                if (e.Control == (ushort)Keys.D)
+                    right = e.Value > 0;
                 if (e.Control == (ushort)Keys.LeftShift)
                     shiftDown = e.Value > 0;
             }
@@ -30,14 +86,19 @@ namespace ElementalEditor.Utils
                 {
                     rightDown = e.Value > 0;
 
-                    if (rightDown && !shiftDown)
-                        camera.StartRotate();
-
-                    if (rightDown && shiftDown)
-                        camera.StartPan();
-
-                    if (!rightDown)
+                    if (rightDown)
                     {
+                        Cursor.SetCursorState(CursorState.Grabbed);
+
+                        if (!shiftDown)
+                            camera.StartRotate();
+                        else
+                            camera.StartPan();
+                    }
+                    else
+                    {
+                        Cursor.SetCursorState(CursorState.Normal);
+
                         camera.StopRotate();
                         camera.StopPan();
                     }

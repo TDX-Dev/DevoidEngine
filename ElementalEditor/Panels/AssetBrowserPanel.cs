@@ -57,7 +57,8 @@ namespace ElementalEditor.Panels
 
             if (ImGui.BeginDragDropSource())
             {
-                var bytes = Encoding.UTF8.GetBytes(file);
+                string relative = Path.GetRelativePath(ProjectManager.Current.AssetPath, file);
+                var bytes = Encoding.UTF8.GetBytes(relative);
 
                 unsafe
                 {

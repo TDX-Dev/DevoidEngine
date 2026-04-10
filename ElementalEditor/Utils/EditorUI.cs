@@ -1,4 +1,6 @@
-﻿using DevoidEngine.Engine.Core;
+﻿using DevoidEngine.Engine.AssetPipeline;
+using DevoidEngine.Engine.AssetPipeline.Loaders;
+using DevoidEngine.Engine.Core;
 using ImGuiNET;
 using System;
 using System.Collections.Generic;
@@ -111,7 +113,14 @@ namespace ElementalEditor.Utils
             }
 
             // fallback
-            PropertyType(field.FieldType);
+            var asset = PropertyType(field.FieldType);
+
+            if (asset != null)
+            {
+                field.SetValue(target, asset);
+                return true;
+            }
+
             return false;
         }
 
@@ -147,7 +156,14 @@ namespace ElementalEditor.Utils
             if (prop.PropertyType.IsEnum)
                 return DrawEnumProperty(prop, target);
 
-            PropertyType(prop.PropertyType);
+            var asset = PropertyType(prop.PropertyType);
+
+            if (asset != null)
+            {
+                prop.SetValue(target, asset);
+                return true;
+            }
+
             return false;
         }
 
@@ -279,11 +295,47 @@ namespace ElementalEditor.Utils
                 ImGui.Image(texture, new Vector2(size, size));
         }
 
-        public static void PropertyType(Type type)
+        public unsafe static object? PropertyType(Type type)
         {
+            object? result = null;
+
             ImGui.BeginDisabled();
             ImGui.Text(type.Name);
             ImGui.EndDisabled();
+
+            if (ImGui.BeginDragDropTarget())
+            {
+                var payload = ImGui.AcceptDragDropPayload("ASSET_PATH");
+
+                if (payload.NativePtr != null)
+                {
+                    unsafe
+                    {
+                        string path = Encoding.UTF8.GetString(
+                            (byte*)payload.Data,
+                            payload.DataSize
+                        );
+
+                        if (SupportsAssetType(type))
+                        {
+                            MethodInfo loadMethod =
+                                typeof(Asset).GetMethod("Load")!
+                                .MakeGenericMethod(type);
+
+                            result = loadMethod.Invoke(null, new object[] { path });
+                        }
+                    }
+                }
+
+                ImGui.EndDragDropTarget();
+            }
+
+            return result;
+        }
+
+        static bool SupportsAssetType(Type type)
+        {
+            return AssetLoaderRegistry.HasLoader(type);
         }
 
 

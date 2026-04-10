@@ -30,6 +30,8 @@ namespace DevoidEngine.Engine.AssetPipeline
             AssetLoaderRegistry.Register<Material>(new MaterialLoader());
         }
 
+
+
         public static T? Load<T>(Guid guid) where T : class?
         {
             if (AssetCache<T>.Cache.TryGetValue(guid, out var asset))

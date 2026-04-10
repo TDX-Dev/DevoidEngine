@@ -15,13 +15,15 @@ namespace ElementalEditor
     {
         EditorContext context;
         EditorCamera editorCamera;
+        EditorInputLayer inputLayer;
 
         List<IEditorPanel> panels;
 
         public override void OnAttach()
         {
             editorCamera = new EditorCamera(1280, 720);
-            Input.Router.Push(new EditorInputLayer(editorCamera));
+            inputLayer = new EditorInputLayer(editorCamera);
+            Input.Router.Push(inputLayer);
 
             panels = new List<IEditorPanel>();
             context = new EditorContext();
@@ -47,6 +49,8 @@ namespace ElementalEditor
 
         public override void OnUpdate(float deltaTime)
         {
+            inputLayer.ViewportActive = context.ViewportFocused;
+            inputLayer.Update(deltaTime);
             SceneManager.CurrentScene?.Update(deltaTime);
         }
         public override void OnFixedUpdate(float deltaTime)
@@ -83,6 +87,17 @@ namespace ElementalEditor
 
         public override void OnGUIRender()
         {
+            var io = ImGui.GetIO();
+
+            if (inputLayer.IsNavigating) // RMB held
+            {
+                io.ConfigFlags |= ImGuiConfigFlags.NoMouse;
+            }
+            else
+            {
+                io.ConfigFlags &= ~ImGuiConfigFlags.NoMouse;
+            }
+
             if (SceneManager.CurrentScene != null)
             {
 

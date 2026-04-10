@@ -9,6 +9,10 @@ namespace DevoidEngine.Engine.AssetPipeline.Loaders
     public static class AssetLoaderRegistry
     {
         private static readonly Dictionary<Type, object> loaders = new();
+        public static bool HasLoader(Type type)
+        {
+            return loaders.ContainsKey(type);
+        }
 
         public static void Register<T>(IAssetLoader<T> loader)
         {

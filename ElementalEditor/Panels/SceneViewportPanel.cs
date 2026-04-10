@@ -147,6 +147,8 @@ namespace ElementalEditor.Panels
                 if (context.PlayState == ScenePlayState.Play)
                     context.PlayState = ScenePlayState.Pause;
             }
+
+            context.ViewportFocused = MouseInsideViewport && ImGui.IsWindowFocused(ImGuiFocusedFlags.RootAndChildWindows);
         }
     }
 }
