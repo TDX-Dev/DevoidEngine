@@ -3,6 +3,7 @@ using DevoidEngine.Engine.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -12,9 +13,11 @@ namespace DevoidRuntime
     {
         public override void OnAttach()
         {
-            SceneManager.CurrentScene.Play(true);
+            SceneManager.LoadStartupScene();
+
             Application.ApplyProjectSettings();
-            Console.WriteLine(Screen.Size);
+
+            SceneManager.CurrentScene.Play(true);
         }
 
         public override void OnUpdate(float deltaTime)
@@ -37,6 +40,13 @@ namespace DevoidRuntime
         {
             Texture2D renderOutput = (Texture2D)SceneManager.CurrentScene?.GetDefaultCamera3D()?.Camera?.RenderTarget?.GetRenderTexture(0);
             RenderAPI.RenderToScreen(renderOutput);
+        }
+
+        public override void OnResize(int width, int height)
+        {
+            Screen.Size = new Vector2(width, height);
+            Renderer.Resize(width, height);
+            SceneManager.CurrentScene?.ResizeCameras(width,height);
         }
 
     }

@@ -31,6 +31,7 @@ namespace DevoidEngine.Engine.Core
         public bool useImGuiDock;
         public bool useDebugConsole;
 
+        public bool allowResize;
 
         public IGraphicsDevice graphicsDevice;
     }
@@ -83,7 +84,8 @@ namespace DevoidEngine.Engine.Core
                 VSync = applicationSpecification.forceVsync ? VSyncMode.Adaptive : VSyncMode.Off,
                 WindowSize = new Vector2(applicationSpecification.Width, applicationSpecification.Height),
                 WindowMinimumSize = new Vector2(100, 100),
-                WindowState = applicationSpecification.useFullscreen ? WindowState.Fullscreen : WindowState.Normal
+                WindowState = applicationSpecification.useFullscreen ? WindowState.Fullscreen : WindowState.Normal,
+                Resizeable = applicationSpecification.allowResize
             };
 
             PresentationParameters presentParameters = new PresentationParameters()

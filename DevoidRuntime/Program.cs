@@ -30,8 +30,6 @@ namespace DevoidRuntime
 
             app.AddLayer(new RuntimeLayer());
 
-            SceneManager.LoadStartupScene();
-
             app.Run();
         }
 

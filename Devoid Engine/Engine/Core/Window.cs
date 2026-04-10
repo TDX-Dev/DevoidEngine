@@ -18,6 +18,7 @@ namespace DevoidEngine.Engine.Core
         public VSyncMode VSync;
         public bool StartVisible;
         public bool StartFocused;
+        public bool Resizeable;
 
         public string WindowTitle;
     }
@@ -64,6 +65,7 @@ namespace DevoidEngine.Engine.Core
             StartVisible = windowSpec.StartVisible,
             StartFocused = windowSpec.StartFocused,
             WindowState = (OpenTK.Windowing.Common.WindowState)windowSpec.WindowState,
+            WindowBorder = windowSpec.Resizeable ? OpenTK.Windowing.Common.WindowBorder.Resizable : OpenTK.Windowing.Common.WindowBorder.Fixed,
             AutoLoadBindings = false,
 
             Vsync = (OpenTK.Windowing.Common.VSyncMode)windowSpec.VSync,
@@ -73,7 +75,7 @@ namespace DevoidEngine.Engine.Core
             //MaximumClientSize = new OpenTK.Mathematics.Vector2i((int)windowSpec.WindowMaximumSize.X, (int)windowSpec.WindowMaximumSize.Y),
             MinimumClientSize = new OpenTK.Mathematics.Vector2i((int)windowSpec.WindowMinimumSize.X, (int)windowSpec.WindowMinimumSize.Y),
             IsEventDriven = false,
-            Title = windowSpec.WindowTitle
+            Title = windowSpec.WindowTitle,
         })
         {
             this.CenterWindow();

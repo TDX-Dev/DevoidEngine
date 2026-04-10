@@ -49,7 +49,8 @@ namespace ElementalEditor
                 useFullscreen = false,
                 useImGui = true,
                 useDebugConsole = true,
-                Name = "Devoid Editor"
+                Name = "Devoid Editor",
+                allowResize = true
             };
 
             Application application = new Application();

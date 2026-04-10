@@ -50,8 +50,9 @@ namespace DevoidEngine.Engine.Rendering
         {
             var current = GraphicsDevice.GetViewport();
 
+            // If viewport hasn't been initialized yet, use screen size
             if (current.Item3 == 0 || current.Item4 == 0)
-                current = (0, 0, width, height);
+                current = (0, 0, (int)Screen.Size.X, (int)Screen.Size.Y);
 
             viewportStack.Push(current);
 
@@ -73,6 +74,7 @@ namespace DevoidEngine.Engine.Rendering
                 throw new Exception("Viewport stack underflow");
 
             var vp = viewportStack.Pop();
+
             if (!popOnly)
                 GraphicsDevice.SetViewport(vp.Item1, vp.Item2, vp.Item3, vp.Item4);
         }
@@ -174,7 +176,7 @@ namespace DevoidEngine.Engine.Rendering
 
             PushViewport(0, 0, (int)ctx.cameraData.ScreenSize.X, (int)ctx.cameraData.ScreenSize.Y);
             RenderUI(ctx.renderItemsUI);
-            //RenderGBuffer(ctx.renderItems3D, ctx);
+            RenderGBuffer(ctx.renderItems3D, ctx);
             ShadowSystem.RenderShadowMaps(ctx);
             Framebuffer activeFrameBuffer = ActiveRenderTechnique.Render(ctx);
 

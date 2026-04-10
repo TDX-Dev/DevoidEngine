@@ -9,7 +9,7 @@ namespace DevoidEngine.Engine.Components
     {
         public override string Type => nameof(StaticColliderComponent);
 
-        private PhysicsShapeDescription internalShape = new PhysicsShapeDescription
+        internal PhysicsShapeDescription internalShape = new PhysicsShapeDescription
         {
             Type = PhysicsShapeType.Box,
             Size = new Vector3(1, 1, 1)
@@ -25,7 +25,7 @@ namespace DevoidEngine.Engine.Components
             }
         }
 
-        private PhysicsMaterial internalMaterial = PhysicsMaterial.Default;
+        internal PhysicsMaterial internalMaterial = PhysicsMaterial.Default;
 
         public PhysicsMaterial Material
         {
