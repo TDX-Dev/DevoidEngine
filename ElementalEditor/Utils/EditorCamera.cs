@@ -13,8 +13,8 @@ namespace ElementalEditor.Utils
         public float Pitch;
         public float Yaw = -90f;
 
-        public float MouseSensitivity = 0.15f;
-        public float MoveSpeed = 10f;
+        public float MouseSensitivity = 0.25f;
+        public float MoveSpeed = 20f;
         public float Fov = 60f;
 
         public int Width;

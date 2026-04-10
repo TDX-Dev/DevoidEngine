@@ -13,6 +13,7 @@ namespace DevoidRuntime
     {
         public override void OnAttach()
         {
+            DefaultInput.ConfigureInput();
             SceneManager.LoadStartupScene();
 
             Application.ApplyProjectSettings();
