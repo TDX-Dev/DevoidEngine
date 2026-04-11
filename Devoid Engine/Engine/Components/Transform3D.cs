@@ -1,4 +1,5 @@
 ﻿using DevoidEngine.Engine.Core;
+using DevoidEngine.Engine.Serialization;
 using DevoidEngine.Engine.Utilities;
 using System.Numerics;
 
@@ -235,8 +236,11 @@ namespace DevoidEngine.Engine.Components
         //    );
         //}
 
+        [DontSerialize]
         public Vector3 Forward => Vector3.Normalize(Vector3.Transform(Vector3.UnitZ, Rotation));
+        [DontSerialize]
         public Vector3 Up => Vector3.Normalize(Vector3.Transform(Vector3.UnitY, Rotation));
+        [DontSerialize]
         public Vector3 Right => Vector3.Normalize(Vector3.Transform(Vector3.UnitX, Rotation));
 
         // ===============================

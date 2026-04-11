@@ -5,7 +5,9 @@ using DevoidEngine.Engine.InputSystem;
 using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.Utilities;
 using ElementalEditor.Panels;
+using ElementalEditor.ProjectSettings;
 using ElementalEditor.Utils;
+using ElementalEditor.Windows;
 using ImGuiNET;
 using System.Numerics;
 
@@ -18,8 +20,10 @@ namespace ElementalEditor
         EditorInputLayer inputLayer;
 
         List<IEditorPanel> panels;
+        ProjectSettingsWindow projectSettings;
 
         ImFontPtr editorFont;
+        bool openProjectSettingsRequested;
 
         public override void OnAttach()
         {
@@ -27,6 +31,7 @@ namespace ElementalEditor
             editorFont = Application.ImGuiBackend.AddFontFromFile("./Content/Font/JetBrainsMono-Regular.ttf", 16);
             Application.ImGuiBackend.LoadIconFont("./Content/Font/bootstrap_icons.ttf", 16, (BootstrapIconFont.IconMin, BootstrapIconFont.IconMax16));
 
+            projectSettings = new ProjectSettingsWindow();
 
             editorCamera = new EditorCamera(1280, 720);
             inputLayer = new EditorInputLayer(editorCamera);
@@ -40,7 +45,8 @@ namespace ElementalEditor
             panels.Add(new HierarchyPanel());
             panels.Add(new InspectorPanel());
             panels.Add(new AssetBrowserPanel());
-            panels.Add(new ProjectSettingsPanel());
+
+            ProjectSettingsRegistry.Register(new RenderingSettingsProvider());
 
 
 
@@ -99,6 +105,12 @@ namespace ElementalEditor
         {
             ImGui.PushFont(editorFont);
             DrawMenuBar();
+            if (openProjectSettingsRequested)
+            {
+                projectSettings.Open();
+                openProjectSettingsRequested = false;
+            }
+
             DrawToolbar();
 
             var io = ImGui.GetIO();
@@ -118,6 +130,8 @@ namespace ElementalEditor
                 context.Scene = SceneManager.CurrentScene;
                 context.EditorCamera = editorCamera;
             }
+
+            projectSettings.Draw();
 
             foreach (var panel in panels)
                 panel.Draw(context);
@@ -151,12 +165,23 @@ namespace ElementalEditor
                 ImGuiWindowFlags.NoSavedSettings;
 
             ImGui.Begin("Toolbar", flags);
+            bool playing = EditorRuntime.IsRunning;
 
-            if (ImGui.Button("Play")) { }
-            ImGui.SameLine();
-            if (ImGui.Button("Pause")) { }
-            ImGui.SameLine();
-            if (ImGui.Button("Stop")) { }
+            if (!playing)
+            {
+                if (ImGui.Button("Play"))
+                {
+                    EditorRuntime.Launch();
+                }
+            }
+            else
+            {
+                if (ImGui.Button("Stop"))
+                {
+                    EditorRuntime.Stop();
+                }
+            }
+
 
             ToolbarHeight = ImGui.GetWindowHeight();
 
@@ -178,6 +203,16 @@ namespace ElementalEditor
                     if (ImGui.MenuItem("Save Scene")) { }
                     ImGui.Separator();
                     if (ImGui.MenuItem("Exit")) { }
+
+                    ImGui.EndMenu();
+                }
+
+                if (ImGui.BeginMenu("Project"))
+                {
+                    if (ImGui.MenuItem("Project Settings"))
+                    {
+                        openProjectSettingsRequested = true;
+                    }
 
                     ImGui.EndMenu();
                 }
@@ -242,10 +277,10 @@ namespace ElementalEditor
             // --------------------------------------------------
 
             style.WindowPadding = new Vector2(10, 10);
-            style.FramePadding = new Vector2(6, 4);
-            style.CellPadding = new Vector2(6, 4);
+            style.FramePadding = new Vector2(8, 5);
             style.ItemSpacing = new Vector2(8, 6);
             style.ItemInnerSpacing = new Vector2(6, 4);
+            style.ItemSpacing = new Vector2(8, 6);
             style.TouchExtraPadding = new Vector2(0, 0);
             style.IndentSpacing = 20;
             style.ScrollbarSize = 14;
@@ -289,15 +324,15 @@ namespace ElementalEditor
             colors[(int)ImGuiCol.TextDisabled] = new Vector4(0.36f, 0.42f, 0.47f, 1.00f);
 
             colors[(int)ImGuiCol.WindowBg] = new Vector4(0.11f, 0.11f, 0.12f, 1.00f);
-            colors[(int)ImGuiCol.ChildBg] = new Vector4(0.15f, 0.15f, 0.16f, 1.00f);
+            colors[(int)ImGuiCol.ChildBg] = new Vector4(0.14f, 0.14f, 0.15f, 1f);
             colors[(int)ImGuiCol.PopupBg] = new Vector4(0.08f, 0.08f, 0.08f, 0.94f);
 
             colors[(int)ImGuiCol.Border] = new Vector4(0.20f, 0.20f, 0.21f, 1.00f);
             colors[(int)ImGuiCol.BorderShadow] = new Vector4(0, 0, 0, 0);
 
-            colors[(int)ImGuiCol.FrameBg] = new Vector4(0.16f, 0.16f, 0.17f, 1.00f);
-            colors[(int)ImGuiCol.FrameBgHovered] = new Vector4(0.20f, 0.20f, 0.21f, 1.00f);
-            colors[(int)ImGuiCol.FrameBgActive] = new Vector4(0.25f, 0.25f, 0.26f, 1.00f);
+            colors[(int)ImGuiCol.FrameBg] = new Vector4(0.18f, 0.18f, 0.19f, 1f);
+            colors[(int)ImGuiCol.FrameBgHovered] = new Vector4(0.23f, 0.23f, 0.24f, 1f);
+            colors[(int)ImGuiCol.FrameBgActive] = new Vector4(0.28f, 0.28f, 0.30f, 1f);
 
             colors[(int)ImGuiCol.TitleBg] = new Vector4(0.09f, 0.09f, 0.09f, 1.00f);
             colors[(int)ImGuiCol.TitleBgActive] = new Vector4(0.12f, 0.12f, 0.12f, 1.00f);
@@ -319,9 +354,9 @@ namespace ElementalEditor
             colors[(int)ImGuiCol.ButtonHovered] = new Vector4(0.28f, 0.56f, 1.00f, 1.00f);
             colors[(int)ImGuiCol.ButtonActive] = new Vector4(0.06f, 0.53f, 0.98f, 1.00f);
 
-            colors[(int)ImGuiCol.Header] = new Vector4(0.20f, 0.20f, 0.21f, 1.00f);
-            colors[(int)ImGuiCol.HeaderHovered] = new Vector4(0.28f, 0.56f, 1.00f, 0.80f);
-            colors[(int)ImGuiCol.HeaderActive] = new Vector4(0.28f, 0.56f, 1.00f, 1.00f);
+            colors[(int)ImGuiCol.Header] = new Vector4(0.20f, 0.20f, 0.21f, 1f);
+            colors[(int)ImGuiCol.HeaderHovered] = new Vector4(0.30f, 0.30f, 0.32f, 1f);
+            colors[(int)ImGuiCol.HeaderActive] = new Vector4(0.35f, 0.35f, 0.37f, 1f);
 
             colors[(int)ImGuiCol.Separator] = new Vector4(0.28f, 0.28f, 0.29f, 1.00f);
             colors[(int)ImGuiCol.SeparatorHovered] = new Vector4(0.44f, 0.44f, 0.47f, 1.00f);
@@ -332,7 +367,11 @@ namespace ElementalEditor
             colors[(int)ImGuiCol.ResizeGripActive] = new Vector4(0.28f, 0.56f, 1.00f, 0.95f);
 
             colors[(int)ImGuiCol.Tab] = new Vector4(0.15f, 0.15f, 0.16f, 1.00f);
-            colors[(int)ImGuiCol.TabHovered] = new Vector4(0.28f, 0.56f, 1.00f, 0.80f);
+            colors[(int)ImGuiCol.TabHovered] = new Vector4(0.22f, 0.22f, 0.23f, 1.00f);
+
+            colors[(int)ImGuiCol.TabDimmed] = new Vector4(0.12f, 0.12f, 0.13f, 1.00f);
+            colors[(int)ImGuiCol.TabDimmedSelected] = new Vector4(0.18f, 0.18f, 0.19f, 1.00f);
+            colors[(int)ImGuiCol.TabDimmedSelectedOverline] = new Vector4(0.35f, 0.35f, 0.36f, 1.00f);
             //colors[(int)ImGuiCol.act] = new Vector4(0.20f, 0.20f, 0.21f, 1.00f);
             //colors[(int)ImGuiCol.TabUnfocused] = new Vector4(0.15f, 0.15f, 0.16f, 1.00f);
             //colors[(int)ImGuiCol.TabUnfocusedActive] = new Vector4(0.18f, 0.18f, 0.19f, 1.00f);

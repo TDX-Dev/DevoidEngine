@@ -31,6 +31,18 @@ namespace DevoidEngine.Engine.ProjectSystem
         public ProjectConfig Config = null!;
         public ProjectSettings Settings = new();
 
+        public void SaveSettings()
+        {
+            string settingsFile = Path.Combine(SettingsPath, "ProjectSettings.json");
+
+            var json = JsonSerializer.Serialize(
+                Settings,
+                ProjectJsonContext.Default.ProjectSettings
+            );
+
+            File.WriteAllText(settingsFile, json);
+        }
+
         private static void EnsureDirectories(Project p)
         {
             Directory.CreateDirectory(p.AssetPath);

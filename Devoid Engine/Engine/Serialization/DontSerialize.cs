@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DevoidEngine.Engine.Serialization
 {
-    [AttributeUsage(AttributeTargets.Field)]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
     public sealed class DontSerialize : Attribute
     {
     }

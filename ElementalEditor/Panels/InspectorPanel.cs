@@ -50,6 +50,12 @@ namespace ElementalEditor.Panels
         {
             foreach (var component in obj.Components)
             {
+                ImGui.PushStyleVar(ImGuiStyleVar.ChildRounding, 6);
+
+                ImGui.BeginChild(component.GetType().Name,
+                    new Vector2(0, 0),
+                    ImGuiChildFlags.Borders | ImGuiChildFlags.AutoResizeY);
+
                 if (ImGui.CollapsingHeader(component.GetType().Name,
                     ImGuiTreeNodeFlags.DefaultOpen))
                 {
@@ -82,6 +88,10 @@ namespace ElementalEditor.Panels
 
                     EditorUI.EndPropertyGrid();
                 }
+
+                ImGui.EndChild();
+
+                ImGui.PopStyleVar();
             }
         }
 

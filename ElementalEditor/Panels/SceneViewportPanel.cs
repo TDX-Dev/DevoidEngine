@@ -34,7 +34,6 @@ namespace ElementalEditor.Panels
                 return;
             }
 
-            DrawToolbar(context);
 
             Vector2 panelSize = ImGui.GetContentRegionAvail();
             //panelSize.Y -= ToolbarHeight;
@@ -140,50 +139,6 @@ namespace ElementalEditor.Panels
                 SceneManager.LoadScene(scene);
                 scene.Play(true);
             }
-        }
-
-        void DrawToolbar(EditorContext context)
-        {
-            ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Vector2.Zero);
-            var drawList = ImGui.GetWindowDrawList();
-
-            Vector2 windowMin = ImGui.GetCursorScreenPos();
-            float width = ImGui.GetWindowSize().X;
-
-            Vector2 barMin = windowMin;
-            Vector2 barMax = barMin + new Vector2(width, ToolbarHeight);
-
-            drawList.AddRectFilled(
-                barMin,
-                barMax,
-                ImGui.GetColorU32(new Vector4(0.12f, 0.12f, 0.12f, 0.95f))
-            );
-
-            float padding = 6f;
-            float buttonHeight = ToolbarHeight - padding * 2;
-
-            ImGui.SetCursorScreenPos(barMin + new Vector2(padding, padding));
-
-            bool playing = EditorRuntime.IsRunning;
-
-            if (!playing)
-            {
-                if (ImGui.Button(BootstrapIconFont.PlayFill, new Vector2(0, buttonHeight)))
-                {
-                    EditorRuntime.Launch();
-                }
-            }
-            else
-            {
-                if (ImGui.Button(BootstrapIconFont.StopFill, new Vector2(0, buttonHeight)))
-                {
-                    EditorRuntime.Stop();
-                }
-            }
-
-            // Move cursor below toolbar so viewport draws correctly
-            ImGui.SetCursorScreenPos(new Vector2(windowMin.X, windowMin.Y + ToolbarHeight));
-            ImGui.PopStyleVar();
         }
     }
 }
