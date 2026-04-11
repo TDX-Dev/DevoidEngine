@@ -32,10 +32,11 @@ namespace DevoidEngine.Engine.AssetPipeline
 
 
 
-        public static T? Load<T>(Guid guid) where T : class?
+        public static T? Load<T>(Guid guid, bool fromCache = true) where T : class?
         {
-            if (AssetCache<T>.Cache.TryGetValue(guid, out var asset))
-                return asset;
+            if (fromCache)
+                if (AssetCache<T>.Cache.TryGetValue(guid, out var asset))
+                    return asset;
 
             if (!AssetDatabase.TryGetEntry(guid, out AssetEntry? entry))
             {

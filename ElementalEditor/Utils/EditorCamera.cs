@@ -127,7 +127,6 @@ namespace ElementalEditor.Utils
             Camera.FovY = MathF.PI / 180f * Fov;
             Camera.UpdateProjectionMatrix(aspect);
 
-            Console.WriteLine($"{Width}x{Height} aspect {(float)Width / Height}");
         }
 
         public Vector3 GetForward()

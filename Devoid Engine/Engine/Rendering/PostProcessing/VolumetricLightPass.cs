@@ -71,7 +71,7 @@ namespace DevoidEngine.Engine.Rendering.PostProcessing
             for (int i = 0; i < ctx.FrameContext.spotLights.Count; i++)
             {
                 GPUSpotLight spotLight = ctx.FrameContext.spotLights[i];
-                Matrix4x4 spotModel = GetSpotlightModel(spotLight);
+                Matrix4x4 spotModel = PrimitiveHelper. GetSpotlightModel(spotLight);
 
                 Renderer.SetupCamera(ctx.FrameContext.cameraData);
                 Renderer.UpdatePerObjectData(spotModel);
@@ -87,31 +87,6 @@ namespace DevoidEngine.Engine.Rendering.PostProcessing
             //RenderAPI.RenderToBuffer(input, framebuffer);
             Renderer.GraphicsDevice.SetBlendState(BlendMode.Opaque);
             ctx.SetTexture("VolumetricOutput", output);
-        }
-
-        Matrix4x4 GetSpotlightModel(GPUSpotLight light)
-        {
-            float range = light.direction.W;
-
-            float angle = light.outerCutoff; // already radians
-
-            float radius = range * MathF.Tan(angle);
-
-            Matrix4x4 scale = Matrix4x4.CreateScale(radius, radius, range);
-
-            Vector3 dir = Vector3.Normalize(light.direction.AsVector3());
-
-            Vector3 up = Vector3.UnitY;
-
-            if (MathF.Abs(Vector3.Dot(dir, up)) > 0.999f)
-                up = Vector3.UnitX;
-
-            Matrix4x4 rotation = Matrix4x4.CreateWorld(Vector3.Zero, dir, up);
-
-            Matrix4x4 translation =
-                Matrix4x4.CreateTranslation(light.position.AsVector3());
-
-            return scale * rotation * translation;
         }
 
         public override void Resize(int width, int height)

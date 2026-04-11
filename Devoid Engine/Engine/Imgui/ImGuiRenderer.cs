@@ -235,31 +235,60 @@ namespace DevoidEngine.Engine.Imgui
             io.DisplaySize = new Vector2(graphicsDevice.MainSurface.Width, graphicsDevice.MainSurface.Height);
         }
 
+        public float FooterHeight = 24f;
+        public float ToolbarHeight = 28f;
+
+        public void SetCustomToolbarHeight(float height) => ToolbarHeight = height;
+
         public void CreateDockspace()
         {
-
             ImGuiViewportPtr viewport = ImGui.GetMainViewport();
 
-            ImGui.SetNextWindowPos(viewport.WorkPos, ImGuiCond.Always);
-            ImGui.SetNextWindowSize(viewport.WorkSize, ImGuiCond.Always);
+            ImGui.SetNextWindowPos(
+                new Vector2(
+                    viewport.WorkPos.X,
+                    viewport.WorkPos.Y + ToolbarHeight
+                ),
+                ImGuiCond.Always
+            );
+
+            ImGui.SetNextWindowSize(
+                new Vector2(
+                    viewport.WorkSize.X,
+                    viewport.WorkSize.Y - ToolbarHeight - FooterHeight
+                ),
+                ImGuiCond.Always
+            );
+
             ImGui.SetNextWindowViewport(viewport.ID);
 
             ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 0.0f);
             ImGui.PushStyleVar(ImGuiStyleVar.WindowBorderSize, 0.0f);
-            ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, System.Numerics.Vector2.Zero);
+            ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Vector2.Zero);
 
-            ImGuiWindowFlags windowFlags = ImGuiWindowFlags.NoDocking | ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoBringToFrontOnFocus | ImGuiWindowFlags.NoNavFocus | ImGuiWindowFlags.NoBackground | ImGuiWindowFlags.NoDecoration;
+            ImGuiWindowFlags windowFlags =
+                ImGuiWindowFlags.NoDocking |
+                ImGuiWindowFlags.NoTitleBar |
+                ImGuiWindowFlags.NoResize |
+                ImGuiWindowFlags.NoCollapse |
+                ImGuiWindowFlags.NoMove |
+                ImGuiWindowFlags.NoBringToFrontOnFocus |
+                ImGuiWindowFlags.NoNavFocus |
+                ImGuiWindowFlags.NoBackground |
+                ImGuiWindowFlags.NoDecoration;
 
             ImGui.Begin("DockSpaceWindow", windowFlags);
             ImGui.PopStyleVar(3);
 
             uint dockspaceId = ImGui.GetID("MyDockspace");
-            ImGui.DockSpace(dockspaceId, System.Numerics.Vector2.Zero,
-                            ImGuiDockNodeFlags.PassthruCentralNode);
 
+            ImGui.DockSpace(
+                dockspaceId,
+                Vector2.Zero,
+                ImGuiDockNodeFlags.PassthruCentralNode
+            );
 
             ImGui.End();
-
         }
 
         static ImGuiKey MapKey(Keys key)

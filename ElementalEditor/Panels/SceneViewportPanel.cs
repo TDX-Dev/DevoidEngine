@@ -1,5 +1,6 @@
 ﻿using DevoidEngine.Engine.AssetPipeline;
 using DevoidEngine.Engine.Core;
+using ElementalEditor.Utils;
 using ImGuiNET;
 using System.Numerics;
 using System.Text;
@@ -134,7 +135,7 @@ namespace ElementalEditor.Panels
 
             if (ext == ".scene")
             {
-                var scene = Asset.Load<Scene>(relativePath);
+                var scene = Asset.Load<Scene>(relativePath, false);
                 context.Scene = scene;
                 SceneManager.LoadScene(scene);
                 scene.Play(true);
@@ -143,6 +144,7 @@ namespace ElementalEditor.Panels
 
         void DrawToolbar(EditorContext context)
         {
+            ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Vector2.Zero);
             var drawList = ImGui.GetWindowDrawList();
 
             Vector2 windowMin = ImGui.GetCursorScreenPos();
@@ -166,14 +168,14 @@ namespace ElementalEditor.Panels
 
             if (!playing)
             {
-                if (ImGui.Button("Play", new Vector2(0, buttonHeight)))
+                if (ImGui.Button(BootstrapIconFont.PlayFill, new Vector2(0, buttonHeight)))
                 {
                     EditorRuntime.Launch();
                 }
             }
             else
             {
-                if (ImGui.Button("Stop", new Vector2(0, buttonHeight)))
+                if (ImGui.Button(BootstrapIconFont.StopFill, new Vector2(0, buttonHeight)))
                 {
                     EditorRuntime.Stop();
                 }
@@ -181,6 +183,7 @@ namespace ElementalEditor.Panels
 
             // Move cursor below toolbar so viewport draws correctly
             ImGui.SetCursorScreenPos(new Vector2(windowMin.X, windowMin.Y + ToolbarHeight));
+            ImGui.PopStyleVar();
         }
     }
 }

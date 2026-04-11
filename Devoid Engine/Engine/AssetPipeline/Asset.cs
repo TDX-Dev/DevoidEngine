@@ -8,7 +8,7 @@ namespace DevoidEngine.Engine.AssetPipeline
 {
     public static class Asset
     {
-        public static T? Load<T>(string path) where T : class
+        public static T? Load<T>(string path, bool fromCache = true) where T : class
         {
             if (!AssetDatabase.TryGetGuid(path, out var guid))
             {
@@ -16,7 +16,7 @@ namespace DevoidEngine.Engine.AssetPipeline
                 return null;
             }
 
-            return AssetManager.Load<T>(guid);
+            return AssetManager.Load<T>(guid, fromCache);
         }
     }
 }

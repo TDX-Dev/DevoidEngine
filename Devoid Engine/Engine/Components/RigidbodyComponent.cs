@@ -199,8 +199,7 @@ namespace DevoidEngine.Engine.Components
                 SavedLinearVelocity = internalBody.LinearVelocity;
                 SavedAngularVelocity = internalBody.AngularVelocity;
 
-                internalBody.Remove();
-                internalBody = null;
+                gameObject.Scene.Physics.RemoveBody(internalBody);
             }
         }
 

@@ -111,7 +111,7 @@ namespace DevoidEngine.Engine.ProjectSystem
             }
         }
 
-        static void SaveSettings(string path, ProjectSettings settings)
+        public static void SaveSettings(string path, ProjectSettings settings)
         {
 
             var json = JsonSerializer.Serialize(

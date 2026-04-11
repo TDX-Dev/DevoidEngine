@@ -313,12 +313,10 @@ namespace DevoidEngine.Engine.Rendering
 
         public static void Resize(int width, int height)
         {
-            //GraphicsDevice.MainSurface.Resize(width, height);
             UIFramebuffer.Resize(width, height);
             ActiveRenderTechnique?.Resize(width, height);
             PostProcessor.Resize(width, height);
             UISystem.Resize(width, height);
-            Console.WriteLine("Renderer Resize Call: " + new Vector2(width, height));
         }
         public static void UpdatePerObjectData(Matrix4x4 model)
         {

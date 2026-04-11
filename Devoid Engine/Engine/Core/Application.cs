@@ -59,7 +59,7 @@ namespace DevoidEngine.Engine.Core
         private List<CameraRenderContext> renderContexts = new List<CameraRenderContext>();
         private Pool<CameraRenderContext> cameraRenderContextPool = new Pool<CameraRenderContext>();
 
-        private ImGuiRenderer imGuiRenderer = null!;
+        public ImGuiRenderer ImGuiBackend = null!;
 
         private bool isRunning = false;
         private bool isResizePending = false;
@@ -119,12 +119,12 @@ namespace DevoidEngine.Engine.Core
             targetWindow.TextInput += c =>
             {
                 UISystem.TextInput((char)c.Unicode);
-                imGuiRenderer.OnTextInput((char)c.Unicode);
+                ImGuiBackend.OnTextInput((char)c.Unicode);
             };
 
-            imGuiRenderer = new ImGuiRenderer(Renderer.GraphicsDevice, targetWindow);
-            imGuiRenderer.Initialize();
-            imGuiRenderer.OnGUI += () => { layerHandler.OnGUILayers(); };
+            ImGuiBackend = new ImGuiRenderer(Renderer.GraphicsDevice, targetWindow);
+            ImGuiBackend.Initialize();
+            ImGuiBackend.OnGUI += () => { layerHandler.OnGUILayers(); };
 
             AddLayer(new DebugConsole());
 
@@ -211,7 +211,7 @@ namespace DevoidEngine.Engine.Core
 
 
                 Update(deltaTime * timeScale);
-                imGuiRenderer.BeginFrame(deltaTime);
+                ImGuiBackend.BeginFrame(deltaTime);
                 Render();
 
                 Input.EndFrame();
@@ -258,7 +258,7 @@ namespace DevoidEngine.Engine.Core
             layerHandler.RenderLayers();
             // RenderScene must be called somewhere (or not) in RenderLayers();
             layerHandler.PostRenderLayers();
-            imGuiRenderer.EndFrame();
+            ImGuiBackend.EndFrame();
 
             Renderer.GraphicsDevice.MainSurface.Bind();
             Renderer.GraphicsDevice.MainSurface.Present();
