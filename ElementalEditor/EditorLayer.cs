@@ -181,7 +181,7 @@ namespace ElementalEditor
 
             bool playing = EditorRuntime.IsRunning;
 
-            string playIcon = playing ? BootstrapIconFont.StopFill : BootstrapIconFont.PlayFill;
+            string playIcon = playing ? BootstrapIconFont.StopFill : BootstrapIconFont.WindowStack;
             string filmIcon = BootstrapIconFont.Film;
 
             var style = ImGui.GetStyle();
@@ -220,7 +220,9 @@ namespace ElementalEditor
             ImGui.SameLine();
 
             if (ImGui.Button(filmIcon))
-                EditorRuntime.Launch();
+            {
+
+            }
 
             ToolbarHeight = ImGui.GetWindowHeight();
 

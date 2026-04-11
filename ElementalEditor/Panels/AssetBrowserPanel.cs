@@ -27,11 +27,21 @@ namespace ElementalEditor.Panels
 
         void DrawDirectory(string path)
         {
-            if (ImGui.Button("Up") && path != "Assets")
+            string root = ProjectManager.Current.AssetPath;
+
+            bool atRoot = Path.GetFullPath(path) == Path.GetFullPath(root);
+
+            if (atRoot)
+                ImGui.BeginDisabled();
+
+            if (ImGui.Button("Up") && !atRoot)
             {
                 currentDirectory = Directory.GetParent(path).FullName;
                 return;
             }
+
+            if (atRoot)
+                ImGui.EndDisabled();
 
             ImGui.Separator();
 

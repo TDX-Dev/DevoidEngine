@@ -11,10 +11,6 @@ namespace DevoidEngine.Engine.Components
     {
         public override string Type => nameof(RigidBodyComponent);
 
-        // ===============================
-        // Serialized Settings
-        // ===============================
-
         public float Mass = 100f;
 
         public bool StartKinematic = false;
@@ -36,19 +32,13 @@ namespace DevoidEngine.Engine.Components
         public bool allowSleep = true;
 
         // Optional save-state physics
-        public Vector3 SavedLinearVelocity;
-        public Vector3 SavedAngularVelocity;
+        internal Vector3 SavedLinearVelocity;
+        internal Vector3 SavedAngularVelocity;
 
-        // ===============================
-        // Runtime Physics Handle
-        // ===============================
 
         [DontSerialize]
         private IPhysicsBody? internalBody;
 
-        // ===============================
-        // Runtime Physics API
-        // ===============================
 
         public Vector3 LinearVelocity
         {
@@ -102,10 +92,6 @@ namespace DevoidEngine.Engine.Components
 
         public bool IsKinematic =>
             internalBody != null && internalBody.IsKinematic;
-
-        // ===============================
-        // Lifecycle
-        // ===============================
 
         public override void OnStart()
         {
@@ -202,10 +188,6 @@ namespace DevoidEngine.Engine.Components
                 gameObject.Scene.Physics.RemoveBody(internalBody);
             }
         }
-
-        // ===============================
-        // Physics API
-        // ===============================
 
         public void AddImpulse(Vector3 impulse)
         {

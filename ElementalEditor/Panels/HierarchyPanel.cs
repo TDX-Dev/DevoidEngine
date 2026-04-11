@@ -80,6 +80,11 @@ namespace ElementalEditor.Panels
             if (ImGui.IsItemClicked(ImGuiMouseButton.Left))
                 context.SelectedObject = obj;
 
+            if (ImGui.IsItemHovered() && ImGui.IsMouseDoubleClicked(ImGuiMouseButton.Left))
+            {
+                FocusObject(context, obj);
+            }
+
             HandleDragDrop(obj, context);
 
             HandleObjectContextMenu(obj, context);
@@ -146,6 +151,31 @@ namespace ElementalEditor.Panels
 
                 ImGui.EndPopup();
             }
+        }
+
+        void FocusObject(EditorContext context, GameObject obj)
+        {
+            var cam = context.EditorCamera;
+
+            Vector3 target = obj.Transform.Position;
+            Vector3 scale = obj.Transform.Scale;
+
+            float radius = MathF.Max(scale.X, MathF.Max(scale.Y, scale.Z));
+
+            float distance = radius * 3f + 1f;
+
+            Vector3 offset =
+                -cam.GetForward() * distance +
+                Vector3.UnitY * radius;
+
+            cam.Position = target + offset;
+
+            Vector3 dir = Vector3.Normalize(target - cam.Position);
+
+            cam.Yaw = MathF.Atan2(dir.Z, dir.X) * (180f / MathF.PI);
+            cam.Pitch = MathF.Asin(dir.Y) * (180f / MathF.PI);
+
+            cam.UpdateView();
         }
     }
 }

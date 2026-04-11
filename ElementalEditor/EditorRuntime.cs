@@ -37,10 +37,31 @@ namespace ElementalEditor
             {
                 FileName = runtimeExe,
                 Arguments = $"--project \"{ProjectManager.Current.ProjectFile}\" --mode editor",
-                UseShellExecute = true
+
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true
             };
 
-            runtimeProcess = Process.Start(start);
+            runtimeProcess = new Process();
+            runtimeProcess.StartInfo = start;
+
+            runtimeProcess.OutputDataReceived += (s, e) =>
+            {
+                if (e.Data != null)
+                    Console.WriteLine($"[Runtime] {e.Data}");
+            };
+
+            runtimeProcess.ErrorDataReceived += (s, e) =>
+            {
+                if (e.Data != null)
+                    Console.WriteLine($"[Runtime ERROR] {e.Data}");
+            };
+
+            runtimeProcess.Start();
+            runtimeProcess.BeginOutputReadLine();
+            runtimeProcess.BeginErrorReadLine();
         }
 
         public static void Stop()
