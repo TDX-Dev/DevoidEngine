@@ -47,6 +47,8 @@ namespace DevoidEngine.Engine.Core
             _textureInternal = Renderer.ResourceManager.TextureManager.CreateTexture(Description);
 
             _sampler = Renderer.ResourceManager.SamplerManager.CreateSampler(_samplerDescription);
+
+            GPUTracker.TextureCount++;
         }
 
         public override void Bind(int slot = 0,
@@ -102,6 +104,7 @@ namespace DevoidEngine.Engine.Core
         protected override void DisposeTexture()
         {
             Renderer.ResourceManager.TextureManager.DeleteTexture(_textureInternal);
+            GPUTracker.TextureCount--;
         }
     }
 }

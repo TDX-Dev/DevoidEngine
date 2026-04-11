@@ -1,4 +1,5 @@
-﻿using DevoidEngine.Engine.Rendering;
+﻿using DevoidEngine.Engine.Core;
+using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.Utilities;
 using System;
 using System.Collections.Generic;
@@ -12,9 +13,18 @@ namespace DevoidEngine.Engine.Components
     {
         public override string Type => nameof(SkyboxComponent);
 
+        Texture2D HdriImage = null!;
+
         public override void OnStart()
         {
-            Renderer.SkyboxRenderer.SetPanorama(Helper.LoadHDRI("Engine/Content/HDRIs/qwantani_dusk_2_puresky_4k.hdr"));
+            HdriImage = Helper.LoadHDRI("Engine/Content/HDRIs/qwantani_dusk_2_puresky_4k.hdr");
+            Renderer.SkyboxRenderer.SetPanorama(HdriImage);
+            HdriImage.Dispose();
+        }
+
+        public override void OnDestroy()
+        {
+            HdriImage?.Dispose();
         }
 
         public override void OnUpdate(float dt)

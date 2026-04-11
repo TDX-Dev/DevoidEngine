@@ -153,13 +153,27 @@ namespace DevoidGPU.DX11
         {
             TextureManager.Unregister(handle);
 
+            if (rtvCache != null)
+            {
+                for (int face = 0; face < rtvCache.GetLength(0); face++)
+                {
+                    for (int mip = 0; mip < rtvCache.GetLength(1); mip++)
+                    {
+                        rtvCache[face, mip]?.Dispose();
+                        rtvCache[face, mip] = null;
+                    }
+                }
+            }
+
             ShaderResourceView?.Dispose();
             Texture?.Dispose();
 
             ShaderResourceView = null;
             Texture = null;
 
-            handle = IntPtr.Zero;
+            handle = IntPtr.Zero; 
+            UnorderedAccessView?.Dispose();
+            DepthStencilView?.Dispose();
         }
     }
 }

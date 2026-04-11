@@ -1,5 +1,6 @@
 ﻿using DevoidEngine.Engine.Core;
 using DevoidGPU;
+using StbImageSharp;
 using System.Numerics;
 
 namespace DevoidEngine.Engine.Utilities
@@ -245,15 +246,47 @@ namespace DevoidEngine.Engine.Utilities
             return texture;
         }
 
+        static Texture2D? cachedHdr;
+
+        public static Texture2D LoadCachedHDRI(string file)
+        {
+            if (cachedHdr != null)
+                return cachedHdr;
+
+            cachedHdr = LoadHDRI(file);
+            return cachedHdr;
+        }
+
         public static Texture2D LoadHDRI(string file)
         {
-            Image image = new Image();
-            image.LoadHDRI(file);
+            using var stream = File.OpenRead(file);
+
+            // Load HDR as RGB float
+            var result = ImageResultFloat.FromStream(stream, ColorComponents.RedGreenBlue);
+
+            int width = result.Width;
+            int height = result.Height;
+
+            float[] rgb = result.Data;
+
+            // Convert RGB → RGBA
+            float[] rgba = new float[width * height * 4];
+
+            for (int i = 0, j = 0; i < rgb.Length; i += 3, j += 4)
+            {
+                rgba[j + 0] = rgb[i + 0];
+                rgba[j + 1] = rgb[i + 1];
+                rgba[j + 2] = rgb[i + 2];
+                rgba[j + 3] = 1.0f;
+            }
+
+            // Release RGB buffer early
+            result.Data = null;
 
             Texture2D texture = new Texture2D(new TextureDescription()
             {
-                Width = image.Width,
-                Height = image.Height,
+                Width = width,
+                Height = height,
                 Format = TextureFormat.RGBA32_Float,
                 GenerateMipmaps = false,
                 MipLevels = 1,
@@ -265,7 +298,11 @@ namespace DevoidEngine.Engine.Utilities
             texture.SetWrapMode(TextureWrapMode.ClampToEdge, TextureWrapMode.ClampToEdge);
             texture.SetFilter(TextureFilter.Linear, TextureFilter.Linear);
 
-            texture.SetData<float>(image.PixelHP);
+            texture.SetData<float>(rgba);
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
 
             return texture;
         }

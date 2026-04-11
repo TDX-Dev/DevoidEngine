@@ -112,6 +112,8 @@ namespace DevoidGPU.DX11
 
         public void Dispose()
         {
+            ColorAttachments.Clear();
+            DepthAttachment = null;
 
         }
     }

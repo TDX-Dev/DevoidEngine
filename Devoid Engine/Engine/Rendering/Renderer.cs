@@ -192,6 +192,9 @@ namespace DevoidEngine.Engine.Rendering
 
             PopViewport();
 
+            //Console.WriteLine("Number of GPU Textures: " + GPUTracker.TextureCount);
+            //Console.WriteLine("Number of GPU Buffers: " + GPUTracker.BufferCount);
+            //Console.WriteLine("Number of GPU Framebuffers: " + GPUTracker.FramebufferCount);
 
             if (viewportStack.Count > 0)
                 throw new Exception("Viewport stack was not popped within render frame");

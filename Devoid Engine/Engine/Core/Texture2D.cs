@@ -1,6 +1,7 @@
 ﻿using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.Rendering.GPUResource;
 using DevoidGPU;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace DevoidEngine.Engine.Core
@@ -65,6 +66,9 @@ namespace DevoidEngine.Engine.Core
             _textureInternal = Renderer.ResourceManager.TextureManager.CreateTexture(Description);
 
             _sampler = Renderer.ResourceManager.SamplerManager.CreateSampler(_samplerDescription);
+
+            GPUTracker.TextureCount++;
+
         }
 
         public override void Bind(int slot = 0,
@@ -90,7 +94,11 @@ namespace DevoidEngine.Engine.Core
         {
             ReadOnlySpan<T> span = data;
             ReadOnlySpan<byte> byteSpan = MemoryMarshal.AsBytes(span);
-            Renderer.ResourceManager.TextureManager.UploadTextureData2D(_textureInternal, byteSpan.ToArray());
+
+            Renderer.ResourceManager.TextureManager.UploadTextureData2D(
+                _textureInternal,
+                byteSpan
+            );
         }
 
         public void GenerateMipmaps()
@@ -128,6 +136,7 @@ namespace DevoidEngine.Engine.Core
         protected override void DisposeTexture()
         {
             Renderer.ResourceManager.TextureManager.DeleteTexture(_textureInternal);
+            GPUTracker.TextureCount--;
         }
     }
 }

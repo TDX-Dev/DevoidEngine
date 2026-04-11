@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace DevoidEngine.Engine.Core
 {
-    public class MaterialInstance
+    public class MaterialInstance : IDisposable
     {
         public Material BaseMaterial { get; }
 
@@ -13,6 +13,7 @@ namespace DevoidEngine.Engine.Core
         private byte[] cpuBuffer;
         private UniformBuffer gpuBuffer;
         private bool isDirty;
+        private bool disposed;
 
         public MaterialInstance(Material material)
         {
@@ -105,6 +106,24 @@ namespace DevoidEngine.Engine.Core
         public void ClearTextureOverride(string name)
         {
             textureOverrides.Remove(name);
+        }
+
+        public void Dispose()
+        {
+            if (disposed)
+                return;
+
+            gpuBuffer?.Dispose();
+            textureOverrides.Clear();
+
+            disposed = true;
+
+            GC.SuppressFinalize(this);
+        }
+
+        ~MaterialInstance()
+        {
+            Dispose();
         }
     }
 }

@@ -17,6 +17,7 @@
         void SetData(ReadOnlySpan<byte> data);
         void SetData(IntPtr data, int size);
         void Bind(int slot, ShaderStage stage);
+        void Dispose();
     }
 
 }

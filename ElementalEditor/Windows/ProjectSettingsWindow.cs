@@ -23,8 +23,8 @@ namespace ElementalEditor.Windows
             if (!open)
                 return;
 
-            if (!ImGui.BeginPopupModal("Project Settings", ref open,
-                ImGuiWindowFlags.NoResize))
+            if (!ImGui.BeginPopupModal("Project Settings", ref open
+                /*ImGuiWindowFlags.AlwaysAutoResize*/))
                 return;
 
             var providers = ProjectSettingsRegistry.Providers;

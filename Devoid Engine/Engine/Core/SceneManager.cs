@@ -19,6 +19,7 @@ namespace DevoidEngine.Engine.Core
             {
                 //CurrentScene.Destroy();
                 CurrentScene.Dispose();
+                GC.Collect();
             }
 
             scene.Audio = EngineSingleton.Instance.AudioSystem;

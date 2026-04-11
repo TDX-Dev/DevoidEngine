@@ -61,6 +61,21 @@ namespace DevoidEngine.Engine.Rendering.GPUResource
             RenderThread.Enqueue(cmd);
         }
 
+        public void UploadTextureData2D(TextureHandle handle, ReadOnlySpan<byte> data)
+        {
+            var cmd = _upload2DPool.Get();
+
+            cmd.Manager = this;
+            cmd.Handle = handle;
+
+            byte[] copy = new byte[data.Length];
+            data.CopyTo(copy);
+
+            cmd.Data = copy;
+
+            RenderThread.Enqueue(cmd);
+        }
+
 
         public void UploadTextureDataCube(TextureHandle handle, CubeFace face, byte[] data)
         {

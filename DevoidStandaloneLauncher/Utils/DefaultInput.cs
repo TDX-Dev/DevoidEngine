@@ -16,28 +16,28 @@ namespace DevoidStandaloneLauncher.Utils
             {
                 DeviceType = InputDeviceType.Mouse,
                 Control = (ushort)MouseAxis.X,
-                isClamped = false
+                IsClamped = false
             });
 
             Input.Map.Bind("PosY", new InputBinding()
             {
                 DeviceType = InputDeviceType.Mouse,
                 Control = (ushort)MouseAxis.Y,
-                isClamped = false
+                IsClamped = false
             });
 
             Input.Map.Bind("LookX", new InputBinding()
             {
                 DeviceType = InputDeviceType.Mouse,
                 Control = (ushort)MouseAxis.DeltaX,
-                isClamped = false
+                IsClamped = false
             });
 
             Input.Map.Bind("LookY", new InputBinding()
             {
                 DeviceType = InputDeviceType.Mouse,
                 Control = (ushort)MouseAxis.DeltaY,
-                isClamped = false
+                IsClamped = false
             });
 
             Input.Map.Bind("Forward", new InputBinding()

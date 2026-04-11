@@ -38,6 +38,8 @@ namespace DevoidEngine.Engine.AssetPipeline.Loaders
             texture.SetWrapMode(asset.Wrap, asset.Wrap);
             texture.SetData(asset.PixelData);
 
+            Console.WriteLine("Texture was loaded");
+
             return texture;
         }
     }

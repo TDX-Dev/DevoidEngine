@@ -137,7 +137,6 @@ namespace ElementalEditor.Panels
                 var scene = Asset.Load<Scene>(relativePath, false);
                 context.Scene = scene;
                 SceneManager.LoadScene(scene);
-                scene.Play(true);
             }
         }
     }

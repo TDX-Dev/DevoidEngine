@@ -468,4 +468,25 @@ namespace DevoidEngine.Engine.Rendering.GPUResource
             Handle = default;
         }
     }
+
+    class DestroyFramebufferCommand : RenderCommand
+    {
+        public FramebufferManager Manager = null!;
+        public FrameBufferHandle Handle;
+
+        public override void Execute()
+        {
+            if (Manager._frameBuffers.TryGetValue(Handle.Id, out var fb))
+            {
+                fb.Dispose();
+                Manager._frameBuffers.Remove(Handle.Id);
+            }
+        }
+
+        internal override void Reset()
+        {
+            Manager = null!;
+            Handle = default;
+        }
+    }
 }

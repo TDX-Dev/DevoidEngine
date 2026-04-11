@@ -1,6 +1,7 @@
 ﻿using DevoidEngine.Engine.Core;
 using DevoidGPU;
 using System.Numerics;
+using System.Reflection.Metadata;
 
 namespace DevoidEngine.Engine.Rendering.GPUResource
 {
@@ -17,6 +18,7 @@ namespace DevoidEngine.Engine.Rendering.GPUResource
         private RenderCommandPool<AttachDepthTextureCommand> _attachDepthPool = new();
         private RenderCommandPool<ClearFramebufferColorCommand> _clearColorPool = new();
         private RenderCommandPool<ClearFramebufferDepthCommand> _clearDepthPool = new();
+        private RenderCommandPool<DestroyFramebufferCommand> _destroyPool = new();
 
 
         public FrameBufferHandle CreateFramebuffer()
@@ -105,6 +107,16 @@ namespace DevoidEngine.Engine.Rendering.GPUResource
             cmd.Manager = this;
             cmd.Handle = handle;
             cmd.Value = value;
+
+            RenderThread.Enqueue(cmd);
+        }
+
+        public void DestroyFramebuffer(FrameBufferHandle handle)
+        {
+            var cmd = _destroyPool.Get();
+
+            cmd.Manager = this;
+            cmd.Handle = handle;
 
             RenderThread.Enqueue(cmd);
         }

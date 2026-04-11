@@ -18,11 +18,22 @@ namespace DevoidEngine.Engine.Components
 
         public override void OnStart()
         {
+        }
+
+        private void EnsureMaterial()
+        {
+            if (material != null)
+                return;
+
             if (materialAsset != null)
                 material = new MaterialInstance(materialAsset);
-
-            if (material == null)
+            else
                 material = RenderingDefaults.GetMaterial();
+        }
+
+        public override void OnDestroy()
+        {
+            material?.Dispose();
         }
 
         public void AddMaterial(MaterialInstance mat)
@@ -49,7 +60,12 @@ namespace DevoidEngine.Engine.Components
 
         public void Collect(Camera camera, CameraRenderContext viewData)
         {
-            if (mesh == null || !gameObject.Enabled || material == null)
+            if (mesh == null || !gameObject.Enabled)
+                return;
+
+            EnsureMaterial();
+
+            if (material == null)
                 return;
 
             //Vector3 worldMin, worldMax;
