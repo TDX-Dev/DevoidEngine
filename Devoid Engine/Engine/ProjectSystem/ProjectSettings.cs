@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DevoidEngine.Engine.InputSystem;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,6 +16,10 @@ namespace DevoidEngine.Engine.ProjectSystem
         // Physics Related Stuff
         public bool UsePhysicsInterpolation { get; set; } = true;
         public int PhysicsUpdateFrequency { get; set; } = 60;
+
+        // Input Mapping
+
+        public List<InputAction> InputActions { get; set; } = new();
 
     }
 }

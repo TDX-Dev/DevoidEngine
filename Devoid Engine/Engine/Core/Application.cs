@@ -137,6 +137,8 @@ namespace DevoidEngine.Engine.Core
             if (project == null)
                 throw new Exception("You need to initialize a project before trying to apply project settings");
 
+            Input.LoadInputActions(project.Settings.InputActions);
+
             EngineSingleton.Instance.UseInterpolation = project.Settings.UsePhysicsInterpolation;
             TargetFrameRate = project.Settings.PhysicsUpdateFrequency;
 

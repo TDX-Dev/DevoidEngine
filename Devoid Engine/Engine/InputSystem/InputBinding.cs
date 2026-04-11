@@ -2,11 +2,12 @@
 {
     public class InputBinding
     {
-        public InputDeviceType DeviceType;
-        public ushort Control;
+        public InputDeviceType DeviceType { get; set; }
+        public ushort Control { get; set; }
 
-        public float Scale = 1f;
-        public bool isClamped = true;
-        public List<IInputProcessor> Processors = new();
+        public float Scale { get; set; } = 1f;
+        public bool IsClamped { get; set; } = true;
+
+        public List<IInputProcessor> Processors { get; set; } = new();
     }
 }

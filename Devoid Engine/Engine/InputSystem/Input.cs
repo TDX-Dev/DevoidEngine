@@ -13,6 +13,19 @@ namespace DevoidEngine.Engine.InputSystem
 
         private static Window currentWindow = null!;
 
+        public static void LoadInputActions(List<InputAction> inputActions)
+        {
+            Input.Map = new InputMap();
+
+            foreach (var action in inputActions)
+            {
+                foreach (var binding in action.Bindings)
+                {
+                    Input.Map.Bind(action.Name, binding);
+                }
+            }
+        }
+
         public static void Initialize(Window window)
         {
             currentWindow = window;

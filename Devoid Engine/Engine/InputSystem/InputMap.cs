@@ -26,7 +26,7 @@
                 foreach (var p in b.Processors)
                     raw = p.Process(raw);
 
-                if (b.isClamped)
+                if (b.IsClamped)
                 {
                     value += Math.Clamp(raw * b.Scale, -1, 1);
                 } else

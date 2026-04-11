@@ -48,6 +48,7 @@ namespace ElementalEditor
 
             ProjectSettingsRegistry.Register(new RenderingSettingsProvider());
             ProjectSettingsRegistry.Register(new PhysicsSettingsProvider());
+            ProjectSettingsRegistry.Register(new InputSettingsProvider());
 
 
 

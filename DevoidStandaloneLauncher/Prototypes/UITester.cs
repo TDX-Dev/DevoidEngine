@@ -34,14 +34,14 @@ namespace DevoidStandaloneLauncher.Prototypes
             {
                 DeviceType = InputDeviceType.Mouse,
                 Control = (ushort)MouseAxis.DeltaX,
-                isClamped = false
+                IsClamped = false
             });
 
             Input.Map.Bind("LookY", new InputBinding()
             {
                 DeviceType = InputDeviceType.Mouse,
                 Control = (ushort)MouseAxis.DeltaY,
-                isClamped = false
+                IsClamped = false
             });
 
             Input.Map.Bind("Forward", new InputBinding()
