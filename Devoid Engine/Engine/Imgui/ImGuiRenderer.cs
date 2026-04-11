@@ -148,7 +148,8 @@ namespace DevoidEngine.Engine.Imgui
         {
             ImFontConfigPtr configuration = new ImFontConfigPtr(ImGuiNative.ImFontConfig_ImFontConfig());
 
-            configuration.GlyphOffset = new System.Numerics.Vector2(0, 6);
+            configuration.GlyphOffset = new System.Numerics.Vector2(0, 4);
+            //configuration.GlyphOffset = new Vector2(0, 1);
             configuration.GlyphMinAdvanceX = size;
             configuration.MergeMode = true;
             configuration.PixelSnapH = true;

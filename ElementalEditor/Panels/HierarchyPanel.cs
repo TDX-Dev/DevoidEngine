@@ -1,5 +1,6 @@
 ﻿using DevoidEngine.Engine.Core;
 using ImGuiNET;
+using System.Numerics;
 
 namespace ElementalEditor.Panels
 {
@@ -21,6 +22,14 @@ namespace ElementalEditor.Panels
                 return;
             }
 
+            // Card container like project settings window
+            ImGui.PushStyleVar(ImGuiStyleVar.ChildRounding, 6);
+            ImGui.PushStyleVar(ImGuiStyleVar.ChildBorderSize, 1);
+
+            ImGui.BeginChild("HierarchyContent",
+                new System.Numerics.Vector2(0, 0),
+                ImGuiChildFlags.Borders);
+
             DrawContextMenu(context);
 
             foreach (var obj in context.Scene.GameObjects)
@@ -29,6 +38,9 @@ namespace ElementalEditor.Panels
                     DrawGameObjectNode(obj, context);
             }
 
+            ImGui.EndChild();
+
+            ImGui.PopStyleVar(2);
 
             foreach (var obj in deleteQueue)
             {
@@ -49,7 +61,8 @@ namespace ElementalEditor.Panels
 
             ImGuiTreeNodeFlags flags =
                 ImGuiTreeNodeFlags.OpenOnArrow |
-                ImGuiTreeNodeFlags.SpanFullWidth;
+                ImGuiTreeNodeFlags.SpanFullWidth |
+                ImGuiTreeNodeFlags.FramePadding;
 
             if (selected)
                 flags |= ImGuiTreeNodeFlags.Selected;
@@ -57,9 +70,14 @@ namespace ElementalEditor.Panels
             if (obj.children.Count == 0)
                 flags |= ImGuiTreeNodeFlags.Leaf;
 
+            ImGui.PushStyleColor(ImGuiCol.HeaderHovered, new Vector4(0.23f, 0.23f, 0.24f, 1f));
+            ImGui.PushStyleColor(ImGuiCol.HeaderActive, new Vector4(0.28f, 0.28f, 0.29f, 1f));
+
             bool opened = ImGui.TreeNodeEx(obj.GetHashCode().ToString(), flags, obj.Name);
 
-            if (ImGui.IsItemClicked())
+            ImGui.PopStyleColor(2);
+
+            if (ImGui.IsItemClicked(ImGuiMouseButton.Left))
                 context.SelectedObject = obj;
 
             HandleDragDrop(obj, context);

@@ -41,13 +41,18 @@ namespace ElementalEditor.Windows
 
             ImGui.BeginChild("sidebar", new Vector2(sidebarWidth, -40), ImGuiChildFlags.Borders);
 
-            foreach (var provider in providers)
-            {
-                bool selected = provider.Category == selectedCategory;
+            var categories = providers
+                .Select(p => p.Category)
+                .Distinct()
+                .OrderBy(c => c);
 
-                if (ImGui.Selectable(provider.Category, selected))
+            foreach (var category in categories)
+            {
+                bool selected = category == selectedCategory;
+
+                if (ImGui.Selectable(category, selected))
                 {
-                    selectedCategory = provider.Category;
+                    selectedCategory = category;
                 }
             }
 

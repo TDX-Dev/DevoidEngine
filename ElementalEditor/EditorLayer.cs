@@ -47,6 +47,7 @@ namespace ElementalEditor
             panels.Add(new AssetBrowserPanel());
 
             ProjectSettingsRegistry.Register(new RenderingSettingsProvider());
+            ProjectSettingsRegistry.Register(new PhysicsSettingsProvider());
 
 
 
@@ -147,10 +148,9 @@ namespace ElementalEditor
                 viewport.WorkPos.X,
                 viewport.WorkPos.Y));
 
-            // Only force width
             ImGui.SetNextWindowSize(new Vector2(
                 viewport.WorkSize.X,
-                0)); // height auto
+                0));
 
             ImGui.SetNextWindowViewport(viewport.ID);
 
@@ -162,31 +162,68 @@ namespace ElementalEditor
                 ImGuiWindowFlags.NoDecoration |
                 ImGuiWindowFlags.NoDocking |
                 ImGuiWindowFlags.NoMove |
-                ImGuiWindowFlags.NoSavedSettings;
+                ImGuiWindowFlags.NoSavedSettings |
+                ImGuiWindowFlags.NoScrollbar;
 
             ImGui.Begin("Toolbar", flags);
+
+            //--------------------------------------------------
+            // LEFT SIDE CONTENT
+            //--------------------------------------------------
+
+            // Example:
+            // if (ImGui.Button("Save")) {}
+
+            //--------------------------------------------------
+            // RIGHT SIDE PLAY CONTROLS
+            //--------------------------------------------------
+
             bool playing = EditorRuntime.IsRunning;
+
+            string playIcon = playing ? BootstrapIconFont.StopFill : BootstrapIconFont.PlayFill;
+            string filmIcon = BootstrapIconFont.Film;
+
+            var style = ImGui.GetStyle();
+
+            Vector2 playSize = ImGui.CalcTextSize(playIcon);
+            Vector2 filmSize = ImGui.CalcTextSize(filmIcon);
+
+            playSize.X += style.FramePadding.X * 2;
+            playSize.Y += style.FramePadding.Y * 2;
+
+            filmSize.X += style.FramePadding.X * 2;
+            filmSize.Y += style.FramePadding.Y * 2;
+
+            float spacing = style.ItemSpacing.X;
+
+            float groupWidth =
+                playSize.X +
+                spacing +
+                filmSize.X;
+
+            float contentRight = ImGui.GetContentRegionAvail().X;
+
+            ImGui.SetCursorPosX(contentRight - groupWidth);
 
             if (!playing)
             {
-                if (ImGui.Button("Play"))
-                {
+                if (ImGui.Button(playIcon))
                     EditorRuntime.Launch();
-                }
             }
             else
             {
-                if (ImGui.Button("Stop"))
-                {
+                if (ImGui.Button(playIcon))
                     EditorRuntime.Stop();
-                }
             }
 
+            ImGui.SameLine();
+
+            if (ImGui.Button(filmIcon))
+                EditorRuntime.Launch();
 
             ToolbarHeight = ImGui.GetWindowHeight();
 
             ImGui.End();
-
             ImGui.PopStyleVar(3);
 
             Application.ImGuiBackend.SetCustomToolbarHeight(ToolbarHeight);

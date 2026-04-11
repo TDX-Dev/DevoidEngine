@@ -137,6 +137,9 @@ namespace DevoidEngine.Engine.Core
             if (project == null)
                 throw new Exception("You need to initialize a project before trying to apply project settings");
 
+            EngineSingleton.Instance.UseInterpolation = project.Settings.UsePhysicsInterpolation;
+            TargetFrameRate = project.Settings.PhysicsUpdateFrequency;
+
             Screen.Size = new Vector2(project.Settings.RenderWidth, project.Settings.RenderHeight);
             Renderer.Resize(project.Settings.RenderWidth, project.Settings.RenderHeight);
             SceneManager.CurrentScene?.ResizeCameras(
