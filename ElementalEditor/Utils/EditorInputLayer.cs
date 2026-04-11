@@ -30,7 +30,7 @@ namespace ElementalEditor.Utils
 
         public void Update(float dt)
         {
-            if (!ViewportActive && !rightDown)
+            if (!rightDown)
             {
                 forward = backward = left = right = up = down = false;
                 return;
@@ -64,6 +64,9 @@ namespace ElementalEditor.Utils
 
             if (e.DeviceType == InputDeviceType.Keyboard)
             {
+                if (!rightDown)
+                    return false;
+
                 if (e.Control == (ushort)Keys.W)
                     forward = e.Value > 0;
 
@@ -104,11 +107,14 @@ namespace ElementalEditor.Utils
                     }
                 }
 
-                if (e.Control == (ushort)MouseAxis.DeltaX)
-                    camera.MouseDelta(e.Value, 0);
+                if (rightDown)
+                {
+                    if (e.Control == (ushort)MouseAxis.DeltaX)
+                        camera.MouseDelta(e.Value, 0);
 
-                if (e.Control == (ushort)MouseAxis.DeltaY)
-                    camera.MouseDelta(0, e.Value);
+                    if (e.Control == (ushort)MouseAxis.DeltaY)
+                        camera.MouseDelta(0, e.Value);
+                }
 
                 if (e.Control == (ushort)MouseAxis.ScrollY)
                     camera.Scroll(e.Value);

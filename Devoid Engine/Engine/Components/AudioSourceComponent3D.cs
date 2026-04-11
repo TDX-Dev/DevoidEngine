@@ -10,9 +10,39 @@ namespace DevoidEngine.Engine.Components
         public bool PlayOnStart = true;
         public bool Looping = false;
 
-        public float Volume = 1.0f;
-        public float MinDistance = 1.0f;
-        public float MaxDistance = 50.0f;
+        public float Volume
+        {
+            get => volume;
+            set
+            {
+                volume = value;
+                ApplySettings();
+            }
+        }
+
+        public float MinDistance
+        {
+            get => minDistance;
+            set
+            {
+                minDistance = value;
+                ApplySettings();
+            }
+        }
+
+        public float MaxDistance
+        {
+            get => maxDistance;
+            set
+            {
+                maxDistance = value;
+                ApplySettings();
+            }
+        }
+
+        internal float volume = 1.0f;
+        internal float minDistance = 1.0f;
+        internal float maxDistance = 50.0f;
         public AudioClip? Audio;
 
         private AudioPlayObject? player;
@@ -116,8 +146,8 @@ namespace DevoidEngine.Engine.Components
 
             player.Volume = Volume;
             player.Loop = Looping;
-            player.minDistance = MinDistance;
-            player.maxDistance = MaxDistance;
+            player.minDistance = minDistance;
+            player.maxDistance = maxDistance;
         }
     }
 }

@@ -83,6 +83,11 @@ namespace DevoidEngine.Engine.AssetPipeline
             ImporterRegistry.Register<Scene>(new SceneImporter());
             ImporterRegistry.Register<Model>(new ModelImporter());
 
+            RefreshDatabase();
+        }
+
+        public static void RefreshDatabase()
+        {
             LoadDatabase();
             ScanAssets();
             SaveDatabase();

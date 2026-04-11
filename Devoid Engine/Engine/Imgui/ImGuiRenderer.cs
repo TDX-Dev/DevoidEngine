@@ -314,6 +314,7 @@ namespace DevoidEngine.Engine.Imgui
 
                 Keys.A => ImGuiKey.A,
                 Keys.C => ImGuiKey.C,
+                Keys.S => ImGuiKey.S,
                 Keys.V => ImGuiKey.V,
                 Keys.X => ImGuiKey.X,
                 Keys.Y => ImGuiKey.Y,

@@ -322,7 +322,7 @@ namespace ElementalEditor.Utils
                                 typeof(Asset).GetMethod("Load")!
                                 .MakeGenericMethod(type);
 
-                            result = loadMethod.Invoke(null, new object[] { path });
+                            result = loadMethod.Invoke(null, new object[] { path, true});
                         }
                     }
                 }

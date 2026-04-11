@@ -27,6 +27,8 @@ namespace ElementalEditor
         public Texture2D SceneViewportTarget;
         public bool ViewportFocused;
 
+        public bool SceneDirty;
+
         public ScenePlayState PlayState = ScenePlayState.Edit;
     }
 }

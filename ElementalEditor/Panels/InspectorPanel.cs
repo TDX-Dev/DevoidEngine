@@ -34,19 +34,19 @@ namespace ElementalEditor.Panels
             ImGui.Text(obj.Name);
             ImGui.Separator();
 
-            DrawComponents(obj);
+            DrawComponents(context, obj);
 
             ImGui.Spacing();
 
             if (ImGui.Button("Add Component", new Vector2(-1, 30)))
                 ImGui.OpenPopup("AddComponentPopup");
 
-            DrawAddComponentPopup(obj);
+            DrawAddComponentPopup(context, obj);
 
             ImGui.End();
         }
 
-        void DrawComponents(GameObject obj)
+        void DrawComponents(EditorContext context, GameObject obj)
         {
             foreach (var component in obj.Components)
             {
@@ -72,7 +72,12 @@ namespace ElementalEditor.Panels
                             continue;
 
                         EditorUI.BeginProperty(field.Name);
-                        EditorUI.DrawGenericField(field, component);
+
+                        bool changed = EditorUI.DrawGenericField(field, component);
+
+                        if (changed)
+                            context.SceneDirty = true;
+
                         EditorUI.EndProperty();
                     }
 
@@ -81,8 +86,16 @@ namespace ElementalEditor.Panels
                         if (Attribute.IsDefined(prop, typeof(DontSerialize)))
                             continue;
 
+                        if (!prop.CanRead || !prop.CanWrite)
+                            continue;
+
                         EditorUI.BeginProperty(prop.Name);
-                        EditorUI.DrawGenericProperty(prop, component);
+
+                        bool changed = EditorUI.DrawGenericProperty(prop, component);
+
+                        if (changed)
+                            context.SceneDirty = true;
+
                         EditorUI.EndProperty();
                     }
 
@@ -95,7 +108,7 @@ namespace ElementalEditor.Panels
             }
         }
 
-        void DrawAddComponentPopup(GameObject obj)
+        void DrawAddComponentPopup(EditorContext context, GameObject obj)
         {
             if (!ImGui.BeginPopup("AddComponentPopup"))
                 return;
@@ -121,7 +134,10 @@ namespace ElementalEditor.Panels
                 if (ImGui.MenuItem(type.Name))
                 {
                     var component = (Component)Activator.CreateInstance(type);
+
                     obj.AddComponent(component);
+
+                    context.SceneDirty = true;
 
                     ImGui.CloseCurrentPopup();
                 }

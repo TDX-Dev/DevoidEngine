@@ -2,14 +2,18 @@
 using DevoidEngine.Engine.Components;
 using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.InputSystem;
+using DevoidEngine.Engine.ProjectSystem;
 using DevoidEngine.Engine.Rendering;
+using DevoidEngine.Engine.Serialization;
 using DevoidEngine.Engine.Utilities;
 using ElementalEditor.Panels;
 using ElementalEditor.ProjectSettings;
 using ElementalEditor.Utils;
 using ElementalEditor.Windows;
 using ImGuiNET;
+using MessagePack;
 using System.Numerics;
+using SceneData = DevoidEngine.Engine.Serialization.SceneData;
 
 namespace ElementalEditor
 {
@@ -21,9 +25,14 @@ namespace ElementalEditor
 
         List<IEditorPanel> panels;
         ProjectSettingsWindow projectSettings;
+        SaveAssetDialog saveSceneDialog;
 
         ImFontPtr editorFont;
         bool openProjectSettingsRequested;
+        bool saveSceneRequested;
+        bool saveSceneAsRequested;
+
+        Action? pendingSceneAction;
 
         public override void OnAttach()
         {
@@ -32,6 +41,7 @@ namespace ElementalEditor
             Application.ImGuiBackend.LoadIconFont("./Content/Font/bootstrap_icons.ttf", 16, (BootstrapIconFont.IconMin, BootstrapIconFont.IconMax16));
 
             projectSettings = new ProjectSettingsWindow();
+            saveSceneDialog = new SaveAssetDialog();
 
             editorCamera = new EditorCamera(1280, 720);
             inputLayer = new EditorInputLayer(editorCamera);
@@ -49,6 +59,7 @@ namespace ElementalEditor
             ProjectSettingsRegistry.Register(new RenderingSettingsProvider());
             ProjectSettingsRegistry.Register(new PhysicsSettingsProvider());
             ProjectSettingsRegistry.Register(new InputSettingsProvider());
+            ProjectSettingsRegistry.Register(new GameSettingsProvider());
 
 
 
@@ -107,11 +118,7 @@ namespace ElementalEditor
         {
             ImGui.PushFont(editorFont);
             DrawMenuBar();
-            if (openProjectSettingsRequested)
-            {
-                projectSettings.Open();
-                openProjectSettingsRequested = false;
-            }
+            HandlePopupOpen();
 
             DrawToolbar();
 
@@ -134,13 +141,59 @@ namespace ElementalEditor
             }
 
             projectSettings.Draw();
+            saveSceneDialog.Draw();
 
             foreach (var panel in panels)
                 panel.Draw(context);
             DrawFooter();
             ImGui.PopFont();
         }
+        void HandlePopupOpen()
+        {
+            if (openProjectSettingsRequested)
+            {
+                projectSettings.Open();
+                openProjectSettingsRequested = false;
+            }
+
+            var io = ImGui.GetIO();
+
+            bool ctrl = io.KeyCtrl;
+            bool shift = io.KeyShift;
+
+            if (ctrl && ImGui.IsKeyPressed(ImGuiKey.S, false))
+            {
+                if (shift)
+                    saveSceneAsRequested = true;
+                else
+                    saveSceneRequested = true;
+            }
+
+            if (saveSceneRequested)
+            {
+                SaveSceneMenu(false);
+                saveSceneRequested = false;
+            }
+
+            if (saveSceneAsRequested)
+            {
+                SaveSceneMenu(true);
+                saveSceneAsRequested = false;
+            }
+        }
+
         public float ToolbarHeight = 0f;
+
+        void MarkSceneDirty()
+        {
+            context.SceneDirty = true;
+        }
+
+        void ClearSceneDirty()
+        {
+            context.SceneDirty = false;
+        }
+
         void DrawToolbar()
         {
             var viewport = ImGui.GetMainViewport();
@@ -168,16 +221,33 @@ namespace ElementalEditor
 
             ImGui.Begin("Toolbar", flags);
 
-            //--------------------------------------------------
             // LEFT SIDE CONTENT
-            //--------------------------------------------------
+
+            string sceneName = "Untitled";
+
+            if (context.Scene != null)
+            {
+                if (context.Scene.Guid != Guid.Empty &&
+                    AssetDatabase.TryGetPath(context.Scene.Guid, out var path))
+                {
+                    sceneName = Path.GetFileNameWithoutExtension(path);
+                }
+            }
+
+            if (context.SceneDirty)
+                sceneName += "*";
+
+            ImGui.TextColored(
+                new Vector4(0.9f, 0.9f, 0.9f, 1f),
+                sceneName
+            );
+
+            ImGui.SameLine();
 
             // Example:
             // if (ImGui.Button("Save")) {}
 
-            //--------------------------------------------------
             // RIGHT SIDE PLAY CONTROLS
-            //--------------------------------------------------
 
             bool playing = EditorRuntime.IsRunning;
 
@@ -232,16 +302,108 @@ namespace ElementalEditor
             Application.ImGuiBackend.SetCustomToolbarHeight(ToolbarHeight);
         }
 
+        void SaveScene(string path)
+        {
+            if (context.Scene == null)
+                return;
+
+            var scene = context.Scene;
+
+            SceneData sceneData = SceneSerializer.Serialize(scene);
+
+            File.WriteAllBytes(
+                path,
+                MessagePackSerializer.Serialize(sceneData)
+            );
+
+            AssetDatabase.RefreshDatabase();
+
+            context.SceneDirty = false;
+
+            Console.WriteLine("Scene saved: " + path);
+
+            pendingSceneAction?.Invoke();
+            pendingSceneAction = null;
+        }
+
+        void SaveSceneMenu(bool saveAs = false)
+        {
+            var scene = context.Scene;
+
+            if (scene == null)
+                return;
+
+            // already saved
+            if ((scene.Guid != Guid.Empty &&
+                AssetDatabase.TryGetPath(scene.Guid, out var path)) && !saveAs)
+            {
+                string absolute = Path.Combine(
+                    ProjectManager.Current.AssetPath,
+                    path
+                );
+
+                SaveScene(absolute);
+                return;
+            }
+
+            // first save
+            saveSceneDialog.Open(
+                "NewScene",
+                ProjectManager.Current.AssetPath,
+                ".scene",
+                SaveScene
+            );
+        }
+
+        void RequestNewScene()
+        {
+            if (!context.SceneDirty)
+            {
+                CreateNewScene();
+                return;
+            }
+
+            pendingSceneAction = CreateNewScene;
+
+            // open save dialog
+            saveSceneRequested = true;
+        }
+
+        void CreateNewScene()
+        {
+            var scene = new Scene();
+
+            SceneManager.LoadScene(scene);
+            scene.Play(true);
+
+            context.Scene = scene;
+            context.SceneDirty = false;
+        }
+
         void DrawMenuBar()
         {
             if (ImGui.BeginMainMenuBar())
             {
                 if (ImGui.BeginMenu("File"))
                 {
-                    if (ImGui.MenuItem("New Scene")) { }
+                    if (ImGui.MenuItem("New Scene"))
+                    {
+                        RequestNewScene();
+                    }
+
                     if (ImGui.MenuItem("Open Scene")) { }
-                    if (ImGui.MenuItem("Save Scene")) { }
+                    if (ImGui.MenuItem("Save Scene"))
+                    {
+                        saveSceneRequested = true;
+                    }
+
+                    if (ImGui.MenuItem("Save Scene As"))
+                    {
+                        saveSceneAsRequested = true;
+                    }
+
                     ImGui.Separator();
+
                     if (ImGui.MenuItem("Exit")) { }
 
                     ImGui.EndMenu();
