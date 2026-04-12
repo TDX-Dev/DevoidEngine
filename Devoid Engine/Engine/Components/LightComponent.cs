@@ -3,6 +3,7 @@ using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.GizmoSystem;
 using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.Utilities;
+using System;
 using System.Numerics;
 
 namespace DevoidEngine.Engine.Components
@@ -136,8 +137,28 @@ namespace DevoidEngine.Engine.Components
 
         public override void OnRender()
         {
+            if (Camera.Main == null)
+                return;
+
             if (lightType == LightType.SpotLight)
-                Gizmos.DrawMesh(GizmoMeshCache.ConeMesh, GizmoHelper.GetSpotlightModel(gameObject.Transform.Position, gameObject.Transform.Forward, radius, outerCutoff), GizmoCategory.Lighting);
+            {
+                //Matrix4x4 model = GizmoHelper.GetSpotlightModelBillboard(gameObject.Transform.Position, gameObject.Transform.Forward, Camera.Main.Position, radius, outerCutoff);
+                Matrix4x4 model = GizmoHelper.GetSpotlightModel(gameObject.Transform.Position, gameObject.Transform.Forward, radius, outerCutoff);
+
+                Vector3 baseCenter = gameObject.Transform.Position + gameObject.Transform.Forward * radius;
+
+                Matrix4x4 rotation = Matrix4x4.CreateWorld(baseCenter, gameObject.Transform.Forward, Vector3.UnitY);
+
+                float innerRadius = radius * MathF.Tan(innerCutoff);
+                // scale circle
+                Matrix4x4 circleModel =
+                    Matrix4x4.CreateScale(innerRadius) *
+                    rotation;
+
+                Gizmos.DrawMesh(GizmoMeshCache.ConeMesh, model, GizmoCategory.Lighting);
+                Gizmos.DrawCircle(circleModel, GizmoCategory.Lighting);
+            }
+            
         }
 
         private void RebuildGPUData()

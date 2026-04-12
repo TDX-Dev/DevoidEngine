@@ -1,6 +1,7 @@
 ﻿using DevoidEngine.Engine.AudioSystem;
 using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.GizmoSystem;
+using DevoidEngine.Engine.Rendering;
 using System.Numerics;
 
 namespace DevoidEngine.Engine.Components
@@ -80,8 +81,13 @@ namespace DevoidEngine.Engine.Components
 
         public override void OnRender()
         {
+            if (Camera.Main == null)
+                return;
             Matrix4x4 model = Matrix4x4.CreateScale(maxDistance) * Matrix4x4.CreateTranslation(gameObject.Transform.Position);
             Gizmos.DrawSphere(model, GizmoCategory.Audio);
+
+            //Matrix4x4 model = GizmoHelper.BillboardCircle(gameObject.Transform.Position, maxDistance, Camera.Main.Position);
+            //Gizmos.DrawCircle(model, GizmoCategory.Audio);
         }
 
         public override void OnDestroy()

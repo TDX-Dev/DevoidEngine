@@ -90,6 +90,7 @@ namespace ElementalEditor
             importSettingsWindow = new ImportSettingsWindow();
 
             editorCamera = new EditorCamera(1280, 720);
+            Camera.Main = editorCamera.Camera;
             inputLayer = new EditorInputLayer(editorCamera);
             Input.Router.Push(inputLayer);
 
@@ -122,6 +123,7 @@ namespace ElementalEditor
 
         public override void OnUpdate(float deltaTime)
         {
+            Camera.Main = editorCamera.Camera;
             inputLayer.ViewportActive = context.ViewportFocused;
             inputLayer.Update(deltaTime);
             SceneManager.CurrentScene?.Update(deltaTime);

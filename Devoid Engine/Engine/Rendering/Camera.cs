@@ -10,6 +10,7 @@ namespace DevoidEngine.Engine.Rendering
 
     public class Camera
     {
+        public static Camera? Main;
         public Framebuffer? RenderTarget { get; set; }
         public Frustum? Frustum { get; set; }
 

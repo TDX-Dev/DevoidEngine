@@ -116,6 +116,61 @@ namespace DevoidEngine.Engine.Utilities
             vertices = verts.ToArray();
             indices = inds.ToArray();
         }
+
+        public static void GenerateBillboardCone(
+            int segments,
+            out Vertex[] vertices,
+            out int[] indices
+        )
+        {
+            List<Vertex> verts = new();
+            List<int> inds = new();
+
+            float step = MathF.Tau / segments;
+
+            // circle vertices
+            for (int i = 0; i < segments; i++)
+            {
+                float angle = i * step;
+
+                float x = MathF.Cos(angle);
+                float y = MathF.Sin(angle);
+
+                verts.Add(new Vertex(
+                    new Vector3(x, y, 1f), // base at +Z
+                    Vector3.UnitZ,
+                    Vector2.Zero
+                ));
+            }
+
+            // apex
+            int apexIndex = verts.Count;
+
+            verts.Add(new Vertex(
+                Vector3.Zero,
+                Vector3.UnitZ,
+                Vector2.Zero
+            ));
+
+            // circle line loop
+            for (int i = 0; i < segments; i++)
+            {
+                int next = (i + 1) % segments;
+
+                inds.Add(i);
+                inds.Add(next);
+            }
+
+            // two cone edges
+            inds.Add(apexIndex);
+            inds.Add(0);
+
+            inds.Add(apexIndex);
+            inds.Add(segments / 2);
+
+            vertices = verts.ToArray();
+            indices = inds.ToArray();
+        }
         public static void GenerateLineCone(
             int segments,
             out Vertex[] vertices,

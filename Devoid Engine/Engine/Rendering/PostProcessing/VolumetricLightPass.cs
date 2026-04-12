@@ -9,20 +9,12 @@ namespace DevoidEngine.Engine.Rendering.PostProcessing
 {
     public class VolumetricLightPass : RenderGraphPass
     {
-        [StructLayout(LayoutKind.Sequential)]
-        struct VolumetricLightIndex
-        {
-            int currentLightIndex;
-        }
 
         Texture2D output;
         Framebuffer framebuffer;
 
-        UniformBuffer volumetricLightIndex;
-
         Shader volumetricShader;
         MaterialInstance material;
-        Mesh ConeMesh;
         public override Texture2D OutputTexture => output;
 
 
@@ -30,13 +22,6 @@ namespace DevoidEngine.Engine.Rendering.PostProcessing
         {
             volumetricShader = new Shader("Engine/Content/Shaders/Volumetric/volumetric");
             material = new MaterialInstance(new Material(volumetricShader));
-
-            volumetricLightIndex = new UniformBuffer(Marshal.SizeOf<VolumetricLightIndex>());
-
-            Primitives.GenerateCone(32, out Vertex[] vertices, out int[] indices);
-            ConeMesh = new Mesh();
-            ConeMesh.SetVertices(vertices);
-            ConeMesh.SetIndices(indices);
 
 
             output = new Texture2D(new TextureDescription()
@@ -60,32 +45,18 @@ namespace DevoidEngine.Engine.Rendering.PostProcessing
 
         public override void Execute(RenderGraphContext ctx)
         {
-            Renderer.GraphicsDevice.SetBlendState(BlendMode.Additive);
-            Renderer.GraphicsDevice.SetRasterizerState(CullMode.Front);
-
             framebuffer.Bind();
             framebuffer.Clear(new Vector4(0));
-            volumetricLightIndex.Bind(3, ShaderStage.Fragment);
 
-            Renderer.GetInputLayout(ConeMesh, volumetricShader);
-            for (int i = 0; i < ctx.FrameContext.spotLights.Count; i++)
-            {
-                GPUSpotLight spotLight = ctx.FrameContext.spotLights[i];
-                Matrix4x4 spotModel = PrimitiveHelper. GetSpotlightModel(spotLight);
+            Renderer.GraphicsDevice.SetBlendState(BlendMode.Additive);
 
-                Renderer.SetupCamera(ctx.FrameContext.cameraData);
-                Renderer.UpdatePerObjectData(spotModel);
-                volumetricLightIndex.SetData(i);
+            material.SetTexture("depthTexture", ctx.GetTexture("Depth"));
+            material.SetTexture("shadowMap", ctx.GetTexture("ShadowMap"));
 
-                volumetricShader.Use();
-                ConeMesh.Bind();
-                ConeMesh.Draw();
-            }
+            RenderAPI.RenderFullScreen(material);
 
-
-
-            //RenderAPI.RenderToBuffer(input, framebuffer);
             Renderer.GraphicsDevice.SetBlendState(BlendMode.Opaque);
+
             ctx.SetTexture("VolumetricOutput", output);
         }
 

@@ -131,6 +131,23 @@ namespace DevoidEngine.Engine.Rendering
             Renderer.GraphicsDevice.UnbindAllShaderResources();
         }
 
+        public static void RenderFullScreen(MaterialInstance material)
+        {
+            if (material == null) return;
+
+            SetupFullscreenState();
+
+            IInputLayout inputLayout = Renderer.GetInputLayout(mesh, material.BaseMaterial.Shader);
+            if (inputLayout == null) return;
+
+            inputLayout.Bind();
+            mesh.Bind();
+
+            material.Bind();
+
+            Renderer.GraphicsDevice.Draw(vertexCount, 0);
+        }
+
         // Render fullscreen with already bound shader
         public static void RenderFullScreen(Shader shader)
         {

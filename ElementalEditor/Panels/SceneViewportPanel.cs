@@ -52,6 +52,7 @@ namespace ElementalEditor.Panels
                 if (lastViewportSize.X != width || lastViewportSize.Y != height)
                 {
                     context.EditorCamera.SetViewportSize(width, height);
+                    //context.Scene.ResizeCameras(width, height);
                     lastViewportSize = new Vector2(width, height);
                     Screen.Size = new Vector2(width, height);
                 }

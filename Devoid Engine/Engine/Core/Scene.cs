@@ -2,6 +2,7 @@
 using DevoidEngine.Engine.AudioSystem;
 using DevoidEngine.Engine.Components;
 using DevoidEngine.Engine.Physics;
+using DevoidEngine.Engine.Rendering;
 
 namespace DevoidEngine.Engine.Core
 {
@@ -172,6 +173,13 @@ namespace DevoidEngine.Engine.Core
 
         public void Dispose()
         {
+            if (mainCamera != null)
+            {
+                if (Camera.Main == mainCamera.Camera)
+                    Camera.Main = null;
+                mainCamera = null;
+            }
+
             for (int i = 0; i < GameObjects.Count; i++)
             {
                 GameObjects[i].OnDestroy();
@@ -186,11 +194,20 @@ namespace DevoidEngine.Engine.Core
         public List<IRenderComponent> GetRenderables() => renderables;
         public List<CameraComponent3D> GetCameras3D() => cameras;
         public CameraComponent3D? GetDefaultCamera3D() => mainCamera;
-        public void SetMainCamera3D(CameraComponent3D camera) => mainCamera = camera;
+        public void SetMainCamera3D(CameraComponent3D camera)
+        {
+            mainCamera = camera;
+            Camera.Main = camera.Camera;
+        }
         public void AddCamera3D(CameraComponent3D camera) => cameras.Add(camera);
         public void RemoveCamera3D(CameraComponent3D camera)
         {
-            if (mainCamera ==  camera) { mainCamera = null; }
+            if (mainCamera ==  camera)
+            {
+                if (Camera.Main == mainCamera.Camera)
+                    Camera.Main = null;
+                mainCamera = null;
+            }
             cameras.Remove(camera);
         }
 

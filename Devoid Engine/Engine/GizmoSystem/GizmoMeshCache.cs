@@ -12,7 +12,7 @@ namespace DevoidEngine.Engine.GizmoSystem
         static GizmoMeshCache()
         {
             ConeMesh = new Mesh();
-            Primitives.GenerateLineCone(16, out Vertex[] coneVertices, out int[] coneIndices);
+            Primitives.GenerateLineCone(32, out Vertex[] coneVertices, out int[] coneIndices);
 
             ConeMesh.SetVertices(coneVertices);
             ConeMesh.SetIndices(coneIndices);
