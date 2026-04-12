@@ -32,6 +32,9 @@ public static class ScriptProjectGenerator
         sb.AppendLine("    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>");
         sb.AppendLine("    <GenerateDependencyFile>false</GenerateDependencyFile>");
         sb.AppendLine("    <GenerateRuntimeConfigurationFiles>false</GenerateRuntimeConfigurationFiles>");
+
+        sb.AppendLine("    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>");
+        sb.AppendLine("    <CompilerGeneratedFilesOutputPath>../Temp/Generated</CompilerGeneratedFilesOutputPath>");
         sb.AppendLine("  </PropertyGroup>");
 
         sb.AppendLine("  <ItemGroup>");
@@ -41,6 +44,21 @@ public static class ScriptProjectGenerator
         sb.AppendLine("  <ItemGroup>");
         sb.AppendLine("    <Reference Include=\"DevoidEngine\">");
         sb.AppendLine($"      <HintPath>{engineDll}</HintPath>");
+        sb.AppendLine("      <Private>false</Private>");
+        sb.AppendLine("    </Reference>");
+        sb.AppendLine("  </ItemGroup>");
+
+        string sourceGenDll = Path.Combine(AppContext.BaseDirectory, "DevoidEngine.SourceGen.dll");
+
+        sb.AppendLine("  <ItemGroup>");
+        sb.AppendLine($"    <Analyzer Include=\"{sourceGenDll}\" />");
+        sb.AppendLine("  </ItemGroup>");
+
+        string messagePackDll = Path.Combine(AppContext.BaseDirectory, "MessagePack.dll").Replace("\\", "/");
+
+        sb.AppendLine("  <ItemGroup>");
+        sb.AppendLine($"    <Reference Include=\"MessagePack\">");
+        sb.AppendLine($"      <HintPath>{messagePackDll}</HintPath>");
         sb.AppendLine("      <Private>false</Private>");
         sb.AppendLine("    </Reference>");
         sb.AppendLine("  </ItemGroup>");

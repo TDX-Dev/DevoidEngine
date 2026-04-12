@@ -6,7 +6,7 @@
 	  <IsRoslynAnalyzer>true</IsRoslynAnalyzer>
 	  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	  <OutputItemType>Analyzer</OutputItemType>
-	  <IncludeBuildOutput>false</IncludeBuildOutput>
+	  <IncludeBuildOutput>true</IncludeBuildOutput>
   </PropertyGroup>
 
 	<ItemGroup>

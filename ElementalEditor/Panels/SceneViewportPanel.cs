@@ -188,7 +188,11 @@ namespace ElementalEditor.Panels
             ImGui.SameLine();
             if (ImGui.Button(BootstrapIconFont.Compass))
             {
-                ScriptCompiler.Compile(out string errors);
+                if (ScriptCompiler.Compile(out string errors))
+                {
+                    ScriptAssemblyLoader.Load();
+                }
+
                 Console.WriteLine(errors);
             }
 

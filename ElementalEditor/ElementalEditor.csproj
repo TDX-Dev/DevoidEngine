@@ -9,8 +9,13 @@
   </PropertyGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\DevoidEngine.SourceGen\DevoidEngine.SourceGen.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<None Include="./Content/**/*.*" CopyToOutputDirectory="PreserveNewest" Visible="true" />
 	</ItemGroup>
+	
 
 	<ItemGroup>
     <Content Remove="C:\Users\maari\.nuget\packages\nativefiledialogsharp\0.5.0\contentFiles\any\netstandard2.0\nfd.dll" />
