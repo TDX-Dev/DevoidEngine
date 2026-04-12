@@ -11,7 +11,7 @@ namespace ElementalEditor.Scripting
             var project = ProjectManager.Current!;
 
             string csproj = Path.Combine(
-                project.SettingsPath,
+                project.RootPath,
                 "GameScripts.csproj"
             );
 

@@ -61,5 +61,11 @@ namespace DevoidEngine.Engine.Serialization
 
             return null;
         }
+
+        public static void Unregister(Type componentType)
+        {
+            serializers.Remove(componentType);
+            deserializers.Remove(componentType.FullName!);
+        }
     }
 }

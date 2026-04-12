@@ -32,7 +32,7 @@ namespace DevoidRuntime
             Console.WriteLine("[Scripts] Loading: " + path);
 
             scriptAssembly = Assembly.LoadFrom(path);
-
+            RegisterGeneratedSerializers();
             RegisterScripts();
         }
 
@@ -50,6 +50,21 @@ namespace DevoidRuntime
 
                 ScriptRegistry.Register(type);
             }
+        }
+
+        static void RegisterGeneratedSerializers()
+        {
+            var registryType =
+                scriptAssembly!.GetType(
+                    "DevoidEngine.Engine.Serialization.Generated.GeneratedComponentRegistry");
+
+            registryType?
+                .GetMethod(
+                    "RegisterAll",
+                    BindingFlags.Static |
+                    BindingFlags.Public |
+                    BindingFlags.NonPublic)
+                ?.Invoke(null, null);
         }
     }
 }
