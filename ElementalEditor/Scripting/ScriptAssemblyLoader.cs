@@ -5,11 +5,11 @@ namespace ElementalEditor.Scripting;
 
 public static class ScriptAssemblyLoader
 {
-    static Assembly? assembly;
+    static Assembly assembly;
 
     public static void Load()
     {
-        var project = ProjectManager.Current!;
+        var project = ProjectManager.Current;
 
         string path = Path.Combine(
             project.TempPath,
@@ -19,7 +19,7 @@ public static class ScriptAssemblyLoader
 
         if (!File.Exists(path))
         {
-            Console.WriteLine("[Scripts] No script assembly found.");
+            Console.WriteLine("[Scripts] No compiled scripts found.");
             return;
         }
 

@@ -41,7 +41,14 @@ namespace ElementalEditor
             Console.WriteLine($"Assets: {ProjectManager.Current.AssetPath}");
 
             Console.WriteLine("Initializing Script System: ");
+
             ScriptProjectGenerator.Generate();
+
+            // compile scripts if needed
+            ScriptCompiler.Compile(out string errors);
+
+            // load assembly
+            ScriptAssemblyLoader.Load();
 
             ApplicationSpecification applicationSpecification = new ApplicationSpecification()
             {
