@@ -1,4 +1,5 @@
 ﻿using DevoidEngine.Engine.Core;
+using DevoidEngine.Engine.GizmoSystem;
 using DevoidEngine.Engine.Physics;
 using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.Serialization;
@@ -167,7 +168,7 @@ namespace DevoidEngine.Engine.Components
                 Shape.Size,
                 internalBody.Rotation);
 
-            DebugRenderSystem.DrawCube(model);
+            Gizmos.DrawCube(model, GizmoCategory.Physics);
         }
 
         public override void OnFixedUpdate(float dt)

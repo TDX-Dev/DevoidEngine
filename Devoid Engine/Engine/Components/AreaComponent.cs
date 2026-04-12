@@ -1,4 +1,5 @@
 ﻿using DevoidEngine.Engine.Core;
+using DevoidEngine.Engine.GizmoSystem;
 using DevoidEngine.Engine.Physics;
 using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.Utilities;
@@ -109,7 +110,7 @@ namespace DevoidEngine.Engine.Components
                 return;
             Matrix4x4 model = Helper.BuildModel(internalBody!.Position, Shape.Size, internalBody!.Rotation);
 
-            DebugRenderSystem.DrawCube(model);
+            Gizmos.DrawCube(model, GizmoCategory.Physics);
         }
 
         public override void OnDestroy()

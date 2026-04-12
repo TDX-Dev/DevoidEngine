@@ -14,6 +14,12 @@ namespace DevoidEngine.Engine.Rendering
         public Vector4 Color;
     }
 
+    public struct DebugCircle
+    {
+        public Matrix4x4 Model;
+        public Vector4 Color;
+    }
+
     public struct DebugRect
     {
         public Matrix4x4 Model;
@@ -39,20 +45,24 @@ namespace DevoidEngine.Engine.Rendering
         static MaterialInstance debugMaterial;
 
         static RenderState debug3DRenderState;
+        static RenderState debug3DRenderStateLineLoop;
         static RenderState debug2DRenderState;
         static RenderState debug2DWireRenderState;
 
         static Mesh debugCube;
         static Mesh debugQuad;
         static Mesh debugQuadFilled;
+        static Mesh debugSphere;
+        static Mesh debugCircle;
 
         static List<DebugMesh> meshes = new();
         static List<DebugCube> cubes = new();
         static List<DebugRect> rects = new();
+        static List<DebugCircle> circles = new();
 
         static UniformBuffer debugShaderDataBuffer;
         static DebugShaderData debugShaderData;
-        static DebugShaderData lastDebugShaderData;
+        //static DebugShaderData lastDebugShaderData;
 
         public static bool AllowDebugDraw = true;
 
@@ -67,12 +77,19 @@ namespace DevoidEngine.Engine.Rendering
             debugCube.SetVertices(Primitives.GetCubeLineVertices());
             debugCube.SetIndices(Primitives.GetCubeLineIndices());
 
+            debugSphere = new Mesh();
+            debugSphere.SetVertices(Primitives.GetSphereVertices());
+
             debugQuad = new Mesh();
             debugQuad.SetVertices(Primitives.GetQuadLineVertices());
             debugQuad.SetIndices(Primitives.GetQuadLineIndices());
 
             debugQuadFilled = new Mesh();
             debugQuadFilled.SetVertices(Primitives.GetQuadVertex());
+
+            debugCircle = new Mesh();
+            debugCircle.SetVertices(Primitives.GetCircleLineVertices(32));
+            debugCircle.SetIndices(Primitives.GetCircleLineIndices(32));
 
 
             debugShader = new Shader("Engine/Content/Shaders/Testing/debugShader");
@@ -86,6 +103,16 @@ namespace DevoidEngine.Engine.Rendering
                 DepthWrite = true,
                 FillMode = FillMode.Solid,
                 PrimitiveType = PrimitiveType.Lines,
+                BlendMode = BlendMode.Opaque
+            };
+
+            debug3DRenderStateLineLoop = new RenderState()
+            {
+                CullMode = CullMode.None,
+                DepthTest = DepthTest.LessEqual,
+                DepthWrite = true,
+                FillMode = FillMode.Solid,
+                PrimitiveType = PrimitiveType.LineStrip,
                 BlendMode = BlendMode.Opaque
             };
 
@@ -110,15 +137,16 @@ namespace DevoidEngine.Engine.Rendering
             };
         }
 
-        public static void DrawCube(Matrix4x4 model)
+        public static void DrawCube(Matrix4x4 model, Vector4 Color)
         {
             cubes.Add(new DebugCube
             {
-                Model = model
+                Model = model,
+                Color = Color
             });
         }
 
-        public static void DrawCube(Vector3 min, Vector3 max, Matrix4x4 model)
+        public static void DrawCube(Vector3 min, Vector3 max, Matrix4x4 model, Vector4 Color)
         {
             Vector3 size = max - min;
             Vector3 center = (min + max) * 0.5f;
@@ -132,6 +160,7 @@ namespace DevoidEngine.Engine.Rendering
             cubes.Add(new DebugCube
             {
                 Model = world,
+                Color = Color
             });
         }
 
@@ -142,6 +171,25 @@ namespace DevoidEngine.Engine.Rendering
                 mesh = mesh,
                 Model = model,
                 Color = Color
+            });
+        }
+
+        public static void DrawSphere(Matrix4x4 model, Vector4 Color)
+        {
+            meshes.Add(new DebugMesh
+            {
+                mesh = debugSphere,
+                Model = model,
+                Color = Color
+            });
+        }
+
+        public static void DrawCircle(Matrix4x4 model, Vector4 color)
+        {
+            circles.Add(new DebugCircle
+            {
+                Model = model,
+                Color = color
             });
         }
 
@@ -197,48 +245,105 @@ namespace DevoidEngine.Engine.Rendering
             cameraRenderSurface.Bind();
             Renderer.SetupCamera(cameraData);
 
+            Vector4 currentColor = new Vector4(float.NaN);
+
             for (int i = 0; i < cubes.Count; i++)
             {
-                debugShaderData.Color = cubes[i].Color;
+                var cube = cubes[i];
 
-                if (CheckBufferData(ref debugShaderData, ref lastDebugShaderData))
+                if (cube.Color != currentColor)
                 {
+                    if (renderItems3D.Count > 0)
+                    {
+                        Renderer.ExecuteDrawList(renderItems3D, debug3DRenderState);
+                        renderItems3D.Clear();
+                    }
+
+                    currentColor = cube.Color;
+                    debugShaderData.Color = currentColor;
                     debugShaderDataBuffer.SetData(debugShaderData);
                 }
+
                 renderItems3D.Add(new RenderItem
                 {
                     Material = debugMaterial,
                     Mesh = debugCube,
-                    Model = cubes[i].Model
+                    Model = cube.Model
                 });
             }
 
             for (int i = 0; i < meshes.Count; i++)
             {
-                debugShaderData.Color = meshes[i].Color;
+                var mesh = meshes[i];
 
-                if (CheckBufferData(ref debugShaderData, ref lastDebugShaderData))
+                if (mesh.Color != currentColor)
                 {
+                    if (renderItems3D.Count > 0)
+                    {
+                        Renderer.ExecuteDrawList(renderItems3D, debug3DRenderState);
+                        renderItems3D.Clear();
+                    }
+
+                    currentColor = mesh.Color;
+                    debugShaderData.Color = currentColor;
                     debugShaderDataBuffer.SetData(debugShaderData);
                 }
 
                 renderItems3D.Add(new RenderItem
                 {
                     Material = debugMaterial,
-                    Mesh = meshes[i].mesh,
-                    Model = meshes[i].Model
+                    Mesh = mesh.mesh,
+                    Model = mesh.Model
                 });
             }
 
 
 
-            Renderer.ExecuteDrawList(renderItems3D, debug3DRenderState);
+            if (renderItems3D.Count > 0)
+            {
+                Renderer.ExecuteDrawList(renderItems3D, debug3DRenderState);
+                renderItems3D.Clear();
+            }
+
+            Vector4 currentCircleColor = new Vector4(float.NaN);
+
+            for (int i = 0; i < circles.Count; i++)
+            {
+                var circle = circles[i];
+
+                if (circle.Color != currentCircleColor)
+                {
+                    if (renderItems3D.Count > 0)
+                    {
+                        Renderer.ExecuteDrawList(renderItems3D, debug3DRenderStateLineLoop);
+                        renderItems3D.Clear();
+                    }
+
+                    currentCircleColor = circle.Color;
+                    debugShaderData.Color = currentCircleColor;
+                    debugShaderDataBuffer.SetData(debugShaderData);
+                }
+
+                renderItems3D.Add(new RenderItem
+                {
+                    Material = debugMaterial,
+                    Mesh = debugCircle,
+                    Model = circle.Model
+                });
+            }
+
+            if (renderItems3D.Count > 0)
+            {
+                Renderer.ExecuteDrawList(renderItems3D, debug2DWireRenderState);
+                renderItems3D.Clear();
+            }
 
             Renderer.SetupCamera(UISystem.ScreenData);
 
             for (int i = 0; i < rects.Count; i++)
             {
-                if (rects[i].materialOverride != null) continue;
+                if (rects[i].materialOverride != null)
+                    continue;
 
                 renderItems2D.Add(new RenderItem
                 {
@@ -249,10 +354,12 @@ namespace DevoidEngine.Engine.Rendering
             }
 
             Renderer.ExecuteDrawList(renderItems2D, debug2DWireRenderState);
+            renderItems2D.Clear();
 
             for (int i = 0; i < rects.Count; i++)
             {
-                if (rects[i].materialOverride == null) continue;
+                if (rects[i].materialOverride == null)
+                    continue;
 
                 renderItems2D.Add(new RenderItem
                 {
@@ -272,6 +379,7 @@ namespace DevoidEngine.Engine.Rendering
             meshes.Clear();
             cubes.Clear();
             rects.Clear();
+            circles.Clear();
         }
 
         static bool CheckBufferData(ref DebugShaderData current, ref DebugShaderData last)

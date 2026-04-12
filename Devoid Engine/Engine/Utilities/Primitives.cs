@@ -6,6 +6,48 @@ namespace DevoidEngine.Engine.Utilities
 {
     public static class Primitives
     {
+        public static Vertex[] GetCircleLineVertices(int segments = 32)
+        {
+            Vertex[] vertices = new Vertex[segments + 1];
+
+            Vector3 normal = Vector3.UnitZ;
+
+            for (int i = 0; i <= segments; i++)
+            {
+                float t = i / (float)segments;
+                float angle = t * MathF.PI * 2f;
+
+                Vector3 pos = new Vector3(
+                    MathF.Cos(angle),
+                    MathF.Sin(angle),
+                    0f
+                );
+
+                vertices[i] = new Vertex(
+                    pos,
+                    normal,
+                    new Vector2(t, 1)
+                );
+            }
+
+            return vertices;
+        }
+
+        public static int[] GetCircleLineIndices(int segments = 32)
+        {
+            int[] indices = new int[segments * 2];
+
+            int idx = 0;
+
+            for (int i = 0; i < segments; i++)
+            {
+                indices[idx++] = i;
+                indices[idx++] = i + 1;
+            }
+
+            return indices;
+        }
+
         public static void GenerateLineCone(
             int segments,
             out Vertex[] vertices,

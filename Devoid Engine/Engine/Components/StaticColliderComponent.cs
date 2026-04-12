@@ -1,4 +1,5 @@
 ﻿using DevoidEngine.Engine.Core;
+using DevoidEngine.Engine.GizmoSystem;
 using DevoidEngine.Engine.Physics;
 using DevoidEngine.Engine.Rendering;
 using System.Numerics;
@@ -93,7 +94,7 @@ namespace DevoidEngine.Engine.Components
         {
             Matrix4x4 model = Matrix4x4.CreateFromQuaternion(gameObject.Transform.Rotation) * Matrix4x4.CreateScale(Shape.Size) * Matrix4x4.CreateTranslation(gameObject.Transform.Position);
 
-            DebugRenderSystem.DrawCube(model);
+            Gizmos.DrawCube(model, GizmoCategory.Physics);
         }
 
         public override void OnDestroy()

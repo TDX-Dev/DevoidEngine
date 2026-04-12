@@ -34,5 +34,17 @@ namespace DevoidEngine.Engine.GizmoSystem
             return scale * rotation * translation;
         }
 
+        public static Matrix4x4 BillboardCircle(Vector3 position, float radius, Vector3 cameraForward)
+        {
+            Quaternion rotation = Quaternion.CreateFromRotationMatrix(
+                Matrix4x4.CreateLookAt(Vector3.Zero, -cameraForward, Vector3.UnitY)
+            );
+
+            return
+                Matrix4x4.CreateScale(radius) *
+                Matrix4x4.CreateFromQuaternion(rotation) *
+                Matrix4x4.CreateTranslation(position);
+        }
+
     }
 }

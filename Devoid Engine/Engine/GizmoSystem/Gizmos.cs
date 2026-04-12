@@ -41,14 +41,21 @@ namespace DevoidEngine.Engine.GizmoSystem
         {
             if (!Allowed(cat)) return;
 
-            DebugRenderSystem.DrawCube(model);
+            DebugRenderSystem.DrawCube(model, GetCategoryColor(cat));
         }
 
         public static void DrawCube(Vector3 min, Vector3 max, Matrix4x4 model, GizmoCategory cat)
         {
             if (!Allowed(cat)) return;
 
-            DebugRenderSystem.DrawCube(min, max, model);
+            DebugRenderSystem.DrawCube(min, max, model, GetCategoryColor(cat));
+        }
+
+        public static void DrawSphere(Matrix4x4 model, GizmoCategory cat)
+        {
+            if (!Allowed(cat)) return;
+
+            DebugRenderSystem.DrawSphere(model, GetCategoryColor(cat));
         }
 
         public static void DrawMesh(Mesh mesh, Matrix4x4 model, GizmoCategory cat)
@@ -58,20 +65,11 @@ namespace DevoidEngine.Engine.GizmoSystem
             DebugRenderSystem.DrawMesh(mesh, model, GetCategoryColor(cat));
         }
 
-        //public static void DrawIcon(Texture2D icon, Vector3 worldPos, float size, GizmoCategory cat)
-        //{
-        //    if (!Allowed(cat))
-        //        return;
+        public static void DrawCircle(Matrix4x4 model, GizmoCategory cat)
+        {
+            if (!Allowed(cat)) return;
 
-        //    Vector3? screenPoint = SceneManager.CurrentScene?.GetDefaultCamera3D()?.Camera.WorldToScreen(worldPos, Screen.Size.X, Screen.Size.Y);
-        //    if (screenPoint?.Z == -1 || screenPoint == null)
-        //        return;
-
-        //    Matrix4x4 model =
-        //        Matrix4x4.CreateScale(size, size, 1) *
-        //        Matrix4x4.CreateTranslation(screenPoint.X - size * 0.5f, screenPoint.Y - size * 0.5f, 0);
-
-        //    DebugRenderSystem.DrawRectUI(model, GetIconMaterial(icon));
-        //}
+            DebugRenderSystem.DrawCircle(model, GetCategoryColor(cat));
+        }
     }
 }

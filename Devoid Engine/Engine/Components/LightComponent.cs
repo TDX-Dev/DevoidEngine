@@ -189,7 +189,7 @@ namespace DevoidEngine.Engine.Components
                 Matrix4x4.CreateScale(0.3f) *
                 Matrix4x4.CreateTranslation(pos);
 
-            DebugRenderSystem.DrawCube(originModel);
+            //DebugRenderSystem.DrawCube(originModel);
 
             if (lightType != LightType.SpotLight)
                 return;
@@ -207,7 +207,7 @@ namespace DevoidEngine.Engine.Components
                 Matrix4x4.CreateScale(0.3f) *
                 Matrix4x4.CreateTranslation(forwardPoint);
 
-            DebugRenderSystem.DrawCube(forwardModel);
+            //DebugRenderSystem.DrawCube(forwardModel);
 
 
             // ---- Cone slope cube ----
@@ -224,7 +224,7 @@ namespace DevoidEngine.Engine.Components
                 Matrix4x4.CreateScale(0.3f) *
                 Matrix4x4.CreateTranslation(slopePoint);
 
-            DebugRenderSystem.DrawCube(slopeModel);
+            //DebugRenderSystem.DrawCube(slopeModel);
         }
 
         //public void Collect(CameraComponent3D camera, CameraRenderContext ctx)

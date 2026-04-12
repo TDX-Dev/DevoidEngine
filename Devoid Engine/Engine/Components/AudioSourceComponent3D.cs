@@ -1,5 +1,7 @@
 ﻿using DevoidEngine.Engine.AudioSystem;
 using DevoidEngine.Engine.Core;
+using DevoidEngine.Engine.GizmoSystem;
+using System.Numerics;
 
 namespace DevoidEngine.Engine.Components
 {
@@ -75,6 +77,12 @@ namespace DevoidEngine.Engine.Components
 
             // update position every frame
             player.Position = gameObject.Transform.Position;
+        }
+
+        public override void OnRender()
+        {
+            Matrix4x4 model = Matrix4x4.CreateScale(maxDistance) * Matrix4x4.CreateTranslation(gameObject.Transform.Position);
+            Gizmos.DrawSphere(model, GizmoCategory.Audio);
         }
 
         public override void OnDestroy()

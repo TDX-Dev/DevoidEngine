@@ -240,7 +240,7 @@ namespace DevoidEngine.Engine.UI
                 Matrix4x4.CreateScale(0.05f) *
                 Matrix4x4.CreateTranslation(pos);
 
-            DebugRenderSystem.DrawCube(m);
+            //DebugRenderSystem.DrawCube(m);
         }
 
         public static void DrawRay(Vector3 origin, Vector3 dir, float length)
@@ -251,7 +251,7 @@ namespace DevoidEngine.Engine.UI
                 Matrix4x4.CreateScale(0.01f, 0.01f, length) *
                 Matrix4x4.CreateWorld(center, dir, Vector3.UnitY);
 
-            DebugRenderSystem.DrawCube(model);
+            //DebugRenderSystem.DrawCube(model);
         }
 
         static bool RayPlane(Ray ray, Plane plane, out Vector3 hit)
