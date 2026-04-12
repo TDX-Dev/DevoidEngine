@@ -12,8 +12,11 @@
 
   <ItemGroup>
     <Compile Remove="LauncherContents\**" />
+    <Compile Remove="Project\**" />
     <EmbeddedResource Remove="LauncherContents\**" />
+    <EmbeddedResource Remove="Project\**" />
     <None Remove="LauncherContents\**" />
+    <None Remove="Project\**" />
   </ItemGroup>
 
   <ItemGroup>

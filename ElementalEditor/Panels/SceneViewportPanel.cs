@@ -1,6 +1,7 @@
 ﻿using DevoidEngine.Engine.AssetPipeline;
 using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.GizmoSystem;
+using ElementalEditor.Scripting;
 using ElementalEditor.Utils;
 using ImGuiNET;
 using System.Numerics;
@@ -182,6 +183,13 @@ namespace ElementalEditor.Panels
 
                 cameraPopupPosition = new Vector2(buttonMin.X, buttonMax.Y);
                 ImGui.OpenPopup("CameraSettings");
+            }
+
+            ImGui.SameLine();
+            if (ImGui.Button(BootstrapIconFont.Compass))
+            {
+                ScriptCompiler.Compile(out string errors);
+                Console.WriteLine(errors);
             }
 
             DrawGizmoPopup(gizmoPopupPosition);

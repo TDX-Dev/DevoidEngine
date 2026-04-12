@@ -2,6 +2,7 @@
 using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.ProjectSystem;
 using DevoidGPU.DX11;
+using ElementalEditor.Scripting;
 using System;
 using System.IO;
 
@@ -38,6 +39,9 @@ namespace ElementalEditor
 
             Console.WriteLine($"Project Loaded: {ProjectManager.Current.Config.Name}");
             Console.WriteLine($"Assets: {ProjectManager.Current.AssetPath}");
+
+            Console.WriteLine("Initializing Script System: ");
+            ScriptProjectGenerator.Generate();
 
             ApplicationSpecification applicationSpecification = new ApplicationSpecification()
             {
