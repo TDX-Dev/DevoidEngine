@@ -69,9 +69,9 @@ namespace DevoidEngine.Engine.Rendering
         public Framebuffer Render(CameraRenderContext ctx)
         {
             finalOutputBuffer.Bind();
-            finalOutputBuffer.Clear();
+            finalOutputBuffer.Clear(ctx.camera.ClearColor);
 
-            Renderer.SkyboxRenderer.Render(ctx);
+            //Renderer.SkyboxRenderer.Render(ctx);
 
             UploadLights(ctx);
             UploadSceneData(ctx);

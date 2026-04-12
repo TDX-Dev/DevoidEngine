@@ -1,5 +1,6 @@
 ﻿using DevoidEngine.Engine.AssetPipeline;
 using DevoidEngine.Engine.Core;
+using DevoidEngine.Engine.GizmoSystem;
 using ElementalEditor.Utils;
 using ImGuiNET;
 using System.Numerics;
@@ -14,6 +15,9 @@ namespace ElementalEditor.Panels
         public Vector2 ViewportSize;
         public Vector2 GameMousePosition;
         public bool MouseInsideViewport;
+
+        Vector2 gizmoPopupPosition;
+        Vector2 cameraPopupPosition;
 
         const float ToolbarHeight = 36f;
 
@@ -94,6 +98,8 @@ namespace ElementalEditor.Panels
                 ImGui.EndDragDropTarget();
             }
 
+            DrawViewportTools(contentMin, context);
+
             Vector2 mousePos = ImGui.GetMousePos();
 
             Vector2 viewportMin = contentMin;
@@ -138,6 +144,119 @@ namespace ElementalEditor.Panels
                 context.Scene = scene;
                 SceneManager.LoadScene(scene);
             }
+        }
+
+        void DrawViewportTools(Vector2 viewportMin, EditorContext context)
+        {
+            Vector2 pos = viewportMin + new Vector2(10, 10);
+
+            ImGui.SetCursorScreenPos(pos);
+
+            ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(8, 6));
+
+            ImGui.BeginChild(
+                "ViewportToolsOverlay",
+                new Vector2(0, 0),
+                ImGuiChildFlags.Borders |
+                ImGuiChildFlags.AlwaysAutoResize |
+                ImGuiChildFlags.AutoResizeX |
+                ImGuiChildFlags.AutoResizeY
+            );
+
+
+            if (ImGui.Button(BootstrapIconFont.Sliders))
+            {
+                Vector2 buttonMin = ImGui.GetItemRectMin();
+                Vector2 buttonMax = ImGui.GetItemRectMax();
+
+                gizmoPopupPosition = new Vector2(buttonMin.X, buttonMax.Y);
+                ImGui.OpenPopup("GizmoSettings");
+            }
+
+            ImGui.SameLine();
+            if (ImGui.Button(BootstrapIconFont.CameraFill))
+            {
+                Vector2 buttonMin = ImGui.GetItemRectMin();
+                Vector2 buttonMax = ImGui.GetItemRectMax();
+
+                cameraPopupPosition = new Vector2(buttonMin.X, buttonMax.Y);
+                ImGui.OpenPopup("CameraSettings");
+            }
+
+            DrawGizmoPopup(gizmoPopupPosition);
+            DrawCameraPopup(context, cameraPopupPosition);
+
+            ImGui.EndChild();
+
+            ImGui.PopStyleVar();
+        }
+
+        void DrawCameraPopup(EditorContext context, Vector2 position)
+        {
+            ImGui.SetNextWindowPos(position, ImGuiCond.Appearing);
+            if (!ImGui.BeginPopup("CameraSettings"))
+                return;
+
+            var cam = context.EditorCamera;
+
+            float fov = cam.Fov;
+            if (ImGui.SliderFloat("FOV", ref fov, 30f, 120f))
+            {
+                cam.Fov = fov;
+                cam.UpdateView();
+            }
+
+            float speed = cam.MoveSpeed;
+            if (ImGui.SliderFloat("Move Speed", ref speed, 1f, 100f))
+                cam.MoveSpeed = speed;
+
+            float sensitivity = cam.MouseSensitivity;
+            if (ImGui.SliderFloat("Mouse Sensitivity", ref sensitivity, 0.01f, 1f))
+                cam.MouseSensitivity = sensitivity;
+
+            ImGui.Separator();
+
+            ImGui.Text("Position");
+
+            Vector3 pos = cam.Position;
+            if (ImGui.DragFloat3("##pos", ref pos))
+            {
+                cam.Position = pos;
+                cam.UpdateView();
+            }
+
+            ImGui.EndPopup();
+        }
+
+        void DrawGizmoPopup(Vector2 position)
+        {
+            ImGui.SetNextWindowPos(position, ImGuiCond.Appearing);
+            if (!ImGui.BeginPopup("GizmoSettings"))
+                return;
+
+            bool enabled = Gizmos.Enabled;
+            if (ImGui.Checkbox("Enable Gizmos", ref enabled))
+                Gizmos.Enabled = enabled;
+
+            ImGui.Separator();
+
+            foreach (GizmoCategory cat in Enum.GetValues<GizmoCategory>())
+            {
+                if (cat == GizmoCategory.None || cat == GizmoCategory.All)
+                    continue;
+
+                bool active = (Gizmos.EnabledCategories & cat) != 0;
+
+                if (ImGui.Checkbox(cat.ToString(), ref active))
+                {
+                    if (active)
+                        Gizmos.EnabledCategories |= cat;
+                    else
+                        Gizmos.EnabledCategories &= ~cat;
+                }
+            }
+
+            ImGui.EndPopup();
         }
     }
 }

@@ -10,10 +10,15 @@ struct PSInput
     float3 WorldPos : TEXCOORD3;
 };
 
+cbuffer DebugShaderData : register(b1)
+{
+    float4 Color;
+}
+
 #include "../Common/render_constants.hlsl"
 
 float4 PSMain(PSInput input) : SV_TARGET
 {
     
-    return float4(20,20,20, 20); 
+    return Color;
 }

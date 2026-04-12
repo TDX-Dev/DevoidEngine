@@ -12,19 +12,29 @@ namespace DevoidEngine.Engine.Components
     public class SkyboxComponent : Component
     {
         public override string Type => nameof(SkyboxComponent);
+        internal Texture2D? hdriTexture;
 
-        Texture2D HdriImage = null!;
+        public Texture2D? HDRIImage
+        {
+            get => hdriTexture;
+            set
+            {
+                if (value == null)
+                    return;
+                hdriTexture = value;
+                Renderer.SkyboxRenderer.SetPanorama(value!);
+            }
+        }
 
         public override void OnStart()
         {
-            HdriImage = Helper.LoadHDRI("Engine/Content/HDRIs/qwantani_dusk_2_puresky_4k.hdr");
-            Renderer.SkyboxRenderer.SetPanorama(HdriImage);
-            HdriImage.Dispose();
+            if (hdriTexture != null)
+                Renderer.SkyboxRenderer.SetPanorama(hdriTexture);
         }
 
         public override void OnDestroy()
         {
-            HdriImage?.Dispose();
+            //HDRIImage?.Dispose();
         }
 
         public override void OnUpdate(float dt)

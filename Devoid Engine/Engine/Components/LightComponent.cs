@@ -1,4 +1,5 @@
 ﻿using DevoidEngine.Engine.Core;
+using DevoidEngine.Engine.GizmoSystem;
 using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.Utilities;
 using System.Numerics;
@@ -127,9 +128,14 @@ namespace DevoidEngine.Engine.Components
 
         public override void OnUpdate(float dt)
         {
-            DrawCubes();
             if (gameObject.Transform.hasMoved)
                 dirty = true;
+        }
+
+        public override void OnRender()
+        {
+            if (lightType == LightType.SpotLight)
+                Gizmos.DrawMesh(GizmoMeshCache.ConeMesh, GizmoHelper.GetSpotlightModel(gameObject.Transform.Position, gameObject.Transform.Forward, radius, outerCutoff), GizmoCategory.Lighting);
         }
 
         private void RebuildGPUData()

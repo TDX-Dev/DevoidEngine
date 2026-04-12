@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ElementalEditor": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

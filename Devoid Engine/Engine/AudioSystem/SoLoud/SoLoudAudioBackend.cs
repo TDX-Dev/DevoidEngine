@@ -24,6 +24,15 @@ namespace DevoidEngine.Engine.AudioSystem.SoLoud
             var result = Soloud.init();
             if (result != 0)
                 throw new Exception("SoLoud init failed");
+
+            // IMPORTANT: initialize listener immediately
+            Soloud.set3dListenerParameters(
+                0, 0, 0,
+                0, 0, -1,
+                0, 1, 0
+            );
+
+            Soloud.update3dAudio();
         }
 
         public void Update()
@@ -106,22 +115,47 @@ namespace DevoidEngine.Engine.AudioSystem.SoLoud
             return audioHandle;
         }
 
-        public AudioPlayObject? Play3D(AudioClipHandle clip, Vector3 pos, bool loop = false)
+        public AudioPlayObject? Play(in AudioPlayDescription desc)
         {
-            if (!_audioObjectMapping.TryGetValue(clip.Id, out var wav))
+            if (!_audioObjectMapping.TryGetValue(desc.Clip.Id, out var wav))
                 return null;
 
-            uint voice = Soloud.play3d(wav, pos.X, pos.Y, pos.Z);
+            uint voice;
 
-            Soloud.setLooping(voice, loop ? 1 : 0);
+            if (desc.Is3D)
+            {
+                voice = Soloud.play3d(
+                    wav,
+                    desc.Position.X,
+                    desc.Position.Y,
+                    desc.Position.Z
+                );
+
+                Soloud.set3dSourceMinMaxDistance(voice, desc.MinDistance, desc.MaxDistance);
+                Soloud.set3dSourceAttenuation(voice, (uint)desc.Attenuation, 1.0f);
+            }
+            else
+            {
+                voice = Soloud.play(wav);
+            }
+
+            Soloud.setVolume(voice, desc.Volume);
+            Soloud.setLooping(voice, desc.Loop ? 1 : 0);
+
             var playObject = new AudioPlayObject
             {
                 Handle = new AudioPlayHandle(voice),
-                Clip = clip,
-                Position = pos,
-                Volume = 1.0f,
-                Is3D = true,
-                Loop = loop
+                Clip = desc.Clip,
+
+                Position = desc.Position,
+                Volume = desc.Volume,
+                Loop = desc.Loop,
+
+                minDistance = desc.MinDistance,
+                maxDistance = desc.MaxDistance,
+                attenuationFunc = desc.Attenuation,
+
+                Is3D = desc.Is3D
             };
 
             _audioPlayObjects.Add(playObject);

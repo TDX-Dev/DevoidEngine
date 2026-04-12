@@ -329,6 +329,13 @@ namespace DevoidEngine.Engine.Core
 
                 Cursor.shapeDirty = false;
             }
+
+            if (Cursor.posDirty)
+            {
+                targetWindow!.MousePosition = new OpenTK.Mathematics.Vector2(Cursor.mousePosition.X, Cursor.mousePosition.Y);
+                Console.WriteLine(Cursor.mousePosition);
+                Cursor.posDirty = false;
+            }
         }
     }
 }

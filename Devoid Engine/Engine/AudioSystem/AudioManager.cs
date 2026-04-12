@@ -23,9 +23,9 @@ namespace DevoidEngine.Engine.AudioSystem
             return _backend.Load(data);
         }
 
-        public AudioPlayObject? Play3D(AudioClipHandle clip, Vector3 position, bool loop = false)
+        public AudioPlayObject? Play(in AudioPlayDescription desc)
         {
-            return _backend.Play3D(clip, position, loop);
+            return _backend.Play(desc);
         }
 
         public void Stop(AudioPlayObject playObject)

@@ -1,4 +1,5 @@
 ﻿using DevoidEngine.Engine.ProjectSystem;
+using ElementalEditor.ContextMenu;
 using ImGuiNET;
 using System;
 using System.Collections.Generic;
@@ -64,6 +65,25 @@ namespace ElementalEditor.Panels
             string name = Path.GetFileName(file);
 
             ImGui.Selectable(name);
+
+            //---------------------------------
+            // Context Menu
+            //---------------------------------
+
+            if (ImGui.BeginPopupContextItem())
+            {
+                AssetBrowserCommonMenu.Draw(file);
+
+                ImGui.Separator();
+
+                AssetContextMenuRegistry.Draw(file);
+
+                ImGui.EndPopup();
+            }
+
+            //---------------------------------
+            // Drag & Drop
+            //---------------------------------
 
             if (ImGui.BeginDragDropSource())
             {

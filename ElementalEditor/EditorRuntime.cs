@@ -26,18 +26,23 @@ namespace ElementalEditor
             }
         }
 
-        public static void Launch()
+        public static void Launch(string? scenePath = null)
         {
             if (IsRunning)
                 return;
 
             string runtimeExe = Path.Combine(AppContext.BaseDirectory, "DevoidRuntime.exe");
 
+            string args =
+                $"--project \"{ProjectManager.Current.ProjectFile}\" --mode editor";
+
+            if (!string.IsNullOrEmpty(scenePath))
+                args += $" --scene \"{scenePath}\"";
+
             ProcessStartInfo start = new ProcessStartInfo
             {
                 FileName = runtimeExe,
-                Arguments = $"--project \"{ProjectManager.Current.ProjectFile}\" --mode editor",
-
+                Arguments = args,
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,

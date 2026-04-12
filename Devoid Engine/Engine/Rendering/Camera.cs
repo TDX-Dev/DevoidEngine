@@ -21,7 +21,7 @@ namespace DevoidEngine.Engine.Rendering
         public float NearClip { get; set; } = 0.01f;
         public float FarClip { get; set; } = 1000f;
         public float FovY { get; set; } = MathF.PI / 3f; // default 60°
-        public Vector4 ClearColor { get; private set; } = Vector4.One;
+        public Vector4 ClearColor { get; set; } = new Vector4(0,0,0,1);
 
         private Matrix4x4 _viewMatrix = Matrix4x4.Identity;
         private Matrix4x4 _projectionMatrix = Matrix4x4.Identity;

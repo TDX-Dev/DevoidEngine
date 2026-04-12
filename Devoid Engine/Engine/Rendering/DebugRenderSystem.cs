@@ -4,6 +4,7 @@ using DevoidEngine.Engine.Utilities;
 using DevoidGPU;
 using SharpFont;
 using System.Numerics;
+using System.Runtime.InteropServices;
 
 namespace DevoidEngine.Engine.Rendering
 {
@@ -17,12 +18,18 @@ namespace DevoidEngine.Engine.Rendering
     {
         public Matrix4x4 Model;
         public MaterialInstance materialOverride;
+        public Vector4 Color;
     }
 
     public struct DebugMesh
     {
         public Matrix4x4 Model;
         public Mesh mesh;
+        public Vector4 Color;
+    }
+
+    public struct DebugShaderData
+    {
         public Vector4 Color;
     }
 
@@ -43,10 +50,17 @@ namespace DevoidEngine.Engine.Rendering
         static List<DebugCube> cubes = new();
         static List<DebugRect> rects = new();
 
+        static UniformBuffer debugShaderDataBuffer;
+        static DebugShaderData debugShaderData;
+        static DebugShaderData lastDebugShaderData;
+
         public static bool AllowDebugDraw = true;
 
         static DebugRenderSystem()
         {
+            debugShaderData = new DebugShaderData();
+            debugShaderDataBuffer = new UniformBuffer(Marshal.SizeOf<DebugShaderData>());
+
             debugCube = new Mesh();
 
             //debugCube.SetVertices(Primitives.GetCubeVertex());
@@ -121,12 +135,13 @@ namespace DevoidEngine.Engine.Rendering
             });
         }
 
-        public static void DrawMesh(Mesh mesh, Matrix4x4 model)
+        public static void DrawMesh(Mesh mesh, Matrix4x4 model, Vector4 Color)
         {
             meshes.Add(new DebugMesh
             {
                 mesh = mesh,
-                Model = model
+                Model = model,
+                Color = Color
             });
         }
 
@@ -177,11 +192,19 @@ namespace DevoidEngine.Engine.Rendering
             renderItems3D.Clear();
             renderItems2D.Clear();
 
+            debugShaderDataBuffer.Bind(1);
+
             cameraRenderSurface.Bind();
             Renderer.SetupCamera(cameraData);
 
             for (int i = 0; i < cubes.Count; i++)
             {
+                debugShaderData.Color = cubes[i].Color;
+
+                if (CheckBufferData(ref debugShaderData, ref lastDebugShaderData))
+                {
+                    debugShaderDataBuffer.SetData(debugShaderData);
+                }
                 renderItems3D.Add(new RenderItem
                 {
                     Material = debugMaterial,
@@ -192,6 +215,13 @@ namespace DevoidEngine.Engine.Rendering
 
             for (int i = 0; i < meshes.Count; i++)
             {
+                debugShaderData.Color = meshes[i].Color;
+
+                if (CheckBufferData(ref debugShaderData, ref lastDebugShaderData))
+                {
+                    debugShaderDataBuffer.SetData(debugShaderData);
+                }
+
                 renderItems3D.Add(new RenderItem
                 {
                     Material = debugMaterial,
@@ -199,6 +229,8 @@ namespace DevoidEngine.Engine.Rendering
                     Model = meshes[i].Model
                 });
             }
+
+
 
             Renderer.ExecuteDrawList(renderItems3D, debug3DRenderState);
 
@@ -240,6 +272,17 @@ namespace DevoidEngine.Engine.Rendering
             meshes.Clear();
             cubes.Clear();
             rects.Clear();
+        }
+
+        static bool CheckBufferData(ref DebugShaderData current, ref DebugShaderData last)
+        {
+            if (current.Color != last.Color)
+            {
+                last = current;
+                return true;
+            }
+
+            return false;
         }
     }
 }

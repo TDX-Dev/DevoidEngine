@@ -13,7 +13,6 @@ namespace DevoidRuntime
     {
         public override void OnAttach()
         {
-            SceneManager.LoadStartupScene();
 
             Application.ApplyProjectSettings();
 

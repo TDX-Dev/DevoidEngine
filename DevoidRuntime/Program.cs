@@ -9,6 +9,7 @@ namespace DevoidRuntime
     {
         static string projectFile = null!;
         static string mode = "game";
+        static string? sceneOverride = null;
 
         static void Main(string[] args)
         {
@@ -29,13 +30,9 @@ namespace DevoidRuntime
             EngineSingleton.Instance.UseInterpolation = true;
 
             app.AddLayer(new RuntimeLayer());
-
+            LoadStartupScene();
             app.Run();
         }
-
-        // -----------------------------
-        // Argument parsing
-        // -----------------------------
 
         static void ParseArguments(string[] args)
         {
@@ -46,12 +43,11 @@ namespace DevoidRuntime
 
                 if (args[i] == "--mode")
                     mode = args[i + 1];
+
+                if (args[i] == "--scene")
+                    sceneOverride = args[i + 1];
             }
         }
-
-        // -----------------------------
-        // Project
-        // -----------------------------
 
         static void LoadProject()
         {
@@ -64,10 +60,6 @@ namespace DevoidRuntime
             Console.WriteLine($"Project Loaded: {ProjectManager.Current.Config.Name}");
             Console.WriteLine($"Assets: {ProjectManager.Current.AssetPath}");
         }
-
-        // -----------------------------
-        // VFS
-        // -----------------------------
 
         static void InitializeVFS()
         {
@@ -94,19 +86,39 @@ namespace DevoidRuntime
             }
         }
 
-        // -----------------------------
-        // Asset system
-        // -----------------------------
-
         static void InitializeAssets()
         {
             AssetManager.Initialize();
             AssetDatabase.Initialize();
         }
 
-        // -----------------------------
-        // Application spec
-        // -----------------------------
+        static Scene LoadStartupScene()
+        {
+            var project = ProjectManager.Current;
+
+            string scenePath;
+
+            if (!string.IsNullOrEmpty(sceneOverride))
+            {
+                scenePath = sceneOverride;
+                Console.WriteLine($"Loading scene override: {scenePath}");
+            }
+            else
+            {
+                scenePath = project.Settings.StartupScene;
+
+                if (string.IsNullOrEmpty(scenePath))
+                    throw new Exception("No startup scene configured");
+            }
+
+            var scene = Asset.Load<Scene>(scenePath);
+            SceneManager.LoadScene(scene);
+
+            scene.Play(true);
+
+            return scene;
+        }
+
 
         static ApplicationSpecification CreateApplicationSpec()
         {

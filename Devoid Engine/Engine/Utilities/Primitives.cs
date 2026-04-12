@@ -6,16 +6,59 @@ namespace DevoidEngine.Engine.Utilities
 {
     public static class Primitives
     {
-        public static Mesh Cube
+        public static void GenerateLineCone(
+            int segments,
+            out Vertex[] vertices,
+            out int[] indices)
         {
-            get
-            {
-                Mesh cubeMesh = new Mesh();
-                cubeMesh.SetVertices(GetCubeVertex());
-                return cubeMesh;
-            }
-        }
+            List<Vertex> verts = new();
+            List<int> inds = new();
 
+            float radius = 1.0f;
+            float height = 1.0f;
+
+            Vector3 tip = Vector3.Zero;
+
+            // tip vertex
+            verts.Add(new Vertex(tip, Vector3.UnitZ, Vector2.Zero));
+            int tipIndex = 0;
+
+            int baseStart = verts.Count;
+
+            // generate base circle
+            for (int i = 0; i < segments; i++)
+            {
+                float angle = (float)(i * Math.PI * 2.0 / segments);
+
+                float x = MathF.Cos(angle) * radius;
+                float y = MathF.Sin(angle) * radius;
+
+                Vector3 pos = new Vector3(x, y, -height);
+
+                Vector3 normal = Vector3.Normalize(new Vector3(x, y, 0));
+
+                verts.Add(new Vertex(pos, normal, new Vector2((float)i / segments, 1)));
+            }
+
+            // base circle lines
+            for (int i = 0; i < segments; i++)
+            {
+                int next = (i + 1) % segments;
+
+                inds.Add(baseStart + i);
+                inds.Add(baseStart + next);
+            }
+
+            // side lines (tip -> base)
+            for (int i = 0; i < segments; i++)
+            {
+                inds.Add(tipIndex);
+                inds.Add(baseStart + i);
+            }
+
+            vertices = verts.ToArray();
+            indices = inds.ToArray();
+        }
         public static void GenerateConeBack(
             int segments,
             out Vertex[] vertices,

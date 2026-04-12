@@ -6,6 +6,7 @@ using DevoidEngine.Engine.ProjectSystem;
 using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.Serialization;
 using DevoidEngine.Engine.Utilities;
+using ElementalEditor.ContextMenu;
 using ElementalEditor.Panels;
 using ElementalEditor.ProjectSettings;
 using ElementalEditor.Utils;
@@ -31,8 +32,30 @@ namespace ElementalEditor
         bool openProjectSettingsRequested;
         bool saveSceneRequested;
         bool saveSceneAsRequested;
+        bool runCurrentScene = true;
 
         Action? pendingSceneAction;
+
+        void RegisterAssetContextMenus()
+        {
+            AssetContextMenuRegistry.Register(".scene", path =>
+            {
+                if (ImGui.MenuItem("Open Scene"))
+                {
+                    var scene = Asset.Load<Scene>(path, false);
+                    SceneManager.LoadScene(scene);
+                }
+            });
+
+            AssetContextMenuRegistry.Register(".gltf", path =>
+            {
+                if (ImGui.MenuItem("Instantiate"))
+                {
+                    var model = Asset.Load<Model>(path);
+                    model.Instantiate(SceneManager.CurrentScene);
+                }
+            });
+        }
 
         public override void OnAttach()
         {
@@ -61,7 +84,7 @@ namespace ElementalEditor
             ProjectSettingsRegistry.Register(new InputSettingsProvider());
             ProjectSettingsRegistry.Register(new GameSettingsProvider());
 
-
+            RegisterAssetContextMenus();
 
             var scene = new Scene();
             SceneManager.LoadScene(scene);
@@ -279,7 +302,7 @@ namespace ElementalEditor
             if (!playing)
             {
                 if (ImGui.Button(playIcon))
-                    EditorRuntime.Launch();
+                    LaunchRuntime();
             }
             else
             {
@@ -290,9 +313,7 @@ namespace ElementalEditor
             ImGui.SameLine();
 
             if (ImGui.Button(filmIcon))
-            {
-
-            }
+                LaunchRuntime(true);
 
             ToolbarHeight = ImGui.GetWindowHeight();
 
@@ -300,6 +321,27 @@ namespace ElementalEditor
             ImGui.PopStyleVar(3);
 
             Application.ImGuiBackend.SetCustomToolbarHeight(ToolbarHeight);
+        }
+
+        void LaunchRuntime(bool currentScene = false)
+        {
+            if (runCurrentScene)
+            {
+                if (context.Scene != null &&
+                    context.Scene.Guid != Guid.Empty &&
+                    AssetDatabase.TryGetPath(context.Scene.Guid, out var path))
+                {
+                    EditorRuntime.Launch(path);
+                }
+                else
+                {
+                    EditorRuntime.Launch();
+                }
+            }
+            else
+            {
+                EditorRuntime.Launch();
+            }
         }
 
         void SaveScene(string path)

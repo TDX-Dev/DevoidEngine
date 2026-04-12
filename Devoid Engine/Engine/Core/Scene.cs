@@ -57,6 +57,11 @@ namespace DevoidEngine.Engine.Core
             {
                 GameObjects[i].OnUpdate(deltaTime);
             }
+
+            if (mainCamera != null)
+            {
+                Audio.SetListener(mainCamera.gameObject.Transform.Position, mainCamera.gameObject.Transform.Forward, mainCamera.gameObject.Transform.Up);
+            }
         }
 
         public void FixedUpdate(float deltaTime)

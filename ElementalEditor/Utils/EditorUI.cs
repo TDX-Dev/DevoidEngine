@@ -14,6 +14,30 @@ namespace ElementalEditor.Utils
 {
     public static class EditorUI
     {
+        static void HandleMouseWrap()
+        {
+            if (!ImGui.IsMouseDragging(ImGuiMouseButton.Left))
+                return;
+
+            var io = ImGui.GetIO();
+            Vector2 pos = io.MousePos;
+            Vector2 display = io.DisplaySize;
+
+            const float margin = 2f;
+
+            if (pos.X <= margin)
+                Cursor.SetCursorPosition(new Vector2(display.X - margin, pos.Y));
+
+            else if (pos.X >= display.X - margin)
+                Cursor.SetCursorPosition(new Vector2(margin, pos.Y));
+
+            if (pos.Y <= margin)
+                Cursor.SetCursorPosition(new Vector2(pos.X, display.Y - margin));
+
+            else if (pos.Y >= display.Y - margin)
+                Cursor.SetCursorPosition(new Vector2(pos.X, margin));
+        }
+
         public static void BeginPropertyGrid(string id)
         {
             ImGui.PushStyleVar(ImGuiStyleVar.CellPadding, new System.Numerics.Vector2(4, 4));
@@ -53,7 +77,13 @@ namespace ElementalEditor.Utils
         public static bool PropertyFloat(ref float value, float min = float.MinValue, float max = float.MaxValue)
         {
             ImGui.SetNextItemWidth(-1);
-            return ImGui.DragFloat("##value", ref value, 0.1f, min, max);
+
+            bool changed = ImGui.DragFloat("##value", ref value, 0.1f, min, max);
+
+            if (ImGui.IsItemActive())
+                HandleMouseWrap();
+
+            return changed;
         }
 
         public static bool PropertyVector3(ref Vector3 value)

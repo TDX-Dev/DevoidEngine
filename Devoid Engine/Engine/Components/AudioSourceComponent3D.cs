@@ -40,9 +40,20 @@ namespace DevoidEngine.Engine.Components
             }
         }
 
+        public AudioAttenuation Attenuation
+        {
+            get => attenuation;
+            set
+            {
+                attenuation = value;
+                ApplySettings();
+            }
+        }
+
         internal float volume = 1.0f;
         internal float minDistance = 1.0f;
         internal float maxDistance = 50.0f;
+        internal AudioAttenuation attenuation = AudioAttenuation.LinearDistance;
         public AudioClip? Audio;
 
         private AudioPlayObject? player;
@@ -83,13 +94,22 @@ namespace DevoidEngine.Engine.Components
 
             Stop(); // restart cleanly
 
-            player = gameObject.Scene.Audio.Play3D(
-                Audio._handle,
-                gameObject.Transform.Position,
-                Looping
-            );
+            var desc = new AudioPlayDescription
+            {
+                Clip = Audio._handle,
+                Position = gameObject.Transform.Position,
 
-            ApplySettings();
+                Volume = Volume,
+                Loop = Looping,
+
+                MinDistance = MinDistance,
+                MaxDistance = MaxDistance,
+
+                Attenuation = attenuation,
+                Is3D = true
+            };
+
+            player = gameObject.Scene.Audio.Play(desc);
         }
 
         public void Stop()
@@ -148,6 +168,7 @@ namespace DevoidEngine.Engine.Components
             player.Loop = Looping;
             player.minDistance = minDistance;
             player.maxDistance = maxDistance;
+            player.attenuationFunc = attenuation;
         }
     }
 }

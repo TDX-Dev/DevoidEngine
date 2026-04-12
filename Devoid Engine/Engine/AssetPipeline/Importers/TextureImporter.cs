@@ -16,7 +16,7 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
         public override string Name => "TextureImporter";
 
         public override IReadOnlyList<string> Extensions =>
-            new[] { ".png", ".jpg", ".jpeg" };
+            new[] { ".png", ".jpg", ".jpeg", ".hdr" };
 
         public override string OutputExtension => "texture";
 

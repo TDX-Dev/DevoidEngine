@@ -9,19 +9,60 @@ namespace ElementalEditor.Utils
     {
         public Camera Camera { get; private set; }
 
-        public Vector3 Position = new(0, 2, 5);
-        public float Pitch;
-        public float Yaw = -90f;
+        Vector3 position = new(0, 2, 5);
+        float pitch;
+        float yaw = -90f;
 
-        public float MouseSensitivity = 0.25f;
-        public float MoveSpeed = 20f;
-        public float Fov = 60f;
+        float fov = 60f;
 
-        public int Width;
-        public int Height;
+        public float MouseSensitivity { get; set; } = 0.25f;
+        public float MoveSpeed { get; set; } = 20f;
+
+        public int Width { get; private set; }
+        public int Height { get; private set; }
 
         bool rotating;
         bool panning;
+
+        public Vector3 Position
+        {
+            get => position;
+            set
+            {
+                position = value;
+                UpdateView();
+            }
+        }
+
+        public float Pitch
+        {
+            get => pitch;
+            set
+            {
+                pitch = Math.Clamp(value, -89f, 89f);
+                UpdateView();
+            }
+        }
+
+        public float Yaw
+        {
+            get => yaw;
+            set
+            {
+                yaw = value;
+                UpdateView();
+            }
+        }
+
+        public float Fov
+        {
+            get => fov;
+            set
+            {
+                fov = value;
+                UpdateProjection();
+            }
+        }
 
         public EditorCamera(int width, int height)
         {
@@ -51,6 +92,8 @@ namespace ElementalEditor.Utils
                 MipLevels = 1
             }));
 
+            Camera.ClearColor = new Vector4(new Vector3(0.1f), 1);
+
             UpdateProjection();
             UpdateView();
         }
@@ -67,7 +110,6 @@ namespace ElementalEditor.Utils
             Height = height;
 
             Camera.RenderTarget.Resize(width, height);
-
             Renderer.Resize(width, height);
 
             UpdateProjection();
@@ -81,14 +123,10 @@ namespace ElementalEditor.Utils
 
         public void MouseDelta(float dx, float dy)
         {
-            bool changed = false;
-
             if (rotating)
             {
                 Yaw += dx * MouseSensitivity;
                 Pitch -= dy * MouseSensitivity;
-                Pitch = Math.Clamp(Pitch, -89f, 89f);
-                changed = true;
             }
 
             if (panning)
@@ -96,25 +134,23 @@ namespace ElementalEditor.Utils
                 Vector3 right = GetRight();
                 Vector3 up = Vector3.UnitY;
 
-                Position -= right * dx * 0.02f;
-                Position += up * dy * 0.02f;
-                changed = true;
-            }
+                position -= right * dx * 0.02f;
+                position += up * dy * 0.02f;
 
-            if (changed)
                 UpdateView();
+            }
         }
 
         public void Scroll(float delta)
         {
-            Position += GetForward() * delta;
+            position += GetForward() * delta;
             UpdateView();
         }
 
-        public void UpdateView()
+        internal void UpdateView()
         {
             Camera.UpdateView(
-                Position,
+                position,
                 GetForward(),
                 Vector3.UnitY
             );
@@ -124,21 +160,20 @@ namespace ElementalEditor.Utils
         {
             float aspect = (float)Width / Height;
 
-            Camera.FovY = MathF.PI / 180f * Fov;
+            Camera.FovY = MathF.PI / 180f * fov;
             Camera.UpdateProjectionMatrix(aspect);
-
         }
 
         public Vector3 GetForward()
         {
-            float yaw = MathF.PI / 180f * Yaw;
-            float pitch = MathF.PI / 180f * Pitch;
+            float yawRad = MathF.PI / 180f * yaw;
+            float pitchRad = MathF.PI / 180f * pitch;
 
             Vector3 forward;
 
-            forward.X = MathF.Cos(yaw) * MathF.Cos(pitch);
-            forward.Y = MathF.Sin(pitch);
-            forward.Z = MathF.Sin(yaw) * MathF.Cos(pitch);
+            forward.X = MathF.Cos(yawRad) * MathF.Cos(pitchRad);
+            forward.Y = MathF.Sin(pitchRad);
+            forward.Z = MathF.Sin(yawRad) * MathF.Cos(pitchRad);
 
             return Vector3.Normalize(forward);
         }
