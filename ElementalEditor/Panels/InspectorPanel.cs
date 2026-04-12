@@ -141,8 +141,15 @@ namespace ElementalEditor.Panels
 
             ImGui.Separator();
 
-            var componentTypes = AppDomain.CurrentDomain
-                .GetAssemblies()
+            var assemblies = new List<Assembly>
+            {
+                typeof(Component).Assembly // engine
+            };
+
+            if (ScriptAssemblyLoader.Assembly != null)
+                assemblies.Add(ScriptAssemblyLoader.Assembly);
+
+            var componentTypes = assemblies
                 .SelectMany(a => a.GetTypes())
                 .Where(t =>
                     t.IsSubclassOf(typeof(Component)) &&
