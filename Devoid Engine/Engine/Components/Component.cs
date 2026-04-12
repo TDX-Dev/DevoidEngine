@@ -11,8 +11,6 @@ namespace DevoidEngine.Engine.Components
         internal void InternalStart()
         {
 
-            //if (IsInitialized)
-            //    return;
 
             OnStart();
             IsInitialized = true;

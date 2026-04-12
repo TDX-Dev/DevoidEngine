@@ -173,8 +173,6 @@ namespace DevoidEngine.Engine.Core
             int width = pendingWidth;
             int height = pendingHeight;
 
-            //Screen.Size = new Vector2(width, height);
-            //Renderer.Resize(width, height);
             Renderer.GraphicsDevice.MainSurface.Resize(width, height);
             layerHandler.ResizeLayers(width, height);
             isResizePending = false;
@@ -242,9 +240,6 @@ namespace DevoidEngine.Engine.Core
         void FixedUpdate(float deltaTime)
         {
             layerHandler.FixedUpdateLayers(deltaTime);
-            //EngineSingleton.Instance.PhysicsSystem.Step(deltaTime);
-            //EngineSingleton.Instance.PhysicsSystem.SyncTransforms(deltaTime);
-            //EngineSingleton.Instance.PhysicsSystem.ResolveFrameCollisions();
         }
 
         void Update(float deltaTime)

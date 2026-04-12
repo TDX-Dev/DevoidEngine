@@ -1,16 +1,8 @@
-//=====================================================
-// HLSL Compute Shader (converted from GLSL)
-//=====================================================
-
 struct Cluster
 {
     float4 minPoint;
     float4 maxPoint;
 };
-
-// ----------------------------------------------------
-// Buffers
-// ----------------------------------------------------
 
 // Cluster buffer (like GLSL SSBO)
 RWStructuredBuffer<Cluster> clusters : register(u4); // binding = 4 in GLSL
@@ -38,10 +30,6 @@ struct ScreenViewData
 
 StructuredBuffer<ScreenViewData> screenViewData : register(t7); // binding = 7
 // (Or make this a cbuffer with matching fields if it’s constant for all threads)
-
-// ----------------------------------------------------
-// Constants
-// ----------------------------------------------------
 cbuffer CameraData : register(b0)
 {
     float4x4 View;
@@ -62,9 +50,6 @@ float3 lineIntersectionToZPlane(float3 A, float3 B, float zDistance);
 float4 clipToView(float4 clip);
 float4 screen2View(float4 screen);
 
-// ----------------------------------------------------
-// Thread group size — matches layout(local_size_x =1,...)
-// ----------------------------------------------------
 [numthreads(1, 1, 1)]
 void CSMain(uint3 groupID : SV_GroupID,
           uint3 dispatchThreadID : SV_DispatchThreadID,
@@ -88,19 +73,18 @@ void CSMain(uint3 groupID : SV_GroupID,
 
     maxPixel = min(maxPixel, float2(screenViewData[0].screenWidth, screenViewData[0].screenHeight));
 
-    // after computing minPixel and maxPixel and clamping:
+
     float2 minPixelClamped = minPixel;
     float2 maxPixelClamped = maxPixel;
 
-    // convert to clip (NDC) coordinates -1..1
         float2 minNDC = (minPixelClamped / float2(screenViewData[0].screenWidth, screenViewData[0].screenHeight)) * 2.0 - 1.0;
         float2 maxNDC = (maxPixelClamped / float2(screenViewData[0].screenWidth, screenViewData[0].screenHeight)) * 2.0 - 1.0;
 
-    // near-plane clip coords (z = -1, w = 1)
+
         float4 minPoint_sS = float4(minNDC, -1.0, 1.0);
         float4 maxPoint_sS = float4(maxNDC, -1.0, 1.0);
 
-    // then unproject via screen2View/ inverse projection
+
         float3 maxPoint_vS = screen2View(maxPoint_sS).xyz;
         float3 minPoint_vS = screen2View(minPoint_sS).xyz;
     
@@ -146,9 +130,6 @@ void CSMain(uint3 groupID : SV_GroupID,
 
 }
 
-// ----------------------------------------------------
-// Helper Functions
-// ----------------------------------------------------
 
 // Intersection of line with a Z plane
 float3 lineIntersectionToZPlane(float3 A, float3 B, float zDistance)

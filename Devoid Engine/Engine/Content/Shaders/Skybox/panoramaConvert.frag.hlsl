@@ -18,10 +18,8 @@ SamplerState MAT_PANORAMA_TEX_SAMPLER : register(s0);
 
 static const float PI = 3.14159265359;
 
-// 🔷 Convert face + UV → direction
 float3 GetDirection(int face, float2 uv)
 {
-    // map UV [0,1] → [-1,1]
     float2 xy = uv * 2.0f - 1.0f;
 
     float3 dir;
@@ -42,7 +40,6 @@ float3 GetDirection(int face, float2 uv)
     return normalize(dir);
 }
 
-// 🔷 Direction → equirectangular UV
 float2 DirToEquirectUV(float3 dir)
 {
     float2 uv;
@@ -55,13 +52,6 @@ float2 DirToEquirectUV(float3 dir)
 
 float4 PSMain(PSInput input) : SV_Target
 {
-    //float3 dir = GetDirection(Face, input.UV0);
-
-    //float2 panoUV = DirToEquirectUV(dir);
-
-    //float3 color = MAT_PANORAMA_TEX.Sample(MAT_PANORAMA_TEX_SAMPLER, panoUV).rgb;
-
-    //return float4(color, 1.0);
     
     float3 dir = normalize(input.WorldspacePosition);
 
@@ -70,6 +60,5 @@ float4 PSMain(PSInput input) : SV_Target
     uv.y = asin(dir.y) / PI + 0.5;
 
     float3 color = MAT_PANORAMA_TEX.Sample(MAT_PANORAMA_TEX_SAMPLER, uv).rgb;
-    //return float4(1, 1, 1, 1);
     return float4(color, 1);
 }

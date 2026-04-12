@@ -1,4 +1,5 @@
 ﻿using DevoidEngine.Engine.AssetPipeline;
+using DevoidEngine.Engine.AssetPipeline.Importers;
 using DevoidEngine.Engine.Components;
 using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.InputSystem;
@@ -27,12 +28,16 @@ namespace ElementalEditor
         List<IEditorPanel> panels;
         ProjectSettingsWindow projectSettings;
         SaveAssetDialog saveSceneDialog;
+        ImportSettingsWindow importSettingsWindow;
 
         ImFontPtr editorFont;
         bool openProjectSettingsRequested;
         bool saveSceneRequested;
         bool saveSceneAsRequested;
         bool runCurrentScene = true;
+
+        bool openImportSettingsRequested;
+        string importSettingsPath;
 
         Action? pendingSceneAction;
 
@@ -42,8 +47,11 @@ namespace ElementalEditor
             {
                 if (ImGui.MenuItem("Open Scene"))
                 {
-                    var scene = Asset.Load<Scene>(path, false);
-                    SceneManager.LoadScene(scene);
+                    var scene = Asset.Load<Scene>(FileSystemUtil.ToRelative(path));
+                    if (scene != null)
+                    {
+                        SceneManager.LoadScene(scene);
+                    }
                 }
             });
 
@@ -51,8 +59,22 @@ namespace ElementalEditor
             {
                 if (ImGui.MenuItem("Instantiate"))
                 {
-                    var model = Asset.Load<Model>(path);
+                    var model = Asset.Load<Model>(FileSystemUtil.ToRelative(path));
                     model.Instantiate(SceneManager.CurrentScene);
+                }
+            });
+
+            AssetContextMenuRegistry.Register("*", path =>
+            {
+                var ext = Path.GetExtension(path).ToLower();
+
+                if (ImporterRegistry.HasImporter(ext))
+                {
+                    if (ImGui.MenuItem("Open Import Settings"))
+                    {
+                        openImportSettingsRequested = true;
+                        importSettingsPath = path;
+                    }
                 }
             });
         }
@@ -65,6 +87,7 @@ namespace ElementalEditor
 
             projectSettings = new ProjectSettingsWindow();
             saveSceneDialog = new SaveAssetDialog();
+            importSettingsWindow = new ImportSettingsWindow();
 
             editorCamera = new EditorCamera(1280, 720);
             inputLayer = new EditorInputLayer(editorCamera);
@@ -165,6 +188,7 @@ namespace ElementalEditor
 
             projectSettings.Draw();
             saveSceneDialog.Draw();
+            importSettingsWindow.Draw();
 
             foreach (var panel in panels)
                 panel.Draw(context);
@@ -177,6 +201,11 @@ namespace ElementalEditor
             {
                 projectSettings.Open();
                 openProjectSettingsRequested = false;
+            }
+            if (openImportSettingsRequested)
+            {
+                importSettingsWindow.Open(importSettingsPath);
+                openImportSettingsRequested = false;
             }
 
             var io = ImGui.GetIO();
@@ -516,9 +545,6 @@ namespace ElementalEditor
             var style = ImGui.GetStyle();
             var colors = style.Colors;
 
-            // --------------------------------------------------
-            // Layout
-            // --------------------------------------------------
 
             style.WindowPadding = new Vector2(10, 10);
             style.FramePadding = new Vector2(8, 5);
@@ -530,9 +556,6 @@ namespace ElementalEditor
             style.ScrollbarSize = 14;
             style.GrabMinSize = 10;
 
-            // --------------------------------------------------
-            // Borders
-            // --------------------------------------------------
 
             style.WindowBorderSize = 1;
             style.ChildBorderSize = 1;
@@ -540,9 +563,6 @@ namespace ElementalEditor
             style.FrameBorderSize = 0;
             style.TabBorderSize = 0;
 
-            // --------------------------------------------------
-            // Rounding
-            // --------------------------------------------------
 
             style.WindowRounding = 6;
             style.ChildRounding = 6;
@@ -552,17 +572,11 @@ namespace ElementalEditor
             style.GrabRounding = 4;
             style.TabRounding = 4;
 
-            // --------------------------------------------------
-            // Alignment
-            // --------------------------------------------------
 
             style.WindowTitleAlign = new Vector2(0.0f, 0.5f);
             style.ButtonTextAlign = new Vector2(0.5f, 0.5f);
             style.SelectableTextAlign = new Vector2(0, 0);
 
-            // --------------------------------------------------
-            // Dark Grey Theme
-            // --------------------------------------------------
 
             colors[(int)ImGuiCol.Text] = new Vector4(0.95f, 0.96f, 0.98f, 1.00f);
             colors[(int)ImGuiCol.TextDisabled] = new Vector4(0.36f, 0.42f, 0.47f, 1.00f);

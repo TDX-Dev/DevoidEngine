@@ -200,12 +200,21 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
         {
             MaterialAsset asset = new();
 
-            asset.Shader = "PBR/ForwardPBR";
-
             MaterialProperty roughnessProperty = mat.GetProperty("$mat.roughnessFactor,0,0");
             MaterialProperty metallicProperty = mat.GetProperty("$mat.metallicFactor,0,0");
+            MaterialProperty transmissionProperty = mat.GetProperty("$mat.transmission.factor,0,0");
 
-            asset.Floats["AO"] = 1f;
+
+            // This is where im deciding if a material is glass or not.
+            if (transmissionProperty != null)
+            {
+                asset.Shader = "PBR/ForwardPBRGlass";
+            } else
+            {
+                asset.Shader = "PBR/ForwardPBR";
+            }
+
+                asset.Floats["AO"] = 1f;
 
             if (mat.HasColorDiffuse)
             {
@@ -274,11 +283,13 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
                 asset.Textures["MAT_NormalMap"] = texGuid;
             }
 
-            //MaterialProperty[] mps = mat.GetAllProperties();
-            //foreach (MaterialProperty mp in mps)
-            //{
-            //    Console.WriteLine(mp.FullyQualifiedName + " : " + mp.GetFloatValue());
-            //}
+            MaterialProperty[] mps = mat.GetAllProperties();
+            foreach (MaterialProperty mp in mps)
+            {
+                Console.WriteLine(mp.FullyQualifiedName + " : " + mp.GetFloatValue());
+            }
+
+            Console.WriteLine(mat.Opacity);
 
             return asset;
         }

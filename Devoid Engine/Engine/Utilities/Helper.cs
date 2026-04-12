@@ -261,7 +261,6 @@ namespace DevoidEngine.Engine.Utilities
         {
             using var stream = File.OpenRead(file);
 
-            // Load HDR as RGB float
             var result = ImageResultFloat.FromStream(stream, ColorComponents.RedGreenBlue);
 
             int width = result.Width;
@@ -269,7 +268,6 @@ namespace DevoidEngine.Engine.Utilities
 
             float[] rgb = result.Data;
 
-            // Convert RGB → RGBA
             float[] rgba = new float[width * height * 4];
 
             for (int i = 0, j = 0; i < rgb.Length; i += 3, j += 4)
@@ -280,7 +278,6 @@ namespace DevoidEngine.Engine.Utilities
                 rgba[j + 3] = 1.0f;
             }
 
-            // Release RGB buffer early
             result.Data = null;
 
             Texture2D texture = new Texture2D(new TextureDescription()
@@ -307,10 +304,8 @@ namespace DevoidEngine.Engine.Utilities
             return texture;
         }
 
-        // ------------------------------------------
         // Data textures (Roughness / Metallic / AO)
         // NO gamma conversion
-        // ------------------------------------------
         public static Texture2D LoadImageAsDataTex(string file, TextureFilter textureFilter)
         {
             Image image = new Image();
@@ -351,10 +346,8 @@ namespace DevoidEngine.Engine.Utilities
             return texture;
         }
 
-        // ------------------------------------------
         // Normal maps
         // Stored as linear UNorm data
-        // ------------------------------------------
         public static Texture2D LoadNormalMap(string file, TextureFilter textureFilter)
         {
             Image image = new Image();

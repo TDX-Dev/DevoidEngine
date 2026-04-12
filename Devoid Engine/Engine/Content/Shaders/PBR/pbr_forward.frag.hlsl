@@ -175,7 +175,7 @@ float4 PSMain(PSInput input) : SV_TARGET
         if (SpotLights[i].position.w == 0)
             continue;
 
-        float lightContribution = ComputeSpotLight(
+        float3 lightContribution = ComputeSpotLight(
             SpotLights[i],
             input.WorldspacePosition,
             N,

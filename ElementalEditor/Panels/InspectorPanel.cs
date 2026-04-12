@@ -13,6 +13,7 @@ namespace ElementalEditor.Panels
     public class InspectorPanel : IEditorPanel
     {
         string componentSearch = "";
+        List<Component> deleteQueue = new();
 
         public void Draw(EditorContext context)
         {
@@ -48,16 +49,31 @@ namespace ElementalEditor.Panels
 
         void DrawComponents(EditorContext context, GameObject obj)
         {
+            deleteQueue.Clear();
+            int i = 0;
             foreach (var component in obj.Components)
             {
+                ImGui.PushID(component.Type + i);
+
                 ImGui.PushStyleVar(ImGuiStyleVar.ChildRounding, 6);
 
-                ImGui.BeginChild(component.GetType().Name,
+                ImGui.BeginChild("component",
                     new Vector2(0, 0),
                     ImGuiChildFlags.Borders | ImGuiChildFlags.AutoResizeY);
 
-                if (ImGui.CollapsingHeader(component.GetType().Name,
-                    ImGuiTreeNodeFlags.DefaultOpen))
+                bool open = ImGui.CollapsingHeader(component.GetType().Name,
+                    ImGuiTreeNodeFlags.DefaultOpen);
+
+                // right-click menu on header
+                if (ImGui.BeginPopupContextItem("ComponentContext"))
+                {
+                    if (ImGui.MenuItem("Remove Component"))
+                        deleteQueue.Add(component);
+
+                    ImGui.EndPopup();
+                }
+
+                if (open)
                 {
                     var type = component.GetType();
 
@@ -100,11 +116,19 @@ namespace ElementalEditor.Panels
                     }
 
                     EditorUI.EndPropertyGrid();
+                    i++;
                 }
 
                 ImGui.EndChild();
-
                 ImGui.PopStyleVar();
+                ImGui.PopID();
+            }
+
+            // remove after iteration
+            foreach (var comp in deleteQueue)
+            {
+                obj.RemoveComponent(comp);
+                context.SceneDirty = true;
             }
         }
 

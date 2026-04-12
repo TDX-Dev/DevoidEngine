@@ -90,7 +90,6 @@ namespace DevoidStandaloneLauncher.Prototypes
             originLight.SetParent(demoObject);
             originLight.Transform.LocalPosition = new Vector3(0, 0, 0);
 
-            // ---------- CAMERA RIG ----------
 
             GameObject cameraYaw = scene.AddGameObject("CameraYaw");
             //cameraYaw.SetParent(demoObject, false);

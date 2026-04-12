@@ -47,9 +47,6 @@ namespace DevoidGPU.DX11
                 UnorderedAccessView = new UnorderedAccessView(device, buffer);
         }
 
-        // ---------------------------
-        // Binding
-        // ---------------------------
 
         public void Bind(int slot, ShaderStage stages)
         {
@@ -91,9 +88,6 @@ namespace DevoidGPU.DX11
             deviceContext.ComputeShader.SetUnorderedAccessView(slot, null);
         }
 
-        // ---------------------------
-        // Data Upload
-        // ---------------------------
 
         public void SetData(ReadOnlySpan<byte> data)
         {

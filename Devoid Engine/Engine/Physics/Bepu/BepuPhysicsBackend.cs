@@ -167,7 +167,6 @@ namespace DevoidEngine.Engine.Physics.Bepu
             BodyHandle handle = simulation.Bodies.Add(bodyDescription);
             var bodyRef = simulation.Bodies.GetBodyReference(handle);
 
-            // -------- ROTATION LOCK --------
             if (!desc.IsKinematic)
             {
                 var localInertia = bodyRef.LocalInertia;
@@ -185,7 +184,6 @@ namespace DevoidEngine.Engine.Physics.Bepu
                 localInertia.InverseInertiaTensor = tensor;
                 bodyRef.LocalInertia = localInertia;
             }
-            // --------------------------------
 
             bodyRef.Awake = true;
 

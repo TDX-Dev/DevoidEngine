@@ -12,9 +12,7 @@ namespace DevoidEngine.Engine.Components
         public override string Type => nameof(AreaComponent);
 
 
-        // ===============================
-        // Settings
-        // ===============================
+
 
         public PhysicsShapeDescription Shape
         {
@@ -38,9 +36,6 @@ namespace DevoidEngine.Engine.Components
             }
         }
 
-        // ===============================
-        // Internal Physics Handle
-        // ===============================
 
         private IPhysicsBody? internalBody;
 
@@ -52,16 +47,10 @@ namespace DevoidEngine.Engine.Components
 
         private bool allowSleep = false;
 
-        // ===============================
-        // Events
-        // ===============================
 
         public event Action<GameObject>? OnEnter;
         public event Action<GameObject>? OnExit;
 
-        // ===============================
-        // Lifecycle
-        // ===============================
 
         public override void OnStart()
         {
@@ -120,9 +109,6 @@ namespace DevoidEngine.Engine.Components
             gameObject.Scene.Physics.RemoveBody(internalBody);
         }
 
-        // ===============================
-        // Collision callbacks
-        // ===============================
 
         public void OnCollisionEnter(GameObject other)
         {

@@ -1,4 +1,5 @@
 ﻿using DevoidEngine.Engine.Core;
+using DevoidEngine.Engine.GizmoSystem;
 using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.Serialization;
 using DevoidEngine.Engine.Utilities;
@@ -78,8 +79,20 @@ namespace DevoidEngine.Engine.Components
 
             if (isDefault)
                 gameObject.Scene.SetMainCamera3D(this);
+        }
 
-            //if (IsDefault) gameObject.Scene.SetMainCamera(this);
+        public override void OnRender()
+        {
+            Matrix4x4 model = GizmoHelper.GetCameraFrustumModel(
+                gameObject.Transform.Position,
+                gameObject.Transform.Forward,
+                Camera.FovY,
+                width,
+                height,
+                2.0f
+            );
+
+            Gizmos.DrawCameraFrustum(model, GizmoCategory.Cameras);
         }
 
         public override void OnUpdate(float dt)
@@ -109,7 +122,6 @@ namespace DevoidEngine.Engine.Components
             gameObject.Scene.RemoveCamera3D(this);
         }
 
-        // --- API for projection ---
         public float Fov
         {
             get => MathHelper.RadToDeg(Camera.FovY);

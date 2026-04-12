@@ -179,19 +179,15 @@ namespace DevoidEngine.Engine.AudioSystem.SoLoud
 
         public void Dispose()
         {
-            // 1. Stop everything first
             Soloud?.stopAll();
 
-            // 2. Dispose all Wavs explicitly
             if (_audioObjectMapping != null)
             {
                 _audioObjectMapping.Clear();
             }
 
-            // 3. Clear play objects (they hold handles)
             _audioPlayObjects?.Clear();
 
-            // 4. Now safely shutdown SoLoud
             Soloud?.deinit();
         }
     }

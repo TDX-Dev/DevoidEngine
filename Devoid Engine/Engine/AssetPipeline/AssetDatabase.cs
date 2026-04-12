@@ -455,6 +455,32 @@ namespace DevoidEngine.Engine.AssetPipeline
             }
         }
 
+        public static AssetMeta GetMeta(Guid guid)
+        {
+            if (!guidToAsset.TryGetValue(guid, out var entry))
+                throw new Exception("Asset entry not found");
+
+            string metaPath = Path.Combine(
+                ProjectManager.Current!.AssetPath,
+                entry.MetaPath
+            );
+
+            return LoadMeta(metaPath, entry.AssetPath);
+        }
+
+        public static void UpdateMeta(Guid guid, AssetMeta meta)
+        {
+            if (!guidToAsset.TryGetValue(guid, out var entry))
+                throw new Exception("Asset entry not found");
+
+            string metaPath = Path.Combine(
+                ProjectManager.Current!.AssetPath,
+                entry.MetaPath
+            );
+
+            SaveMeta(metaPath, meta);
+        }
+
         private static string NormalizePath(string path)
         {
             if (string.IsNullOrEmpty(path))
@@ -462,7 +488,6 @@ namespace DevoidEngine.Engine.AssetPipeline
 
             path = path.Replace('\\', '/');
 
-            // remove leading ./
             if (path.StartsWith("./"))
                 path = path.Substring(2);
 

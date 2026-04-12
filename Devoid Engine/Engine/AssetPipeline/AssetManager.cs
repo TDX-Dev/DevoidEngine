@@ -30,6 +30,15 @@ namespace DevoidEngine.Engine.AssetPipeline
             AssetLoaderRegistry.Register<Material>(new MaterialLoader());
         }
 
+        public static void Invalidate(Guid guid)
+        {
+            AssetCache<Texture2D>.Cache.Remove(guid);
+            AssetCache<AudioClip>.Cache.Remove(guid);
+            AssetCache<Model>.Cache.Remove(guid);
+            AssetCache<Scene>.Cache.Remove(guid);
+            AssetCache<Material>.Cache.Remove(guid);
+        }
+
 
 
         public static T? Load<T>(Guid guid, bool fromCache = true) where T : class?

@@ -67,9 +67,6 @@ float4 PSMain(PSInput input) : SV_Target
 
 //static const float PI = 3.14159265359;
 
-//// ----------------------------
-//// Hammersley sequence
-//// ----------------------------
 //float RadicalInverse_VdC(uint bits)
 //{
 //    bits = (bits << 16u) | (bits >> 16u);
@@ -86,9 +83,7 @@ float4 PSMain(PSInput input) : SV_Target
 //    return float2((float) i / (float) N, RadicalInverse_VdC(i));
 //}
 
-//// ----------------------------
-//// Cosine-weighted hemisphere sampling
-//// ----------------------------
+
 //float3 ImportanceSampleCosine(float2 Xi, float3 N)
 //{
 //    float phi = 2.0 * PI * Xi.x;
@@ -115,9 +110,6 @@ float4 PSMain(PSInput input) : SV_Target
 //    return normalize(sampleVec);
 //}
 
-//// ----------------------------
-//// Pixel Shader
-//// ----------------------------
 //float4 PSMain(PSInput input) : SV_Target
 //{
 //    float3 N = normalize(input.WorldspacePosition);

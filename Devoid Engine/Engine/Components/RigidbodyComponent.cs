@@ -32,7 +32,6 @@ namespace DevoidEngine.Engine.Components
 
         public bool allowSleep = true;
 
-        // Optional save-state physics
         internal Vector3 SavedLinearVelocity;
         internal Vector3 SavedAngularVelocity;
 

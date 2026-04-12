@@ -20,7 +20,6 @@ namespace DevoidEngine.Engine.Components
             {
                 renderMode = value;
 
-                // its stored in canvas node for input projection.
                 Canvas.RenderMode = value;
             }
         }
@@ -82,8 +81,7 @@ namespace DevoidEngine.Engine.Components
                 Matrix4x4 flipY = Matrix4x4.CreateScale(1f, -1f, 1f);
                 Matrix4x4 scale = Matrix4x4.CreateScale(1f / PixelsPerUnit);
 
-                // shift UI so center becomes pivot
-                Vector2 canvasSize = Canvas.Size.GetValueOrDefault(); // or manually track root size
+                Vector2 canvasSize = Canvas.Size.GetValueOrDefault();
                 Matrix4x4 centerOffset =
                     Matrix4x4.CreateTranslation(
                         -canvasSize.X * 0.5f,

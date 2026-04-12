@@ -242,9 +242,9 @@ float3 ComputeSpotLight(
 
     float3 L = normalize(toLight);
 
-    float3 lightDir = normalize(-light.direction.xyz);
+    float3 lightDir = normalize(light.direction.xyz);
 
-    float theta = dot(L, lightDir);
+    float theta = dot(-L, lightDir);
 
     float cosInner = cos(light.innerCutoff);
     float cosOuter = cos(light.outerCutoff);

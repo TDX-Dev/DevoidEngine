@@ -31,7 +31,7 @@ namespace ElementalEditor.ContextMenu
 
             foreach (var e in entries)
             {
-                if (e.Extension == ext)
+                if (e.Extension == "*" || e.Extension == ext)
                     e.Draw(path);
             }
         }

@@ -56,7 +56,6 @@ internal static class SerializerEmitter
 
             serializeBody.AppendLine($"// Serialize field: {fieldName}");
 
-            // ---------------- ASSET REFERENCES ----------------
 
             if (IsAssetType(field.Type))
             {
@@ -98,7 +97,6 @@ internal static class SerializerEmitter
                 """);
             }
 
-            // ---------------- COMPONENT REFERENCES ----------------
 
             else if (IsComponentType(field.Type))
             {
@@ -168,7 +166,6 @@ internal static class SerializerEmitter
                 """);
             }
 
-            // ---------------- PRIMITIVES ----------------
 
             else if (IsPrimitive(field.Type))
             {
@@ -199,7 +196,6 @@ internal static class SerializerEmitter
                 """);
             }
 
-            // ---------------- OTHER TYPES ----------------
 
             else
             {

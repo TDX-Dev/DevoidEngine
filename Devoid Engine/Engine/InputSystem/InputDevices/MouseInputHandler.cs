@@ -35,9 +35,6 @@ namespace DevoidEngine.Engine.InputSystem.InputDevices
 
         public override void Update(InputBackend backend)
         {
-            // -------------------------
-            // BUTTONS (discrete events)
-            // -------------------------
             foreach (MouseButton button in _buttons)
             {
                 bool isDown = _state.IsButtonDown((OpenTK.Windowing.GraphicsLibraryFramework.MouseButton)button);
@@ -71,9 +68,6 @@ namespace DevoidEngine.Engine.InputSystem.InputDevices
                 }
             }
 
-            // -------------------------
-            // POSITION / DELTA
-            // -------------------------
             Vector2 currentPos = _state.Position;
             Vector2 delta = currentPos - _previousPosition;
 
@@ -119,9 +113,6 @@ namespace DevoidEngine.Engine.InputSystem.InputDevices
 
             _previousPosition = currentPos;
 
-            // -------------------------
-            // SCROLL
-            // -------------------------
             Vector2 scroll = _state.Scroll;
             Vector2 scrollDelta = _state.ScrollDelta;
 

@@ -31,7 +31,6 @@ float DistributionGGX(float NdotH, float roughness)
     return a2 / denom;
 }
 
-// --- Hammersley sequence ---
 float RadicalInverse_VdC(uint bits)
 {
     bits = (bits << 16u) | (bits >> 16u);
@@ -47,7 +46,6 @@ float2 Hammersley(uint i, uint N)
     return float2(float(i) / float(N), RadicalInverse_VdC(i));
 }
 
-// --- GGX importance sampling ---
 float3 ImportanceSampleGGX(float2 Xi, float3 N, float roughness)
 {
     float a = roughness * roughness;

@@ -505,7 +505,6 @@ namespace DevoidStandaloneLauncher.Utils
             // Normalize path (important for cache hits)
             fullPath = Path.GetFullPath(fullPath);
 
-            // 🔥 CACHE CHECK
             if (textureCache.TryGetValue(fullPath, out var cached))
                 return cached;
 
@@ -527,7 +526,6 @@ namespace DevoidStandaloneLauncher.Utils
             SetWrap(slot.WrapModeU, slot.WrapModeV, tex);
 
 
-            // 🔥 STORE IN CACHE
             textureCache[fullPath] = tex;
 
             return tex;

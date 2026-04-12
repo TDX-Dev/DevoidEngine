@@ -11,14 +11,12 @@ namespace DevoidStandaloneLauncher.Scripts
     {
         public override string Type => nameof(FreeCameraComponent);
 
-        // ===== SETTINGS =====
         public float MoveSpeed = 8f;
         public float BoostMultiplier = 3f;
         public float MouseSensitivity = 0.12f;
         public float MinPitch = -89f;
         public float MaxPitch = 89f;
 
-        // ===== INTERNAL =====
         private float yaw;
         private float pitch;
 
@@ -42,9 +40,6 @@ namespace DevoidStandaloneLauncher.Scripts
             HandleMovement(dt);
         }
 
-        // =========================================
-        // Mouse Look
-        // =========================================
         private void HandleMouseLook()
         {
             if (Cursor.GetCursorState() != CursorState.Grabbed)
@@ -66,9 +61,6 @@ namespace DevoidStandaloneLauncher.Scripts
                     0f);
         }
 
-        // =========================================
-        // Movement
-        // =========================================
         private void HandleMovement(float dt)
         {
             if (Input.GetActionDown("Capture"))

@@ -66,9 +66,6 @@ namespace ElementalEditor.Panels
 
             ImGui.Selectable(name);
 
-            //---------------------------------
-            // Context Menu
-            //---------------------------------
 
             if (ImGui.BeginPopupContextItem())
             {
@@ -81,9 +78,6 @@ namespace ElementalEditor.Panels
                 ImGui.EndPopup();
             }
 
-            //---------------------------------
-            // Drag & Drop
-            //---------------------------------
 
             if (ImGui.BeginDragDropSource())
             {

@@ -27,8 +27,6 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
         {
             byte[] data = File.ReadAllBytes(assetPath);
 
-            // optional: validate scene here
-
             File.WriteAllBytes(outputPath, data);
         }
     }

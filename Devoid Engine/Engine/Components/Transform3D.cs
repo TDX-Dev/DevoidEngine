@@ -9,9 +9,6 @@ namespace DevoidEngine.Engine.Components
     {
         public override string Type => nameof(Transform3D);
 
-        // ===============================
-        // Hierarchy
-        // ===============================
 
         private Transform3D? parent;
         private readonly List<Transform3D> children = new();
@@ -19,26 +16,18 @@ namespace DevoidEngine.Engine.Components
         public Transform3D? Parent => parent;
         public IReadOnlyList<Transform3D> Children => children;
 
-        // ===============================
-        // Local Transform
-        // ===============================
+
 
         private Vector3 localPosition = Vector3.Zero;
         private Quaternion localRotation = Quaternion.Identity;
         private Vector3 localScale = Vector3.One;
 
-        // ===============================
-
         private Vector3 prevLocalPosition;
         private Quaternion prevLocalRotation;
         private Vector3 prevLocalScale;
-        // ===============================
+
 
         // yes i like these designs.
-
-        // ===============================
-        // Cached World
-        // ===============================
 
         private Matrix4x4 worldMatrix = Matrix4x4.Identity;
         private bool dirty = true;
@@ -47,10 +36,6 @@ namespace DevoidEngine.Engine.Components
 
         private Matrix4x4 interpolatedWorldMatrix;
         private uint interpolatedFrame = 0; // cache guard
-
-        // ===============================
-        // Local Properties
-        // ===============================
 
         public Vector3 LocalPosition
         {
@@ -90,10 +75,6 @@ namespace DevoidEngine.Engine.Components
                 }
             }
         }
-
-        // ===============================
-        // World Matrix
-        // ===============================
 
         public Matrix4x4 LocalMatrix =>
             Matrix4x4.CreateScale(localScale) *
@@ -139,10 +120,6 @@ namespace DevoidEngine.Engine.Components
             foreach (var child in children)
                 child.MarkDirty();
         }
-
-        // ===============================
-        // World Space Properties
-        // ===============================
 
         public Vector3 Position
         {
@@ -242,10 +219,6 @@ namespace DevoidEngine.Engine.Components
         public Vector3 Up => Vector3.Normalize(Vector3.Transform(Vector3.UnitY, Rotation));
         [DontSerialize]
         public Vector3 Right => Vector3.Normalize(Vector3.Transform(Vector3.UnitX, Rotation));
-
-        // ===============================
-        // Parenting
-        // ===============================
 
         public void SetParent(Transform3D newParent, bool keepWorld = false)
         {

@@ -57,6 +57,11 @@ namespace DevoidEngine.Engine.AssetPipeline.Loaders
             Shader shader = ShaderLibrary.GetShader(asset.Shader)
                 ?? ShaderLibrary.GetShader("PBR/ForwardPBR")!;
 
+            if (asset.Shader == "PBR/ForwardPBRGlass")
+            {
+                Console.WriteLine("Glass shader");
+            }
+
             Material material = new Material(shader);
             Renderer.SkyboxRenderer.BindIBL(material);
 

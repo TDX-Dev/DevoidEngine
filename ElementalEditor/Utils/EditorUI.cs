@@ -1,5 +1,6 @@
 ﻿using DevoidEngine.Engine.AssetPipeline;
 using DevoidEngine.Engine.AssetPipeline.Loaders;
+using DevoidEngine.Engine.Attributes;
 using DevoidEngine.Engine.Core;
 using ImGuiNET;
 using System;
@@ -130,7 +131,12 @@ namespace ElementalEditor.Utils
                 return DrawVec3Field(field, target);
 
             if (field.FieldType == typeof(Vector4))
+            {
+                if (field.GetCustomAttribute<ColorField>() != null)
+                    return DrawColorField(field, target);
+
                 return DrawVec4Field(field, target);
+            }
 
             if (field.FieldType.IsEnum)
                 return DrawEnumField(field, target);
@@ -181,7 +187,12 @@ namespace ElementalEditor.Utils
                 return DrawVec3Property(prop, target);
 
             if (prop.PropertyType == typeof(Vector4))
+            {
+                if (prop.GetCustomAttribute<ColorField>() != null)
+                    return DrawColorProperty(prop, target);
+
                 return DrawVec4Property(prop, target);
+            }
 
             if (prop.PropertyType.IsEnum)
                 return DrawEnumProperty(prop, target);
@@ -290,6 +301,32 @@ namespace ElementalEditor.Utils
 
             ImGui.SetNextItemWidth(-1);
             bool changed = ImGui.DragFloat4("##value", ref v, 0.1f);
+
+            if (changed)
+            {
+                value = new Vector4(v.X, v.Y, v.Z, v.W);
+                field.SetValue(target, value);
+            }
+
+            return changed;
+        }
+
+        public static bool DrawColorField(FieldInfo field, object target)
+        {
+            Vector4 value = (Vector4)field.GetValue(target);
+
+            System.Numerics.Vector4 v = new(value.X, value.Y, value.Z, value.W);
+
+            var attr = field.GetCustomAttribute<ColorField>();
+
+            ImGuiColorEditFlags flags = ImGuiColorEditFlags.DisplayRGB;
+
+            if (attr != null && attr.HDR)
+                flags |= ImGuiColorEditFlags.HDR;
+
+            ImGui.SetNextItemWidth(-1);
+
+            bool changed = ImGui.ColorEdit4("##value", ref v, flags);
 
             if (changed)
             {
@@ -490,6 +527,32 @@ namespace ElementalEditor.Utils
             }
 
             return false;
+        }
+
+        public static bool DrawColorProperty(PropertyInfo prop, object target)
+        {
+            Vector4 value = (Vector4)prop.GetValue(target);
+
+            System.Numerics.Vector4 v = new(value.X, value.Y, value.Z, value.W);
+
+            var attr = prop.GetCustomAttribute<ColorField>();
+
+            ImGuiColorEditFlags flags = ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.DisplayRGB;// | ImGuiColorEditFlags.DisplayHSV;
+
+            if (attr != null && attr.HDR)
+                flags |= ImGuiColorEditFlags.HDR;
+
+            ImGui.SetNextItemWidth(-1);
+
+            bool changed = ImGui.ColorEdit4("##value", ref v, flags);
+
+            if (changed)
+            {
+                value = new Vector4(v.X, v.Y, v.Z, v.W);
+                prop.SetValue(target, value);
+            }
+
+            return changed;
         }
 
         #endregion

@@ -1,5 +1,3 @@
-// HLSL compute shader (fixed for group sync / varying-flow issues)
-
 // Constants
 static const uint LOCAL_X = 16;
 static const uint LOCAL_Y = 9;

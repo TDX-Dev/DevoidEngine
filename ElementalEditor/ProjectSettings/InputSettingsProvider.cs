@@ -16,9 +16,6 @@ namespace ElementalEditor.ProjectSettings
         {
             var settings = ProjectManager.Current.Settings;
 
-            //--------------------------------
-            // Add new action
-            //--------------------------------
 
             ImGui.InputText("New Action", ref newActionName, 64);
 
@@ -35,10 +32,6 @@ namespace ElementalEditor.ProjectSettings
             }
 
             ImGui.Separator();
-
-            //--------------------------------
-            // Existing actions
-            //--------------------------------
 
             for (int i = 0; i < settings.InputActions.Count; i++)
             {
@@ -100,31 +93,17 @@ namespace ElementalEditor.ProjectSettings
                     ImGui.EndCombo();
                 }
 
-                //--------------------------------
-                // Control dropdown
-                //--------------------------------
 
                 DrawControlDropdown(binding);
 
-                //--------------------------------
-                // Scale
-                //--------------------------------
 
                 float scale = binding.Scale;
                 if (ImGui.DragFloat("Scale", ref scale, 0.01f))
                     binding.Scale = scale;
 
-                //--------------------------------
-                // Clamp
-                //--------------------------------
-
                 bool clamped = binding.IsClamped;
                 if (ImGui.Checkbox("Clamp", ref clamped))
                     binding.IsClamped = clamped;
-
-                //--------------------------------
-                // Remove binding
-                //--------------------------------
 
                 if (ImGui.Button("Remove"))
                 {
@@ -138,9 +117,6 @@ namespace ElementalEditor.ProjectSettings
                 ImGui.PopID();
             }
 
-            //--------------------------------
-            // Add binding
-            //--------------------------------
 
             if (ImGui.Button("Add Binding"))
             {

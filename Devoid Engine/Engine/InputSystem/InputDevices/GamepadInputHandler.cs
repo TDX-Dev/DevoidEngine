@@ -60,17 +60,11 @@ namespace DevoidEngine.Engine.InputSystem.InputDevices
 
                 currentConnected.Add(i);
 
-                // ---- CONNECT ----
                 if (!_connectedLastFrame.Contains(i))
                 {
                     backend.NotifyDeviceConnected(InputDeviceType.Gamepad, (uint)i);
                 }
 
-                // =========================
-                // INPUT PROCESSING
-                // =========================
-
-                // ---- BUTTONS ----
                 for (int j = 0; j < state.ButtonCount; j++)
                 {
                     bool isDown = state.IsButtonDown(j);
@@ -133,7 +127,6 @@ namespace DevoidEngine.Engine.InputSystem.InputDevices
                     });
                 }
 
-                // ---- HATS ----
                 for (int h = 0; h < state.HatCount; h++)
                 {
                     var hat = (GamepadHats)state.GetHat(h);
@@ -144,8 +137,6 @@ namespace DevoidEngine.Engine.InputSystem.InputDevices
                     EmitHat(backend, i, GamepadStandardControl.DpadRight, (hat & GamepadHats.Right) != 0);
                 }
             }
-
-            // ---- DISCONNECT ----
             foreach (var old in _connectedLastFrame)
             {
                 if (!currentConnected.Contains(old))
@@ -154,7 +145,6 @@ namespace DevoidEngine.Engine.InputSystem.InputDevices
                 }
             }
 
-            // swap sets (avoid realloc)
             _connectedLastFrame.Clear();
             foreach (var c in currentConnected)
                 _connectedLastFrame.Add(c);

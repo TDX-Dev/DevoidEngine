@@ -71,7 +71,7 @@ namespace DevoidEngine.Engine.Rendering
             finalOutputBuffer.Bind();
             finalOutputBuffer.Clear(ctx.camera.ClearColor);
 
-            //Renderer.SkyboxRenderer.Render(ctx);
+            Renderer.SkyboxRenderer.Render(ctx);
 
             UploadLights(ctx);
             UploadSceneData(ctx);

@@ -12,18 +12,6 @@ namespace DevoidEngine.Engine.AssetPipeline
     {
         public static VirtualFileSystem Instance { get; private set; } = null!;
 
-        //public static void Initialize()
-        //{
-        //    Instance = new VirtualFileSystem();
-
-        //    var project = ProjectManager.Current!;
-        //    if (project == null)
-        //        throw new Exception("Project not initialized");
-
-        //    Instance.Mount(new DirectorySource(project.CachePath));
-        //    Instance.Mount(new DirectorySource(project.AssetPath));
-        //}
-
         public static void Initialize(params IVirtualFileSource[] initialSources)
         {
             Instance = new VirtualFileSystem();

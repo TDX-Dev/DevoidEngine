@@ -75,7 +75,6 @@ namespace DevoidEngine.Engine.Components
         {
             if (player == null) return;
 
-            // update position every frame
             player.Position = gameObject.Transform.Position;
         }
 
@@ -90,7 +89,6 @@ namespace DevoidEngine.Engine.Components
             Stop();
         }
 
-        // --- Controls ---
 
         public void Play()
         {
@@ -100,7 +98,7 @@ namespace DevoidEngine.Engine.Components
                 return;
             }
 
-            Stop(); // restart cleanly
+            Stop();
 
             var desc = new AudioPlayDescription
             {
@@ -140,7 +138,6 @@ namespace DevoidEngine.Engine.Components
             gameObject.Scene.Audio.Pause(player, false);
         }
 
-        // --- Settings ---
 
         public void SetVolume(float volume)
         {

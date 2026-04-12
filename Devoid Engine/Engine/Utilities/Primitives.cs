@@ -1,5 +1,4 @@
-﻿using DevoidEngine.Engine.Core;
-using DevoidGPU;
+﻿using DevoidGPU;
 using System.Numerics;
 
 namespace DevoidEngine.Engine.Utilities
@@ -48,6 +47,75 @@ namespace DevoidEngine.Engine.Utilities
             return indices;
         }
 
+        public static void GenerateLineCameraFrustum(
+            out Vertex[] vertices,
+            out int[] indices
+        )
+        {
+            List<Vertex> verts = new();
+            List<int> inds = new();
+
+            Vector3 origin = Vector3.Zero;
+
+            verts.Add(new Vertex(origin, Vector3.UnitZ, Vector2.Zero));
+            int originIndex = 0;
+
+            int baseStart = verts.Count;
+
+            float z = -1.0f;
+
+            Vector3[] corners =
+            {
+        new Vector3(-1, -1, z),
+        new Vector3( 1, -1, z),
+        new Vector3( 1,  1, z),
+        new Vector3(-1,  1, z),
+    };
+
+            for (int i = 0; i < 4; i++)
+                verts.Add(new Vertex(corners[i], Vector3.UnitZ, Vector2.Zero));
+
+            // near plane rectangle
+            for (int i = 0; i < 4; i++)
+            {
+                int next = (i + 1) % 4;
+                inds.Add(baseStart + i);
+                inds.Add(baseStart + next);
+            }
+
+            // origin → corners
+            for (int i = 0; i < 4; i++)
+            {
+                inds.Add(originIndex);
+                inds.Add(baseStart + i);
+            }
+
+            // ---- Floating Camera Up Arrow ----
+
+            int arrowStart = verts.Count;
+
+            float zArrow = -1.05f; // slight offset to avoid z-fighting
+
+            Vector3 arrowTip = new Vector3(0, 1.75f, zArrow);
+            Vector3 arrowLeft = new Vector3(-0.75f, 1.2f, zArrow);
+            Vector3 arrowRight = new Vector3(0.75f, 1.2f, zArrow);
+
+            verts.Add(new Vertex(arrowTip, Vector3.UnitZ, Vector2.Zero));
+            verts.Add(new Vertex(arrowLeft, Vector3.UnitZ, Vector2.Zero));
+            verts.Add(new Vertex(arrowRight, Vector3.UnitZ, Vector2.Zero));
+
+            int tip = arrowStart;
+            int left = arrowStart + 1;
+            int right = arrowStart + 2;
+
+            // triangle outline only
+            inds.Add(tip); inds.Add(left);
+            inds.Add(left); inds.Add(right);
+            inds.Add(right); inds.Add(tip);
+
+            vertices = verts.ToArray();
+            indices = inds.ToArray();
+        }
         public static void GenerateLineCone(
             int segments,
             out Vertex[] vertices,

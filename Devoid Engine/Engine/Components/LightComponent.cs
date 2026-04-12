@@ -1,4 +1,5 @@
-﻿using DevoidEngine.Engine.Core;
+﻿using DevoidEngine.Engine.Attributes;
+using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.GizmoSystem;
 using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.Utilities;
@@ -66,6 +67,7 @@ namespace DevoidEngine.Engine.Components
             set { enabled = value; dirty = true; }
         }
 
+        [ColorField(true)]
         public Vector4 Color
         {
             get => new Vector4(color, 1f);
@@ -144,7 +146,6 @@ namespace DevoidEngine.Engine.Components
 
             Vector3 position = transform.Position;
 
-            // Compute forward direction from quaternion
             Vector3 forward = gameObject.Transform.Forward;
 
 
@@ -200,7 +201,6 @@ namespace DevoidEngine.Engine.Components
             forward = Vector3.Normalize(forward);
 
 
-            // ---- Forward cube (direction) ----
             Vector3 forwardPoint = pos + forward * range;
 
             Matrix4x4 forwardModel =
@@ -210,7 +210,6 @@ namespace DevoidEngine.Engine.Components
             //DebugRenderSystem.DrawCube(forwardModel);
 
 
-            // ---- Cone slope cube ----
             float slopeRadius = MathF.Tan(outerCutoff) * range;
 
             // build orthonormal basis

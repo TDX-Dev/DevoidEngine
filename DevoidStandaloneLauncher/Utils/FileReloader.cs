@@ -29,7 +29,6 @@
 
         Console.WriteLine("File change detected.");
 
-        // ⚠ This runs on background thread
         // So just set a flag
         ReloadRequested = true;
     }

@@ -19,7 +19,7 @@ namespace ElementalEditor.Windows
         public void Open(string defaultName, string defaultFolder, string ext, Action<string> saveCallback)
         {
             name = defaultName;
-            folder = ToRelative(defaultFolder);
+            folder = FileSystemUtil.ToRelative(defaultFolder);
             extension = ext;
             onSave = saveCallback;
 
@@ -38,16 +38,10 @@ namespace ElementalEditor.Windows
             ImGui.Text("Save Asset");
             ImGui.Separator();
 
-            //-------------------------------------
-            // Name
-            //-------------------------------------
 
             ImGui.Text("Name");
             ImGui.InputText("##name", ref name, 256);
 
-            //-------------------------------------
-            // Path
-            //-------------------------------------
 
             ImGui.Text("Folder");
 
@@ -64,12 +58,12 @@ namespace ElementalEditor.Windows
                 var result = Dialog.FolderPicker();
 
                 if (result.IsOk)
-                    folder = ToRelative(result.Path);
+                    folder = FileSystemUtil.ToRelative(result.Path);
             }
 
             ImGui.Spacing();
 
-            string fullPath = Path.Combine(ToAbsolute(folder), name + extension);
+            string fullPath = Path.Combine(FileSystemUtil.ToAbsolute(folder), name + extension);
 
             ImGui.TextColored(
                 new Vector4(0.7f, 0.7f, 0.7f, 1f),
@@ -78,9 +72,6 @@ namespace ElementalEditor.Windows
 
             ImGui.Separator();
 
-            //-------------------------------------
-            // Buttons
-            //-------------------------------------
 
             if (ImGui.Button("Save", new Vector2(120, 0)))
             {
@@ -101,24 +92,6 @@ namespace ElementalEditor.Windows
             }
 
             ImGui.EndPopup();
-        }
-
-        static string ToRelative(string absolute)
-        {
-            string root = ProjectManager.Current.AssetPath;
-
-            if (absolute.StartsWith(root))
-                return Path.GetRelativePath(root, absolute);
-
-            return absolute;
-        }
-
-        static string ToAbsolute(string relative)
-        {
-            if (Path.IsPathRooted(relative))
-                return relative;
-
-            return Path.Combine(ProjectManager.Current.AssetPath, relative);
         }
     }
 }

@@ -52,7 +52,6 @@ namespace DevoidEngine.Engine.Utilities
 
             float[] rgb = result.Data;
 
-            // 🔥 convert RGB → RGBA
             float[] rgba = new float[Width * Height * 4];
 
             for (int i = 0, j = 0; i < rgb.Length; i += 3, j += 4)

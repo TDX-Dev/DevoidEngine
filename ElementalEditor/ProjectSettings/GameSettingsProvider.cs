@@ -29,9 +29,6 @@ namespace ElementalEditor.ProjectSettings
 
             ImGui.SameLine();
 
-            //--------------------------------------------------
-            // Scene picker
-            //--------------------------------------------------
 
             if (ImGui.Button("📁"))
             {
@@ -50,18 +47,12 @@ namespace ElementalEditor.ProjectSettings
 
             ImGui.SameLine();
 
-            //--------------------------------------------------
-            // Clear
-            //--------------------------------------------------
 
             if (ImGui.Button("X"))
             {
                 settings.StartupScene = "";
             }
 
-            //--------------------------------------------------
-            // Drag & Drop
-            //--------------------------------------------------
 
             if (ImGui.BeginDragDropTarget())
             {

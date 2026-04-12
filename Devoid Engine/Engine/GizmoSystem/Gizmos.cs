@@ -65,6 +65,13 @@ namespace DevoidEngine.Engine.GizmoSystem
             DebugRenderSystem.DrawMesh(mesh, model, GetCategoryColor(cat));
         }
 
+        public static void DrawCameraFrustum(Matrix4x4 model, GizmoCategory cat)
+        {
+            if (!Allowed(cat)) return;
+
+            DebugRenderSystem.DrawMesh(GizmoMeshCache.CameraMesh, model, GetCategoryColor(cat));
+        }
+
         public static void DrawCircle(Matrix4x4 model, GizmoCategory cat)
         {
             if (!Allowed(cat)) return;

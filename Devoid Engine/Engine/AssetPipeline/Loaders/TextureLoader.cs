@@ -3,6 +3,7 @@ using DevoidEngine.Engine.Core;
 using DevoidGPU;
 using MessagePack;
 using SixLabors.ImageSharp.PixelFormats;
+using System.Runtime.InteropServices;
 
 namespace DevoidEngine.Engine.AssetPipeline.Loaders
 {
@@ -11,34 +12,58 @@ namespace DevoidEngine.Engine.AssetPipeline.Loaders
         public Texture2D Load(ReadOnlySpan<byte> data)
         {
             TextureAsset asset;
+
             try
             {
                 asset = MessagePackSerializer.Deserialize<TextureAsset>(data.ToArray());
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
                 Console.WriteLine($"[Texture Loader]: Error Loading Texture {e.Message}");
                 return Texture2D.WhiteTexture;
             }
-            if (asset.PixelData.Length != asset.Width * asset.Height * 4)
-                throw new Exception("Invalid pixel count");
+
             Texture2D texture = new Texture2D(new TextureDescription()
             {
                 Width = asset.Width,
                 Height = asset.Height,
                 Format = asset.Format,
                 GenerateMipmaps = false,
-                IsDepthStencil = false,
                 MipLevels = 1,
+                IsDepthStencil = false,
                 IsRenderTarget = false,
                 IsMutable = false
             });
 
             texture.SetFilter(asset.Filter, asset.Filter);
-            texture.SetAnisotropy(asset.Anisotropy);
             texture.SetWrapMode(asset.Wrap, asset.Wrap);
-            texture.SetData(asset.PixelData);
+            texture.SetAnisotropy(asset.Anisotropy);
 
-            Console.WriteLine("Texture was loaded");
+            switch (asset.Format)
+            {
+                case TextureFormat.RGBA8_UNorm:
+                    {
+                        texture.SetData(asset.PixelData);
+                        break;
+                    }
+
+                case TextureFormat.RGBA16_Float:
+                    {
+                        Half[] halfPixels = MemoryMarshal.Cast<byte, Half>(asset.PixelData).ToArray();
+                        texture.SetData(halfPixels);
+                        break;
+                    }
+
+                case TextureFormat.RGBA32_Float:
+                    {
+                        float[] floatPixels = MemoryMarshal.Cast<byte, float>(asset.PixelData).ToArray();
+                        texture.SetData(floatPixels);
+                        break;
+                    }
+
+                default:
+                    throw new NotSupportedException($"Unsupported texture format {asset.Format}");
+            }
 
             return texture;
         }

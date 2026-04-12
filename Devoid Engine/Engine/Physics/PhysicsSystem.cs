@@ -32,30 +32,27 @@ namespace DevoidEngine.Engine.Physics
             // Only advance simulation
             backend.Step(fixedDelta);
 
-            // DO NOT dispatch enter/stay/exit here
-            // We only accumulate contact pairs during substeps
         }
 
         public void ResolveFrameCollisions()
         {
-            // 1️⃣ Mark all existing contacts as seen this frame
+
             foreach (var pair in currentPairs)
             {
                 if (!contactStates.ContainsKey(pair))
                 {
-                    // New contact
+
                     contactStates[pair] = 0;
                     DispatchEnter(pair);
                 }
                 else
                 {
-                    // Existing contact
+
                     contactStates[pair] = 0;
                     DispatchStay(pair);
                 }
             }
 
-            // 2️⃣ Process missing contacts
             toRemove.Clear();
 
             foreach (var kvp in contactStates)
@@ -74,11 +71,11 @@ namespace DevoidEngine.Engine.Physics
                 }
             }
 
-            // 3️⃣ Remove expired contacts
+
             foreach (var pair in toRemove)
                 contactStates.Remove(pair);
 
-            // 4️⃣ Clear frame accumulation
+
             currentPairs.Clear();
         }
 
