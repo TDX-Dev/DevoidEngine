@@ -25,6 +25,13 @@ public static class ScriptAssemblyLoader
 
         Console.WriteLine("[Scripts] Loading assembly: " + path);
 
-        assembly = Assembly.LoadFrom(path);
+        Assembly asm = Assembly.LoadFrom(path);
+
+        var registry = asm.GetType(
+            "DevoidEngine.Engine.Serialization.Generated.GeneratedComponentRegistry");
+
+        registry?
+            .GetMethod("RegisterAll", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)?
+            .Invoke(null, null);
     }
 }
