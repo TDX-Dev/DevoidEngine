@@ -26,5 +26,29 @@ namespace ElementalEditor.Utils
 
             return Path.Combine(ProjectManager.Current.AssetPath, relative);
         }
+
+        public static void CopyDirectory(string sourceDir, string destinationDir)
+        {
+            DirectoryInfo source = new DirectoryInfo(sourceDir);
+
+            if (!source.Exists)
+                throw new DirectoryNotFoundException(sourceDir);
+
+            Directory.CreateDirectory(destinationDir);
+
+            // copy files
+            foreach (FileInfo file in source.GetFiles())
+            {
+                string target = Path.Combine(destinationDir, file.Name);
+                file.CopyTo(target, true);
+            }
+
+            // copy subdirectories
+            foreach (DirectoryInfo dir in source.GetDirectories())
+            {
+                string target = Path.Combine(destinationDir, dir.Name);
+                CopyDirectory(dir.FullName, target);
+            }
+        }
     }
 }

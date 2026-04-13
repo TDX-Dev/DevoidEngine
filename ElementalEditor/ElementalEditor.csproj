@@ -13,10 +13,16 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<None Include="..\DevoidRuntime\**\*.*" Exclude="..\DevoidRuntime\bin\**;..\DevoidRuntime\obj\**">
+			<Link>DevoidRuntime/%(RecursiveDir)%(Filename)%(Extension)</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
 		<!-- DevoidRuntime -->
-		<None Include="..\DevoidRuntime\**\*.*"
-			  Exclude="..\DevoidRuntime\bin\**;..\DevoidRuntime\obj\**">
-			<Link>RuntimePlayer/DevoidRuntime/%(RecursiveDir)%(Filename)%(Extension)</Link>
+		<None Include="..\DevoidRuntime\**\*.*" Exclude="..\DevoidRuntime\bin\**;..\DevoidRuntime\obj\**">
+			<Link>DevoidRuntime/%(RecursiveDir)%(Filename)%(Extension)</Link>
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 
@@ -68,5 +74,6 @@
   <ItemGroup>
     <Folder Include="Content\" />
   </ItemGroup>
+
 
 </Project>
