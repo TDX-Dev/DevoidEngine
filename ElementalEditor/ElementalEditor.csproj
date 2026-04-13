@@ -13,6 +13,29 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<!-- DevoidRuntime -->
+		<None Include="..\DevoidRuntime\**\*.*"
+			  Exclude="..\DevoidRuntime\bin\**;..\DevoidRuntime\obj\**">
+			<Link>RuntimePlayer/DevoidRuntime/%(RecursiveDir)%(Filename)%(Extension)</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+
+		<!-- DevoidEngine --><!--
+		<None Include="..\Devoid Engine\**\*.*"
+			  Exclude="..\Devoid Engine\bin\**;..\Devoid Engine\obj\**">
+			<Link>RuntimePlayer/Devoid Engine/%(RecursiveDir)%(Filename)%(Extension)</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+
+		--><!-- DevoidGPU --><!--
+		<None Include="..\DevoidGPU\**\*.*"
+			  Exclude="..\DevoidGPU\bin\**;..\DevoidGPU\obj\**">
+			<Link>RuntimePlayer/DevoidGPU/%(RecursiveDir)%(Filename)%(Extension)</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>-->
+	</ItemGroup>
+
+	<ItemGroup>
 		<None Include="./Content/**/*.*" CopyToOutputDirectory="PreserveNewest" Visible="true" />
 	</ItemGroup>
 	

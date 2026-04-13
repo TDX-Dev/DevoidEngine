@@ -64,9 +64,15 @@ namespace ElementalEditor
                     Console.WriteLine($"[Runtime ERROR] {e.Data}");
             };
 
-            runtimeProcess.Start();
-            runtimeProcess.BeginOutputReadLine();
-            runtimeProcess.BeginErrorReadLine();
+            try
+            {
+                runtimeProcess.Start();
+                runtimeProcess.BeginOutputReadLine();
+                runtimeProcess.BeginErrorReadLine();
+            } catch (Exception ex)
+            {
+                Console.WriteLine($"[Runtime] error: {ex.Message}");
+            }
         }
 
         public static void Stop()

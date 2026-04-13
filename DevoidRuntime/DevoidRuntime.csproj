@@ -1,18 +1,32 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	<OutputType>WinExe</OutputType>
-	<TargetFramework>net9.0</TargetFramework>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PublishAot>true</PublishAot>
     <InvariantGlobalization>true</InvariantGlobalization>
-	<OutputPath>..\ElementalEditor\bin\$(Configuration)\</OutputPath>
+	<!--<OutputPath>..\ElementalEditor\bin\$(Configuration)\</OutputPath>-->
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Devoid Engine\DevoidEngine.csproj" />
-    <ProjectReference Include="..\DevoidGPU\DevoidGPU.csproj" />
-  </ItemGroup>
+
+
+	<!-- Development inside the engine solution -->
+	<ItemGroup Condition="'$(RuntimeEmbed)' != 'true'">
+		<ProjectReference Include="..\Devoid Engine\DevoidEngine.csproj" />
+		<ProjectReference Include="..\DevoidGPU\DevoidGPU.csproj" />
+	</ItemGroup>
+
+	<!-- Runtime copied to project Temp/Runtime -->
+	<ItemGroup Condition="'$(RuntimeEmbed)' == 'true'">
+		<Reference Include="DevoidEngine">
+			<HintPath>$(MSBuildProjectDirectory)\DevoidEngine.dll</HintPath>
+		</Reference>
+
+		<Reference Include="DevoidGPU">
+			<HintPath>$(MSBuildProjectDirectory)\DevoidGPU.dll</HintPath>
+		</Reference>
+	</ItemGroup>
 
 </Project>

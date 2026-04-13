@@ -87,9 +87,8 @@ public static class ScriptProjectGenerator
         sb.AppendLine("  </ItemGroup>");
 
         string sourceGenDll = Path.Combine(AppContext.BaseDirectory, "DevoidEngine.SourceGen.dll").Replace("\\", "/");
-
         sb.AppendLine("  <ItemGroup>");
-        sb.AppendLine($"    <Analyzer Include=\"{sourceGenDll}\" />");
+        sb.AppendLine($"    <Analyzer Include=\"{sourceGenDll}\" OutputItemType=\"Analyzer\" ReferenceOutputAssembly=\"false\" />");
         sb.AppendLine("  </ItemGroup>");
 
         string messagePackDll = Path.Combine(AppContext.BaseDirectory, "MessagePack.dll").Replace("\\", "/");
