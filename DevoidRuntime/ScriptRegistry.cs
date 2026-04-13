@@ -14,7 +14,7 @@ namespace DevoidRuntime
         public static void Register<T>()
             where T : Component, new()
         {
-            scripts[typeof(T).Name] = () => new T();
+            scripts[typeof(T).FullName] = () => new T();
         }
 
         public static Component Create(string name)

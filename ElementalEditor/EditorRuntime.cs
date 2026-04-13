@@ -33,6 +33,7 @@ namespace ElementalEditor
 
             EnsureRuntimeProject();
             EnsureRuntimeBuild();
+            CopyRuntimeDependencies();
 
             string runtimeExe = Path.Combine(
                 ProjectManager.Current.TempPath,
@@ -129,8 +130,6 @@ namespace ElementalEditor
                 return;
 
             Console.WriteLine("[Runtime] Building editor runtime...");
-
-            CopyRuntimeDependencies();
             BuildRuntime();
         }
 
@@ -139,7 +138,7 @@ namespace ElementalEditor
             var project = ProjectManager.Current;
 
             string runtimeProject = Path.Combine(
-                project.TempPath,
+                AppContext.BaseDirectory,
                 "DevoidRuntime",
                 "DevoidRuntime.csproj");
 
@@ -159,7 +158,6 @@ namespace ElementalEditor
                     "-p:PublishAot=false " +
                     "-p:DefineConstants=SCRIPT_DYNAMIC " +
                     $"-o \"{outputDir}\"",
-                WorkingDirectory = Path.GetDirectoryName(runtimeProject),
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
@@ -191,7 +189,7 @@ namespace ElementalEditor
             string exe = Path.Combine(outputDir, "DevoidRuntime.exe");
 
             if (!File.Exists(exe))
-                throw new Exception("Runtime build failed. See console for errors.");
+                throw new Exception("Runtime build failed.");
         }
 
         static void CopyRuntimeDependencies()
@@ -199,32 +197,30 @@ namespace ElementalEditor
             var project = ProjectManager.Current;
 
             string srcDir = AppContext.BaseDirectory;
+            string dstDir = Path.Combine(project.TempPath, "EditorRuntime");
 
-            string editorRuntime = Path.Combine(
-                project.TempPath,
-                "EditorRuntime");
+            Directory.CreateDirectory(dstDir);
 
-            string runtimeProject = Path.Combine(
-                project.TempPath,
-                "DevoidRuntime");
-
-            Directory.CreateDirectory(editorRuntime);
-
-            string[] files =
+            // copy all dlls beside editor
+            foreach (var file in Directory.GetFiles(srcDir, "*.dll"))
             {
-        "DevoidEngine.dll",
-        "DevoidGPU.dll"
-    };
+                string name = Path.GetFileName(file);
 
-            foreach (var f in files)
-            {
-                string src = Path.Combine(srcDir, f);
-
-                if (!File.Exists(src))
+                if (name.StartsWith("ElementalEditor"))
                     continue;
 
-                File.Copy(src, Path.Combine(editorRuntime, f), true);
-                File.Copy(src, Path.Combine(runtimeProject, f), true);
+                File.Copy(file, Path.Combine(dstDir, name), true);
+            }
+
+            // copy native runtime libraries directly beside runtime exe
+            string nativeDir = Path.Combine(srcDir, "runtimes", "win-x64", "native");
+
+            if (Directory.Exists(nativeDir))
+            {
+                foreach (var dll in Directory.GetFiles(nativeDir, "*.dll"))
+                {
+                    File.Copy(dll, Path.Combine(dstDir, Path.GetFileName(dll)), true);
+                }
             }
         }
     }

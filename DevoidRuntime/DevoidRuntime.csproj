@@ -10,6 +10,10 @@
 	<!--<OutputPath>..\ElementalEditor\bin\$(Configuration)\</OutputPath>-->
   </PropertyGroup>
 
+	<PropertyGroup>
+		<NoWarn>CS8600;CS8602;CS8604</NoWarn>
+	</PropertyGroup>
+
 	<!-- Development inside engine solution -->
 	<ItemGroup Condition="'$(RuntimeEmbed)' != 'true'">
 		<ProjectReference Include="..\Devoid Engine\DevoidEngine.csproj" />
@@ -19,12 +23,16 @@
 	<!-- Editor runtime build -->
 	<ItemGroup Condition="'$(RuntimeEmbed)' == 'true'">
 		<Reference Include="DevoidEngine">
-			<HintPath>DevoidEngine.dll</HintPath>
+			<HintPath>$(MSBuildProjectDirectory)\..\DevoidEngine.dll</HintPath>
 		</Reference>
 
 		<Reference Include="DevoidGPU">
-			<HintPath>DevoidGPU.dll</HintPath>
+			<HintPath>$(MSBuildProjectDirectory)\..\DevoidGPU.dll</HintPath>
 		</Reference>
 	</ItemGroup>
+
+	<Target Name="DebugCheck" BeforeTargets="Build">
+		<Message Text="Engine dll exists: $([System.IO.File]::Exists('$(MSBuildProjectDirectory)\DevoidEngine.dll'))" Importance="high"/>
+	</Target>
 
 </Project>

@@ -1,34 +1,55 @@
 ﻿#if SCRIPT_DYNAMIC
 using System.Reflection;
+using System.IO;
 
-static class DynamicScriptLoader
+using DevoidEngine.Engine.ProjectSystem;
+using DevoidEngine.Engine.Components;
+using DevoidEngine.Engine.Serialization;
+
+namespace DevoidRuntime
 {
-    public static void Load()
+    static class DynamicScriptLoader
     {
-        var project = ProjectManager.Current;
-
-        string path = Path.Combine(
-            project.TempPath,
-            "Scripts",
-            "GameScripts.dll");
-
-        if (!File.Exists(path))
-            return;
-
-        var assembly = Assembly.LoadFrom(path);
-
-        foreach (var type in assembly.GetTypes())
+        public static void Load()
         {
-            if (!type.IsSubclassOf(typeof(Component)))
-                continue;
+            var project = ProjectManager.Current;
 
-            if (type.IsAbstract)
-                continue;
+            string path = Path.Combine(
+                project.TempPath,
+                "Scripts",
+                "GameScripts.dll");
 
-            ScriptRegistry.Register(type);
+            Console.WriteLine(path);
+            if (!File.Exists(path))
+                return;
+
+            var assembly = Assembly.LoadFrom(path);
+
+            var registerMethod = typeof(ScriptRegistry).GetMethod("Register");
+
+            foreach (var type in assembly.GetTypes())
+            {
+                if (!type.IsSubclassOf(typeof(Component)))
+                    continue;
+
+                if (type.IsAbstract)
+                    continue;
+
+                var genericRegister = registerMethod.MakeGenericMethod(type);
+                genericRegister.Invoke(null, null);
+            }
+
+            var registryType = assembly.GetType(
+                "DevoidEngine.Engine.Serialization.Generated.GeneratedComponentRegistry");
+
+            var method = registryType?.GetMethod(
+                "RegisterAll",
+                BindingFlags.Static |
+                BindingFlags.Public |
+                BindingFlags.NonPublic);
+
+            method?.Invoke(null, null);
         }
-
-        GeneratedComponentRegistry.RegisterAll();
     }
 }
 #endif
