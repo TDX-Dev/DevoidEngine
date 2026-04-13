@@ -16,7 +16,7 @@ namespace DevoidRuntime
             ParseArguments(args);
 
             LoadProject();
-            ScriptLoader.LoadScripts();
+            //ScriptLoader.LoadScripts();
 
             InitializeVFS();
             InitializeAssets();

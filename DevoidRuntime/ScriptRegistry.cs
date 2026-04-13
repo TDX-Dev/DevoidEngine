@@ -1,5 +1,4 @@
-﻿using DevoidEngine.Engine.Components;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,24 +8,20 @@ namespace DevoidRuntime
 {
     public static class ScriptRegistry
     {
-        static Dictionary<string, Type> scripts = new();
+        static Dictionary<string, Func<Component>> scripts = new();
 
-        public static void Register(Type type)
+        public static void Register<T>()
+            where T : Component, new()
         {
-            scripts[type.Name] = type;
+            scripts[typeof(T).Name] = () => new T();
         }
 
         public static Component Create(string name)
         {
-            if (!scripts.TryGetValue(name, out var type))
+            if (!scripts.TryGetValue(name, out var factory))
                 throw new Exception("Script not found: " + name);
 
-            return (Component)Activator.CreateInstance(type)!;
-        }
-
-        public static IEnumerable<Type> GetScripts()
-        {
-            return scripts.Values;
+            return factory();
         }
     }
 }
