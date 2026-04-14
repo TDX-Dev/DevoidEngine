@@ -20,6 +20,7 @@ namespace DevoidRuntime
                 "GameScripts.dll");
 
             Console.WriteLine(path);
+
             if (!File.Exists(path))
                 return;
 

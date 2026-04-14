@@ -21,7 +21,7 @@
 	</ItemGroup>
 
 	<!-- Editor runtime build -->
-	<ItemGroup Condition="'$(RuntimeEmbed)' == 'true'">
+	<!--<ItemGroup Condition="'$(RuntimeEmbed)' == 'true'">
 		<Reference Include="DevoidEngine">
 			<HintPath>$(MSBuildProjectDirectory)\..\DevoidEngine.dll</HintPath>
 		</Reference>
@@ -29,7 +29,45 @@
 		<Reference Include="DevoidGPU">
 			<HintPath>$(MSBuildProjectDirectory)\..\DevoidGPU.dll</HintPath>
 		</Reference>
+	</ItemGroup>-->
+
+	<ItemGroup Condition="'$(RuntimeEmbed)' == 'true'">
+		<Reference Include="DevoidEngine">
+			<HintPath>$(ReferencePath)\DevoidEngine.dll</HintPath>
+		</Reference>
+
+		<Reference Include="DevoidGPU">
+			<HintPath>$(ReferencePath)\DevoidGPU.dll</HintPath>
+		</Reference>
 	</ItemGroup>
+
+	<Target Name="CopyNativeLibraries" AfterTargets="Publish">
+
+		<ItemGroup>
+			<NativeLibs Include="$(ReferencePath)\runtimes\$(RuntimeIdentifier)\native\*.dll"
+						Condition="Exists('$(ReferencePath)\runtimes\$(RuntimeIdentifier)\native')" />
+		</ItemGroup>
+
+		<Copy
+			SourceFiles="@(NativeLibs)"
+			DestinationFolder="$(PublishDir)"
+			SkipUnchangedFiles="true" />
+
+	</Target>
+
+	<Target Name="FixGlfwName" AfterTargets="Publish">
+
+		<ItemGroup>
+			<GlfwLib Include="$(PublishDir)glfw3.dll"
+					 Condition="Exists('$(PublishDir)glfw3.dll')" />
+		</ItemGroup>
+
+		<Copy
+			SourceFiles="@(GlfwLib)"
+			DestinationFiles="$(PublishDir)glfw.dll"
+			SkipUnchangedFiles="true" />
+
+	</Target>
 
 	<Target Name="DebugCheck" BeforeTargets="Build">
 		<Message Text="Engine dll exists: $([System.IO.File]::Exists('$(MSBuildProjectDirectory)\DevoidEngine.dll'))" Importance="high"/>

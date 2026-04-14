@@ -41,6 +41,7 @@ public static class ScriptProjectGenerator
     static string GetProjectFileContent()
     {
         string engineDll = GetEngineDllPath();
+        string engineGPUDll = GetRHIDllPath();
 
         var sb = new StringBuilder();
 
@@ -86,6 +87,13 @@ public static class ScriptProjectGenerator
         sb.AppendLine("    </Reference>");
         sb.AppendLine("  </ItemGroup>");
 
+        sb.AppendLine("  <ItemGroup>");
+        sb.AppendLine("    <Reference Include=\"DevoidGPU\">");
+        sb.AppendLine($"      <HintPath>{engineGPUDll}</HintPath>");
+        sb.AppendLine("      <Private>false</Private>");
+        sb.AppendLine("    </Reference>");
+        sb.AppendLine("  </ItemGroup>");
+
         string sourceGenDll = Path.Combine(AppContext.BaseDirectory, "DevoidEngine.SourceGen.dll").Replace("\\", "/");
         sb.AppendLine("  <ItemGroup>");
         sb.AppendLine($"    <Analyzer Include=\"{sourceGenDll}\" OutputItemType=\"Analyzer\" ReferenceOutputAssembly=\"false\" />");
@@ -115,5 +123,12 @@ public static class ScriptProjectGenerator
         string exeDir = AppContext.BaseDirectory;
 
         return Path.Combine(exeDir, "DevoidEngine.dll");
+    }
+
+    static string GetRHIDllPath()
+    {
+        string exeDir = AppContext.BaseDirectory;
+
+        return Path.Combine(exeDir, "DevoidGPU.dll");
     }
 }

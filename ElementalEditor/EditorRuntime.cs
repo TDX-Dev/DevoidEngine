@@ -33,18 +33,18 @@ namespace ElementalEditor
 
             EnsureRuntimeProject();
             EnsureRuntimeBuild();
-            CopyRuntimeDependencies();
+            //CopyRuntimeDependencies();
 
             string runtimeExe = Path.Combine(
                 ProjectManager.Current.TempPath,
                 "EditorRuntime",
                 "DevoidRuntime.exe");
 
-            if (!File.Exists(runtimeExe))
-            {
-                Console.WriteLine("[Runtime] Runtime executable not found.");
-                return;
-            }
+            //if (!File.Exists(runtimeExe))
+            //{
+            //    Console.WriteLine("[Runtime] Runtime executable not found.");
+            //    return;
+            //}
 
             string args =
                 $"--project \"{ProjectManager.Current.ProjectFile}\" --mode editor";
@@ -119,16 +119,6 @@ namespace ElementalEditor
 
         static void EnsureRuntimeBuild()
         {
-            var project = ProjectManager.Current;
-
-            string runtimeExe = Path.Combine(
-                project.TempPath,
-                "EditorRuntime",
-                "DevoidRuntime.exe");
-
-            if (File.Exists(runtimeExe))
-                return;
-
             Console.WriteLine("[Runtime] Building editor runtime...");
             BuildRuntime();
         }
@@ -148,24 +138,33 @@ namespace ElementalEditor
 
             Directory.CreateDirectory(outputDir);
 
+            string referencePath = AppContext.BaseDirectory;
+
             var psi = new ProcessStartInfo
             {
                 FileName = "dotnet",
-                Arguments =
-                    $"publish \"{runtimeProject}\" " +
-                    "-c Debug " +
-                    "-p:RuntimeEmbed=true " +
-                    "-p:PublishAot=false " +
-                    "-p:DefineConstants=SCRIPT_DYNAMIC " +
-                    $"-o \"{outputDir}\"",
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 CreateNoWindow = true
             };
 
-            var process = new Process();
-            process.StartInfo = psi;
+            psi.ArgumentList.Add("publish");
+            psi.ArgumentList.Add(runtimeProject);
+            psi.ArgumentList.Add("-c");
+            psi.ArgumentList.Add("Debug");
+
+            psi.ArgumentList.Add("-p:RuntimeEmbed=true");
+            psi.ArgumentList.Add("-p:PublishAot=false");
+            psi.ArgumentList.Add("-p:DefineConstants=SCRIPT_DYNAMIC");
+
+            psi.ArgumentList.Add($"-p:ReferencePath={referencePath}");
+            psi.ArgumentList.Add("-r");
+            psi.ArgumentList.Add(System.Runtime.InteropServices.RuntimeInformation.RuntimeIdentifier);
+            psi.ArgumentList.Add("-o");
+            psi.ArgumentList.Add(outputDir);
+
+            var process = new Process { StartInfo = psi };
 
             process.OutputDataReceived += (s, e) =>
             {
@@ -186,10 +185,13 @@ namespace ElementalEditor
 
             process.WaitForExit();
 
+            if (process.ExitCode != 0)
+                throw new Exception("Runtime build failed.");
+
             string exe = Path.Combine(outputDir, "DevoidRuntime.exe");
 
             if (!File.Exists(exe))
-                throw new Exception("Runtime build failed.");
+                throw new Exception("Runtime executable missing after build.");
         }
 
         static void CopyRuntimeDependencies()
