@@ -12,7 +12,7 @@ namespace DevoidEngine.Engine.Serialization
     {
         private static readonly Dictionary<Type, Func<Component, byte[]>> serializers = new();
         private static readonly Dictionary<string, Func<byte[], Component>> deserializers = new();
-
+        static readonly HashSet<Type> scriptTypes = new();
         public static void Initialize()
         {
 
@@ -20,16 +20,28 @@ namespace DevoidEngine.Engine.Serialization
 
         public static void Register<T>(
             Func<T, byte[]> serialize,
-            Func<byte[], T> deserialize)
+            Func<byte[], T> deserialize,
+            bool isScript = false)
             where T : Component
         {
             serializers[typeof(T)] = c => serialize((T)c);
             deserializers[typeof(T).FullName!] = data => deserialize(data);
+
+            if (isScript)
+                scriptTypes.Add(typeof(T));
         }
 
         public static byte[] Serialize(Component component)
         {
-            return serializers[component.GetType()](component);
+            if (!serializers.TryGetValue(component.GetType(), out var serializer))
+            {
+                Console.WriteLine(
+                    $"[Serialization] Missing serializer for {component.GetType().FullName}");
+
+                return Array.Empty<byte>();
+            }
+
+            return serializer(component);
         }
 
         public static Component? Deserialize(string type, byte[] data)
@@ -62,10 +74,28 @@ namespace DevoidEngine.Engine.Serialization
             return null;
         }
 
-        public static void Unregister(Type componentType)
+        public static void ClearScriptSerializers()
         {
-            serializers.Remove(componentType);
-            deserializers.Remove(componentType.FullName!);
+            foreach (var type in scriptTypes)
+            {
+                serializers.Remove(type);
+                deserializers.Remove(type.FullName!);
+            }
+
+            scriptTypes.Clear();
+        }
+
+        public static void Unregister(string typeName)
+        {
+            deserializers.Remove(typeName);
+
+            var toRemove = serializers
+                .Where(p => p.Key.FullName == typeName)
+                .Select(p => p.Key)
+                .ToList();
+
+            foreach (var t in toRemove)
+                serializers.Remove(t);
         }
     }
 }

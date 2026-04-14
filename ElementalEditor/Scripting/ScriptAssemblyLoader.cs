@@ -75,7 +75,7 @@ public static class ScriptAssemblyLoader
     {
         foreach (var type in scriptComponentTypes)
         {
-            ComponentSerializationRegistry.Unregister(type);
+            ComponentSerializationRegistry.Unregister(type.FullName!);
         }
 
         scriptComponentTypes.Clear();
@@ -84,19 +84,28 @@ public static class ScriptAssemblyLoader
     static void RegisterGeneratedSerializers()
     {
         if (assembly == null)
-            return;
+            throw new Exception("[Scripts] Assembly not loaded.");
 
-        var registryType =
-            assembly.GetType(
-                "DevoidEngine.Engine.Serialization.Generated.GeneratedComponentRegistry");
+        var registryType = assembly.GetType(
+            "DevoidEngine.Engine.Serialization.Generated.GeneratedComponentRegistry");
 
-        registryType?
-            .GetMethod(
-                "RegisterAll",
-                BindingFlags.Static |
-                BindingFlags.Public |
-                BindingFlags.NonPublic)?
-            .Invoke(null, null);
+        if (registryType == null)
+            throw new Exception(
+                "[Scripts] GeneratedComponentRegistry not found. " +
+                "Source generator likely did not run.");
+
+        var method = registryType.GetMethod(
+            "RegisterAll",
+            BindingFlags.Static |
+            BindingFlags.Public |
+            BindingFlags.NonPublic);
+
+        if (method == null)
+            throw new Exception(
+                "[Scripts] RegisterAll() missing from GeneratedComponentRegistry.");
+
+        Console.WriteLine("[Scripts] Registering generated serializers...");
+        method.Invoke(null, null);
     }
 
     public static void Unload()
