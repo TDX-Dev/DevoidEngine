@@ -50,6 +50,8 @@ public static class ScriptAssemblyLoader
 
         RegisterGeneratedSerializers();
         CacheScriptTypes();
+
+        RefreshScriptBehaviours();
     }
 
     static void CacheScriptTypes()
@@ -61,13 +63,36 @@ public static class ScriptAssemblyLoader
 
         foreach (var type in assembly.GetTypes())
         {
-            if (!type.IsSubclassOf(typeof(Component)))
+            if (!type.IsSubclassOf(typeof(ScriptBehaviour)))
                 continue;
 
             if (type.IsAbstract)
                 continue;
 
             scriptComponentTypes.Add(type);
+
+            Console.WriteLine("[Script] " + type.FullName);
+        }
+    }
+
+    static void RefreshScriptBehaviours()
+    {
+        if (assembly == null)
+            return;
+
+        foreach (var scriptComp in ScriptComponentRegistry.All)
+        {
+            var type = assembly.GetType(scriptComp.ScriptType);
+
+            if (type == null)
+            {
+                Console.WriteLine($"[Scripts] Missing type: {scriptComp.ScriptType}");
+                continue;
+            }
+
+            var behaviour = (ScriptBehaviour)Activator.CreateInstance(type)!;
+
+            scriptComp.Bind(behaviour!);
         }
     }
 

@@ -10,7 +10,7 @@ namespace DevoidEngine.Engine.Serialization
 {
     public static class ComponentSerializationRegistry
     {
-        private static readonly Dictionary<Type, Func<Component, byte[]>> serializers = new();
+        private static readonly Dictionary<string, Func<Component, byte[]>> serializers = new();
         private static readonly Dictionary<string, Func<byte[], Component>> deserializers = new();
         static readonly HashSet<Type> scriptTypes = new();
         public static void Initialize()
@@ -24,7 +24,7 @@ namespace DevoidEngine.Engine.Serialization
             bool isScript = false)
             where T : Component
         {
-            serializers[typeof(T)] = c => serialize((T)c);
+            serializers[typeof(T).FullName!] = c => serialize((T)c);
             deserializers[typeof(T).FullName!] = data => deserialize(data);
 
             if (isScript)
@@ -33,7 +33,9 @@ namespace DevoidEngine.Engine.Serialization
 
         public static byte[] Serialize(Component component)
         {
-            if (!serializers.TryGetValue(component.GetType(), out var serializer))
+            var typeName = component.GetType().FullName!;
+
+            if (!serializers.TryGetValue(typeName, out var serializer))
             {
                 Console.WriteLine(
                     $"[Serialization] Missing serializer for {component.GetType().FullName}");
@@ -78,7 +80,7 @@ namespace DevoidEngine.Engine.Serialization
         {
             foreach (var type in scriptTypes)
             {
-                serializers.Remove(type);
+                serializers.Remove(type.FullName!);
                 deserializers.Remove(type.FullName!);
             }
 
@@ -90,7 +92,7 @@ namespace DevoidEngine.Engine.Serialization
             deserializers.Remove(typeName);
 
             var toRemove = serializers
-                .Where(p => p.Key.FullName == typeName)
+                .Where(p => p.Key == typeName)
                 .Select(p => p.Key)
                 .ToList();
 

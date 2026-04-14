@@ -149,11 +149,21 @@ namespace ElementalEditor.Panels
             if (ScriptAssemblyLoader.Assembly != null)
                 assemblies.Add(ScriptAssemblyLoader.Assembly);
 
-            var componentTypes = assemblies
+            var engineComponents = assemblies
                 .SelectMany(a => a.GetTypes())
                 .Where(t =>
                     t.IsSubclassOf(typeof(Component)) &&
-                    !t.IsAbstract)
+                    !t.IsSubclassOf(typeof(ScriptComponent)) &&
+                    !t.IsAbstract);
+
+            var scriptBehaviours = assemblies
+                .SelectMany(a => a.GetTypes())
+                .Where(t =>
+                    t.IsSubclassOf(typeof(ScriptBehaviour)) &&
+                    !t.IsAbstract);
+
+            var componentTypes = engineComponents
+                .Concat(scriptBehaviours)
                 .OrderBy(t => t.Name);
 
             foreach (var type in componentTypes)
@@ -164,9 +174,21 @@ namespace ElementalEditor.Panels
 
                 if (ImGui.MenuItem(type.Name))
                 {
-                    var component = (Component)Activator.CreateInstance(type);
+                    if (typeof(ScriptBehaviour).IsAssignableFrom(type))
+                    {
+                        var comp = obj.AddComponent<ScriptComponent>();
 
-                    obj.AddComponent(component);
+                        comp.ScriptType = type.FullName!;
+
+                        var behaviour = (ScriptBehaviour)Activator.CreateInstance(type)!;
+
+                        comp.Bind(behaviour);
+                    }
+                    else
+                    {
+                        var component = (Component)Activator.CreateInstance(type)!;
+                        obj.AddComponent(component);
+                    }
 
                     context.SceneDirty = true;
 
