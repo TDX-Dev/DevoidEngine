@@ -25,13 +25,28 @@ internal static class RegistryEmitter
         sb.AppendLine("    public static void RegisterAll()");
         sb.AppendLine("    {");
 
+        //foreach (var comp in components.Distinct(SymbolEqualityComparer.Default))
+        //{
+        //    string name = comp.Name;
+        //    string full = comp.ToDisplayString();
+
+        //    sb.AppendLine(
+        //        $"        DevoidEngine.Engine.Serialization.ComponentSerializationRegistry.Register<{full}>({name}Serializer.Serialize, {name}Serializer.Deserialize);");
+        //}
+
         foreach (var comp in components.Distinct(SymbolEqualityComparer.Default))
         {
             string name = comp.Name;
             string full = comp.ToDisplayString();
 
             sb.AppendLine(
-                $"        DevoidEngine.Engine.Serialization.ComponentSerializationRegistry.Register<{full}>({name}Serializer.Serialize, {name}Serializer.Deserialize);");
+                $"        DevoidEngine.Engine.Serialization.ComponentSerializationRegistry.Register(");
+            sb.AppendLine(
+                $"            typeof({full}),");
+            sb.AppendLine(
+                $"            c => {name}Serializer.Serialize(({full})c),");
+            sb.AppendLine(
+                $"            data => {name}Serializer.Deserialize(data));");
         }
 
         sb.AppendLine("    }");

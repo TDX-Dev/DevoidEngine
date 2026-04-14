@@ -3,15 +3,17 @@ using System.Runtime.Loader;
 
 namespace ElementalEditor.Scripting;
 
-public class ScriptLoadContext : AssemblyLoadContext
+class ScriptLoadContext : AssemblyLoadContext
 {
-    public ScriptLoadContext() : base("GameScriptsContext", isCollectible: true)
+    public ScriptLoadContext() : base(isCollectible: true) { }
+
+    protected override Assembly Load(AssemblyName assemblyName)
     {
+        return null;
     }
 
-    protected override Assembly? Load(AssemblyName assemblyName)
+    ~ScriptLoadContext()
     {
-        // Let default context resolve engine dependencies
-        return null;
+        Console.WriteLine("ScriptLoadContext finalized");
     }
 }

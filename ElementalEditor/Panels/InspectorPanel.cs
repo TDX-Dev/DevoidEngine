@@ -149,12 +149,22 @@ namespace ElementalEditor.Panels
             if (ScriptAssemblyLoader.Assembly != null)
                 assemblies.Add(ScriptAssemblyLoader.Assembly);
 
-            var componentTypes = assemblies
-                .SelectMany(a => a.GetTypes())
-                .Where(t =>
-                    t.IsSubclassOf(typeof(Component)) &&
-                    !t.IsAbstract)
-                .OrderBy(t => t.Name);
+            var componentTypes = new List<Type>();
+
+            // engine components
+            componentTypes.AddRange(
+                typeof(Component).Assembly
+                    .GetTypes()
+                    .Where(t => t.IsSubclassOf(typeof(Component)) && !t.IsAbstract)
+            );
+
+            // script components
+            foreach (var name in ScriptAssemblyLoader.ScriptComponentTypeNames)
+            {
+                var t = ScriptAssemblyLoader.Assembly?.GetType(name);
+                if (t != null)
+                    componentTypes.Add(t);
+            }
 
             foreach (var type in componentTypes)
             {

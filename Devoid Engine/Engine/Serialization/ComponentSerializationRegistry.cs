@@ -10,46 +10,11 @@ namespace DevoidEngine.Engine.Serialization
 {
     public static class ComponentSerializationRegistry
     {
-        private static readonly Dictionary<Type, Func<Component, byte[]>> serializers = new();
-        private static readonly Dictionary<string, Func<byte[], Component>> deserializers = new();
+        private static readonly Dictionary<Type, Func<Component, byte[]>> engineSerializers = new();
+        private static readonly Dictionary<string, Func<byte[], Component>> engineDeserializers = new();
 
-        public static void Initialize()
-        {
-
-        }
-
-        public static void Register<T>(
-            Func<T, byte[]> serialize,
-            Func<byte[], T> deserialize)
-            where T : Component
-        {
-            serializers[typeof(T)] = c => serialize((T)c);
-            deserializers[typeof(T).FullName!] = data => deserialize(data);
-        }
-
-        public static byte[] Serialize(Component component)
-        {
-                                      return serializers[component.GetType()](component);
-        }
-
-        public static Component? Deserialize(string type, byte[] data)
-        {
-            if (!deserializers.TryGetValue(type, out var fn))
-            {
-                Console.WriteLine($"[Serialization] Unknown component type: {type}");
-                return null;
-            }
-
-            try
-            {
-                return fn(data);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[Serialization] Failed to deserialize {type}: {e.Message}");
-                return null;
-            }
-        }
+        private static readonly Dictionary<Type, Func<Component, byte[]>> scriptSerializers = new();
+        private static readonly Dictionary<string, Func<byte[], Component>> scriptDeserializers = new();
 
         public static Component? FindComponent(GameObject go, string typeName)
         {
@@ -62,10 +27,54 @@ namespace DevoidEngine.Engine.Serialization
             return null;
         }
 
-        public static void Unregister(Type componentType)
+        public static void Register(
+            Type type,
+            Func<Component, byte[]> serialize,
+            Func<byte[], Component> deserialize)
         {
-            serializers.Remove(componentType);
-            deserializers.Remove(componentType.FullName!);
+            bool isScript = type.Assembly.GetName().Name == "GameScripts";
+
+            if (isScript)
+            {
+                scriptSerializers[type] = serialize;
+                scriptDeserializers[type.FullName!] = deserialize;
+            }
+            else
+            {
+                engineSerializers[type] = serialize;
+                engineDeserializers[type.FullName!] = deserialize;
+            }
+        }
+
+        public static byte[] Serialize(Component component)
+        {
+            var type = component.GetType();
+
+            if (scriptSerializers.TryGetValue(type, out var s))
+                return s(component);
+
+            if (engineSerializers.TryGetValue(type, out var e))
+                return e(component);
+
+            throw new Exception("Serializer missing for " + type.FullName);
+        }
+
+        public static Component? Deserialize(string type, byte[] data)
+        {
+            if (scriptDeserializers.TryGetValue(type, out var s))
+                return s(data);
+
+            if (engineDeserializers.TryGetValue(type, out var e))
+                return e(data);
+
+            Console.WriteLine("Deserializer missing for " + type);
+            return null;
+        }
+
+        public static void ClearScriptSerializers()
+        {
+            scriptSerializers.Clear();
+            scriptDeserializers.Clear();
         }
     }
 }

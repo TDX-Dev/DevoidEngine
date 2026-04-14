@@ -24,6 +24,26 @@ namespace ElementalEditor.Panels
 
         public void Draw(EditorContext context)
         {
+            if (pendingScriptReload)
+            {
+                pendingScriptReload = false;
+
+                var scene = SceneManager.CurrentScene;
+
+                ScriptComponentReload.RemoveScriptComponents(scene);
+
+                ScriptAssemblyLoader.Unload();
+
+                bool stillLoaded =
+                    AppDomain.CurrentDomain
+                        .GetAssemblies()
+                        .Any(a => a.GetName().Name == "GameScripts");
+
+                Console.WriteLine("Scripts still in AppDomain: " + stillLoaded);
+
+                ScriptAssemblyLoader.Load();
+            }
+
             ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Vector2.Zero);
             if (!ImGui.Begin("Scene"))
             {
@@ -190,7 +210,7 @@ namespace ElementalEditor.Panels
             {
                 if (ScriptCompiler.Compile(out string errors))
                 {
-                    ScriptAssemblyLoader.Load();
+                    pendingScriptReload = true;
                 }
 
                 Console.WriteLine(errors);
@@ -203,6 +223,8 @@ namespace ElementalEditor.Panels
 
             ImGui.PopStyleVar();
         }
+
+        bool pendingScriptReload = false;
 
         void DrawCameraPopup(EditorContext context, Vector2 position)
         {
