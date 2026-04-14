@@ -15,6 +15,8 @@ namespace ElementalEditor.Scripting
                 "GameScripts.csproj"
             );
 
+            Console.WriteLine(csproj);
+
             ProcessStartInfo psi = new()
             {
                 FileName = "dotnet",

@@ -10,9 +10,9 @@ namespace DevoidEngine.Engine.Serialization
 {
     public static class ComponentSerializationRegistry
     {
-        private static readonly Dictionary<string, Func<Component, byte[]>> serializers = new();
+        private static readonly Dictionary<Type, Func<Component, byte[]>> serializers = new();
         private static readonly Dictionary<string, Func<byte[], Component>> deserializers = new();
-        static readonly HashSet<Type> scriptTypes = new();
+
         public static void Initialize()
         {
 
@@ -20,30 +20,16 @@ namespace DevoidEngine.Engine.Serialization
 
         public static void Register<T>(
             Func<T, byte[]> serialize,
-            Func<byte[], T> deserialize,
-            bool isScript = false)
+            Func<byte[], T> deserialize)
             where T : Component
         {
-            serializers[typeof(T).FullName!] = c => serialize((T)c);
+            serializers[typeof(T)] = c => serialize((T)c);
             deserializers[typeof(T).FullName!] = data => deserialize(data);
-
-            if (isScript)
-                scriptTypes.Add(typeof(T));
         }
 
         public static byte[] Serialize(Component component)
         {
-            var typeName = component.GetType().FullName!;
-
-            if (!serializers.TryGetValue(typeName, out var serializer))
-            {
-                Console.WriteLine(
-                    $"[Serialization] Missing serializer for {component.GetType().FullName}");
-
-                return Array.Empty<byte>();
-            }
-
-            return serializer(component);
+            return serializers[component.GetType()](component);
         }
 
         public static Component? Deserialize(string type, byte[] data)
@@ -76,28 +62,10 @@ namespace DevoidEngine.Engine.Serialization
             return null;
         }
 
-        public static void ClearScriptSerializers()
+        public static void Unregister(Type componentType)
         {
-            foreach (var type in scriptTypes)
-            {
-                serializers.Remove(type.FullName!);
-                deserializers.Remove(type.FullName!);
-            }
-
-            scriptTypes.Clear();
-        }
-
-        public static void Unregister(string typeName)
-        {
-            deserializers.Remove(typeName);
-
-            var toRemove = serializers
-                .Where(p => p.Key == typeName)
-                .Select(p => p.Key)
-                .ToList();
-
-            foreach (var t in toRemove)
-                serializers.Remove(t);
+            serializers.Remove(componentType);
+            deserializers.Remove(componentType.FullName!);
         }
     }
 }

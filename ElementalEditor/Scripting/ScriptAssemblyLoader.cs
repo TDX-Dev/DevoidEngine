@@ -50,8 +50,6 @@ public static class ScriptAssemblyLoader
 
         RegisterGeneratedSerializers();
         CacheScriptTypes();
-
-        RefreshScriptBehaviours();
     }
 
     static void CacheScriptTypes()
@@ -63,36 +61,13 @@ public static class ScriptAssemblyLoader
 
         foreach (var type in assembly.GetTypes())
         {
-            if (!type.IsSubclassOf(typeof(ScriptBehaviour)))
+            if (!type.IsSubclassOf(typeof(Component)))
                 continue;
 
             if (type.IsAbstract)
                 continue;
 
             scriptComponentTypes.Add(type);
-
-            Console.WriteLine("[Script] " + type.FullName);
-        }
-    }
-
-    static void RefreshScriptBehaviours()
-    {
-        if (assembly == null)
-            return;
-
-        foreach (var scriptComp in ScriptComponentRegistry.All)
-        {
-            var type = assembly.GetType(scriptComp.ScriptType);
-
-            if (type == null)
-            {
-                Console.WriteLine($"[Scripts] Missing type: {scriptComp.ScriptType}");
-                continue;
-            }
-
-            var behaviour = (ScriptBehaviour)Activator.CreateInstance(type)!;
-
-            scriptComp.Bind(behaviour!);
         }
     }
 
@@ -100,7 +75,7 @@ public static class ScriptAssemblyLoader
     {
         foreach (var type in scriptComponentTypes)
         {
-            ComponentSerializationRegistry.Unregister(type.FullName!);
+            ComponentSerializationRegistry.Unregister(type);
         }
 
         scriptComponentTypes.Clear();
@@ -109,28 +84,19 @@ public static class ScriptAssemblyLoader
     static void RegisterGeneratedSerializers()
     {
         if (assembly == null)
-            throw new Exception("[Scripts] Assembly not loaded.");
+            return;
 
-        var registryType = assembly.GetType(
-            "DevoidEngine.Engine.Serialization.Generated.GeneratedComponentRegistry");
+        var registryType =
+            assembly.GetType(
+                "DevoidEngine.Engine.Serialization.Generated.GeneratedComponentRegistry");
 
-        if (registryType == null)
-            throw new Exception(
-                "[Scripts] GeneratedComponentRegistry not found. " +
-                "Source generator likely did not run.");
-
-        var method = registryType.GetMethod(
-            "RegisterAll",
-            BindingFlags.Static |
-            BindingFlags.Public |
-            BindingFlags.NonPublic);
-
-        if (method == null)
-            throw new Exception(
-                "[Scripts] RegisterAll() missing from GeneratedComponentRegistry.");
-
-        Console.WriteLine("[Scripts] Registering generated serializers...");
-        method.Invoke(null, null);
+        registryType?
+            .GetMethod(
+                "RegisterAll",
+                BindingFlags.Static |
+                BindingFlags.Public |
+                BindingFlags.NonPublic)?
+            .Invoke(null, null);
     }
 
     public static void Unload()
