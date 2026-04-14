@@ -29,7 +29,7 @@ namespace DevoidEngine.Engine.Serialization
 
         public static byte[] Serialize(Component component)
         {
-            return serializers[component.GetType()](component);
+                                      return serializers[component.GetType()](component);
         }
 
         public static Component? Deserialize(string type, byte[] data)
