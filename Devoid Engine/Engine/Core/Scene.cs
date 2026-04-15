@@ -52,22 +52,26 @@ namespace DevoidEngine.Engine.Core
         }
         public void Update(float deltaTime)
         {
-            //if (!isPlaying) { return; }
-
-            for (int i = 0; i < GameObjects.Count; i++)
+            for (int i = 0; i < transforms.Count; i++)
             {
-                GameObjects[i].OnUpdate(deltaTime);
+                transforms[i].ClearDirty();
             }
-
-            if (mainCamera != null)
+            if (isPlaying)
             {
-                Audio.SetListener(mainCamera.gameObject.Transform.Position, mainCamera.gameObject.Transform.Forward, mainCamera.gameObject.Transform.Up);
+                for (int i = 0; i < GameObjects.Count; i++)
+                {
+                    GameObjects[i].OnUpdate(deltaTime);
+                }
+
+                if (mainCamera != null)
+                {
+                    Audio.SetListener(mainCamera.gameObject.Transform.Position, mainCamera.gameObject.Transform.Forward, mainCamera.gameObject.Transform.Up);
+                }
             }
         }
 
         public void FixedUpdate(float deltaTime)
         {
-
             for (int i = 0; i < transforms.Count; i++)
             {
                 transforms[i].CapturePrevious();
@@ -88,9 +92,9 @@ namespace DevoidEngine.Engine.Core
         public void Render()
         {
            for (int i = 0;i < GameObjects.Count; i++)
-            {
+           {
                 GameObjects[i].OnRender();
-            }
+           }
         }
 
         public GameObject AddGameObject(string name = "GameObject")

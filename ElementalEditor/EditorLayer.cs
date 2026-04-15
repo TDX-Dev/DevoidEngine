@@ -15,6 +15,7 @@ using ElementalEditor.Utils;
 using ElementalEditor.Windows;
 using ImGuiNET;
 using MessagePack;
+using System.Diagnostics;
 using System.Numerics;
 using SceneData = DevoidEngine.Engine.Serialization.SceneData;
 
@@ -44,6 +45,14 @@ namespace ElementalEditor
 
         void RegisterAssetContextMenus()
         {
+            AssetContextMenuRegistry.Register(".cs", path =>
+            {
+                if (ImGui.MenuItem("Open in Visual Studio"))
+                {
+                    OpenScriptInVisualStudio(path);
+                }
+            });
+
             AssetContextMenuRegistry.Register(".scene", path =>
             {
                 if (ImGui.MenuItem("Open Scene"))
@@ -80,6 +89,30 @@ namespace ElementalEditor
             });
         }
 
+        void OpenScriptInVisualStudio(string scriptPath)
+        {
+            try
+            {
+                string solutionPath = Path.Combine(
+                    ProjectManager.Current.RootPath,
+                    "GameScripts.sln"
+                );
+
+                var psi = new ProcessStartInfo
+                {
+                    FileName = solutionPath,
+                    Arguments = $"{scriptPath}",
+                    UseShellExecute = true
+                };
+
+                Process.Start(psi);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("[Editor] Failed to open Visual Studio: " + ex.Message);
+            }
+        }
+
         public override void OnAttach()
         {
             SetStyling();
@@ -105,6 +138,7 @@ namespace ElementalEditor
             panels.Add(new HierarchyPanel());
             panels.Add(new InspectorPanel());
             panels.Add(new AssetBrowserPanel());
+            panels.Add(new ConsolePanel());
 
             ProjectSettingsRegistry.Register(new RenderingSettingsProvider());
             ProjectSettingsRegistry.Register(new PhysicsSettingsProvider());

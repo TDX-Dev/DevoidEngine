@@ -131,8 +131,6 @@ namespace DevoidEngine.Engine.Components
 
         public override void OnUpdate(float dt)
         {
-            if (gameObject.Transform.hasMoved)
-                dirty = true;
         }
 
         public override void OnRender()
@@ -163,6 +161,7 @@ namespace DevoidEngine.Engine.Components
 
         private void RebuildGPUData()
         {
+            Console.WriteLine("Rebuilt GPU Data");
             var transform = gameObject.Transform;
 
             Vector3 position = transform.Position;
@@ -290,7 +289,9 @@ namespace DevoidEngine.Engine.Components
             if (!enabled)
                 return;
 
-            // Optional: frustum test for point/spot lights here
+            if (gameObject.Transform.hasMoved)
+                dirty = true;
+
 
             if (dirty)
                 RebuildGPUData();

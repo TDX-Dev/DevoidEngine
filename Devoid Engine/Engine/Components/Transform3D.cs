@@ -48,6 +48,7 @@ namespace DevoidEngine.Engine.Components
                 {
                     localPosition = value;
                     MarkDirty();
+                    Console.WriteLine("Marked Dirty");
                 }
             }
         }
@@ -260,6 +261,11 @@ namespace DevoidEngine.Engine.Components
             prevLocalPosition = localPosition;
             prevLocalRotation = localRotation;
             prevLocalScale = localScale;
+        }
+
+        internal void ClearDirty()
+        {
+            hasMoved = false;
         }
 
         public Matrix4x4 GetGlobalTransformInterpolated(uint frameIndex, float alpha)

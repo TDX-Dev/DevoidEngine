@@ -3,6 +3,7 @@ using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.ProjectSystem;
 using DevoidGPU.DX11;
 using ElementalEditor.Scripting;
+using ElementalEditor.Utils;
 using System;
 using System.IO;
 
@@ -12,6 +13,9 @@ namespace ElementalEditor
     {
         public static void Main(string[] args)
         {
+            Console.SetOut(new EditorConsoleWriter());
+            Console.SetError(new EditorConsoleWriter(LogType.Error));
+
             string configPath = Path.Combine(Environment.CurrentDirectory, "editor.config");
 
             EditorConfig config = EditorConfig.Load(configPath);
@@ -50,7 +54,7 @@ namespace ElementalEditor
             }
             else
             {
-                Console.WriteLine(errors);
+                EditorConsole.Error(errors);
             }
 
             ScriptWatcher.Initialize();

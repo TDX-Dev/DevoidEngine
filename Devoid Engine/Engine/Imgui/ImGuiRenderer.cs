@@ -182,9 +182,8 @@ namespace DevoidEngine.Engine.Imgui
 
         public void Initialize()
         {
-            Console.WriteLine(ImGui.GetVersion());
             ImGui.SetCurrentContext(ImGui.CreateContext());
-            ImGuizmo.SetImGuiContext(ImGui.GetCurrentContext());
+            //ImGuizmo.SetImGuiContext(ImGui.GetCurrentContext());
 
             ImGuiIOPtr io = ImGui.GetIO();
 
@@ -396,7 +395,7 @@ namespace DevoidEngine.Engine.Imgui
             ImGui.PushFont(DefaultFont);
 
             CreateDockspace();
-            ImGuizmo.BeginFrame();
+            //ImGuizmo.BeginFrame();
 
             OnGUI?.Invoke();
 
