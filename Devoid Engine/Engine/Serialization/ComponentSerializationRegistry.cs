@@ -2,6 +2,7 @@
 using DevoidEngine.Engine.Core;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,7 +14,7 @@ namespace DevoidEngine.Engine.Serialization
         private static readonly Dictionary<Type, Func<Component, byte[]>> engineSerializers = new();
         private static readonly Dictionary<string, Func<byte[], Component>> engineDeserializers = new();
 
-        private static readonly Dictionary<Type, Func<Component, byte[]>> scriptSerializers = new();
+        private static readonly Dictionary<string, Func<Component, byte[]>> scriptSerializers = new();
         private static readonly Dictionary<string, Func<byte[], Component>> scriptDeserializers = new();
 
         public static Component? FindComponent(GameObject go, string typeName)
@@ -36,7 +37,8 @@ namespace DevoidEngine.Engine.Serialization
 
             if (isScript)
             {
-                scriptSerializers[type] = serialize;
+                
+                scriptSerializers[type.FullName!] = serialize;
                 scriptDeserializers[type.FullName!] = deserialize;
             }
             else
@@ -50,7 +52,7 @@ namespace DevoidEngine.Engine.Serialization
         {
             var type = component.GetType();
 
-            if (scriptSerializers.TryGetValue(type, out var s))
+            if (scriptSerializers.TryGetValue(type.FullName!, out var s))
                 return s(component);
 
             if (engineSerializers.TryGetValue(type, out var e))

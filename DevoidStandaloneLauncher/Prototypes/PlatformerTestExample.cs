@@ -32,9 +32,12 @@ namespace DevoidStandaloneLauncher.Prototypes
             DebugRenderSystem.AllowDebugDraw = false;
             DefaultInput.ConfigureInput();
 
-            scene = new Scene();
+            //scene = new Scene();
+            scene = Asset.Load<Scene>("mainscene.scene");
             loader.CurrentScene = scene;
             SceneManager.LoadScene(scene);
+            scene.Play(true);
+            return;
             scene.AddGameObject("Skybox").AddComponent<SkyboxComponent>();
 
 
@@ -161,11 +164,11 @@ namespace DevoidStandaloneLauncher.Prototypes
 
             float bob = MathF.Sin(time) * 3f; // amplitude = 3 units
 
-            spotLight.Transform.Position = new Vector3(
-                0,
-                10 + bob,
-                -5
-            );
+            //spotLight.Transform.Position = new Vector3(
+            //    0,
+            //    10 + bob,
+            //    -5
+            //);
 
             //orbLabel.Text = $"Collected: {controller.OrbsCollected}";
         }

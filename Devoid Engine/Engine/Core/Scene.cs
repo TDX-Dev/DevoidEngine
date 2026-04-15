@@ -131,6 +131,16 @@ namespace DevoidEngine.Engine.Core
             return null;
         }
 
+        public GameObject? GetGameObject(string name)
+        {
+            for (int i = 0; i < GameObjects.Count; i++)
+            {
+                if (GameObjects[i].Name == name)
+                    return GameObjects[i];
+            }
+            return null;
+        }
+
         public List<T> GetComponentsOfType<T>() where T : Component
         {
             List<T> components = new List<T>();

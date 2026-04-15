@@ -48,7 +48,7 @@ namespace ElementalEditor
             ScriptCompiler.Compile(out string errors);
 
             // load assembly
-            ScriptAssemblyLoader.Load();
+            //ScriptAssemblyLoader.Load();
 
             ApplicationSpecification applicationSpecification = new ApplicationSpecification()
             {

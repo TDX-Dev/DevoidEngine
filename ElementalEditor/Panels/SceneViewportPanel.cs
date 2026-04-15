@@ -5,6 +5,7 @@ using ElementalEditor.Scripting;
 using ElementalEditor.Utils;
 using ImGuiNET;
 using System.Numerics;
+using System.Runtime.Loader;
 using System.Text;
 
 namespace ElementalEditor.Panels
@@ -30,18 +31,22 @@ namespace ElementalEditor.Panels
 
                 var scene = SceneManager.CurrentScene;
 
-                ScriptComponentReload.RemoveScriptComponents(scene);
+                var saved = ScriptComponentReload.RemoveScriptComponents(scene);
 
                 ScriptAssemblyLoader.Unload();
 
-                bool stillLoaded =
-                    AppDomain.CurrentDomain
-                        .GetAssemblies()
-                        .Any(a => a.GetName().Name == "GameScripts");
+                while (AssemblyLoadContext.All.Any(x => x is ScriptLoadContext))
+                {
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                    GC.Collect();
 
-                Console.WriteLine("Scripts still in AppDomain: " + stillLoaded);
+                    Thread.Sleep(20);
+                }
 
                 ScriptAssemblyLoader.Load();
+
+                ScriptComponentReload.RestoreScriptComponents(saved);
             }
 
             ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Vector2.Zero);

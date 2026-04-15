@@ -13,7 +13,6 @@ public static class ScriptAssemblyLoader
     static ScriptLoadContext? loadContext;
     static Assembly? assembly;
 
-    static readonly List<Type> scriptComponentTypes = new();
     public static List<string> ScriptComponentTypeNames { get; } = new();
 
     public static Assembly? Assembly => assembly;
@@ -21,6 +20,14 @@ public static class ScriptAssemblyLoader
 
     public static void Load()
     {
+        if (weakRef != null && weakRef.IsAlive)
+        {
+            Console.WriteLine("Before unload ALC count: " +
+                AssemblyLoadContext.All.Count(a => a is ScriptLoadContext));
+            Console.WriteLine("Waiting for previous ScriptLoadContext...");
+            WaitForUnload();
+        }
+
         var project = ProjectManager.Current!;
 
         string path = Path.Combine(
@@ -36,6 +43,9 @@ public static class ScriptAssemblyLoader
         }
 
         ExecuteLoad(path);
+
+        Console.WriteLine(
+            AssemblyLoadContext.GetLoadContext(assembly));
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -52,14 +62,16 @@ public static class ScriptAssemblyLoader
 
         assembly = loadContext.LoadFromStream(stream);
 
-        weakRef = new WeakReference(loadContext, trackResurrection: true);
+        weakRef = new WeakReference(loadContext);
 
         RegisterGeneratedSerializers();
         CacheScriptTypes();
+
     }
 
     public static void Unload()
     {
+
         if (assembly == null)
             return;
 
@@ -68,15 +80,14 @@ public static class ScriptAssemblyLoader
         ClearGeneratedSerializerDelegates(scriptAsm);
         ComponentSerializationRegistry.ClearScriptSerializers();
 
-        scriptComponentTypes.Clear();
         ScriptComponentTypeNames.Clear();
 
         var alc = loadContext;
 
+
+        WeakReference wr = new WeakReference(loadContext);
         assembly = null;
         loadContext = null;
-
-        WeakReference wr = weakRef;
 
         ExecuteUnload(alc, wr);
     }
@@ -86,6 +97,8 @@ public static class ScriptAssemblyLoader
     AssemblyLoadContext alc,
     WeakReference wr)
     {
+        
+
         alc.Unload();
 
         for (int i = 0; wr.IsAlive && i < 10; i++)
@@ -116,6 +129,22 @@ public static class ScriptAssemblyLoader
 
             //Debugger.Break();
         }
+    }
+
+    static void WaitForUnload()
+    {
+        while (AssemblyLoadContext.All.Any(a => a is ScriptLoadContext))
+        {
+            Console.WriteLine("WAITING");
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+
+            Thread.Sleep(50);
+        }
+
+        Console.WriteLine("ScriptLoadContext gone");
     }
 
     static void FindEventReferences(Assembly scriptAsm)
@@ -379,15 +408,15 @@ public static class ScriptAssemblyLoader
         if (assembly == null)
             return;
 
-        foreach (var type in assembly.GetTypes())
+        foreach (var typeInfo in assembly.DefinedTypes)
         {
-            if (!type.IsSubclassOf(typeof(Component)))
+            if (!typeInfo.IsSubclassOf(typeof(Component)))
                 continue;
 
-            if (type.IsAbstract)
+            if (typeInfo.IsAbstract)
                 continue;
 
-            ScriptComponentTypeNames.Add(type.FullName!);
+            ScriptComponentTypeNames.Add(typeInfo.FullName!);
         }
     }
 
