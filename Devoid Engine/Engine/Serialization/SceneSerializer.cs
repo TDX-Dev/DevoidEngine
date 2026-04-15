@@ -64,6 +64,7 @@ namespace DevoidEngine.Engine.Serialization
             }
 
             GameObjectSerializer.ResolveComponentReferences(scene);
+            GameObjectSerializer.ResolveGameObjectReferences(scene);
 
             return scene;
         }

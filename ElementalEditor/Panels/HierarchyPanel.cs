@@ -1,12 +1,15 @@
 ﻿using DevoidEngine.Engine.Core;
 using ImGuiNET;
 using System.Numerics;
+using System.Runtime.InteropServices;
 
 namespace ElementalEditor.Panels
 {
     public class HierarchyPanel : IEditorPanel
     {
         private List<GameObject> deleteQueue = new();
+        private GameObject draggedObject;
+        private GCHandle? dragHandle;
 
         public void Draw(EditorContext context)
         {
@@ -36,6 +39,31 @@ namespace ElementalEditor.Panels
             {
                 if (obj.parentObject == null)
                     DrawGameObjectNode(obj, context);
+            }
+
+            Vector2 remaining = ImGui.GetContentRegionAvail();
+
+            ImGui.InvisibleButton("HierarchyRootDrop", remaining);
+
+            if (ImGui.BeginDragDropTarget())
+            {
+                var payload = ImGui.AcceptDragDropPayload("OBJECT_REF");
+                unsafe
+                {
+                    if (payload.NativePtr != null)
+                    {
+                        IntPtr ptr = *(IntPtr*)payload.Data;
+                        var handle = GCHandle.FromIntPtr(ptr);
+                        var dragged = handle.Target as GameObject;
+
+                        if (dragged != null)
+                            dragged.SetParent(null);
+
+                        handle.Free();
+                    }
+                }
+
+                ImGui.EndDragDropTarget();
             }
 
             ImGui.EndChild();
@@ -77,8 +105,10 @@ namespace ElementalEditor.Panels
 
             ImGui.PopStyleColor(2);
 
-            if (ImGui.IsItemClicked(ImGuiMouseButton.Left))
+            if (ImGui.IsItemHovered() && ImGui.IsMouseReleased(ImGuiMouseButton.Left))
+            {
                 context.SelectedObject = obj;
+            }
 
             if (ImGui.IsItemHovered() && ImGui.IsMouseDoubleClicked(ImGuiMouseButton.Left))
             {
@@ -91,8 +121,11 @@ namespace ElementalEditor.Panels
 
             if (opened)
             {
-                foreach (var child in obj.children)
+                for (int i = 0; i < obj.children.Count; i++)
+                {
+                    var child = obj.children[i];
                     DrawGameObjectNode(child, context);
+                }
 
                 ImGui.TreePop();
             }
@@ -102,19 +135,45 @@ namespace ElementalEditor.Panels
         {
             if (ImGui.BeginDragDropSource())
             {
-                ImGui.SetDragDropPayload("DND_GAMEOBJECT", IntPtr.Zero, 0);
-                context.SelectedObject = obj;
+                dragHandle = GCHandle.Alloc(obj);
+
+                IntPtr ptr = GCHandle.ToIntPtr(dragHandle.Value);
+
+                unsafe
+                {
+                    ImGui.SetDragDropPayload(
+                        "OBJECT_REF",
+                        (IntPtr)(&ptr),
+                        (uint)IntPtr.Size
+                    );
+                }
+
                 ImGui.Text(obj.Name);
+
                 ImGui.EndDragDropSource();
             }
 
             if (ImGui.BeginDragDropTarget())
             {
-                var payload = ImGui.AcceptDragDropPayload("DND_GAMEOBJECT");
+                var payload = ImGui.AcceptDragDropPayload("OBJECT_REF");
 
-                if (payload.NativePtr != null && context.SelectedObject != null)
+                if (payload.NativePtr != null)
                 {
-                    context.SelectedObject.SetParent(obj);
+                    unsafe
+                    {
+                        IntPtr ptr = *(IntPtr*)payload.Data;
+                        var handle = GCHandle.FromIntPtr(ptr);
+                        var dragged = handle.Target as GameObject;
+
+                        if (dragged != null &&
+                            dragged != obj &&
+                            !IsDescendant(dragged, obj))
+                        {
+                            dragged.SetParent(obj);
+                        }
+
+                        handle.Free();
+                    }
                 }
 
                 ImGui.EndDragDropTarget();
@@ -151,6 +210,21 @@ namespace ElementalEditor.Panels
 
                 ImGui.EndPopup();
             }
+        }
+
+        bool IsDescendant(GameObject parent, GameObject candidate)
+        {
+            var current = candidate;
+
+            while (current != null)
+            {
+                if (current == parent)
+                    return true;
+
+                current = current.parentObject;
+            }
+
+            return false;
         }
 
         void FocusObject(EditorContext context, GameObject obj)

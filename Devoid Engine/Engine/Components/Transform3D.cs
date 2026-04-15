@@ -1,4 +1,5 @@
-﻿using DevoidEngine.Engine.Core;
+﻿using DevoidEngine.Engine.Attributes;
+using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.Serialization;
 using DevoidEngine.Engine.Utilities;
 using System.Numerics;
@@ -50,6 +51,13 @@ namespace DevoidEngine.Engine.Components
             }
         }
 
+        public Vector3 EulerAngles
+        {
+            get => TransformMath.QuaternionToEuler(Rotation);
+            set => Rotation = TransformMath.EulerToQuaternion(value);
+        }
+
+        [HideInInspector]
         public Quaternion LocalRotation
         {
             get => localRotation;
@@ -141,6 +149,7 @@ namespace DevoidEngine.Engine.Components
             }
         }
 
+        [HideInInspector]
         public Quaternion Rotation
         {
             get
@@ -184,12 +193,6 @@ namespace DevoidEngine.Engine.Components
 
                 MarkDirty();
             }
-        }
-
-        public Vector3 EulerAngles
-        {
-            get => TransformMath.QuaternionToEuler(Rotation);
-            set => Rotation = TransformMath.EulerToQuaternion(value);
         }
 
         //public Vector3 Forward

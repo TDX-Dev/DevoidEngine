@@ -42,7 +42,15 @@ namespace DevoidEngine.Engine.Serialization
             public string ComponentType = "";
         }
 
+        class PendingGameObjectReference
+        {
+            public Component Owner = null!;
+            public Action<Component, GameObject?> Setter = null!;
+            public Guid TargetId;
+        }
+
         static readonly List<PendingComponentReference> pending = new();
+        static readonly List<PendingGameObjectReference> pendingGameObjects = new();
 
         public static void RegisterComponentReference(
             Component owner,
@@ -77,6 +85,31 @@ namespace DevoidEngine.Engine.Serialization
             }
 
             pending.Clear();
+        }
+
+        public static void RegisterGameObjectReference(
+            Component owner,
+            Action<Component, GameObject?> setter,
+            Guid targetId
+        )
+        {
+            pendingGameObjects.Add(new PendingGameObjectReference
+            {
+                Owner = owner,
+                Setter = setter,
+                TargetId = targetId
+            });
+        }
+
+        public static void ResolveGameObjectReferences(Scene scene)
+        {
+            foreach (var p in pendingGameObjects)
+            {
+                var go = scene.GetGameObject(p.TargetId);
+                p.Setter(p.Owner, go);
+            }
+
+            pendingGameObjects.Clear();
         }
 
         public static GameObject Deserialize(

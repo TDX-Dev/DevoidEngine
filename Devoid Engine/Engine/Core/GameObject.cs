@@ -6,6 +6,8 @@ namespace DevoidEngine.Engine.Core
 {
     public class GameObject
     {
+
+        public override string ToString() => $"GameObject {Name}";
         public Guid Id { get; set; } = Guid.NewGuid();
         public string Name;
 

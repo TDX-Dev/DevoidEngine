@@ -1,4 +1,5 @@
-﻿using DevoidEngine.Engine.Components;
+﻿using DevoidEngine.Engine.Attributes;
+using DevoidEngine.Engine.Components;
 using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.Serialization;
 using ElementalEditor.Utils;
@@ -84,6 +85,9 @@ namespace ElementalEditor.Panels
 
                     foreach (var field in fields)
                     {
+                        if (Attribute.IsDefined(field, typeof(HideInInspector)))
+                            continue;
+
                         if (Attribute.IsDefined(field, typeof(DontSerialize)))
                             continue;
 
@@ -99,6 +103,9 @@ namespace ElementalEditor.Panels
 
                     foreach (var prop in props)
                     {
+                        if (Attribute.IsDefined(prop, typeof(HideInInspector)))
+                            continue;
+
                         if (Attribute.IsDefined(prop, typeof(DontSerialize)))
                             continue;
 

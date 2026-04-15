@@ -32,9 +32,11 @@ internal static class SerializerEmitter
                     HasSerializeFieldAttribute(f)
                 ) &&
                 f.Name != "gameObject" &&
-                f.Type.ToDisplayString() != "DevoidEngine.Engine.Core.GameObject" &&
+//f.Type.ToDisplayString() != "DevoidEngine.Engine.Core.GameObject" &&
                 (
                     IsAssetType(f.Type) ||
+                    IsComponentType(f.Type) ||
+                    IsGameObjectType(f.Type) ||
                     IsWhitelisted(f.Type) ||
                     (
                         !f.Type.ToDisplayString().StartsWith("DevoidEngine.Engine.Core") &&
@@ -164,6 +166,51 @@ internal static class SerializerEmitter
                     }
                 }
                 """);
+            }
+
+            else if (IsGameObjectType(field.Type))
+            {
+                serializeBody.AppendLine($$"""
+    try
+    {
+        MessagePack.MessagePackSerializer.Serialize(
+            ref writer,
+            value.{{fieldName}}?.Id ?? Guid.Empty,
+            MessagePack.MessagePackSerializerOptions.Standard);
+    }
+    catch (Exception e)
+    {
+        Console.WriteLine("[Serialization] Failed to serialize GameObject reference '{{fieldName}}' in {{componentName}}: " + e.Message);
+        writer.WriteNil();
+    }
+    """);
+
+                deserializeBody.AppendLine($$"""
+    if (!reader.End)
+    {
+        try
+        {
+            var goId =
+                MessagePack.MessagePackSerializer.Deserialize<Guid>(
+                    ref reader,
+                    MessagePack.MessagePackSerializerOptions.Standard);
+
+            GameObjectSerializer.RegisterGameObjectReference(
+                component,
+                (owner, value) =>
+                {
+                    (({{namespaceName}}.{{componentName}})owner).{{fieldName}} =
+                        (DevoidEngine.Engine.Core.GameObject)value;
+                },
+                goId
+            );
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine("[Serialization] Failed to deserialize GameObject reference '{{fieldName}}' in {{componentName}}: " + e.Message);
+        }
+    }
+    """);
             }
 
 
@@ -317,6 +364,11 @@ internal static class SerializerEmitter
         }
 
         return false;
+    }
+
+    private static bool IsGameObjectType(ITypeSymbol type)
+    {
+        return type.ToDisplayString() == "DevoidEngine.Engine.Core.GameObject";
     }
 
     private static bool IsWhitelisted(ITypeSymbol type)

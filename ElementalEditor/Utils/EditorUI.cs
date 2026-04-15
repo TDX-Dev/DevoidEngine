@@ -2,12 +2,14 @@
 using DevoidEngine.Engine.AssetPipeline.Loaders;
 using DevoidEngine.Engine.Attributes;
 using DevoidEngine.Engine.Core;
+using ElementalEditor.Panels;
 using ImGuiNET;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -149,7 +151,7 @@ namespace ElementalEditor.Utils
             }
 
             // fallback
-            var asset = PropertyType(field.FieldType);
+            var asset = PropertyType(field.FieldType, field.GetValue(target));
 
             if (asset != null)
             {
@@ -197,7 +199,7 @@ namespace ElementalEditor.Utils
             if (prop.PropertyType.IsEnum)
                 return DrawEnumProperty(prop, target);
 
-            var asset = PropertyType(prop.PropertyType);
+            var asset = PropertyType(prop.PropertyType, prop.GetValue(target));
 
             if (asset != null)
             {
@@ -362,35 +364,54 @@ namespace ElementalEditor.Utils
                 ImGui.Image(texture, new Vector2(size, size));
         }
 
-        public unsafe static object? PropertyType(Type type)
+        public unsafe static object? PropertyType(Type type, object? current)
         {
             object? result = null;
 
+            string label = current != null
+                ? current.ToString().Split(".")[^1]
+                : $"None ({type.Name})";
+
             ImGui.BeginDisabled();
-            ImGui.Text(type.Name);
+            ImGui.Button(label, new Vector2(-1, 0));
             ImGui.EndDisabled();
 
             if (ImGui.BeginDragDropTarget())
             {
-                var payload = ImGui.AcceptDragDropPayload("ASSET_PATH");
+                // -------- OBJECT DROP --------
+                var payload = ImGui.AcceptDragDropPayload("OBJECT_REF");
 
                 if (payload.NativePtr != null)
                 {
-                    unsafe
+                    Console.WriteLine("NonNullRef!");
+                    IntPtr ptr = *(IntPtr*)payload.Data;
+
+                    var handle = GCHandle.FromIntPtr(ptr);
+                    var dragged = handle.Target;
+
+                    if (dragged != null && type.IsAssignableFrom(dragged.GetType()))
+                        result = dragged;
+
+                    handle.Free();
+                }
+
+                // -------- ASSET DROP --------
+                var assetPayload = ImGui.AcceptDragDropPayload("ASSET_PATH");
+
+                if (assetPayload.NativePtr != null)
+                {
+                    string path = Encoding.UTF8.GetString(
+                        (byte*)assetPayload.Data,
+                        assetPayload.DataSize
+                    );
+
+                    if (SupportsAssetType(type))
                     {
-                        string path = Encoding.UTF8.GetString(
-                            (byte*)payload.Data,
-                            payload.DataSize
-                        );
+                        MethodInfo loadMethod =
+                            typeof(Asset).GetMethod("Load")!
+                            .MakeGenericMethod(type);
 
-                        if (SupportsAssetType(type))
-                        {
-                            MethodInfo loadMethod =
-                                typeof(Asset).GetMethod("Load")!
-                                .MakeGenericMethod(type);
-
-                            result = loadMethod.Invoke(null, new object[] { path, true});
-                        }
+                        result = loadMethod.Invoke(null, new object[] { path, true });
                     }
                 }
 

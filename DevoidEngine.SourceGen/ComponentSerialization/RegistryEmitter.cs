@@ -28,18 +28,42 @@ namespace DevoidEngine.SourceGen.ComponentSerialization
             sb.AppendLine("    public static void RegisterAll()");
             sb.AppendLine("    {");
 
+            //foreach (var comp in components.Distinct(SymbolEqualityComparer.Default))
+            //{
+            //    string name = comp.Name;
+            //    string full = comp.ToDisplayString();
+
+            //    sb.AppendLine(
+            //        $"        ComponentSerializationRegistry.Register(");
+            //    sb.AppendLine(
+            //        $"            typeof({full}),");
+            //    sb.AppendLine($"            new Func<Component, byte[]>(Serialize_{name}),");
+            //    sb.AppendLine($"            new Func<byte[], Component>(Deserialize_{name}));");
+            //}
+
             foreach (var comp in components.Distinct(SymbolEqualityComparer.Default))
             {
                 string name = comp.Name;
                 string full = comp.ToDisplayString();
 
                 sb.AppendLine(
-                    $"        ComponentSerializationRegistry.Register(");
+                    $"        DevoidEngine.Engine.Serialization.ComponentSerializationRegistry.Register(");
                 sb.AppendLine(
                     $"            typeof({full}),");
-                sb.AppendLine($"            new Func<Component, byte[]>(Serialize_{name}),");
-                sb.AppendLine($"            new Func<byte[], Component>(Deserialize_{name}));");
+                sb.AppendLine(
+                    $"            c => {name}Serializer.Serialize(({full})c),");
+                sb.AppendLine(
+                    $"            data => {name}Serializer.Deserialize(data));");
             }
+
+            //foreach (var comp in components.Distinct(SymbolEqualityComparer.Default))
+            //{
+            //    string name = comp.Name;
+            //    string full = comp.ToDisplayString();
+
+            //    sb.AppendLine(
+            //        $"        DevoidEngine.Engine.Serialization.ComponentSerializationRegistry.Register<{full}>({name}Serializer.Serialize, {name}Serializer.Deserialize);");
+            //}
 
             sb.AppendLine("    }");
 
