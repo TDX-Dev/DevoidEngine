@@ -43,7 +43,7 @@ namespace ElementalEditor.Panels
 
             Vector2 remaining = ImGui.GetContentRegionAvail();
 
-            ImGui.InvisibleButton("HierarchyRootDrop", remaining);
+            //ImGui.InvisibleButton("HierarchyRootDrop", remaining);
 
             if (ImGui.BeginDragDropTarget())
             {

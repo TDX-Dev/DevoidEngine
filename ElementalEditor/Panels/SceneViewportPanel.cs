@@ -1,6 +1,7 @@
 ﻿using DevoidEngine.Engine.AssetPipeline;
 using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.GizmoSystem;
+using DevoidEngine.Engine.Imgui.ImGuizmoBindings;
 using ElementalEditor.Scripting;
 using ElementalEditor.Utils;
 using ImGuiNET;
@@ -25,27 +26,15 @@ namespace ElementalEditor.Panels
 
         public void Draw(EditorContext context)
         {
+            Matrix4x4 view = context.EditorCamera.Camera.GetViewMatrix();
+            Matrix4x4 projection = context.EditorCamera.Camera.GetProjectionMatrix();
             if (pendingScriptReload)
             {
                 pendingScriptReload = false;
-
-                var scene = SceneManager.CurrentScene;
-
+                var scene = context.Scene;
                 var saved = ScriptComponentReload.RemoveScriptComponents(scene);
-
                 ScriptAssemblyLoader.Unload();
-
-                while (AssemblyLoadContext.All.Any(x => x is ScriptLoadContext))
-                {
-                    GC.Collect();
-                    GC.WaitForPendingFinalizers();
-                    GC.Collect();
-
-                    Thread.Sleep(20);
-                }
-
                 ScriptAssemblyLoader.Load();
-
                 ScriptComponentReload.RestoreScriptComponents(saved);
             }
 
@@ -101,6 +90,49 @@ namespace ElementalEditor.Panels
                 texture.GetDeviceTexture().GetHandle(),
                 ViewportSize
             );
+
+            unsafe
+            {
+                ImGuizmo.SetDrawlist((nint)drawList.NativePtr);
+            }
+
+            ImGuizmo.SetRect(
+                contentMin.X,
+                contentMin.Y,
+                ViewportSize.X,
+                ViewportSize.Y
+            );
+
+            var selected = context.SelectedObject;
+
+            if (selected != null)
+            {
+                var transform = selected.Transform;
+
+                Matrix4x4 matrix = transform.WorldMatrix;
+
+                Matrix4x4 delta;
+                ImGuizmo.SetGizmoSizeClipSpace(0.15f);
+                if (ImGuizmo.Manipulate(
+                    view,
+                    projection,
+                    Operation.Translate,
+                    Mode.World,
+                    ref matrix,
+                    out delta))
+                {
+                    Matrix4x4.Decompose(
+                        matrix,
+                        out Vector3 scale,
+                        out Quaternion rotation,
+                        out Vector3 translation
+                    );
+
+                    transform.Position = translation;
+                    transform.Rotation = rotation;
+                    transform.Scale = scale;
+                }
+            }
 
             if (ImGui.BeginDragDropTarget())
             {

@@ -68,7 +68,7 @@ namespace DevoidEngine.Engine.Components
                 MipLevels = 1
             }));
 
-            Console.WriteLine("Created Render Target with dimensions: " + new Vector2(w, h));
+            //Console.WriteLine("Created Render Target with dimensions: " + new Vector2(w, h));
         }
 
         public override void OnStart()
@@ -157,7 +157,7 @@ namespace DevoidEngine.Engine.Components
 
             UpdateProjection();
 
-            Console.WriteLine("Camera Resize Call: " + new Vector2(width, height));
+            //Console.WriteLine("Camera Resize Call: " + new Vector2(width, height));
         }
 
         private void UpdateProjection()

@@ -10,6 +10,7 @@ using DevoidEngine.Engine.Utilities;
 using ElementalEditor.ContextMenu;
 using ElementalEditor.Panels;
 using ElementalEditor.ProjectSettings;
+using ElementalEditor.Scripting;
 using ElementalEditor.Utils;
 using ElementalEditor.Windows;
 using ImGuiNET;
@@ -84,6 +85,8 @@ namespace ElementalEditor
             SetStyling();
             editorFont = Application.ImGuiBackend.AddFontFromFile("./Content/Font/JetBrainsMono-Regular.ttf", 16);
             Application.ImGuiBackend.LoadIconFont("./Content/Font/bootstrap_icons.ttf", 16, (BootstrapIconFont.IconMin, BootstrapIconFont.IconMax16));
+            Application.ImGuiBackend.SetDefaultFont(editorFont);
+            //Console.WriteLine(ImGui.GetFont().GetDebugName());
 
             projectSettings = new ProjectSettingsWindow();
             saveSceneDialog = new SaveAssetDialog();
@@ -123,6 +126,23 @@ namespace ElementalEditor
 
         public override void OnUpdate(float deltaTime)
         {
+            if (ScriptWatcher.ConsumeReload())
+            {
+                Console.WriteLine("[Scripts] Recompiling...");
+
+                if (ScriptCompiler.Compile(out string errors))
+                {
+                    var saved = ScriptComponentReload.RemoveScriptComponents(context.Scene);
+                    ScriptAssemblyLoader.Unload();
+                    ScriptAssemblyLoader.Load();
+                    ScriptComponentReload.RestoreScriptComponents(saved);
+                }
+                else
+                {
+                    Console.WriteLine(errors);
+                }
+            }
+
             Camera.Main = editorCamera.Camera;
             inputLayer.ViewportActive = context.ViewportFocused;
             inputLayer.Update(deltaTime);

@@ -15,8 +15,6 @@ namespace ElementalEditor.Scripting
                 "GameScripts.csproj"
             );
 
-            Console.WriteLine(csproj);
-
             ProcessStartInfo psi = new()
             {
                 FileName = "dotnet",
@@ -34,7 +32,7 @@ namespace ElementalEditor.Scripting
 
             process.WaitForExit();
 
-            errors = output + "\n" + err;
+            errors = /*output + "\n" +*/ err;
 
             return process.ExitCode == 0;
         }

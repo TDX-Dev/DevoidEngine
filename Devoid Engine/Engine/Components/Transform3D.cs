@@ -33,6 +33,7 @@ namespace DevoidEngine.Engine.Components
         private Matrix4x4 worldMatrix = Matrix4x4.Identity;
         private bool dirty = true;
 
+        [HideInInspector]
         public bool hasMoved = false;
 
         private Matrix4x4 interpolatedWorldMatrix;

@@ -8,6 +8,7 @@ using OpenTK.Windowing.GraphicsLibraryFramework;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using DevoidEngine.Engine.Imgui.ImGuizmoBindings;
 
 using Keys = OpenTK.Windowing.GraphicsLibraryFramework.Keys;
 using MouseButton = OpenTK.Windowing.GraphicsLibraryFramework.MouseButton;
@@ -146,41 +147,44 @@ namespace DevoidEngine.Engine.Imgui
 
         public unsafe ImFontPtr LoadIconFont(string path, int size, (ushort, ushort) range)
         {
-            ImFontConfigPtr configuration = new ImFontConfigPtr(ImGuiNative.ImFontConfig_ImFontConfig());
+            ImFontConfigPtr config = new ImFontConfigPtr(ImGuiNative.ImFontConfig_ImFontConfig());
 
-            configuration.GlyphOffset = new System.Numerics.Vector2(0, 4);
-            //configuration.GlyphOffset = new Vector2(0, 1);
-            configuration.GlyphMinAdvanceX = size;
-            configuration.MergeMode = true;
-            configuration.PixelSnapH = true;
+            config.GlyphOffset = new Vector2(0, 4);
+            config.GlyphMinAdvanceX = size;
+            config.MergeMode = true;
+            config.PixelSnapH = true;
 
-            GCHandle rangeHandle = GCHandle.Alloc(new ushort[]
+            ushort[] ranges =
             {
-                range.Item1,
-                range.Item2,
+        range.Item1,
+        range.Item2,
         0
-            }, GCHandleType.Pinned);
+    };
 
-            try
+            fixed (ushort* rangePtr = ranges)
             {
-                return ImGui.GetIO().Fonts.AddFontFromFileTTF(path, (float)size, configuration, rangeHandle.AddrOfPinnedObject()); ;
-            }
-            finally
-            {
-                configuration.Destroy();
-
-                if (rangeHandle.IsAllocated)
+                try
                 {
-                    rangeHandle.Free();
+                    return ImGui.GetIO().Fonts.AddFontFromFileTTF(
+                        path,
+                        size,
+                        config,
+                        (IntPtr)rangePtr
+                    );
+                }
+                finally
+                {
+                    config.Destroy();
                 }
             }
-
         }
 
 
         public void Initialize()
         {
+            Console.WriteLine(ImGui.GetVersion());
             ImGui.SetCurrentContext(ImGui.CreateContext());
+            ImGuizmo.SetImGuiContext(ImGui.GetCurrentContext());
 
             ImGuiIOPtr io = ImGui.GetIO();
 
@@ -385,12 +389,14 @@ namespace DevoidEngine.Engine.Imgui
             UpdatePerFrameParameters(delta);
             UpdateDisplay();
             UpdateInput();
+            ImGuizmo.SetImGuiContext(ImGui.GetCurrentContext());
 
             ImGui.NewFrame();
 
             ImGui.PushFont(DefaultFont);
 
             CreateDockspace();
+            ImGuizmo.BeginFrame();
 
             OnGUI?.Invoke();
 

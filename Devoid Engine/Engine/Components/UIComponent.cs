@@ -27,7 +27,6 @@ namespace DevoidEngine.Engine.Components
 
             if (parentUI != null)
             {
-                Console.WriteLine(parentUI + " Found");
                 if (parentUI.Root == null) return;
                 parentUI.Root.Add(Root);
                 return;
@@ -37,7 +36,6 @@ namespace DevoidEngine.Engine.Components
 
             if (canvas != null)
             {
-                Console.WriteLine(canvas + " Canvas Found");
                 canvas.Canvas.Add(Root);
                 return;
             }

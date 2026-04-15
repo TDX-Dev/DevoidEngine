@@ -44,8 +44,8 @@ public static class ScriptAssemblyLoader
 
         ExecuteLoad(path);
 
-        Console.WriteLine(
-            AssemblyLoadContext.GetLoadContext(assembly));
+        //Console.WriteLine(
+        //    AssemblyLoadContext.GetLoadContext(assembly));
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -113,13 +113,13 @@ public static class ScriptAssemblyLoader
         .GetAssemblies()
         .Any(a => a.GetName().Name == "GameScripts");
 
-        Console.WriteLine("Scripts still in AppDomain: " + scriptsStillLoaded);
+        //Console.WriteLine("Scripts still in AppDomain: " + scriptsStillLoaded);
 
-        Console.WriteLine("ALC alive: " + wr.IsAlive);
+        //Console.WriteLine("ALC alive: " + wr.IsAlive);
 
         if (wr.IsAlive)
         {
-            Console.WriteLine("Still loaded assemblies:");
+            //Console.WriteLine("Still loaded assemblies:");
 
             foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
             {
@@ -135,7 +135,7 @@ public static class ScriptAssemblyLoader
     {
         while (AssemblyLoadContext.All.Any(a => a is ScriptLoadContext))
         {
-            Console.WriteLine("WAITING");
+            Console.WriteLine("[Script Compiler]: Waiting for script assembly to unload");
 
             GC.Collect();
             GC.WaitForPendingFinalizers();
@@ -144,7 +144,7 @@ public static class ScriptAssemblyLoader
             Thread.Sleep(50);
         }
 
-        Console.WriteLine("ScriptLoadContext gone");
+        Console.WriteLine("[Script Compiler]: Script assembly has unloaded.");
     }
 
     static void FindEventReferences(Assembly scriptAsm)

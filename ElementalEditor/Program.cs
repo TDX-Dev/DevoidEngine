@@ -34,21 +34,26 @@ namespace ElementalEditor
                 projectFile = Path.Combine(config.CreatePath, "Project.devoid");
             }
 
-            Console.WriteLine("Loading project...");
+            Console.WriteLine("[Editor]: Loading project...");
             ProjectManager.Load(projectFile);
 
-            Console.WriteLine($"Project Loaded: {ProjectManager.Current.Config.Name}");
-            Console.WriteLine($"Assets: {ProjectManager.Current.AssetPath}");
+            Console.WriteLine($"[Editor]: Project Loaded: {ProjectManager.Current.Config.Name}");
+            Console.WriteLine($"[Editor]: Assets: {ProjectManager.Current.AssetPath}");
 
-            Console.WriteLine("Initializing Script System: ");
+            Console.WriteLine("[Editor]: Initializing Script System");
 
             ScriptProjectGenerator.Generate();
 
-            // compile scripts if needed
-            ScriptCompiler.Compile(out string errors);
+            if (ScriptCompiler.Compile(out string errors))
+            {
+                ScriptAssemblyLoader.Load();
+            }
+            else
+            {
+                Console.WriteLine(errors);
+            }
 
-            // load assembly
-            //ScriptAssemblyLoader.Load();
+            ScriptWatcher.Initialize();
 
             ApplicationSpecification applicationSpecification = new ApplicationSpecification()
             {
