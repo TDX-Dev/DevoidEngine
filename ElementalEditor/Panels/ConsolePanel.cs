@@ -19,9 +19,9 @@ public class ConsolePanel : IEditorPanel
 
         ImGui.Separator();
 
-        foreach (var entry in EditorConsole.Entries)
+        for (int i = 0; i <  EditorConsole.Entries.Count; i++)
         {
-            Vector4 color = entry.Type switch
+            Vector4 color = EditorConsole.Entries[i].Type switch
             {
                 LogType.Error => new Vector4(1f, 0.3f, 0.3f, 1f),
                 LogType.Warning => new Vector4(1f, 0.8f, 0.2f, 1f),
@@ -29,7 +29,7 @@ public class ConsolePanel : IEditorPanel
             };
 
             ImGui.PushStyleColor(ImGuiCol.Text, color);
-            ImGui.TextWrapped(entry.Message);
+            ImGui.TextWrapped(EditorConsole.Entries[i].Message);
             ImGui.PopStyleColor();
         }
 
