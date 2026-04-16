@@ -28,16 +28,18 @@ namespace DevoidEngine.Engine.AssetPipeline.Loaders
                 Width = asset.Width,
                 Height = asset.Height,
                 Format = asset.Format,
-                GenerateMipmaps = false,
-                MipLevels = 1,
+                GenerateMipmaps = asset.GenerateMipmaps,
+                MipLevels = asset.GenerateMipmaps ? 0 : 1,
                 IsDepthStencil = false,
-                IsRenderTarget = false,
+                IsRenderTarget = asset.GenerateMipmaps,
                 IsMutable = false
             });
 
             texture.SetFilter(asset.Filter, asset.Filter);
             texture.SetWrapMode(asset.Wrap, asset.Wrap);
             texture.SetAnisotropy(asset.Anisotropy);
+
+            Console.WriteLine("Loaded Texture!");
 
             switch (asset.Format)
             {
@@ -63,6 +65,12 @@ namespace DevoidEngine.Engine.AssetPipeline.Loaders
 
                 default:
                     throw new NotSupportedException($"Unsupported texture format {asset.Format}");
+            }
+
+            if (asset.GenerateMipmaps)
+            {
+                texture.GenerateMipmaps();
+                Console.WriteLine("Generated Mips!");
             }
 
             return texture;

@@ -281,7 +281,38 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
                 Guid texGuid = ImportTexture(tex.FilePath, modelPath);
 
                 asset.Textures["MAT_NormalMap"] = texGuid;
+
+                MaterialProperty normalScale = mat.GetProperty("$tex.scale,6,0");
+
+                if (normalScale != null)
+                {
+                    asset.Floats["NormalStrength"] = normalScale.GetFloatValue();
+                    Console.WriteLine("Normal scale set: " + normalScale.GetFloatValue());
+                }
+                else
+                    asset.Floats["NormalStrength"] = 1;
+
+                asset.Ints["useNormalMap"] = 1;
             }
+
+            if (mat.PBR.HasTextureRoughness)
+            {
+                mat.GetMaterialTexture(
+                    Assimp.TextureType.Roughness,
+                    0,
+                    out var tex);
+
+                Guid texGuid = ImportTexture(tex.FilePath, modelPath);
+
+                asset.Textures["MAT_RoughnessMap"] = texGuid;
+            }
+
+            //IEnumerable<TextureSlot> slots = mat.GetAllMaterialTextures();
+
+            //foreach (var slot in slots)
+            //{
+            //    Console.WriteLine(slot.TextureType);
+            //}
 
             MaterialProperty[] mps = mat.GetAllProperties();
             foreach (MaterialProperty mp in mps)
@@ -289,7 +320,7 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
                 Console.WriteLine(mp.FullyQualifiedName + " : " + mp.GetFloatValue());
             }
 
-            Console.WriteLine(mat.Opacity);
+            //Console.WriteLine(mat.Opacity);
 
             return asset;
         }
@@ -297,6 +328,7 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
         Guid ImportTexture(string texturePath, string currentModelPath)
         {
             string resolvedPath = Path.Combine(Path.GetDirectoryName(currentModelPath)!, texturePath);
+            resolvedPath = resolvedPath.Replace('\\', '/');   // normalize
 
             Console.WriteLine("[Model Importer]: " + resolvedPath);
 

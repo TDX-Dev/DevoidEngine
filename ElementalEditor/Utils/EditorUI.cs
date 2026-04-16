@@ -150,6 +150,16 @@ namespace ElementalEditor.Utils
                 return false;
             }
 
+            if (field.FieldType.IsValueType &&
+                !field.FieldType.IsPrimitive &&
+                !field.FieldType.IsEnum &&
+                field.FieldType != typeof(Vector2) &&
+                field.FieldType != typeof(Vector3) &&
+                field.FieldType != typeof(Vector4))
+            {
+                return DrawStructField(field, target);
+            }
+
             // fallback
             var asset = PropertyType(field.FieldType, field.GetValue(target));
 
@@ -199,6 +209,17 @@ namespace ElementalEditor.Utils
             if (prop.PropertyType.IsEnum)
                 return DrawEnumProperty(prop, target);
 
+            if (prop.PropertyType.IsValueType &&
+                !prop.PropertyType.IsPrimitive &&
+                !prop.PropertyType.IsEnum &&
+                prop.PropertyType != typeof(Vector2) &&
+                prop.PropertyType != typeof(Vector3) &&
+                prop.PropertyType != typeof(Vector4))
+            {
+                return DrawStructProperty(prop, target);
+            }
+
+
             var asset = PropertyType(prop.PropertyType, prop.GetValue(target));
 
             if (asset != null)
@@ -210,7 +231,93 @@ namespace ElementalEditor.Utils
             return false;
         }
 
+        unsafe static void DrawStructRows(Type type, ref object boxed, ref bool changed)
+        {
+            Vector4 bg = *ImGui.GetStyleColorVec4(ImGuiCol.FrameBg);
+            bg.X *= 0.9f;
+            bg.Y *= 0.9f;
+            bg.Z *= 0.9f;
+
+            ImGui.PushStyleColor(ImGuiCol.TableRowBg, bg);
+
+            foreach (var field in type.GetFields(BindingFlags.Public | BindingFlags.Instance))
+            {
+                BeginProperty(field.Name);
+
+                if (DrawGenericField(field, boxed))
+                    changed = true;
+
+                EndProperty();
+            }
+
+            foreach (var prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+            {
+                if (!prop.CanRead || !prop.CanWrite)
+                    continue;
+
+                BeginProperty(prop.Name);
+
+                if (DrawGenericProperty(prop, boxed))
+                    changed = true;
+
+                EndProperty();
+            }
+
+            ImGui.PopStyleColor();
+        }
+
         #region FIELDS
+
+        static bool DrawStruct(Type type, ref object boxedStruct)
+        {
+            bool changed = false;
+
+            foreach (var field in type.GetFields(BindingFlags.Public | BindingFlags.Instance))
+            {
+                BeginProperty(field.Name);
+
+                if (DrawGenericField(field, boxedStruct))
+                    changed = true;
+
+                EndProperty();
+            }
+
+            foreach (var prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+            {
+                if (!prop.CanRead || !prop.CanWrite)
+                    continue;
+
+                BeginProperty(prop.Name);
+
+                if (DrawGenericProperty(prop, boxedStruct))
+                    changed = true;
+
+                EndProperty();
+            }
+
+            return changed;
+        }
+
+        static bool DrawStructField(FieldInfo field, object target)
+        {
+            object boxed = field.GetValue(target);
+
+            bool changed = false;
+
+            if (ImGui.TreeNode("##value", field.Name))
+            {
+                if (DrawStruct(field.FieldType, ref boxed))
+                    changed = true;
+
+                ImGui.TreePop();
+            }
+
+            if (changed)
+                field.SetValue(target, boxed);
+
+            return changed;
+        }
+
         public static bool DrawIntField(FieldInfo field, object target)
         {
             int value = (int)field.GetValue(target);
@@ -430,6 +537,29 @@ namespace ElementalEditor.Utils
         #endregion
 
         #region PROPERTIES
+
+        static bool DrawStructProperty(PropertyInfo prop, object target)
+        {
+            object boxed = prop.GetValue(target);
+            bool changed = false;
+
+            BeginProperty(prop.Name);
+
+            bool open = ImGui.TreeNodeEx("##struct", ImGuiTreeNodeFlags.SpanFullWidth);
+
+            EndProperty();
+
+            if (open)
+            {
+                DrawStructRows(prop.PropertyType, ref boxed, ref changed);
+                ImGui.TreePop();
+            }
+
+            if (changed)
+                prop.SetValue(target, boxed);
+
+            return changed;
+        }
 
         public static bool DrawIntProperty(PropertyInfo prop, object target)
         {

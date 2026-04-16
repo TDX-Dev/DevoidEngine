@@ -29,6 +29,9 @@ namespace DevoidEngine.Engine.Assets
 
         [Key(6)]
         public byte[] PixelData = [];
+
+        [Key(7)]
+        public bool GenerateMipmaps = true;
     }
 
 

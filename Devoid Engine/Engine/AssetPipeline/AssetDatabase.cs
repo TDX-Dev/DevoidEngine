@@ -109,11 +109,19 @@ namespace DevoidEngine.Engine.AssetPipeline
 
                 pathToAsset.Clear();
 
+                //foreach (var entry in guidToAsset.Values)
+                //{
+                //    entry.AssetPath = NormalizePath(entry.AssetPath);
+                //    //pathToAsset[entry.AssetPath] = entry;
+                //    pathToAsset[NormalizePath(entry.AssetPath)] = entry;
+                //}
                 foreach (var entry in guidToAsset.Values)
                 {
                     entry.AssetPath = NormalizePath(entry.AssetPath);
-                    //pathToAsset[entry.AssetPath] = entry;
-                    pathToAsset[NormalizePath(entry.AssetPath)] = entry;
+
+                    // only root assets go in path map
+                    if (entry.ContainerGuid == null)
+                        pathToAsset[entry.AssetPath] = entry;
                 }
             }
             catch
@@ -209,7 +217,7 @@ namespace DevoidEngine.Engine.AssetPipeline
         {
             assetPath = NormalizePath(assetPath);
 
-            Guid guid = Guid.NewGuid();
+            Guid guid = CreateSubAssetGuid(containerGuid, localId);
 
             var entry = new AssetEntry
             {
@@ -223,6 +231,18 @@ namespace DevoidEngine.Engine.AssetPipeline
             guidToAsset[guid] = entry;
 
             return guid;
+        }
+
+        static Guid CreateSubAssetGuid(Guid containerGuid, ulong localId)
+        {
+            Span<byte> buffer = stackalloc byte[24];
+
+            containerGuid.TryWriteBytes(buffer);
+            BitConverter.TryWriteBytes(buffer[16..], localId);
+
+            var hash = System.Security.Cryptography.MD5.HashData(buffer);
+
+            return new Guid(hash);
         }
 
         private static AssetMeta CreateMeta(string assetPath, string metaPath)

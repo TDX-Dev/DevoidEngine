@@ -107,7 +107,8 @@ namespace DevoidEngine.Engine.AssetPipeline.Importers
                 Filter = settings.Filter,
                 Wrap = settings.Wrap,
                 Anisotropy = settings.Anisotropy,
-                PixelData = pixels
+                PixelData = pixels,
+                GenerateMipmaps = settings.GenerateMipmaps,
             };
 
             File.WriteAllBytes(

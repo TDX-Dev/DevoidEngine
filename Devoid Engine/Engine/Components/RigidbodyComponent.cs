@@ -176,6 +176,9 @@ namespace DevoidEngine.Engine.Components
 
         public override void OnRender()
         {
+            Matrix4x4 model = Matrix4x4.CreateFromQuaternion(gameObject.Transform.Rotation) * Matrix4x4.CreateScale(Shape.Size) * Matrix4x4.CreateTranslation(gameObject.Transform.Position);
+
+            Gizmos.DrawCube(model, GizmoCategory.Physics);
         }
 
         public override void OnDestroy()

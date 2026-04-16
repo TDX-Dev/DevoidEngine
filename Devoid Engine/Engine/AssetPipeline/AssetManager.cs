@@ -47,6 +47,7 @@ namespace DevoidEngine.Engine.AssetPipeline
                 if (AssetCache<T>.Cache.TryGetValue(guid, out var asset))
                     return asset;
 
+
             if (!AssetDatabase.TryGetEntry(guid, out AssetEntry? entry))
             {
                 Console.WriteLine($"[Asset] Missing asset {guid}");
@@ -58,10 +59,10 @@ namespace DevoidEngine.Engine.AssetPipeline
                 T? subAsset = ResolveSubAsset<T>(guid, entry.ContainerGuid.Value, entry.LocalId);
                 if (subAsset == null)
                 {
-                    //Console.WriteLine($"[Asset] Missing subasset {guid}");
+                    Console.WriteLine($"[Asset] Missing subasset {guid}");
                 } else
                 {
-                    //Console.WriteLine($"[Asset] Fetched subasset {guid}");
+                    Console.WriteLine($"[Asset] Fetched subasset {guid}");
                 }
                     return subAsset;
             }
@@ -109,7 +110,10 @@ namespace DevoidEngine.Engine.AssetPipeline
 
         private static T? ResolveSubAsset<T>(Guid guid, Guid containerGuid, ulong localId) where T : class?
         {
-            var container = Load<Model>(containerGuid);
+            Model? container;
+
+            if (!AssetCache<Model>.Cache.TryGetValue(containerGuid, out container))
+                container = Load<Model>(containerGuid);
 
             if (container == null)
             {

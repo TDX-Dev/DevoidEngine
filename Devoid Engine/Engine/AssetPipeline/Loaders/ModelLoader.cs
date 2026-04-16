@@ -75,7 +75,13 @@ namespace DevoidEngine.Engine.AssetPipeline.Loaders
                 material.SetInt(name, value);
 
             foreach (var (name, value) in asset.Floats)
+            {
                 material.SetFloat(name, value);
+                if (name == "NormalStrength")
+                {
+                    Console.WriteLine("Loaded Normal Strength: " + value);
+                }
+            }
 
             foreach (var (name, value) in asset.Vector2s)
                 material.SetVector2(name, value);

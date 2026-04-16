@@ -35,6 +35,7 @@ namespace DevoidEngine.Engine.Core
                 if (matId < (ulong)Materials.Length)
                 {
                     asset = (Materials[(int)matId] as T)!;
+                    
                     return true;
                 }
             }
