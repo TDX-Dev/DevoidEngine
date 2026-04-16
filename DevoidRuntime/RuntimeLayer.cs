@@ -15,8 +15,6 @@ namespace DevoidRuntime
         {
 
             Application.ApplyProjectSettings();
-
-            SceneManager.CurrentScene.Play(true);
         }
 
         public override void OnUpdate(float deltaTime)

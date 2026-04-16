@@ -33,7 +33,6 @@ namespace DevoidEngine.Engine.AssetPipeline.Loaders
                     Console.WriteLine($"[Material Loader]: Failed to load texture: {name} -> {guid}");
                     continue;
                 }
-                tex.GenerateMipmaps();
                 material.SetTexture(name, tex);
             }
 

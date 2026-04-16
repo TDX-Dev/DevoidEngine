@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "DevoidRuntime": {
+      "commandName": "Project",
+      "commandLineArgs": "--project \"D:\\Programming\\Devoid Engine\\DevoidStandaloneLauncher\\Project\\Project.devoid\" --mode editor  --scene \"NewScene.scene\"",
+      "workingDirectory": "D:\\Programming\\Devoid Engine\\ElementalEditor\\bin\\Debug\\net9.0",
+      "nativeDebugging": true
+    }
+  }
+}

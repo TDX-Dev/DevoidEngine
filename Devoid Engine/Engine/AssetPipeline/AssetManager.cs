@@ -56,15 +56,17 @@ namespace DevoidEngine.Engine.AssetPipeline
 
             if (entry != null && entry.ContainerGuid != null)
             {
-                T? subAsset = ResolveSubAsset<T>(guid, entry.ContainerGuid.Value, entry.LocalId);
-                if (subAsset == null)
+                // Only models contain subassets in your pipeline
+                if (typeof(T) == typeof(Material) ||
+                    typeof(T) == typeof(Mesh))
                 {
-                    Console.WriteLine($"[Asset] Missing subasset {guid}");
-                } else
-                {
-                    Console.WriteLine($"[Asset] Fetched subasset {guid}");
-                }
+                    T? subAsset = ResolveSubAsset<T>(guid, entry.ContainerGuid.Value, entry.LocalId);
+
+                    if (subAsset == null)
+                        Console.WriteLine($"[Asset] Missing subasset {guid}");
+
                     return subAsset;
+                }
             }
 
             if (!AssetLoaderRegistry.TryGet<T>(out var loader) || loader == null)

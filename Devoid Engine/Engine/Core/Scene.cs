@@ -84,9 +84,12 @@ namespace DevoidEngine.Engine.Core
                 GameObjects[i].OnFixedUpdate(deltaTime);
             }
 
-            Physics.Step(deltaTime);
-            Physics.SyncTransforms(deltaTime);
-            Physics.ResolveFrameCollisions();
+            if (EngineSingleton.Instance.SimulatePhysics)
+            {
+                Physics.Step(deltaTime);
+                Physics.SyncTransforms(deltaTime);
+                Physics.ResolveFrameCollisions();
+            }
         }
 
         public void Render()

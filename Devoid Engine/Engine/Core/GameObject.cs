@@ -74,6 +74,19 @@ namespace DevoidEngine.Engine.Core
             return null;
         }
 
+        public List<T> GetComponents<T>() where T : Component
+        {
+            List<T> result = new();
+
+            for (int i = 0; i < Components.Count; i++)
+            {
+                if (Components[i] is T t)
+                    result.Add(t);
+            }
+
+            return result;
+        }
+
         public Component? GetComponent(Type type)
         {
             foreach (var comp in Components)

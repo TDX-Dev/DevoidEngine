@@ -1,6 +1,7 @@
 ﻿using DevoidEngine.Engine.AssetPipeline;
 using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.ProjectSystem;
+using DevoidEngine.Engine.Rendering;
 using DevoidGPU.DX11;
 
 namespace DevoidRuntime
@@ -27,8 +28,7 @@ namespace DevoidRuntime
             app.Initialize(spec);
             app.ApplyProjectSettings();
 
-            app.TargetFrameRate = 60;
-            EngineSingleton.Instance.UseInterpolation = true;
+            DebugRenderSystem.AllowDebugDraw = false;
 
             app.AddLayer(new RuntimeLayer());
             LoadStartupScene();

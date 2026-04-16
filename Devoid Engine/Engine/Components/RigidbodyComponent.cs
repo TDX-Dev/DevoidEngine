@@ -22,11 +22,18 @@ namespace DevoidEngine.Engine.Components
         public bool LockRotationY = false;
         public bool LockRotationZ = false;
 
-        public PhysicsShapeDescription Shape = new PhysicsShapeDescription
+        public PhysicsShapeDescription Shape
         {
-            Type = PhysicsShapeType.Box,
-            Size = new Vector3(1, 1, 1)
-        };
+            get => internalShape;
+            set
+            {
+                internalShape = value;
+
+                // Recreate physics body if it already exists
+                if (internalBody != null)
+                    CreateBody();
+            }
+        }
 
         public PhysicsMaterial Material = PhysicsMaterial.Default;
 
@@ -38,6 +45,12 @@ namespace DevoidEngine.Engine.Components
 
         [DontSerialize]
         private IPhysicsBody? internalBody;
+
+        internal PhysicsShapeDescription internalShape = new PhysicsShapeDescription
+        {
+            Type = PhysicsShapeType.Box,
+            Size = new Vector3(1, 1, 1)
+        };
 
 
         public Vector3 LinearVelocity
@@ -136,7 +149,7 @@ namespace DevoidEngine.Engine.Components
 
             if (Shape.Type == PhysicsShapeType.Box && Shape.Size == Vector3.Zero)
             {
-                Shape.Size = new Vector3(1, 1, 1);
+                internalShape.Size = new Vector3(1, 1, 1);
             }
 
             var desc = new PhysicsBodyDescription

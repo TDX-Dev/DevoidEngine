@@ -11,6 +11,8 @@ namespace DevoidEngine.Engine.AssetPipeline.Loaders
     {
         public Texture2D Load(ReadOnlySpan<byte> data)
         {
+            Console.WriteLine("Loaded Texture!"); Console.WriteLine("Loaded Texture!"); Console.WriteLine("Loaded Texture!"); Console.WriteLine("Loaded Texture!"); Console.WriteLine("Loaded Texture!"); Console.WriteLine("Loaded Texture!");
+
             TextureAsset asset;
 
             try
@@ -38,8 +40,6 @@ namespace DevoidEngine.Engine.AssetPipeline.Loaders
             texture.SetFilter(asset.Filter, asset.Filter);
             texture.SetWrapMode(asset.Wrap, asset.Wrap);
             texture.SetAnisotropy(asset.Anisotropy);
-
-            Console.WriteLine("Loaded Texture!");
 
             switch (asset.Format)
             {

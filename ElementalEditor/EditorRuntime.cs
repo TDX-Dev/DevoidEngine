@@ -33,7 +33,7 @@ namespace ElementalEditor
 
             EnsureRuntimeProject();
             EnsureRuntimeBuild();
-            //CopyRuntimeDependencies();
+            CopyRuntimeDependencies();
 
             string runtimeExe = Path.Combine(
                 ProjectManager.Current.TempPath,
@@ -119,32 +119,8 @@ namespace ElementalEditor
 
         static void EnsureRuntimeBuild()
         {
-            string exe = Path.Combine(
-                ProjectManager.Current.TempPath,
-                "EditorRuntime",
-                "DevoidRuntime.exe");
-
-            if (!File.Exists(exe))
-            {
-                Console.WriteLine("[Runtime] Runtime missing. Building...");
-                BuildRuntime();
-                return;
-            }
-
-            DateTime exeTime = File.GetLastWriteTimeUtc(exe);
-
-            string runtimeProject = Path.Combine(
-                AppContext.BaseDirectory,
-                "DevoidRuntime",
-                "DevoidRuntime.csproj");
-
-            DateTime projTime = File.GetLastWriteTimeUtc(runtimeProject);
-
-            if (projTime > exeTime)
-            {
-                Console.WriteLine("[Runtime] Runtime project changed. Rebuilding...");
-                BuildRuntime();
-            }
+            Console.WriteLine("[Runtime] Building editor runtime...");
+            BuildRuntime();
         }
 
         static void BuildRuntime()
@@ -173,8 +149,7 @@ namespace ElementalEditor
                 CreateNoWindow = true
             };
 
-            //psi.ArgumentList.Add("publish");
-            psi.ArgumentList.Add("build");
+            psi.ArgumentList.Add("publish");
             psi.ArgumentList.Add(runtimeProject);
             psi.ArgumentList.Add("-c");
             psi.ArgumentList.Add("Debug");
@@ -219,8 +194,6 @@ namespace ElementalEditor
                 throw new Exception("Runtime executable missing after build.");
         }
 
-
-
         static void CopyRuntimeDependencies()
         {
             var project = ProjectManager.Current;
@@ -230,7 +203,6 @@ namespace ElementalEditor
 
             Directory.CreateDirectory(dstDir);
 
-            // copy all dlls beside editor
             foreach (var file in Directory.GetFiles(srcDir, "*.dll"))
             {
                 string name = Path.GetFileName(file);
@@ -238,17 +210,42 @@ namespace ElementalEditor
                 if (name.StartsWith("ElementalEditor"))
                     continue;
 
-                File.Copy(file, Path.Combine(dstDir, name), true);
+                string dst = Path.Combine(dstDir, name);
+
+                bool alwaysCopy =
+                    name.Equals("DevoidEngine.Engine.dll", StringComparison.OrdinalIgnoreCase) ||
+                    name.Equals("DevoidEngine.EngineGPU.dll", StringComparison.OrdinalIgnoreCase);
+
+                if (alwaysCopy)
+                {
+                    File.Copy(file, dst, true);
+                    Console.WriteLine("[Runtime] Updated engine DLL: " + name);
+                }
+                else
+                {
+                    if (!File.Exists(dst))
+                    {
+                        File.Copy(file, dst, false);
+                        Console.WriteLine("[Runtime] Copied dependency: " + name);
+                    }
+                }
             }
 
-            // copy native runtime libraries directly beside runtime exe
+            // Native runtime libraries
             string nativeDir = Path.Combine(srcDir, "runtimes", "win-x64", "native");
 
             if (Directory.Exists(nativeDir))
             {
                 foreach (var dll in Directory.GetFiles(nativeDir, "*.dll"))
                 {
-                    File.Copy(dll, Path.Combine(dstDir, Path.GetFileName(dll)), true);
+                    string name = Path.GetFileName(dll);
+                    string dst = Path.Combine(dstDir, name);
+
+                    if (!File.Exists(dst))
+                    {
+                        File.Copy(dll, dst, false);
+                        Console.WriteLine("[Runtime] Copied native DLL: " + name);
+                    }
                 }
             }
         }

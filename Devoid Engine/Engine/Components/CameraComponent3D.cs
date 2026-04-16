@@ -73,7 +73,7 @@ namespace DevoidEngine.Engine.Components
 
         public override void OnStart()
         {
-
+            Console.WriteLine("Camera Started");
             UpdateProjection();
             gameObject.Scene.AddCamera3D(this);
 

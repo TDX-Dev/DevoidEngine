@@ -17,6 +17,8 @@ namespace DevoidEngine.Engine.Core
 
         public float TargetFrameRate { get; set; } = 60;
 
+        public bool SimulatePhysics { get; set; } = true;
+
         public AudioManager AudioSystem { get; set; } = null!;
         public PhysicsSystem PhysicsSystem { get; set; } = null!;
 
