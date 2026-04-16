@@ -2,6 +2,7 @@
 using DevoidEngine.Engine.Components;
 using DevoidEngine.Engine.Core;
 using DevoidEngine.Engine.Serialization;
+using ElementalEditor.Inspector;
 using ElementalEditor.Utils;
 using ImGuiNET;
 using System;
@@ -13,13 +14,8 @@ namespace ElementalEditor.Panels
 {
     public class InspectorPanel : IEditorPanel
     {
-        enum InspectorTab
-        {
-            Components,
-            Materials
-        }
 
-        InspectorTab activeTab = InspectorTab.Components;
+        IInspectorTab activeTab;
 
         string componentSearch = "";
         List<Component> deleteQueue = new();
@@ -103,16 +99,7 @@ namespace ElementalEditor.Panels
                 ImGuiChildFlags.AlwaysUseWindowPadding
             );
 
-            switch (activeTab)
-            {
-                case InspectorTab.Components:
-                    DrawComponents(context, obj);
-                    break;
-
-                case InspectorTab.Materials:
-                    DrawMaterials(context, obj);
-                    break;
-            }
+            activeTab?.Draw(context, obj);
 
             ImGui.EndChild();
 
@@ -295,34 +282,88 @@ namespace ElementalEditor.Panels
 
         void DrawTabs()
         {
-            ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 4);
             ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, new Vector2(10));
-            DrawTabButton(BootstrapIconFont.GearWide, InspectorTab.Components);
-            DrawTabButton(BootstrapIconFont.Circle, InspectorTab.Materials);
-            ImGui.PopStyleVar(2);
+
+            bool first = true;
+
+            foreach (var tab in InspectorTabRegistry.Tabs)
+            {
+                if (!first)
+                    ImGui.Dummy(new Vector2(0, 4));
+
+                DrawTabButton(tab);
+
+                first = false;
+            }
+
+            ImGui.PopStyleVar();
         }
 
-        void DrawTabButton(string icon, InspectorTab tab)
+        void DrawTabButton(IInspectorTab tab)
         {
             bool active = activeTab == tab;
 
-            Vector4 baseColor = new Vector4(0.14f, 0.14f, 0.15f, 1f);
-            Vector4 hoverColor = new Vector4(0.20f, 0.20f, 0.21f, 1f);
-            Vector4 activeColor = new Vector4(0.28f, 0.28f, 0.30f, 1f);
+            const float leftMargin = 6f;
 
-            ImGui.PushStyleColor(ImGuiCol.Button, active ? activeColor : baseColor);
-            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, hoverColor);
-            ImGui.PushStyleColor(ImGuiCol.ButtonActive, activeColor);
+            float height = ImGui.GetFrameHeight();
 
-            if (active)
-                ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.85f, 0.85f, 0.9f, 1f));
-            else
-                ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.65f, 0.65f, 0.68f, 1f));
+            Vector2 pos = ImGui.GetCursorScreenPos();
+            Vector2 avail = ImGui.GetContentRegionAvail();
 
-            if (ImGui.Button(icon, new Vector2(-1, 0)))
+            Vector2 size = new Vector2(avail.X - leftMargin, height);
+
+            pos.X += leftMargin;
+
+            var drawList = ImGui.GetWindowDrawList();
+
+            bool hovered = ImGui.IsMouseHoveringRect(pos, pos + size);
+
+            Vector4 baseColor = new Vector4(0.28f, 0.28f, 0.29f, 1f); // normal tab color
+
+            float dim = active ? 1.0f : 0.65f; // dim inactive tabs
+
+            Vector4 bg = new Vector4(
+                baseColor.X * dim,
+                baseColor.Y * dim,
+                baseColor.Z * dim,
+                1f
+            );
+
+            drawList.AddRectFilled(
+                pos,
+                pos + size,
+                ImGui.GetColorU32(bg),
+                6f,
+                ImDrawFlags.RoundCornersLeft
+            );
+
+            ImGui.SetCursorScreenPos(pos);
+
+            ImGui.InvisibleButton(tab.Id, size);
+
+            if (ImGui.IsItemClicked())
                 activeTab = tab;
 
-            ImGui.PopStyleColor(4);
+            Vector2 textSize = ImGui.CalcTextSize(tab.Icon);
+
+            Vector2 textPos = new Vector2(
+                pos.X + (size.X - textSize.X) * 0.5f,
+                pos.Y + (size.Y - textSize.Y) * 0.5f
+            );
+
+            Vector4 iconColor = tab.IconColor;
+
+            if (!active)
+            {
+                iconColor *= 0.65f;
+                iconColor.W = 1f;
+            }
+
+            drawList.AddText(
+                textPos,
+                ImGui.GetColorU32(iconColor),
+                tab.Icon
+            );
         }
     }
 }

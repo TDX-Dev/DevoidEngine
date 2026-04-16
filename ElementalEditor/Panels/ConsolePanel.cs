@@ -1,5 +1,6 @@
 ﻿using ElementalEditor;
 using ElementalEditor.Panels;
+using ElementalEditor.Utils;
 using ImGuiNET;
 using SharpDX.Win32;
 using System.Numerics;
@@ -19,6 +20,8 @@ public class ConsolePanel : IEditorPanel
 
         ImGui.Separator();
 
+        bool scrollToBottom = ImGui.GetScrollY() >= ImGui.GetScrollMaxY();
+
         for (int i = 0; i <  EditorConsole.Entries.Count; i++)
         {
             Vector4 color = EditorConsole.Entries[i].Type switch
@@ -32,6 +35,9 @@ public class ConsolePanel : IEditorPanel
             ImGui.TextWrapped(EditorConsole.Entries[i].Message);
             ImGui.PopStyleColor();
         }
+
+        if (scrollToBottom)
+            ImGui.SetScrollHereY(1.0f); // jump to bottom
 
         ImGui.End();
     }

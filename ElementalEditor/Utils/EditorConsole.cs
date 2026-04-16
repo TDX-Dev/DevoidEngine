@@ -1,58 +1,71 @@
 ﻿using System.Collections.Generic;
 using System;
 
-public enum LogType
+namespace ElementalEditor.Utils
 {
-    Info,
-    Warning,
-    Error
-}
-
-public struct LogEntry
-{
-    public string Message;
-    public LogType Type;
-    public DateTime Time;
-}
-
-public static class EditorConsole
-{
-    static readonly List<LogEntry> entries = new();
-
-    public static IReadOnlyList<LogEntry> Entries => entries;
-
-    public static void Log(string message)
+    public enum LogType
     {
-        entries.Add(new LogEntry
-        {
-            Message = message,
-            Type = LogType.Info,
-            Time = DateTime.Now
-        });
+        Info,
+        Warning,
+        Error
     }
 
-    public static void Warn(string message)
+    public struct LogEntry
     {
-        entries.Add(new LogEntry
-        {
-            Message = message,
-            Type = LogType.Warning,
-            Time = DateTime.Now
-        });
+        public string Message;
+        public LogType Type;
+        public DateTime Time;
     }
 
-    public static void Error(string message)
+    public static class EditorConsole
     {
-        entries.Add(new LogEntry
-        {
-            Message = message,
-            Type = LogType.Error,
-            Time = DateTime.Now
-        });
-    }
+        const int MaxEntries = 100;
 
-    public static void Clear()
-    {
-        entries.Clear();
+        static readonly List<LogEntry> entries = new();
+
+        public static IReadOnlyList<LogEntry> Entries => entries;
+
+        static void Add(LogEntry entry)
+        {
+            if (entries.Count >= MaxEntries)
+                entries.RemoveAt(0); // remove oldest
+
+            entries.Add(entry);
+        }
+
+        public static void Log(string message)
+        {
+            Add(new LogEntry
+            {
+                Message = message,
+                Type = LogType.Info,
+                Time = DateTime.Now
+            });
+        }
+
+        public static void Warn(string message)
+        {
+            Add(new LogEntry
+            {
+                Message = message,
+                Type = LogType.Warning,
+                Time = DateTime.Now
+            });
+        }
+
+        public static void Error(string message)
+        {
+            Add(new LogEntry
+            {
+                Message = message,
+                Type = LogType.Error,
+                Time = DateTime.Now
+            });
+        }
+
+        public static void Clear()
+        {
+            entries.Clear();
+        }
     }
 }

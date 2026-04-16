@@ -8,6 +8,8 @@ using DevoidEngine.Engine.Rendering;
 using DevoidEngine.Engine.Serialization;
 using DevoidEngine.Engine.Utilities;
 using ElementalEditor.ContextMenu;
+using ElementalEditor.Inspector;
+using ElementalEditor.Inspector.Tabs;
 using ElementalEditor.Panels;
 using ElementalEditor.ProjectSettings;
 using ElementalEditor.Scripting;
@@ -144,6 +146,9 @@ namespace ElementalEditor
             ProjectSettingsRegistry.Register(new PhysicsSettingsProvider());
             ProjectSettingsRegistry.Register(new InputSettingsProvider());
             ProjectSettingsRegistry.Register(new GameSettingsProvider());
+
+            InspectorTabRegistry.Register(new ComponentsInspectorTab());
+            InspectorTabRegistry.Register(new MaterialsInspectorTab());
 
             RegisterAssetContextMenus();
 

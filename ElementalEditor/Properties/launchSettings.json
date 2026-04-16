@@ -2,7 +2,7 @@
   "profiles": {
     "ElementalEditor": {
       "commandName": "Project",
-      "nativeDebugging": true
+      "nativeDebugging": false
     }
   }
 }

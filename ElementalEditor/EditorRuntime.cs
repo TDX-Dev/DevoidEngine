@@ -119,8 +119,32 @@ namespace ElementalEditor
 
         static void EnsureRuntimeBuild()
         {
-            Console.WriteLine("[Runtime] Building editor runtime...");
-            BuildRuntime();
+            string exe = Path.Combine(
+                ProjectManager.Current.TempPath,
+                "EditorRuntime",
+                "DevoidRuntime.exe");
+
+            if (!File.Exists(exe))
+            {
+                Console.WriteLine("[Runtime] Runtime missing. Building...");
+                BuildRuntime();
+                return;
+            }
+
+            DateTime exeTime = File.GetLastWriteTimeUtc(exe);
+
+            string runtimeProject = Path.Combine(
+                AppContext.BaseDirectory,
+                "DevoidRuntime",
+                "DevoidRuntime.csproj");
+
+            DateTime projTime = File.GetLastWriteTimeUtc(runtimeProject);
+
+            if (projTime > exeTime)
+            {
+                Console.WriteLine("[Runtime] Runtime project changed. Rebuilding...");
+                BuildRuntime();
+            }
         }
 
         static void BuildRuntime()
@@ -149,7 +173,8 @@ namespace ElementalEditor
                 CreateNoWindow = true
             };
 
-            psi.ArgumentList.Add("publish");
+            //psi.ArgumentList.Add("publish");
+            psi.ArgumentList.Add("build");
             psi.ArgumentList.Add(runtimeProject);
             psi.ArgumentList.Add("-c");
             psi.ArgumentList.Add("Debug");
@@ -193,6 +218,8 @@ namespace ElementalEditor
             if (!File.Exists(exe))
                 throw new Exception("Runtime executable missing after build.");
         }
+
+
 
         static void CopyRuntimeDependencies()
         {
