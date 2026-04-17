@@ -6,6 +6,7 @@ using DevoidEngine.Engine.Components;
 using DevoidEngine.Engine.DebugTools;
 using DevoidEngine.Engine.Imgui;
 using DevoidEngine.Engine.InputSystem;
+using DevoidEngine.Engine.ParticleSystem;
 using DevoidEngine.Engine.Physics;
 using DevoidEngine.Engine.Physics.Bepu;
 using DevoidEngine.Engine.ProjectSystem;
@@ -53,7 +54,7 @@ namespace DevoidEngine.Engine.Core
         private float targetFramerate = 60f;
         private float targetDeltaTime = 1 / 60f;
         private float deltaTimeAccumulator = 0f;
-        private float timeScale = 1.0f;
+        private float timeScale = 4f;
         private uint numFrames = 0;
 
         private List<CameraRenderContext> renderContexts = new List<CameraRenderContext>();
@@ -100,6 +101,7 @@ namespace DevoidEngine.Engine.Core
 
             EngineSingleton.Instance.AudioSystem = new AudioManager(new SoLoudAudioBackend());
             EngineSingleton.Instance.PhysicsSystem = new PhysicsSystem(new BepuPhysicsBackend());
+            EngineSingleton.Instance.ParticleSystem = new ParticleSystemManager();
             EngineSingleton.Instance.TargetFrameRate = targetFramerate;
 
             //Screen.Size = new Vector2(applicationSpecification.Width, applicationSpecification.Height);

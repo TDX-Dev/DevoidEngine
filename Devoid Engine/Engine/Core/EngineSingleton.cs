@@ -1,5 +1,6 @@
 ﻿using DevoidEngine.Engine.AssetPipeline;
 using DevoidEngine.Engine.AudioSystem;
+using DevoidEngine.Engine.ParticleSystem;
 using DevoidEngine.Engine.Physics;
 using System;
 using System.Collections.Generic;
@@ -21,6 +22,7 @@ namespace DevoidEngine.Engine.Core
 
         public AudioManager AudioSystem { get; set; } = null!;
         public PhysicsSystem PhysicsSystem { get; set; } = null!;
+        public ParticleSystemManager ParticleSystem { get; set; } = null!;
 
 
 

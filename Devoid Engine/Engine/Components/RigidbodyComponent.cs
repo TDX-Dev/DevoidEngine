@@ -165,6 +165,7 @@ namespace DevoidEngine.Engine.Components
                 AllowRotationX = !LockRotationX,
                 AllowRotationY = !LockRotationY,
                 AllowRotationZ = !LockRotationZ,
+                CollisionDetectionSettings = PhysicsCollisionDetectionSettings.Continuous
             };
 
             internalBody = gameObject.Scene.Physics.CreateBody(desc, gameObject);

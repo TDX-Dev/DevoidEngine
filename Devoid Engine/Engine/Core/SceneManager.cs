@@ -24,6 +24,7 @@ namespace DevoidEngine.Engine.Core
 
             scene.Audio = EngineSingleton.Instance.AudioSystem;
             scene.Physics = EngineSingleton.Instance.PhysicsSystem;
+            scene.ParticleSystem = EngineSingleton.Instance.ParticleSystem;
             // 2. Set new scene
             CurrentScene = scene;
         }

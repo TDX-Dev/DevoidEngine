@@ -1,6 +1,7 @@
 ﻿using DevoidEngine.Engine.Assets;
 using DevoidEngine.Engine.AudioSystem;
 using DevoidEngine.Engine.Components;
+using DevoidEngine.Engine.ParticleSystem;
 using DevoidEngine.Engine.Physics;
 using DevoidEngine.Engine.Rendering;
 
@@ -15,6 +16,7 @@ namespace DevoidEngine.Engine.Core
 
         public AudioManager Audio = null!;
         public PhysicsSystem Physics = null!;
+        public ParticleSystemManager ParticleSystem = null!;
 
 
         private bool isPlaying = false;

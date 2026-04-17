@@ -19,6 +19,8 @@ namespace DevoidEngine.Engine.Physics
         public PhysicsShapeDescription Shape;
 
         public PhysicsMaterial Material;
+
+        public PhysicsCollisionDetectionSettings CollisionDetectionSettings;
     }
 
 }

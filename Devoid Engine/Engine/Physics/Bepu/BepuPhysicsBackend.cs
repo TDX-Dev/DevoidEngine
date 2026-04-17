@@ -144,13 +144,21 @@ namespace DevoidEngine.Engine.Physics.Bepu
 
             var pose = new RigidPose(desc.Position, desc.Rotation);
 
+            ContinuousDetection detection = desc.CollisionDetectionSettings switch
+            {
+                PhysicsCollisionDetectionSettings.Passive => ContinuousDetection.Passive,
+                PhysicsCollisionDetectionSettings.Continuous => ContinuousDetection.Continuous(),
+                PhysicsCollisionDetectionSettings.Discrete => ContinuousDetection.Discrete,
+                _ => ContinuousDetection.Passive
+            };
+
             BodyDescription bodyDescription;
 
             if (desc.IsKinematic)
             {
                 bodyDescription = BodyDescription.CreateKinematic(
                     pose,
-                    new CollidableDescription(shapeIndex, 0.01f),
+                    new CollidableDescription(shapeIndex, 0.01f, detection),
                     new BodyActivityDescription(desc.AllowSleep ? 0.01f : -1)
                 );
             }
@@ -159,7 +167,7 @@ namespace DevoidEngine.Engine.Physics.Bepu
                 bodyDescription = BodyDescription.CreateDynamic(
                     pose,
                     inertia,
-                    new CollidableDescription(shapeIndex, 0.01f),
+                    new CollidableDescription(shapeIndex, 0.01f, detection),
                     new BodyActivityDescription(desc.AllowSleep ? 0.01f : -1)
                 );
             }

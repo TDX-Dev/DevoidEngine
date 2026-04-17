@@ -34,6 +34,9 @@ namespace ElementalEditor.Panels
                 return;
             }
 
+            if (activeTab == null && InspectorTabRegistry.Tabs.Count > 0)
+                activeTab = InspectorTabRegistry.Tabs[0];
+
             if (obj == null)
             {
                 ImGui.Text("Nothing selected.");
@@ -77,11 +80,22 @@ namespace ElementalEditor.Panels
 
             ImGui.BeginChild(
                 "InspectorHeader",
-                new Vector2(0, 45),
-                ImGuiChildFlags.AlwaysUseWindowPadding
+                new Vector2(0, 0),
+                ImGuiChildFlags.AlwaysUseWindowPadding | ImGuiChildFlags.AutoResizeY
             );
 
-            ImGui.Text(obj.Name);
+            string name = obj.Name;
+
+            ImGui.PushItemWidth(ImGui.GetContentRegionAvail().X);
+
+            if (ImGui.InputText("##GameObjectName", ref name, 256))
+            {
+                obj.Name = name;
+                context.SceneDirty = true;
+            }
+
+            ImGui.PopItemWidth();
+
             ImGui.Separator();
 
             ImGui.EndChild();

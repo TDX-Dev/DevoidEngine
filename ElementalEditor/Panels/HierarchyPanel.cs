@@ -1,4 +1,5 @@
 ﻿using DevoidEngine.Engine.Core;
+using DevoidEngine.Engine.Serialization;
 using ImGuiNET;
 using System.Numerics;
 using System.Runtime.InteropServices;
@@ -8,6 +9,7 @@ namespace ElementalEditor.Panels
     public class HierarchyPanel : IEditorPanel
     {
         private List<GameObject> deleteQueue = new();
+        private List<GameObject> duplicateQueue = new();
         private GameObject draggedObject;
         private GCHandle? dragHandle;
 
@@ -77,6 +79,16 @@ namespace ElementalEditor.Panels
                 if (context.SelectedObject == obj)
                     context.SelectedObject = null;
             }
+
+            foreach (var obj in duplicateQueue)
+            {
+                var clone = DuplicateRecursive(context.Scene, obj);
+                clone.SetParent(obj.parentObject);
+            }
+            GameObjectSerializer.ResolveComponentReferences(context.Scene);
+            GameObjectSerializer.ResolveGameObjectReferences(context.Scene);
+
+            duplicateQueue.Clear();
 
             deleteQueue.Clear();
 
@@ -190,6 +202,11 @@ namespace ElementalEditor.Panels
                     child.SetParent(obj);
                 }
 
+                if (ImGui.MenuItem("Duplicate"))
+                {
+                    duplicateQueue.Add(obj);
+                }
+
                 if (ImGui.MenuItem("Delete"))
                 {
                     deleteQueue.Add(obj);
@@ -210,6 +227,40 @@ namespace ElementalEditor.Panels
 
                 ImGui.EndPopup();
             }
+        }
+
+        public static GameObject DuplicateGameObject(Scene scene, GameObject original)
+        {
+            // 1. Serialize original
+            var data = GameObjectSerializer.Serialize(original);
+
+            // 2. Generate new ID
+            data.Id = Guid.NewGuid();
+
+            // 3. Remove parent reference (we will assign manually)
+            data.Parent = Guid.Empty;
+
+            // 4. Deserialize new instance
+            Dictionary<Guid, GameObject> map = new();
+            var clone = GameObjectSerializer.Deserialize(data, scene, map);
+
+            // 5. Add to scene
+            scene.AddGameObject(clone);
+
+            return clone;
+        }
+
+        public static GameObject DuplicateRecursive(Scene scene, GameObject original)
+        {
+            var clone = DuplicateGameObject(scene, original);
+
+            foreach (var child in original.children)
+            {
+                var childClone = DuplicateRecursive(scene, child);
+                childClone.SetParent(clone, false);
+            }
+
+            return clone;
         }
 
         bool IsDescendant(GameObject parent, GameObject candidate)
