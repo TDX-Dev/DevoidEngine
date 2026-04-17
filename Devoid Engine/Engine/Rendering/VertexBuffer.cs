@@ -41,6 +41,11 @@ namespace DevoidEngine.Engine.Rendering
             Dispose();
         }
 
+        public VertexBufferHandle GetHandle()
+        {
+            return _vertexBuffer;
+        }
+
         public void Dispose()
         {
             if (isDisposed) return;

@@ -87,6 +87,36 @@ namespace DevoidEngine.Engine.Rendering.GPUResource
         }
     }
 
+    public class BindVertexBuffersCommand : RenderCommand
+    {
+        public VertexBufferManager Manager = null!;
+        public VertexBufferHandle[] Handles = [];
+        public int Slot;
+        public int Offset;
+
+        public override void Execute()
+        {
+            IVertexBuffer[] buffers = new IVertexBuffer[Handles.Length];
+
+            for (int i = 0; i < Handles.Length; i++)
+            {
+                if (!Manager._vertexBuffers.TryGetValue(Handles[i].Id, out var vb))
+                    return;
+
+                buffers[i] = vb;
+            }
+
+            Renderer.GraphicsDevice.BindVertexBuffers(buffers);
+        }
+
+        internal override void Reset()
+        {
+            Handles = [];
+            Slot = 0;
+            Offset = 0;
+        }
+    }
+
     public class DeleteVertexBufferCommand : RenderCommand
     {
         public VertexBufferManager Manager = null!;

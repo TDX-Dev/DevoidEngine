@@ -81,6 +81,7 @@ namespace DevoidEngine.Engine.Rendering
             BuildVisibleList(ctx);
 
             Renderer.ExecuteDrawList(visibleItems, renderStateOverride);
+            Renderer.ParticleRenderer.Render();
 
             return finalOutputBuffer;
         }

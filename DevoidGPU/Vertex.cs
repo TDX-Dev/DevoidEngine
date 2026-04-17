@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System.Collections.ObjectModel;
+using System.Numerics;
 
 namespace DevoidGPU
 {
@@ -66,7 +67,9 @@ namespace DevoidGPU
         public readonly int Index;
         public readonly int ComponentCount;
         public readonly int Offset;
+        public readonly int Slot;
         public readonly VertexAttribType Type;
+        public readonly VertexStepMode StepMode;
         public readonly bool Normalized;
 
         public VertexAttribute(
@@ -74,7 +77,9 @@ namespace DevoidGPU
             int index,
             int componentCount,
             int offset,
+            int slot = 0,
             VertexAttribType type = VertexAttribType.Float,
+            VertexStepMode mode = VertexStepMode.Vertex,
             bool normalized = false)
         {
             Name = name;
@@ -82,6 +87,8 @@ namespace DevoidGPU
             ComponentCount = componentCount;
             Offset = offset;
             Type = type;
+            StepMode = mode;
+            Slot = slot;
             Normalized = normalized;
         }
     }

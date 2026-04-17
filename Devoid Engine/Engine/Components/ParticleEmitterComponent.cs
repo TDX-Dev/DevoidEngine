@@ -1,4 +1,7 @@
-﻿using DevoidEngine.Engine.ParticleSystem;
+﻿using DevoidEngine.Engine.Attributes;
+using DevoidEngine.Engine.Core;
+using DevoidEngine.Engine.ParticleSystem;
+using DevoidEngine.Engine.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +14,14 @@ namespace DevoidEngine.Engine.Components
     public class ParticleEmitterComponent : Component
     {
         public override string Type => nameof(ParticleEmitterComponent);
+
+        public Texture2D? Texture
+        {
+            get => texture;
+            set => texture = value;
+        }
+
+        internal Texture2D? texture;
 
         public int MaxParticles = 200;
         public float SpawnRate = 50f;
@@ -26,17 +37,22 @@ namespace DevoidEngine.Engine.Components
         public float SizeMin = 0.02f;
         public float SizeMax = 0.08f;
 
+        [ColorField]
         public Vector4 StartColor = new(1f, 0.8f, 0.3f, 1f);
+        [ColorField]
         public Vector4 EndColor = new(1f, 0.2f, 0.1f, 0f);
 
         public bool Burst = false;
         public int BurstCount = 20;
 
+        [DontSerialize]
         internal ParticlePool Pool = null!;
+        [DontSerialize]
         internal float SpawnAccumulator;
 
         public override void OnStart()
         {
+            Console.WriteLine("Particle Emitter Registered");
             Pool = new ParticlePool(MaxParticles);
             gameObject.Scene.ParticleSystem.Register(this);
         }

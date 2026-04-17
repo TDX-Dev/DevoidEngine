@@ -7,6 +7,7 @@ namespace DevoidEngine.Engine.ParticleSystem
 {
     public class ParticleSystemManager
     {
+        public IReadOnlyList<ParticleEmitterComponent> Emitters => emitters;
         private readonly List<ParticleEmitterComponent> emitters = new();
         private readonly Random random = new();
 

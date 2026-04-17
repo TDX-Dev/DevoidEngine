@@ -33,9 +33,9 @@ namespace DevoidEngine.Engine.Imgui
 
         public static readonly VertexInfo VertexInfo = new VertexInfo(
             typeof(ImGuiVertex),
-            new VertexAttribute("POSITION", 0, 2, 0, VertexAttribType.Float),
-            new VertexAttribute("TEXCOORD", 0, 2, 2 * sizeof(float), VertexAttribType.Float),
-            new VertexAttribute("COLOR", 0, 4, 4 * sizeof(float), VertexAttribType.UnsignedByte, normalized: true)
+            new VertexAttribute("POSITION", 0, 2, 0, 0, VertexAttribType.Float),
+            new VertexAttribute("TEXCOORD", 0, 2, 2 * sizeof(float), 0, VertexAttribType.Float),
+            new VertexAttribute("COLOR", 0, 4, 4 * sizeof(float), 0, VertexAttribType.UnsignedByte, VertexStepMode.Vertex, normalized: true)
         );
     }
 

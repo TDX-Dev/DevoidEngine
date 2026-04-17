@@ -90,6 +90,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Engine\Content\Shaders\Particle\" />
     <Folder Include="Engine\Imgui\ImGuizmoBindings\" />
   </ItemGroup>
 

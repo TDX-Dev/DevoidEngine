@@ -19,6 +19,7 @@ namespace DevoidEngine.Engine.Rendering
         public static IGraphicsDevice GraphicsDevice { get; internal set; } = null!;
         public static IRenderTechnique? ActiveRenderTechnique;
         public static SkyboxRenderer SkyboxRenderer = null!;
+        public static ParticleRenderer ParticleRenderer = null!;
         public static ShadowSystem ShadowSystem = null!;
         public static PostProcessor PostProcessor = null!;
 
@@ -86,6 +87,8 @@ namespace DevoidEngine.Engine.Rendering
             return inputLayoutCache.Get(GraphicsDevice, mesh.VertexBuffer.GetVertexInfo(), shader.vShader);
         }
 
+        public static IInputLayout GetInputLayout(VertexInfo vertexInfo, Shader shader) => inputLayoutCache.Get(GraphicsDevice, vertexInfo, shader.vShader);
+
         public static void SetupCamera(CameraData cameraData)
         {
             // Per camera data goes here
@@ -151,6 +154,7 @@ namespace DevoidEngine.Engine.Rendering
             ActiveRenderTechnique?.Initialize(width, height);
 
             SkyboxRenderer = new SkyboxRenderer();
+            ParticleRenderer = new ParticleRenderer();
 
             ShadowSystem = new ShadowSystem();
             ShadowSystem.Initialize();

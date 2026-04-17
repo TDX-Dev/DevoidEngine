@@ -54,7 +54,7 @@ namespace DevoidEngine.Engine.Core
         private float targetFramerate = 60f;
         private float targetDeltaTime = 1 / 60f;
         private float deltaTimeAccumulator = 0f;
-        private float timeScale = 4f;
+        private float timeScale = 1f;
         private uint numFrames = 0;
 
         private List<CameraRenderContext> renderContexts = new List<CameraRenderContext>();
@@ -202,7 +202,6 @@ namespace DevoidEngine.Engine.Core
                 EngineSingleton.Instance.AudioSystem.Update();
 
 
-
                 deltaTimeAccumulator += deltaTime;
                 while (deltaTimeAccumulator >= targetDeltaTime)
                 {
@@ -248,6 +247,7 @@ namespace DevoidEngine.Engine.Core
         {
             UpdateCursor();
 
+            EngineSingleton.Instance.ParticleSystem.Update(deltaTime);
             layerHandler.UpdateLayers(deltaTime);
 
             UISystem.Update(deltaTime);

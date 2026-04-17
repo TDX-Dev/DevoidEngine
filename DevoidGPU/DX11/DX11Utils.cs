@@ -7,22 +7,32 @@ namespace DevoidGPU.DX11
     {
         public static InputElement[] CreateInputElements(VertexInfo vertexInfo)
         {
-            InputElement[] InputLayoutElements = new InputElement[vertexInfo.VertexAttributes.Length];
-            for (int i = 0; i < InputLayoutElements.Length; i++)
-            {
-                VertexAttribute attribute = vertexInfo.VertexAttributes[i];
-                InputLayoutElements[i] = new InputElement()
-                {
-                    SemanticName = attribute.Name,
-                    SemanticIndex = attribute.Index,
-                    Format = MapDXGIComponentCountToFormat(attribute),
-                    AlignedByteOffset = attribute.Offset,
-                    Slot = 0
-                };
+            InputElement[] elements = new InputElement[vertexInfo.VertexAttributes.Length];
 
+            for (int i = 0; i < elements.Length; i++)
+            {
+                VertexAttribute attr = vertexInfo.VertexAttributes[i];
+
+                bool isInstance = attr.StepMode == VertexStepMode.Instance;
+
+                if (isInstance)
+                {
+                    Console.WriteLine("Bound " + attr.Name + " to slot " + attr.Slot);
+                }
+                elements[i] = new InputElement(
+                    attr.Name,
+                    attr.Index,
+                    MapDXGIComponentCountToFormat(attr),
+                    attr.Offset,
+                    attr.Slot,
+                    isInstance
+                        ? InputClassification.PerInstanceData
+                        : InputClassification.PerVertexData,
+                    isInstance ? 1 : 0
+                );
             }
 
-            return InputLayoutElements;
+            return elements;
         }
 
         public static Format MapDXGIComponentCountToFormat(VertexAttribute attr)

@@ -71,7 +71,19 @@ namespace DevoidGPU.DX11
                 _nullUAVCounts[i] = -1;
 
         }
-
+        public void DrawInstanced(
+            int vertexCountPerInstance,
+            int instanceCount,
+            int startVertex = 0,
+            int startInstance = 0)
+        {
+            deviceContext.DrawInstanced(
+                vertexCountPerInstance,
+                instanceCount,
+                startVertex,
+                startInstance
+            );
+        }
         public void DrawIndexed(int indexCount, int startIndexLocation, int baseVertexLocation)
         {
             deviceContext.DrawIndexed(indexCount, startIndexLocation, baseVertexLocation);
@@ -315,6 +327,24 @@ namespace DevoidGPU.DX11
             deviceContext.OutputMerger.SetRenderTargets(null, (RenderTargetView[])null);
             _boundDSV = null;
             Array.Clear(_boundRTVs);
+        }
+
+        public void BindVertexBuffers(params IVertexBuffer[] vertexBuffers)
+        {
+            VertexBufferBinding[] bindings = new VertexBufferBinding[vertexBuffers.Length];
+
+            for (int i = 0; i < bindings.Length; i++)
+            {
+                var vb = vertexBuffers[i] as DX11VertexBuffer;
+
+                bindings[i] = new VertexBufferBinding(
+                    vb.buffer,
+                    vb.Stride,
+                    0
+                );
+            }
+
+            deviceContext.InputAssembler.SetVertexBuffers(0, bindings);
         }
 
         public Matrix4x4 AdjustProjectionMatrix(Matrix4x4 projection)

@@ -29,6 +29,7 @@ namespace DevoidGPU
 
         // Camera's vertical and horizontal axis might be different per gapi.
         Matrix4x4 AdjustProjectionMatrix(Matrix4x4 projection);
+        public void DrawInstanced(int vertexCountPerInstance, int instanceCount, int startVertex = 0, int startInstance = 0);
         void DrawIndexed(int indexCount, int startIndexLocation, int baseVertexLocation);
         void Draw(int vertexCount, int startVertex);
 
@@ -36,6 +37,8 @@ namespace DevoidGPU
         public void BindTextureMutable(ITexture texture, int slot);
         public void BindFramebuffer(IFramebuffer fb);
         public void UnbindFramebuffer();
+
+        public void BindVertexBuffers(params IVertexBuffer[] vertexBuffers);
 
         // Optionally move this to its own factory when similar items are added.
         IInputLayout CreateInputLayout(VertexInfo vertexInfo, IShader vertexShader);

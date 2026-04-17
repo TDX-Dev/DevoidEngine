@@ -12,6 +12,7 @@ namespace DevoidEngine.Engine.Rendering.GPUResource
         private RenderCommandPool<CreateVertexBufferCommand> _createPool;
         private Dictionary<Type, object> _setDataPools = new();
         private RenderCommandPool<BindVertexBufferCommand> _bindPool;
+        private RenderCommandPool<BindVertexBuffersCommand> _bindMultiplePool;
         private RenderCommandPool<DeleteVertexBufferCommand> _deletePool;
 
         public VertexBufferManager()
@@ -19,6 +20,7 @@ namespace DevoidEngine.Engine.Rendering.GPUResource
             _createPool = new();
             _setDataPools = new();
             _bindPool = new();
+            _bindMultiplePool = new();
             _deletePool = new();
         }
 
@@ -83,6 +85,16 @@ namespace DevoidEngine.Engine.Rendering.GPUResource
             cmd.Handle = handle;
             cmd.Slot = slot;
             cmd.Offset = offset;
+
+            RenderThread.Enqueue(cmd);
+        }
+
+        public void BindVertexBuffers(params VertexBufferHandle[] handles)
+        {
+            var cmd = _bindMultiplePool.Get();
+
+            cmd.Manager = this;
+            cmd.Handles = handles;
 
             RenderThread.Enqueue(cmd);
         }
