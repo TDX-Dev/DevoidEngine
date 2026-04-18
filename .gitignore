@@ -3,11 +3,9 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
-# Embera Engine Project
-
-EmberaProject/
 LauncherContents/
-Audio/
+HDRIs/
+Project/
 
 # User-specific files
 *.rsuser

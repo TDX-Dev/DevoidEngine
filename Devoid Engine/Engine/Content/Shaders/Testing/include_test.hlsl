@@ -1,1 +1,0 @@
-Texture2D MAT_TEST : register(t4);
