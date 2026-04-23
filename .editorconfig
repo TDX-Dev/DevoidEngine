@@ -3,8 +3,10 @@ root = true
 
 # C# files
 [*.cs]
+dotnet_diagnostic.IDE0290.severity = none
+dotnet_diagnostic.CA1859.severity = none
 
-#### Core EditorConfig Options ####
+#### Core EditorCoDescriptionnfig Options ####
 
 # Indentation and spacing
 indent_size = 4
