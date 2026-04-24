@@ -8,13 +8,16 @@ namespace DevoidGPU.DX11
 {
     class DX11Swapchain : ISwapchain
     {
-        public int Width { get; private set; }
-        public int Height { get; private set; }
+        public int Width { get; }
+        public int Height { get; }
         public bool VSync { get; private set; }
 
         private readonly Device device;
         private readonly SwapChain swapchain;
         private readonly DX11Texture[] backbuffers;
+        private readonly int bufferCount;
+        private readonly Format format;
+        private readonly SwapChainDescription swapchainDescription;
 
         public DX11Swapchain(Factory factory, Device dx11Device, SwapchainDescription desc)
         {
@@ -22,17 +25,23 @@ namespace DevoidGPU.DX11
                 throw new ArgumentException("[DX11]: Window Handle provided was null.");
 
             device = dx11Device;
+            bufferCount = desc.BufferCount;
+            format = DX11StateMapper.ToDXGITextureFormat(desc.Format);
 
-            var DX11SwapChainDescription = new SwapChainDescription()
+            Width = desc.Width;
+            Height = desc.Height;
+            VSync = desc.VSync;
+
+            swapchainDescription = new SwapChainDescription()
             {
-                BufferCount = desc.BufferCount,
+                BufferCount = bufferCount,
                 ModeDescription = new ModeDescription()
                 {
                     Width = desc.Width,
                     Height = desc.Height,
                     RefreshRate = new Rational((int)desc.RefreshRate.X, (int)desc.RefreshRate.Y),
 
-                    Format = DX11StateMapper.ToDXGITextureFormat(desc.Format)
+                    Format = format
                 },
                 IsWindowed = desc.Windowed,
                 Usage = Usage.RenderTargetOutput,
@@ -43,14 +52,20 @@ namespace DevoidGPU.DX11
                 OutputHandle = desc.WindowHandle
             };
 
-            var swapChain = new SwapChain(factory, device, DX11SwapChainDescription);
+            var swapChain = new SwapChain(factory, device, swapchainDescription);
 
             swapchain = swapChain;
 
             int count = swapchain.Description.BufferCount;
             backbuffers = new DX11Texture[count];
 
-            var tex = swapchain.GetBackBuffer<Texture2D>(0);
+            CreateBackbuffer();
+
+        }
+
+        private void CreateBackbuffer()
+        {
+            using var tex = swapchain.GetBackBuffer<Texture2D>(0);
             backbuffers[0] = new DX11Texture(device, tex);
         }
 
@@ -67,6 +82,22 @@ namespace DevoidGPU.DX11
         public ITexture GetCurrentBackBuffer()
         {
             return backbuffers[0];
+        }
+
+        public void Resize(int width, int height)
+        {
+            for (int i = 0; i < backbuffers.Length; i++)
+                backbuffers[i]?.Dispose();
+
+            swapchain.ResizeBuffers(
+                bufferCount,
+                width,
+                height,
+                format,
+                SwapChainFlags.None
+            );
+
+            CreateBackbuffer();
         }
 
         public void Dispose()

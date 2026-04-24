@@ -1,5 +1,6 @@
 ﻿using DevoidGPU;
 using OpenTK.Windowing.Common;
+using SharpDX.DXGI;
 
 namespace DevoidEngine.Core
 {
@@ -29,11 +30,13 @@ namespace DevoidEngine.Core
             if (width <= 0 || height <= 0)
                 return;
 
-            throw new NotImplementedException("[Engine]: Swapchain resizing not implemented.");
+            Swapchain.Resize(width, height);
         }
 
         public void Present()
         {
+            if (Window.ClientSize.X == 0 || Window.ClientSize.Y == 0)
+                return;
             Swapchain.Present();
         }
 
@@ -45,6 +48,7 @@ namespace DevoidEngine.Core
             Window.OnWindowResize -= Window_Resize;
 
             Swapchain.Dispose();
+            Window.Dispose();
 
             isDisposed = true;
         }

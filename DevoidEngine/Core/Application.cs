@@ -65,12 +65,44 @@ namespace DevoidEngine.Core
                     Width = 640,
                     RefreshRate = new System.Numerics.Vector2(165, 0),
                     Samples = new DevoidGPU.TextureSampleDescription(1, 0),
-                    VSync = false,
+                    VSync = true,
                     Windowed = true,
                 }
             );
 
             surfaces.Add(surface);
+
+            for (int i = 0; i < 2; i++)
+            {
+
+                var window1 = new Window(new WindowSpecification
+                {
+                    Title = specification.Name,
+                    Width = specification.Width,
+                    Height = specification.Height,
+                    Resizable = true,
+                    StartVisible = false,
+                    StartFocused = true
+                });
+
+                var surface1 = new WindowSurface(
+                    window1,
+                    Engine.GraphicsDevice,
+                    new SwapchainDescription()
+                    {
+                        BufferCount = 2,
+                        Format = DevoidGPU.TextureFormat.RGBA8_UNorm,
+                        Height = 480,
+                        Width = 640,
+                        RefreshRate = new System.Numerics.Vector2(165, 0),
+                        Samples = new DevoidGPU.TextureSampleDescription(1, 0),
+                        VSync = true,
+                        Windowed = true,
+                    }
+                );
+
+                surfaces.Add(surface1);
+            }
         }
 
         public void Run()
@@ -80,6 +112,10 @@ namespace DevoidEngine.Core
 
             while (isRunning)
             {
+                Engine.Profiler.BeginFrame();
+
+                Engine.Profiler.CPU.BeginScope("APPLICATION_LOOP");
+
                 float timescale = Engine.Instance.TimeScale;
                 float targetDeltaTime = 1 / Engine.Instance.TargetFramerate;
                 float deltaTime = (float)frameTimer.GetElapsedSeconds();
@@ -106,20 +142,29 @@ namespace DevoidEngine.Core
                     surface.Present();
                 }
 
-
-                foreach (var surface in surfaces)
+                for (int i = surfaces.Count - 1; i >= 0; i--)
                 {
+                    var surface = surfaces[i];
+
                     if (surface.Window.IsExiting)
                     {
                         surface.Window.Close();
-                        isRunning = false;
+                        surface.Dispose();
+                        surfaces.RemoveAt(i);
                     }
-
-                    if (!surface.Window.IsVisible)
+                    else if (!surface.Window.IsVisible)
                         surface.Window.IsVisible = true;
                 }
 
+                if (surfaces.Count == 0)
+                {
+                    isRunning = false;
+                }
+
                 numFrames++;
+
+
+                Engine.Profiler.CPU.EndScope();
             }
         }
 

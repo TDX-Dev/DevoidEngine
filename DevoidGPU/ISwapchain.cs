@@ -14,6 +14,7 @@ namespace DevoidGPU
         ITexture GetCurrentBackBuffer();
 
         void Present();
+        void Resize(int width, int height);
         void Dispose();
     }
 }

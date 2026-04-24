@@ -7,6 +7,13 @@
     <Nullable>enable</Nullable>
     <PublishAot>true</PublishAot>
     <InvariantGlobalization>true</InvariantGlobalization>
+	  
+	  
+	<!--Optimizations-->
+	  <IlcOptimizationPreference>Size</IlcOptimizationPreference>
+	  <TrimMode>full</TrimMode>
+	  <PublishTrimmed>true</PublishTrimmed>
+    <!--End of Optimizations-->
   </PropertyGroup>
 
   <ItemGroup>
