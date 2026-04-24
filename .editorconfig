@@ -5,6 +5,7 @@ root = true
 [*.cs]
 dotnet_diagnostic.IDE0290.severity = none
 dotnet_diagnostic.CA1859.severity = none
+dotnet_diagnostic.CA1822.severity = none
 
 #### Core EditorCoDescriptionnfig Options ####
 

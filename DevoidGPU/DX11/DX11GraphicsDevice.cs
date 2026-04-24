@@ -39,7 +39,7 @@ namespace DevoidGPU.DX11
         public ISwapchain CreateSwapchain(SwapchainDescription desc)
         {
 
-            return new DX11Swapchain(factory, device, desc);
+            return new DX11SwapChain(factory, device, desc);
         }
     }
 }

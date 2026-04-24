@@ -6,7 +6,7 @@ using SwapChain = SharpDX.DXGI.SwapChain;
 
 namespace DevoidGPU.DX11
 {
-    class DX11Swapchain : ISwapchain
+    class DX11SwapChain : ISwapchain
     {
         public int Width { get; }
         public int Height { get; }
@@ -19,7 +19,7 @@ namespace DevoidGPU.DX11
         private readonly Format format;
         private readonly SwapChainDescription swapchainDescription;
 
-        public DX11Swapchain(Factory factory, Device dx11Device, SwapchainDescription desc)
+        public DX11SwapChain(Factory factory, Device dx11Device, SwapchainDescription desc)
         {
             if (desc.WindowHandle == IntPtr.Zero)
                 throw new ArgumentException("[DX11]: Window Handle provided was null.");

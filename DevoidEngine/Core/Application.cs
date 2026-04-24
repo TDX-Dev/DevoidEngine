@@ -7,6 +7,7 @@ using DevoidGPU;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using System.Diagnostics;
 using System.Numerics;
+using System.Reflection.PortableExecutable;
 
 namespace DevoidEngine.Core
 {
@@ -129,7 +130,7 @@ namespace DevoidEngine.Core
                 deltaTimeAccumulator += deltaTime;
                 while (deltaTimeAccumulator >= targetDeltaTime)
                 {
-                    //FixedUpdate(targetDeltaTime * timescale);
+                    FixedUpdate(targetDeltaTime * timescale);
                     deltaTimeAccumulator -= targetDeltaTime;
                 }
 
@@ -168,5 +169,19 @@ namespace DevoidEngine.Core
             }
         }
 
+        void FixedUpdate(float deltaTime)
+        {
+            
+        }
+
+        void Update(float deltaTime)
+        {
+
+        }
+
+        void Render()
+        {
+
+        }
     }
 }
