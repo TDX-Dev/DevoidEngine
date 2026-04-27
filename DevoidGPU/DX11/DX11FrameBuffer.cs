@@ -35,7 +35,7 @@ namespace DevoidGPU.DX11
 
             ValidateFrameBuffer();
 
-            RTVs = [];
+            RTVs = new RenderTargetView[colorAttachments.Length];
             for (int i = 0; i < colorAttachments.Length; i++)
             {
                 RTVs[i] = colorAttachments[i].RTV!;

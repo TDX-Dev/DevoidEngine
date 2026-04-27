@@ -38,8 +38,17 @@ namespace DevoidGPU.DX11
 
         public ISwapchain CreateSwapchain(SwapchainDescription desc)
         {
-
             return new DX11SwapChain(factory, device, desc);
+        }
+
+        public IShader CreateShader(ShaderDescription desc)
+        {
+            return new DX11Shader(device, desc);
+        }
+
+        public IPipeline CreateGraphicsPipeline(GraphicsPipelineDescription desc)
+        {
+
         }
     }
 }

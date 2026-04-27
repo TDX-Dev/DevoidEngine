@@ -9,6 +9,7 @@ namespace DevoidEngine.Core
         public Window Window { get; } = null!;
         public ISwapchain Swapchain { get; } = null!;
 
+        private bool resizePending;
         private bool isDisposed;
 
         public WindowSurface(
@@ -29,14 +30,22 @@ namespace DevoidEngine.Core
         {
             if (width <= 0 || height <= 0)
                 return;
+            resizePending = true;
+        }
 
-            Swapchain.Resize(width, height);
+        private void ResizeSwapchain()
+        {
+            if (!resizePending)
+                return;
+            Swapchain.Resize(Window.ClientSize.X, Window.ClientSize.Y);
+            resizePending = false;
         }
 
         public void Present()
         {
             if (Window.ClientSize.X == 0 || Window.ClientSize.Y == 0)
                 return;
+            ResizeSwapchain();
             Swapchain.Present();
         }
 

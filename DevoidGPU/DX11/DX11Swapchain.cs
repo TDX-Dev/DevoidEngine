@@ -79,11 +79,6 @@ namespace DevoidGPU.DX11
             }
         }
 
-        public ITexture GetCurrentBackBuffer()
-        {
-            return backbuffers[0];
-        }
-
         public void Resize(int width, int height)
         {
             for (int i = 0; i < backbuffers.Length; i++)

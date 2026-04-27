@@ -73,7 +73,7 @@ namespace DevoidEngine.Core
 
             surfaces.Add(surface);
 
-            for (int i = 0; i < 2; i++)
+            for (int i = 0; i < 1; i++)
             {
 
                 var window1 = new Window(new WindowSpecification
@@ -83,7 +83,8 @@ namespace DevoidEngine.Core
                     Height = specification.Height,
                     Resizable = true,
                     StartVisible = false,
-                    StartFocused = true
+                    StartFocused = true,
+                    Transparency = true,
                 });
 
                 var surface1 = new WindowSurface(
@@ -92,11 +93,11 @@ namespace DevoidEngine.Core
                     new SwapchainDescription()
                     {
                         BufferCount = 2,
-                        Format = DevoidGPU.TextureFormat.RGBA8_UNorm,
+                        Format = TextureFormat.RGBA8_UNorm,
                         Height = 480,
                         Width = 640,
-                        RefreshRate = new System.Numerics.Vector2(165, 0),
-                        Samples = new DevoidGPU.TextureSampleDescription(1, 0),
+                        RefreshRate = new Vector2(165, 0),
+                        Samples = new TextureSampleDescription(1, 0),
                         VSync = true,
                         Windowed = true,
                     }

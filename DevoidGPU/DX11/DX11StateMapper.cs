@@ -1,11 +1,7 @@
-﻿using SharpDX.Direct3D;
+﻿using SharpDX.D3DCompiler;
+using SharpDX.Direct3D;
 using SharpDX.Direct3D11;
 using SharpDX.DXGI;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DevoidGPU.DX11
 {
@@ -36,7 +32,6 @@ namespace DevoidGPU.DX11
                 _ => Format.Unknown
             };
         }
-
         internal static TextureFormat ToTextureFormat(Format format)
         {
             return format switch
@@ -61,7 +56,6 @@ namespace DevoidGPU.DX11
                 _ => throw new ArgumentOutOfRangeException(nameof(format), $"Unsupported format: {format}")
             };
         }
-
         internal static Format ResolveResourceFormat(TextureDescription desc)
         {
             var dx11Format = ToDXGITextureFormat(desc.Format);
@@ -77,7 +71,6 @@ namespace DevoidGPU.DX11
 
             return dx11Format;
         }
-
         internal static BindFlags ConvertBindFlags(TextureUsage usage)
         {
             BindFlags flags = 0;
@@ -96,7 +89,6 @@ namespace DevoidGPU.DX11
 
             return flags;
         }
-
         internal static ResourceOptionFlags ResolveTextureOptionFlags(TextureDescription description)
         {
             if (description.Dimension == TextureDimension.TextureCube)
@@ -104,7 +96,6 @@ namespace DevoidGPU.DX11
 
             return ResourceOptionFlags.None;
         }
-
         internal static ShaderResourceViewDimension ResolveSRVDimension(TextureDescription description)
         {
             switch (description.Dimension)
@@ -122,7 +113,6 @@ namespace DevoidGPU.DX11
                     return ShaderResourceViewDimension.Texture2D;
             }
         }
-
         internal static int BytesPerComponent(TextureFormat format)
         {
             return format switch
@@ -145,7 +135,41 @@ namespace DevoidGPU.DX11
                 _ => throw new NotSupportedException($"Unsupported texture format: {format}")
             };
         }
-    
-        
+        internal static ShaderResourceType ConvertResourceType(ShaderInputType type)
+        {
+            return type switch
+            {
+                ShaderInputType.Texture => ShaderResourceType.Texture2D,
+                ShaderInputType.Sampler => ShaderResourceType.Sampler,
+                ShaderInputType.Structured => ShaderResourceType.StructuredBuffer,
+                ShaderInputType.UnorderedAccessViewRWStructured => ShaderResourceType.RWStructuredBuffer,
+                _ => ShaderResourceType.Texture2D
+            };
+        }
+        internal static ShaderVariableType ConvertResourceType(string type)
+        {
+            return type switch
+            {
+                "float" => ShaderVariableType.Float,
+                "int" => ShaderVariableType.Int,
+                "float4" => ShaderVariableType.Vector4,
+                "float3" => ShaderVariableType.Vector3,
+                "float2" => ShaderVariableType.Vector2,
+                "float3x3" => ShaderVariableType.Matrix3x3,
+                "float4x4" => ShaderVariableType.Matrix4x4,
+                _ => ShaderVariableType.Custom
+            };
+        }
+        //internal static SharpDX.D3DCompiler.ShaderStage ToDXShaderStage(ShaderStage func)
+        //{
+        //    return func switch
+        //    {
+        //        ShaderStage.Vertex => ShaderStage.Vertex,
+        //        ShaderStage.Fragment => ShaderStage.Fragment,
+        //        ShaderStage.Geometry => ShaderStage.Geometry,
+        //        ShaderStage.Compute => ShaderStage.Compute,
+        //        _ => throw new NotImplementedException()
+        //    };
+        //}
     }
 }

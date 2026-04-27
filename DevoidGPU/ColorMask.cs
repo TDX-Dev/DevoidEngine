@@ -1,0 +1,19 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DevoidGPU
+{
+    [Flags]
+    public enum ColorMask
+    {
+        None = 0,
+        R = 1,
+        G = 2,
+        B = 4,
+        A = 8,
+        All = R | G | B | A
+    }
+}

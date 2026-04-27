@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Numerics;
 
 namespace DevoidGPU
 {
@@ -11,7 +7,15 @@ namespace DevoidGPU
         void Begin();
         void End();
 
+        void SetViewport(int x, int y, int width, int height);
+        void SetScissor(int x, int y, int width,int height);
+
         void SetFramebuffer(IFrameBuffer framebuffer);
 
+        void ClearColor(int attachmentIndex, Vector4 color);
+        void ClearDepthStencil(float depth, byte stencil);
+
+        void SetPipeline(IPipeline pipeline);
+        void DrawIndexed(int indexCount, int startIndexLocation, int baseVertexLocation);
     }
 }
