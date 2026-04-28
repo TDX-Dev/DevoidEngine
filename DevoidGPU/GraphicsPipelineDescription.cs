@@ -7,7 +7,7 @@ namespace DevoidGPU
         public IShader VertexShader;
         public IShader PixelShader;
 
-        public PrimitiveTopology Topology;
+        public PrimitiveType Topology;
 
         public RasterizerState Rasterizer;
         public DepthStencilState DepthStencil;

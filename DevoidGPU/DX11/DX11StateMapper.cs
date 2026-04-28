@@ -160,16 +160,81 @@ namespace DevoidGPU.DX11
                 _ => ShaderVariableType.Custom
             };
         }
-        //internal static SharpDX.D3DCompiler.ShaderStage ToDXShaderStage(ShaderStage func)
-        //{
-        //    return func switch
-        //    {
-        //        ShaderStage.Vertex => ShaderStage.Vertex,
-        //        ShaderStage.Fragment => ShaderStage.Fragment,
-        //        ShaderStage.Geometry => ShaderStage.Geometry,
-        //        ShaderStage.Compute => ShaderStage.Compute,
-        //        _ => throw new NotImplementedException()
-        //    };
-        //}
+        public static PrimitiveTopology ToDXPrimitiveType(PrimitiveType type) =>
+            type switch
+            {
+                PrimitiveType.TriangleStrip => PrimitiveTopology.TriangleStrip,
+                PrimitiveType.LineStrip => PrimitiveTopology.LineStrip,
+                PrimitiveType.Lines => PrimitiveTopology.LineList,
+                PrimitiveType.Triangles => PrimitiveTopology.TriangleList,
+                _ => PrimitiveTopology.Undefined
+            };
+        public static BlendOption ToDXBlend(BlendFactor factor)
+        {
+            return factor switch
+            {
+                BlendFactor.Zero => BlendOption.Zero,
+                BlendFactor.One => BlendOption.One,
+                BlendFactor.SrcAlpha => BlendOption.SourceAlpha,
+                BlendFactor.InvSrcAlpha => BlendOption.InverseSourceAlpha,
+                BlendFactor.SrcColor => BlendOption.SourceColor,
+                _ => BlendOption.One
+            };
+        }
+        public static BlendOperation ToDXBlendOp(BlendOp op)
+        {
+            return op switch
+            {
+                BlendOp.Add => BlendOperation.Add,
+                _ => BlendOperation.Add
+            };
+        }
+        public static ColorWriteMaskFlags ToDXColorMask(ColorMask mask)
+        {
+            ColorWriteMaskFlags flags = 0;
+
+            if ((mask & ColorMask.R) != 0) flags |= ColorWriteMaskFlags.Red;
+            if ((mask & ColorMask.G) != 0) flags |= ColorWriteMaskFlags.Green;
+            if ((mask & ColorMask.B) != 0) flags |= ColorWriteMaskFlags.Blue;
+            if ((mask & ColorMask.A) != 0) flags |= ColorWriteMaskFlags.Alpha;
+
+            return flags;
+        }
+        public static SharpDX.Direct3D11.FillMode ToDXFillMode(FillMode mode)
+        {
+            return mode switch
+            {
+                FillMode.Solid => SharpDX.Direct3D11.FillMode.Solid,
+                FillMode.Wireframe => SharpDX.Direct3D11.FillMode.Wireframe,
+                _ => SharpDX.Direct3D11.FillMode.Solid
+            };
+        }
+
+        public static SharpDX.Direct3D11.CullMode ToDXCullMode(CullMode mode)
+        {
+            return mode switch
+            {
+                CullMode.None => SharpDX.Direct3D11.CullMode.None,
+                CullMode.Front => SharpDX.Direct3D11.CullMode.Front,
+                CullMode.Back => SharpDX.Direct3D11.CullMode.Back,
+                _ => SharpDX.Direct3D11.CullMode.Back
+            };
+        }
+
+        public static Comparison ToDXDepthComparison(CompareFunc func)
+        {
+            return func switch
+            {
+                CompareFunc.Never => Comparison.Never,
+                CompareFunc.Less => Comparison.Less,
+                CompareFunc.Equal => Comparison.Equal,
+                CompareFunc.LessEqual => Comparison.LessEqual,
+                CompareFunc.Greater => Comparison.Greater,
+                CompareFunc.NotEqual => Comparison.NotEqual,
+                CompareFunc.GreaterEqual => Comparison.GreaterEqual,
+                CompareFunc.Always => Comparison.Always,
+                _ => Comparison.LessEqual
+            };
+        }
     }
 }

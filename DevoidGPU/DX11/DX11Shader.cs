@@ -150,7 +150,7 @@ namespace DevoidGPU.DX11
             //PrintReflectionInfo(reflection);
         }
 
-        private int GetBindSlot(ShaderReflection reflection, string cbName)
+        private static int GetBindSlot(ShaderReflection reflection, string cbName)
         {
             var desc = reflection.Description;
 

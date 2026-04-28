@@ -74,6 +74,7 @@ namespace DevoidGPU.DX11
         }
         public void SetPipeline(IPipeline pipeline)
         {
+            //var dxPipeline = (DX11GraphicsPipeline)pipeline;
 
         }
         public void DrawIndexed(int indexCount, int startIndexLocation, int baseVertexLocation)

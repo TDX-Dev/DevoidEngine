@@ -4,6 +4,9 @@
     {
         public CullMode CullMode;
         public FillMode FillMode;
+
+        public bool EnableScissor;
+
         public bool FrontCounterClockwise;
     }
 }

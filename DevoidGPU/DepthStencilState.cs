@@ -2,7 +2,7 @@
 {
     public struct DepthStencilState
     {
-        public bool DepthTest;
+        public DepthTest DepthTest;
         public bool DepthWrite;
         public CompareFunc DepthFunc;
     }
