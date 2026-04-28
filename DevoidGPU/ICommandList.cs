@@ -8,7 +8,7 @@ namespace DevoidGPU
         void End();
 
         void SetViewport(int x, int y, int width, int height);
-        void SetScissor(int x, int y, int width,int height);
+        void SetScissor(int x, int y, int width, int height);
 
         void SetFramebuffer(IFrameBuffer framebuffer);
 

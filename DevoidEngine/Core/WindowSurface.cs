@@ -1,6 +1,4 @@
 ﻿using DevoidGPU;
-using OpenTK.Windowing.Common;
-using SharpDX.DXGI;
 
 namespace DevoidEngine.Core
 {

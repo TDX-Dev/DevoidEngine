@@ -46,7 +46,7 @@ namespace DevoidGPU.DX11
                 IsWindowed = desc.Windowed,
                 Usage = Usage.RenderTargetOutput,
                 SwapEffect = SwapEffect.FlipDiscard,
-                
+
                 SampleDescription = new SampleDescription(desc.Samples.Count, desc.Samples.Quality),
 
                 OutputHandle = desc.WindowHandle

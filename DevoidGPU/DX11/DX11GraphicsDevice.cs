@@ -1,11 +1,9 @@
 ﻿using SharpDX.Direct3D;
 using SharpDX.DXGI;
-using System.Net.Mail;
 using Device = SharpDX.Direct3D11.Device;
 using DeviceContext = SharpDX.Direct3D11.DeviceContext;
 using DeviceCreationFlags = SharpDX.Direct3D11.DeviceCreationFlags;
 using DriverType = SharpDX.Direct3D.DriverType;
-using SampleDescription = SharpDX.DXGI.SampleDescription;
 
 namespace DevoidGPU.DX11
 {
@@ -28,9 +26,9 @@ namespace DevoidGPU.DX11
             device = new Device(
                 DriverType.Hardware,
                 DeviceCreationFlags.BgraSupport |
-                #if DEBUG
+#if DEBUG
                 DeviceCreationFlags.Debug
-                #endif
+#endif
                 , levels
             );
 

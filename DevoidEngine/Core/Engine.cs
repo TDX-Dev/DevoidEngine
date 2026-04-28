@@ -16,7 +16,7 @@ namespace DevoidEngine.Core
     public sealed class Engine
     {
         private static Engine? instance;
-        public static Engine Instance => instance ?? 
+        public static Engine Instance => instance ??
             throw new InvalidOperationException("Engine not Initialized.");
 
         public static Profiler Profiler => Instance.profiler;
@@ -29,7 +29,7 @@ namespace DevoidEngine.Core
 
         private readonly Profiler profiler;
         private readonly IGraphicsDevice graphicsDevice;
-        
+
 
         private Engine(EngineConfig config)
         {

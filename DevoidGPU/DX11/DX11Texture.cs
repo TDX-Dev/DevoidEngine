@@ -1,6 +1,5 @@
 ﻿using SharpDX.Direct3D;
 using SharpDX.Direct3D11;
-using System.Diagnostics;
 using Device = SharpDX.Direct3D11.Device;
 using Format = SharpDX.DXGI.Format;
 using SampleDescription = SharpDX.DXGI.SampleDescription;
@@ -148,7 +147,8 @@ namespace DevoidGPU.DX11
                     srvFormat = SharpDX.DXGI.Format.R32_Float;
                 else
                     srvFormat = SharpDX.DXGI.Format.R24_UNorm_X8_Typeless;
-            } else
+            }
+            else
             {
                 srvFormat = DX11StateMapper.ToDXGITextureFormat(Description.Format);
             }

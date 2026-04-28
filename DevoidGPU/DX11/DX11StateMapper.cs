@@ -123,7 +123,7 @@ namespace DevoidGPU.DX11
                 TextureFormat.RG16_Float => 2,
                 TextureFormat.RGBA16_Float => 2,
                 TextureFormat.RGBA32_Float => 4,
-                
+
                 TextureFormat.R16_Float => 2,
                 TextureFormat.R32_Float => 4,
 

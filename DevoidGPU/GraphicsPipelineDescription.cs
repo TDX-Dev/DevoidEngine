@@ -1,6 +1,4 @@
-﻿using SharpDX.Direct3D;
-
-namespace DevoidGPU
+﻿namespace DevoidGPU
 {
     public struct GraphicsPipelineDescription
     {

@@ -1,8 +1,8 @@
-﻿using OpenTK.Windowing.Desktop;
-using OpenTK.Windowing.GraphicsLibraryFramework;
-using OpenTK.Windowing.Common;
+﻿using DevoidEngine.Util;
 using OpenTK.Mathematics;
-using DevoidEngine.Util;
+using OpenTK.Windowing.Common;
+using OpenTK.Windowing.Desktop;
+using OpenTK.Windowing.GraphicsLibraryFramework;
 
 namespace DevoidEngine.Core
 {
@@ -26,7 +26,7 @@ namespace DevoidEngine.Core
     {
         public IntPtr Handle => GetWindowHandle();
 
-        public event Action<int,int>? OnWindowResize;
+        public event Action<int, int>? OnWindowResize;
 
         public Window(WindowSpecification specification) : base(new NativeWindowSettings()
         {
@@ -37,10 +37,10 @@ namespace DevoidEngine.Core
             StartFocused = specification.StartFocused,
             IsEventDriven = false,
             TransparentFramebuffer = specification.Transparency,
-            
+
             ClientSize = new Vector2i(specification.Width, specification.Height),
             MinimumClientSize = new Vector2i(specification.MinWidth, specification.MinHeight),
-            
+
             WindowBorder = specification.Resizable ? WindowBorder.Resizable : WindowBorder.Fixed,
 
             Title = specification.Title,

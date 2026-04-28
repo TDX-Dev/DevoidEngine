@@ -1,5 +1,4 @@
-﻿using OpenTK.Windowing.Desktop;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
 namespace DevoidEngine.Util
 {

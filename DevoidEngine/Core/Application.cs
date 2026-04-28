@@ -4,10 +4,7 @@
 
 using DevoidEngine.Util;
 using DevoidGPU;
-using OpenTK.Windowing.GraphicsLibraryFramework;
-using System.Diagnostics;
 using System.Numerics;
-using System.Reflection.PortableExecutable;
 
 namespace DevoidEngine.Core
 {
@@ -172,7 +169,7 @@ namespace DevoidEngine.Core
 
         void FixedUpdate(float deltaTime)
         {
-            
+
         }
 
         void Update(float deltaTime)
