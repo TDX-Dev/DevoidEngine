@@ -1,8 +1,8 @@
 ﻿namespace DevoidGPU
 {
-    public class InputParameterInfo
+    public struct InputParameterInfo
     {
-        public string SemanticName = "";
+        public string SemanticName;
         public int SemanticIndex;
     }
 }

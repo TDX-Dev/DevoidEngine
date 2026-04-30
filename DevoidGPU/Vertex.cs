@@ -6,51 +6,32 @@ namespace DevoidGPU
     {
         public readonly Vector3 Position;
         public readonly Vector3 Normal;
-        public readonly Vector2 UV1;
+        public readonly Vector2 UV;
         public readonly Vector3 Tangent;
-        public readonly Vector3 BiTangent;
-        public readonly Vector2 UV2;
 
         public static readonly VertexInfo VertexInfo = new(
             typeof(Vertex),
             new VertexAttribute("POSITION", 0, 3, 0),
             new VertexAttribute("NORMAL", 0, 3, 3 * sizeof(float)),
             new VertexAttribute("TEXCOORD", 0, 2, 6 * sizeof(float)),
-            new VertexAttribute("TANGENT", 0, 3, 8 * sizeof(float)),
-            new VertexAttribute("BINORMAL", 0, 3, 11 * sizeof(float)),
-            new VertexAttribute("TEXCOORD", 1, 2, 14 * sizeof(float))
+            new VertexAttribute("TANGENT", 0, 3, 8 * sizeof(float))
         );
 
         public Vertex(Vector3 position)
         {
             this.Position = position;
             this.Normal = Vector3.Zero;
-            this.UV1 = Vector2.Zero;
+            this.UV = Vector2.Zero;
             this.Tangent = Vector3.Zero;
-            this.BiTangent = Vector3.Zero;
-            this.UV2 = Vector2.Zero;
         }
 
         public Vertex(Vector3 position, Vector3 normal, Vector2 texcoord)
         {
             this.Position = position;
             this.Normal = normal;
-            this.UV1 = texcoord;
+            this.UV = texcoord;
             this.Tangent = Vector3.Zero;
-            this.BiTangent = Vector3.Zero;
-            this.UV2 = texcoord;
         }
-
-        public Vertex(Vector3 position, Vector3 normal, Vector2 texcoord, Vector3 tangent, Vector3 bitangent)
-        {
-            this.Position = position;
-            this.Normal = normal;
-            this.UV1 = texcoord;
-            this.Tangent = tangent;
-            this.BiTangent = bitangent;
-            this.UV2 = texcoord;
-        }
-
     }
 
     public enum VertexAttribType
