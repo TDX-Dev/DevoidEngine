@@ -8,6 +8,8 @@ namespace DevoidGPU.DX11
         public VertexShader VS = null!;
         public PixelShader PS = null!;
 
+        public InputLayout InputLayout = null!;
+
         public SharpDX.Direct3D.PrimitiveTopology Topology;
         public SharpDX.Direct3D11.RasterizerState RasterizerState = null!;
         public SharpDX.Direct3D11.DepthStencilState DepthStencilState = null!;

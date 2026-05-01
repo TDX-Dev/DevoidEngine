@@ -6,6 +6,7 @@
         public IShader PixelShader;
 
         public PrimitiveType Topology;
+        public VertexInfo VertexLayout;
 
         public RasterizerState Rasterizer;
         public DepthStencilState DepthStencil;

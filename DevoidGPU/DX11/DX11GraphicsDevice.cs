@@ -111,7 +111,15 @@ namespace DevoidGPU.DX11
 
             dxPipeline.DepthStencilState = new SharpDX.Direct3D11.DepthStencilState(device, depthStateDesc);
 
+            // InputLayout
 
+            var dxVS = (DX11Shader)desc.VertexShader;
+
+            dxPipeline.InputLayout = new SharpDX.Direct3D11.InputLayout(
+                device,
+                dxVS.bytecode,
+                DX11StateMapper.CreateInputElements(desc.VertexLayout)
+            );
 
             return dxPipeline;
         }

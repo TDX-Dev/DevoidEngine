@@ -69,8 +69,17 @@ namespace DevoidGPU.DX11
         }
         public void SetPipeline(IPipeline pipeline)
         {
-            //var dxPipeline = (DX11GraphicsPipeline)pipeline;
+            var p = (DX11GraphicsPipeline)pipeline;
 
+            deviceContext.InputAssembler.PrimitiveTopology = p.Topology;
+            deviceContext.InputAssembler.InputLayout = p.InputLayout;
+
+            deviceContext.VertexShader.Set(p.VS);
+            deviceContext.PixelShader.Set(p.PS);
+
+            deviceContext.Rasterizer.State = p.RasterizerState;
+            deviceContext.OutputMerger.SetBlendState(p.BlendState);
+            deviceContext.OutputMerger.SetDepthStencilState(p.DepthStencilState);
         }
         public void DrawIndexed(int indexCount, int startIndexLocation, int baseVertexLocation)
         {
