@@ -11,37 +11,62 @@ namespace DevoidEngine.Core
 {
     public class Mesh
     {
-        public Vector3[] Positions { get; } = [];
-        public Vector2[] UVs { get; } = [];
-        public Vector3[] Normals { get; } = [];
-        public Vector4[] Tangents { get; } = []; // W is handedness for calculating bitangents
+        public Vector3[]? Positions { get => positions; set => positions = value; }
+        public Vector2[]? UVs { get => uvs; set => uvs = value; }
+        public Vector3[]? Normals { get => normals; set => normals = value; }
+        public Vector4[]? Tangents { get => tangents; set => tangents = value; }
 
-        
+        private VertexBuffer<Vertex>? VB;
+        //private readonly VertexBuffer<Vertex>? VB_Skinned;
+
+        private Vector3[]? positions;
+        private Vector2[]? uvs;
+        private Vector3[]? normals;
+        private Vector4[]? tangents;
 
         public Mesh()
         {
-
+            positions = [];
+            normals = [];
+            uvs = [];
+            tangents = [];
         }
 
-        void BuildGPU()
+        public void SetVertices(Vector3[] positions)
         {
-            Debug.Assert(Positions.Length == UVs.Length);
-            Debug.Assert(Positions.Length == Normals.Length);
-            Debug.Assert(Positions.Length == Tangents.Length);
-            Vertex[] vertices = new Vertex[Positions.Length];
+            Positions = positions;
+        }
 
-            for (int i = 0; i < Positions.Length; i++)
+        public void Upload()
+        {
+            if (Positions == null || Positions.Length == 0)
+                throw new InvalidOperationException("Mesh must have positions");
+
+
+            int count = Positions.Length;
+
+            Vertex[] vertices = new Vertex[count];
+
+            for (int i = 0; i < count; i++)
             {
-                Vertex vertex = new(Positions[i], Normals[i], UVs[i]);
-                vertices[i] = vertex;
+                var pos = Positions[i];
+
+                var normal = (Normals != null && Normals.Length == count)
+                    ? Normals[i]
+                    : Vector3.UnitY;
+
+                var uv = (UVs != null && UVs.Length == count)
+                    ? UVs[i]
+                    : Vector2.Zero;
+
+                var tangent = (Tangents != null && Tangents.Length == count)
+                    ? Tangents[i]
+                    : new Vector4(1, 0, 0, 1); // safe default
+
+                vertices[i] = new Vertex(pos, normal, uv);
             }
 
-
-        }
-
-        void Validate()
-        {
-
+            VB = new VertexBuffer<Vertex>(Engine.GraphicsDevice, vertices.AsSpan(), Vertex.VertexInfo, BufferUsage.Vertex);
         }
     }
 }

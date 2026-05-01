@@ -70,7 +70,7 @@ namespace DevoidEngine.Core
 
             surfaces.Add(surface);
 
-            for (int i = 0; i < 1; i++)
+            for (int i = 0; i < 0; i++)
             {
 
                 var window1 = new Window(new WindowSpecification
@@ -102,6 +102,16 @@ namespace DevoidEngine.Core
 
                 surfaces.Add(surface1);
             }
+
+            Mesh mesh = new()
+            {
+                Positions = [new Vector3(0)],
+                Normals = [new Vector3(0)],
+                UVs = [new Vector2(0)],
+                Tangents = [new Vector4(0)]
+            };
+
+            mesh.Upload();
         }
 
         public void Run()

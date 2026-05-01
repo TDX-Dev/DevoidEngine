@@ -7,7 +7,7 @@ using DriverType = SharpDX.Direct3D.DriverType;
 
 namespace DevoidGPU.DX11
 {
-    public class DX11GraphicsDevice : IGraphicsDevice
+    public sealed class DX11GraphicsDevice : IGraphicsDevice
     {
         private readonly Factory1 factory = null!;
         private readonly Device device = null!;
@@ -114,6 +114,11 @@ namespace DevoidGPU.DX11
 
 
             return dxPipeline;
+        }
+
+        public IVertexBuffer CreateVertexBuffer(VertexBufferDescription desc)
+        {
+            return new DX11VertexBuffer(device, deviceContext, desc);
         }
     }
 }

@@ -4,7 +4,7 @@ using SharpDX.Direct3D11;
 
 namespace DevoidGPU.DX11
 {
-    internal partial class DX11Shader : IShader
+    internal sealed class DX11Shader : IShader
     {
         public ShaderDescription Description { get; }
         public ShaderStage Stage { get; }

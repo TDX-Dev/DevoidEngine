@@ -236,5 +236,27 @@ namespace DevoidGPU.DX11
                 _ => Comparison.LessEqual
             };
         }
+
+
+        public static ResourceUsage ToDXVertexUsage(BufferUsage usage)
+        {
+            if (usage.HasFlag(BufferUsage.Dynamic))
+                return ResourceUsage.Dynamic;
+
+            if (usage.HasFlag(BufferUsage.Staging))
+                return ResourceUsage.Staging;
+
+            return ResourceUsage.Default;
+        }
+        public static CpuAccessFlags ToDXCpuAccess(BufferUsage usage)
+        {
+            if (usage.HasFlag(BufferUsage.Dynamic))
+                return CpuAccessFlags.Write;
+
+            if (usage.HasFlag(BufferUsage.Staging))
+                return CpuAccessFlags.Read | CpuAccessFlags.Write;
+
+            return CpuAccessFlags.None;
+        }
     }
 }

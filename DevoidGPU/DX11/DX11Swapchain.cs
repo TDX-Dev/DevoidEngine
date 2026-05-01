@@ -6,7 +6,7 @@ using SwapChain = SharpDX.DXGI.SwapChain;
 
 namespace DevoidGPU.DX11
 {
-    class DX11SwapChain : ISwapchain
+    internal sealed class DX11SwapChain : ISwapchain
     {
         public int Width { get; }
         public int Height { get; }

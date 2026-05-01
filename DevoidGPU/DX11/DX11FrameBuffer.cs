@@ -2,7 +2,7 @@
 
 namespace DevoidGPU.DX11
 {
-    internal class DX11Framebuffer : IFrameBuffer
+    internal sealed class DX11Framebuffer : IFrameBuffer
     {
         public int Width { get; }
 
