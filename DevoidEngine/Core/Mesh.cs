@@ -16,6 +16,8 @@ namespace DevoidEngine.Core
         public Vector3[]? Normals { get => normals; set => normals = value; }
         public Vector4[]? Tangents { get => tangents; set => tangents = value; }
 
+        public uint[]? Indices { get => indices; set => indices = value; }
+
         private VertexBuffer<Vertex>? VB;
         //private readonly VertexBuffer<Vertex>? VB_Skinned;
 
@@ -23,6 +25,7 @@ namespace DevoidEngine.Core
         private Vector2[]? uvs;
         private Vector3[]? normals;
         private Vector4[]? tangents;
+        private uint[]? indices;
 
         public Mesh()
         {
@@ -59,9 +62,9 @@ namespace DevoidEngine.Core
                     ? UVs[i]
                     : Vector2.Zero;
 
-                var tangent = (Tangents != null && Tangents.Length == count)
-                    ? Tangents[i]
-                    : new Vector4(1, 0, 0, 1); // safe default
+                //var tangent = (Tangents != null && Tangents.Length == count)
+                //    ? Tangents[i]
+                //    : new Vector4(1, 0, 0, 1); // safe default
 
                 vertices[i] = new Vertex(pos, normal, uv);
             }

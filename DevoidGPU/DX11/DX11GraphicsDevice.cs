@@ -128,5 +128,9 @@ namespace DevoidGPU.DX11
         {
             return new DX11VertexBuffer(device, deviceContext, desc);
         }
+        public IIndexBuffer CreateIndexBuffer(IndexBufferDescription desc)
+        {
+            return new DX11IndexBuffer(device, deviceContext, desc);
+        }
     }
 }

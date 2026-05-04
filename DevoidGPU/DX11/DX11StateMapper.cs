@@ -315,5 +315,9 @@ namespace DevoidGPU.DX11
                 _ => throw new ArgumentException("Unsupported attribute type")
             };
         }
+        public static Format ToDXIndexFormat(IndexFormat format)
+        {
+            return format == IndexFormat.UInt16 ? SharpDX.DXGI.Format.R16_UInt : SharpDX.DXGI.Format.R32_UInt;
+        }
     }
 }

@@ -17,7 +17,12 @@ namespace DevoidGPU.DX11
         public void Begin()
         {
             currentFramebuffer = null;
+            currentViewport = default;
+
+            // optional safety reset
+            deviceContext.InputAssembler.InputLayout = null;
         }
+
         public void End() { /* No Op */ }
 
         public void SetViewport(int x, int y, int width, int height)
@@ -80,6 +85,26 @@ namespace DevoidGPU.DX11
             deviceContext.Rasterizer.State = p.RasterizerState;
             deviceContext.OutputMerger.SetBlendState(p.BlendState);
             deviceContext.OutputMerger.SetDepthStencilState(p.DepthStencilState);
+        }
+        public void SetVertexBuffer(IVertexBuffer buffer)
+        {
+            var vb = (DX11VertexBuffer)buffer;
+
+            deviceContext.InputAssembler.SetVertexBuffers(
+                vb.Slot,
+                new VertexBufferBinding(vb.Buffer, vb.Stride, 0)
+            );
+        }
+
+        public void SetIndexBuffer(IIndexBuffer buffer)
+        {
+            var ib = (DX11IndexBuffer)buffer;
+
+            deviceContext.InputAssembler.SetIndexBuffer(
+                ib.Buffer,
+                DX11StateMapper.ToDXIndexFormat(buffer.Format),
+                0
+            );
         }
         public void DrawIndexed(int indexCount, int startIndexLocation, int baseVertexLocation)
         {

@@ -16,6 +16,8 @@ namespace DevoidGPU
         void ClearDepthStencil(float depth, byte stencil);
 
         void SetPipeline(IPipeline pipeline);
+        void SetVertexBuffer(IVertexBuffer vertexBuffer);
+        void SetIndexBuffer(IIndexBuffer indexBuffer);
         void DrawIndexed(int indexCount, int startIndexLocation, int baseVertexLocation);
     }
 }

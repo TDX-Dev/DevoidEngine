@@ -6,5 +6,6 @@
         IShader CreateShader(ShaderDescription desc);
         IPipeline CreateGraphicsPipeline(GraphicsPipelineDescription desc);
         IVertexBuffer CreateVertexBuffer(VertexBufferDescription desc);
+        IIndexBuffer CreateIndexBuffer(IndexBufferDescription desc);
     }
 }
