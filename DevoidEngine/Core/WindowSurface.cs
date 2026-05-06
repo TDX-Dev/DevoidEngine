@@ -7,6 +7,9 @@ namespace DevoidEngine.Core
         public Window Window { get; } = null!;
         public ISwapchain Swapchain { get; } = null!;
 
+        public event Action<float>? OnUpdate;
+        public event Action<ICommandList>? OnRender;
+
         private bool resizePending;
         private bool isDisposed;
 
@@ -37,6 +40,16 @@ namespace DevoidEngine.Core
                 return;
             Swapchain.Resize(Window.ClientSize.X, Window.ClientSize.Y);
             resizePending = false;
+        }
+
+        public void UpdateSurface(float deltaTime)
+        {
+            OnUpdate?.Invoke(deltaTime);
+        }
+
+        public void RenderSurface(ICommandList cmd)
+        {
+            OnRender?.Invoke(cmd);
         }
 
         public void Present()

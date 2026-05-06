@@ -4,6 +4,7 @@ namespace DevoidGPU
 {
     public interface ICommandList
     {
+        public CommandListType Type { get; }
         void Begin();
         void End();
 
@@ -18,6 +19,7 @@ namespace DevoidGPU
         void SetPipeline(IPipeline pipeline);
         void SetVertexBuffer(IVertexBuffer vertexBuffer);
         void SetIndexBuffer(IIndexBuffer indexBuffer);
+        void Draw(int vertexCount, int startVertexLocation);
         void DrawIndexed(int indexCount, int startIndexLocation, int baseVertexLocation);
     }
 }

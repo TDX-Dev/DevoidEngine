@@ -1,6 +1,7 @@
 ﻿using DevoidGPU;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
@@ -18,6 +19,7 @@ namespace DevoidEngine.Core
 
         public uint[]? Indices { get => indices; set => indices = value; }
 
+        private IndexBuffer? IB;
         private VertexBuffer<Vertex>? VB;
         //private readonly VertexBuffer<Vertex>? VB_Skinned;
 
@@ -70,6 +72,27 @@ namespace DevoidEngine.Core
             }
 
             VB = new VertexBuffer<Vertex>(Engine.GraphicsDevice, vertices.AsSpan(), Vertex.VertexInfo, BufferUsage.Vertex);
+            if (indices != null && indices.Length > 0)
+            {
+                IB = new IndexBuffer(Engine.GraphicsDevice, indices.AsSpan());
+            }
+        }
+        
+        public void Draw(ICommandList cmd)
+        {
+            if (VB == null)
+                return;
+            cmd.SetVertexBuffer(VB.GPU);
+
+            if (IB != null)
+            {
+                cmd.SetIndexBuffer(IB.GPU);
+                cmd.DrawIndexed(IB.Count, 0, 0);
+            } else
+            {
+                cmd.Draw(VB.Count, 0);
+            }
+            
         }
     }
 }

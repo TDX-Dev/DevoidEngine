@@ -13,6 +13,10 @@ namespace DevoidGPU.DX11
         private readonly Device device = null!;
         private readonly DeviceContext deviceContext = null!;
 
+        private readonly ICommandQueue graphicsQueue;
+        private readonly ICommandQueue computeQueue;
+        private readonly ICommandQueue copyQueue;
+
         public DX11GraphicsDevice()
         {
             factory = new Factory1();
@@ -33,6 +37,14 @@ namespace DevoidGPU.DX11
             );
 
             deviceContext = device.ImmediateContext;
+
+            // Queue Creation
+
+            var queue = new DX11CommandQueue(deviceContext);
+
+            graphicsQueue = queue;
+            computeQueue = queue;
+            copyQueue = queue;
         }
 
         public ISwapchain CreateSwapchain(SwapchainDescription desc)
@@ -131,6 +143,26 @@ namespace DevoidGPU.DX11
         public IIndexBuffer CreateIndexBuffer(IndexBufferDescription desc)
         {
             return new DX11IndexBuffer(device, deviceContext, desc);
+        }
+
+        public ICommandList GetCommandList()
+        {
+            return new DX11CommandList(deviceContext);
+        }
+        public ICommandQueue GetCommandQueue(CommandListType type)
+        {
+            return type switch
+            {
+                CommandListType.Graphics => graphicsQueue,
+                CommandListType.Compute => computeQueue,
+                CommandListType.Copy => copyQueue,
+                _ => throw new ArgumentOutOfRangeException(nameof(type))
+            };
+        }
+
+        public void Submit(ICommandList cmd)
+        {
+
         }
     }
 }

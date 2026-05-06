@@ -4,6 +4,7 @@
 
 using DevoidEngine.Util;
 using DevoidGPU;
+using SharpDX.DXGI;
 using System.Numerics;
 
 namespace DevoidEngine.Core
@@ -23,6 +24,7 @@ namespace DevoidEngine.Core
 
     public class Application
     {
+        private readonly WindowSurface mainSurface;
         private readonly List<WindowSurface> surfaces;
         private readonly FrameTimer frameTimer;
 
@@ -52,7 +54,7 @@ namespace DevoidEngine.Core
                 StartFocused = true
             });
 
-            var surface = new WindowSurface(
+            mainSurface = new WindowSurface(
                 window,
                 Engine.GraphicsDevice,
                 new SwapchainDescription()
@@ -68,7 +70,7 @@ namespace DevoidEngine.Core
                 }
             );
 
-            surfaces.Add(surface);
+            surfaces.Add(mainSurface);
 
             for (int i = 0; i < 0; i++)
             {
@@ -103,7 +105,7 @@ namespace DevoidEngine.Core
                 surfaces.Add(surface1);
             }
 
-            Mesh mesh = new()
+            mesh = new()
             {
                 Positions = [new Vector3(0)],
                 Normals = [new Vector3(0)],
@@ -113,6 +115,8 @@ namespace DevoidEngine.Core
 
             mesh.Upload();
         }
+
+        readonly Mesh mesh;
 
         public void Run()
         {
@@ -146,10 +150,24 @@ namespace DevoidEngine.Core
                 alpha = Math.Clamp(alpha, 0f, 1f);
                 Engine.Instance.InterpolationAlpha = alpha;
 
-                foreach (var surface in surfaces)
+                Update(deltaTime * timescale);
+
+                ICommandList cmd = Engine.GraphicsDevice.GetCommandList();
+
+                Render(cmd);
+
+                for (int i = 0; i < surfaces.Count; i++)
                 {
+                    var surface = surfaces[i];
+                    if (i != 0) // Assume index 0 is always main window
+                    {
+                        surface.UpdateSurface(deltaTime * timescale);
+                        surface.RenderSurface(cmd);
+                    }
                     surface.Present();
                 }
+
+                Engine.GraphicsDevice.Submit(cmd);
 
                 for (int i = surfaces.Count - 1; i >= 0; i--)
                 {
@@ -187,9 +205,9 @@ namespace DevoidEngine.Core
 
         }
 
-        void Render()
+        void Render(ICommandList cmd)
         {
-
+            mesh.Draw(cmd);
         }
     }
 }

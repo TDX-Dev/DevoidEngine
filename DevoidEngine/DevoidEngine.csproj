@@ -17,4 +17,12 @@
     <ProjectReference Include="..\DevoidGPU\DevoidGPU.csproj" />
   </ItemGroup>
 
+	<ItemGroup>
+		<None Include="./Content/**/*.*" CopyToOutputDirectory="PreserveNewest" Visible="true" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Content\Shaders\" />
+	</ItemGroup>
+
 </Project>

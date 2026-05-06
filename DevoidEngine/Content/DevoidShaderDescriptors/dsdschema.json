@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+
+  "properties": {
+    "Name": {
+      "type": "string",
+      "description": "Name of the shader"
+    },
+
+    "Passes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "Name": {
+            "type": "string",
+            "description": "Pass name (Forward, Shadow, etc)"
+          },
+
+          "Shaders": {
+            "type": "object",
+            "properties": {
+              "VS": {
+                "type": "string",
+                "description": "Vertex shader path"
+              },
+              "FS": {
+                "type": "string",
+                "description": "Fragment shader path"
+              }
+            },
+            "required": ["VS", "FS"]
+          },
+
+          "States": {
+            "type": "object",
+            "properties": {
+              "Blend": {
+                "type": "string",
+                "enum": ["Off", "Alpha", "Additive"]
+              },
+              "Depth": {
+                "type": "string",
+                "enum": ["Less", "LessEqual", "Always"]
+              },
+              "Cull": {
+                "type": "string",
+                "enum": ["Back", "Front", "None"]
+              }
+            }
+          }
+        },
+        "required": ["Name", "Shaders"]
+      }
+    }
+  },
+
+  "required": ["Passes"]
+}

@@ -1,0 +1,13 @@
+{
+  "$schema": "./dsdschema.json",
+  "Name": "Vertex Lit",
+  "Passes": [
+    {
+      "Name": "Forward",
+      "Shaders": {
+        "VS": "../Shaders/vertex_lit.vert.hlsl",
+        "FS": "../Shaders/vertex_list.frag.hlsl"
+      }
+    }
+  ]
+}

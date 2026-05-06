@@ -37,7 +37,7 @@ namespace DevoidEngine.Core
                         Layout = layout,
                         Slot = 0,
                         Usage = usage,
-                        InitialData = (IntPtr)ptr
+                        InitialData = data.Length > 0 ? (IntPtr)ptr : IntPtr.Zero
                     });
                 }
             }

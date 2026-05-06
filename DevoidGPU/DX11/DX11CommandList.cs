@@ -5,6 +5,9 @@ namespace DevoidGPU.DX11
 {
     internal sealed class DX11CommandList : ICommandList
     {
+        public CommandListType Type { get; }
+
+    
         private readonly DeviceContext deviceContext;
 
         // binding cache;
@@ -105,6 +108,11 @@ namespace DevoidGPU.DX11
                 DX11StateMapper.ToDXIndexFormat(buffer.Format),
                 0
             );
+        }
+
+        public void Draw(int vertexCount, int startVertexLocation)
+        {
+            deviceContext.Draw(vertexCount, startVertexLocation);
         }
         public void DrawIndexed(int indexCount, int startIndexLocation, int baseVertexLocation)
         {
