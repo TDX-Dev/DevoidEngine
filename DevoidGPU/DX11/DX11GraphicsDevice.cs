@@ -116,7 +116,7 @@ namespace DevoidGPU.DX11
 
             SharpDX.Direct3D11.DepthStencilStateDescription depthStateDesc = new()
             {
-                IsDepthEnabled = desc.DepthStencil.DepthTest != DepthTest.Disabled,
+                IsDepthEnabled = desc.DepthStencil.DepthTest,
                 DepthComparison = DX11StateMapper.ToDXDepthComparison(desc.DepthStencil.DepthFunc),
                 DepthWriteMask = desc.DepthStencil.DepthWrite ? SharpDX.Direct3D11.DepthWriteMask.All : SharpDX.Direct3D11.DepthWriteMask.Zero
             };

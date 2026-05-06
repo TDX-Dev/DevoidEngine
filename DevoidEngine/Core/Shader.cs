@@ -102,17 +102,115 @@ namespace DevoidEngine.Core
 
         private static BlendStateDescription ParseBlend(string? blend)
         {
-            return new BlendStateDescription();
+            blend ??= "Off";
+
+            BlendState state = blend switch
+            {
+                "Off" => new BlendState
+                {
+                    Enable = false,
+                    WriteMask = ColorMask.All
+                },
+
+                "Alpha" => new BlendState
+                {
+                    Enable = true,
+
+                    SrcColor = BlendFactor.SrcAlpha,
+                    DstColor = BlendFactor.InvSrcAlpha,
+                    ColorOp = BlendOp.Add,
+
+                    SrcAlpha = BlendFactor.One,
+                    DstAlpha = BlendFactor.InvSrcAlpha,
+                    AlphaOp = BlendOp.Add,
+
+                    WriteMask = ColorMask.All
+                },
+
+                "Additive" => new BlendState
+                {
+                    Enable = true,
+
+                    SrcColor = BlendFactor.SrcAlpha,
+                    DstColor = BlendFactor.One,
+                    ColorOp = BlendOp.Add,
+
+                    SrcAlpha = BlendFactor.One,
+                    DstAlpha = BlendFactor.One,
+                    AlphaOp = BlendOp.Add,
+
+                    WriteMask = ColorMask.All
+                },
+
+                _ => throw new Exception($"Unknown blend mode '{blend}'")
+            };
+
+            return new BlendStateDescription
+            {
+                AlphaToCoverage = false,
+                IndependentBlend = false,
+
+                BlendStates =
+                [
+                    state
+                ]
+            };
         }
 
         private static DepthStencilState ParseDepth(string? depth)
         {
-            return new DepthStencilState();
+            depth ??= "LessEqual";
+
+            return depth switch
+            {
+                "Less" => new DepthStencilState
+                {
+                    DepthTest = true,
+                    DepthWrite = true,
+                    DepthFunc = CompareFunc.Less
+                },
+
+                "LessEqual" => new DepthStencilState
+                {
+                    DepthTest = true,
+                    DepthWrite = true,
+                    DepthFunc = CompareFunc.LessEqual
+                },
+
+                "Always" => new DepthStencilState
+                {
+                    DepthTest = true,
+                    DepthWrite = false,
+                    DepthFunc = CompareFunc.Always
+                },
+
+                _ => throw new Exception($"Unknown depth mode '{depth}'")
+            };
         }
 
         private static RasterizerState ParseRasterizer(string? cull)
         {
-            return new RasterizerState();
+            cull ??= "Back";
+
+            return cull switch
+            {
+                "Back" => new RasterizerState
+                {
+                    CullMode = CullMode.Back
+                },
+
+                "Front" => new RasterizerState
+                {
+                    CullMode = CullMode.Front
+                },
+
+                "None" => new RasterizerState
+                {
+                    CullMode = CullMode.None
+                },
+
+                _ => throw new Exception($"Unknown cull mode '{cull}'")
+            };
         }
     }
 }

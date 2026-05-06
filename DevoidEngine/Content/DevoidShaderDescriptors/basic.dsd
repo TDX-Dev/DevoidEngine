@@ -7,6 +7,11 @@
       "Shaders": {
         "VS": "../Shaders/vertex_lit.vert.hlsl",
         "FS": "../Shaders/vertex_lit.frag.hlsl"
+      },
+      "States": {
+        "Blend": "Off",
+        "Cull": "None",
+        "Depth": "LessEqual"
       }
     }
   ]

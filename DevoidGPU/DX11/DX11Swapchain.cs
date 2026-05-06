@@ -11,6 +11,7 @@ namespace DevoidGPU.DX11
         public int Width { get; }
         public int Height { get; }
         public bool VSync { get; private set; }
+        public IFrameBuffer Framebuffer => framebuffer;
 
         private readonly Device device;
         private readonly SwapChain swapchain;
@@ -18,6 +19,7 @@ namespace DevoidGPU.DX11
         private readonly int bufferCount;
         private readonly Format format;
         private readonly SwapChainDescription swapchainDescription;
+        private DX11Framebuffer framebuffer = null!;
 
         public DX11SwapChain(Factory factory, Device dx11Device, SwapchainDescription desc)
         {
@@ -66,11 +68,17 @@ namespace DevoidGPU.DX11
         private void CreateBackbuffer()
         {
             using var tex = swapchain.GetBackBuffer<Texture2D>(0);
+
             backbuffers[0] = new DX11Texture(device, tex);
+
+            framebuffer = new DX11Framebuffer(
+                [backbuffers[0]]
+            );
         }
 
         public void Present()
         {
+            
             Result result = swapchain.TryPresent(VSync ? 1 : 0, PresentFlags.None);
 
             if (result != Result.Ok)

@@ -6,6 +6,7 @@ namespace DevoidEngine.Core
     {
         public Window Window { get; } = null!;
         public ISwapchain Swapchain { get; } = null!;
+        public IFrameBuffer Framebuffer => Swapchain.Framebuffer;
 
         public event Action<float>? OnUpdate;
         public event Action<ICommandList>? OnRender;

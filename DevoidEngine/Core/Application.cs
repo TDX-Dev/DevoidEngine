@@ -105,15 +105,7 @@ namespace DevoidEngine.Core
                 surfaces.Add(surface1);
             }
 
-            mesh = new()
-            {
-                Positions = [new Vector3(0)],
-                Normals = [new Vector3(0)],
-                UVs = [new Vector2(0)],
-                Tangents = [new Vector4(0)]
-            };
-
-            mesh.Upload();
+            mesh = PrimitiveMeshes.GetCube();
 
             shader = Shader.FromDescriptorFile(Engine.GraphicsDevice, "Content/DevoidShaderDescriptors/basic.dsd");
         }
@@ -167,6 +159,8 @@ namespace DevoidEngine.Core
                         surface.UpdateSurface(deltaTime * timescale);
                         surface.RenderSurface(cmd);
                     }
+                    cmd.SetFramebuffer(surface.Framebuffer);
+                    cmd.ClearColor(0, new Vector4(0.1f, 0.3f, 0.1f, 1.0f));
                     surface.Present();
                 }
 
@@ -210,6 +204,8 @@ namespace DevoidEngine.Core
 
         void Render(ICommandList cmd)
         {
+            cmd.SetPipeline(shader.GetPass("Forward").GetPipeline(Engine.GraphicsDevice, Vertex.VertexInfo));
+            
             mesh.Draw(cmd);
         }
     }
