@@ -6,7 +6,7 @@
       "Name": "Forward",
       "Shaders": {
         "VS": "../Shaders/vertex_lit.vert.hlsl",
-        "FS": "../Shaders/vertex_list.frag.hlsl"
+        "FS": "../Shaders/vertex_lit.frag.hlsl"
       }
     }
   ]

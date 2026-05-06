@@ -114,9 +114,12 @@ namespace DevoidEngine.Core
             };
 
             mesh.Upload();
+
+            shader = Shader.FromDescriptorFile(Engine.GraphicsDevice, "Content/DevoidShaderDescriptors/basic.dsd");
         }
 
         readonly Mesh mesh;
+        readonly Shader shader;
 
         public void Run()
         {

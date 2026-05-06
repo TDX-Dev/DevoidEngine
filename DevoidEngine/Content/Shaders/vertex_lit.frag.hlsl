@@ -6,7 +6,7 @@ struct PSInput
     float4 Tangent : TANGENT;
 };
 
-float4 PSMain(PSInput input)
+float4 PSMain(PSInput input) : SV_Target0
 {
     
     return float4(0.5, 1, 0.2, 1);
