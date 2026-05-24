@@ -238,7 +238,7 @@ namespace DevoidGPU.DX11
         }
 
 
-        public static ResourceUsage ToDXVertexUsage(BufferUsage usage)
+        public static ResourceUsage ToDXBufferUsage(BufferUsage usage)
         {
             if (usage.HasFlag(BufferUsage.Dynamic))
                 return ResourceUsage.Dynamic;

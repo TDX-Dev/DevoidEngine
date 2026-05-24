@@ -23,6 +23,7 @@
 
 	<ItemGroup>
 	  <Folder Include="Content\Shaders\" />
+	  <Folder Include="Rendering\" />
 	</ItemGroup>
 
 </Project>

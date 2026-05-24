@@ -35,7 +35,7 @@ namespace DevoidGPU.DX11
             {
                 SizeInBytes = (int)description.Size,
                 BindFlags = BindFlags.VertexBuffer,
-                Usage = DX11StateMapper.ToDXVertexUsage(description.Usage),
+                Usage = DX11StateMapper.ToDXBufferUsage(description.Usage),
                 CpuAccessFlags = DX11StateMapper.ToDXCpuAccess(description.Usage),
                 OptionFlags = ResourceOptionFlags.None,
                 StructureByteStride = 0

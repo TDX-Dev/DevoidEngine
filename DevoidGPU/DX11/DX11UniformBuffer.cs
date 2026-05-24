@@ -1,5 +1,4 @@
 ﻿using SharpDX.Direct3D11;
-using SharpDX.DXGI;
 using System.Runtime.CompilerServices;
 using Buffer = SharpDX.Direct3D11.Buffer;
 using Device = SharpDX.Direct3D11.Device;
@@ -8,40 +7,40 @@ using MapFlags = SharpDX.Direct3D11.MapFlags;
 
 namespace DevoidGPU.DX11
 {
-    internal sealed class DX11IndexBuffer : IIndexBuffer
+    internal sealed class DX11UniformBuffer : IUniformBuffer
     {
         public ulong Size { get; }
-        public IndexFormat Format { get; }
         public BufferUsage Usage { get; }
-
         public Buffer Buffer { get; private set; } = null!;
 
         private readonly Device device;
         private readonly DeviceContext deviceContext;
 
-        public DX11IndexBuffer(Device device, DeviceContext deviceContext, IndexBufferDescription description)
+        public DX11UniformBuffer(Device device, DeviceContext context, UniformBufferDescription description)
         {
             this.device = device;
-            this.deviceContext = deviceContext;
-            Size = description.Size;
-            Format = description.Format;
+            this.deviceContext = context;
 
-            //var dxFormat = DX11StateMapper.ToDXGIFormat(desc.Format);
+            this.Size = Align16(description.Size);
+            Usage = description.Usage;
 
             BufferDescription dxDescription = new()
             {
-                SizeInBytes = (int)description.Size,
+                SizeInBytes = (int)Size,
+                BindFlags = BindFlags.ConstantBuffer,
                 Usage = DX11StateMapper.ToDXBufferUsage(description.Usage),
-                BindFlags = BindFlags.IndexBuffer,
                 CpuAccessFlags = DX11StateMapper.ToDXCpuAccess(description.Usage),
                 OptionFlags = ResourceOptionFlags.None,
                 StructureByteStride = 0
             };
 
-
             if (description.InitialData != IntPtr.Zero)
             {
-                Buffer = new Buffer(device, description.InitialData, dxDescription);
+                Buffer = new Buffer(
+                    device,
+                    description.InitialData,
+                    dxDescription
+                );
             }
             else
             {
@@ -51,15 +50,18 @@ namespace DevoidGPU.DX11
 
         public void Update<T>(ReadOnlySpan<T> data) where T : unmanaged
         {
-            int elementSize = Unsafe.SizeOf<T>();
-            int totalSize = elementSize * data.Length;
+            int totalSize = Unsafe.SizeOf<T>() * data.Length;
 
             if ((ulong)totalSize > Size)
-                throw new InvalidOperationException("Update exceeds buffer size");
+                throw new InvalidOperationException("Update data exceeds uniform buffer size.");
 
             if (Usage.HasFlag(BufferUsage.Dynamic))
             {
-                var box = deviceContext.MapSubresource(Buffer, 0, MapMode.WriteDiscard, MapFlags.None);
+                var box = deviceContext.MapSubresource(
+                    Buffer,
+                    0,
+                    MapMode.WriteDiscard,
+                    MapFlags.None);
 
                 unsafe
                 {
@@ -69,29 +71,32 @@ namespace DevoidGPU.DX11
                             src,
                             (void*)box.DataPointer,
                             (long)Size,
-                            totalSize
-                        );
+                            totalSize);
                     }
                 }
 
                 deviceContext.UnmapSubresource(Buffer, 0);
+                return;
             }
-            else
+
+            unsafe
             {
-                unsafe
+                fixed (T* src = data)
                 {
-                    fixed (T* src = data)
-                    {
-                        IntPtr ptr = (IntPtr)src;
-                        deviceContext.UpdateSubresource(ref ptr, Buffer, 0);
-                    }
+                    IntPtr ptr = (IntPtr)src;
+
+                    deviceContext.UpdateSubresource(
+                        ref ptr,
+                        Buffer,
+                        0);
                 }
             }
         }
 
-        public void Dispose()
+        private static ulong Align16(ulong size)
         {
-            Buffer.Dispose();
+            return (size + 15ul) & ~15ul;
         }
+
     }
 }

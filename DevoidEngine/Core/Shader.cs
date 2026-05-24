@@ -78,9 +78,6 @@ namespace DevoidEngine.Core
 
                 ShaderPass pass = new(vertex, fragment);
 
-                // -------------------------
-                // STATES
-                // -------------------------
 
                 if (passDesc.States != null)
                 {

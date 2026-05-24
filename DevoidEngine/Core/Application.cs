@@ -108,10 +108,13 @@ namespace DevoidEngine.Core
             mesh = PrimitiveMeshes.GetCube();
 
             shader = Shader.FromDescriptorFile(Engine.GraphicsDevice, "Content/DevoidShaderDescriptors/basic.dsd");
+
+            ubo = new UniformBuffer(Engine.GraphicsDevice, BufferUsage.Uniform, 3);
         }
 
         readonly Mesh mesh;
         readonly Shader shader;
+        readonly UniformBuffer ubo;
 
         public void Run()
         {

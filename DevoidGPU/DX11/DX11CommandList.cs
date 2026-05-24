@@ -110,6 +110,11 @@ namespace DevoidGPU.DX11
             );
         }
 
+        public void SetUniformBuffer()
+        {
+
+        }
+
         public void Draw(int vertexCount, int startVertexLocation)
         {
             deviceContext.Draw(vertexCount, startVertexLocation);

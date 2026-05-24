@@ -144,7 +144,18 @@ namespace DevoidGPU.DX11
         {
             return new DX11IndexBuffer(device, deviceContext, desc);
         }
-
+        public ITexture CreateTexture(TextureDescription desc)
+        {
+            return new DX11Texture(device, desc);
+        }
+        public IFrameBuffer CreateFrameBuffer(ITexture[] colorAttachments, ITexture? depthAttachment)
+        {
+            return new DX11Framebuffer([.. colorAttachments.Cast<DX11Texture>()], depthAttachment as DX11Texture);
+        }
+        public IUniformBuffer CreateUniformBuffer(UniformBufferDescription desc)
+        {
+            return new DX11UniformBuffer(device, deviceContext, desc);
+        }
         public ICommandList GetCommandList()
         {
             return new DX11CommandList(deviceContext);
