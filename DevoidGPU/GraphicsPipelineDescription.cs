@@ -11,5 +11,7 @@
         public RasterizerState Rasterizer;
         public DepthStencilState DepthStencil;
         public BlendStateDescription Blend;
+
+        public IPipelineLayout PipelineLayout;
     }
 }

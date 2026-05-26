@@ -51,6 +51,7 @@ namespace DevoidEngine.Core
                 Height = specification.Height,
                 Resizable = specification.Resizable,
                 StartVisible = false,
+                StartCentered = true,
                 StartFocused = true
             });
 
@@ -66,7 +67,7 @@ namespace DevoidEngine.Core
                     RefreshRate = new System.Numerics.Vector2(165, 0),
                     Samples = new DevoidGPU.TextureSampleDescription(1, 0),
                     VSync = true,
-                    Windowed = true,
+                    Windowed = true
                 }
             );
 
@@ -83,6 +84,7 @@ namespace DevoidEngine.Core
                     Resizable = true,
                     StartVisible = false,
                     StartFocused = true,
+                    StartCentered = true,
                     Transparency = true,
                 });
 
@@ -109,12 +111,28 @@ namespace DevoidEngine.Core
 
             shader = Shader.FromDescriptorFile(Engine.GraphicsDevice, "Content/DevoidShaderDescriptors/basic.dsd");
 
-            ubo = new UniformBuffer(Engine.GraphicsDevice, BufferUsage.Uniform, 3);
+            ubo = new UniformBuffer(Engine.GraphicsDevice, BufferUsage.Uniform, 4);
+
+            layout = Engine.GraphicsDevice.CreateDescriptorLayout(new[]
+            {
+                new DescriptorBinding()
+                {
+                    Binding = 0,
+                    Stages = DevoidGPU.ShaderStage.Fragment,
+                    Type = DescriptorType.UniformBuffer
+                }
+            });
+
+            set = Engine.GraphicsDevice.CreateDescriptorSet(layout);
+
+            set.SetUniformBuffer(0, ubo.GPU);
         }
 
         readonly Mesh mesh;
         readonly Shader shader;
         readonly UniformBuffer ubo;
+        readonly IDescriptorLayout layout;
+        readonly IDescriptorSet set;
 
         public void Run()
         {
@@ -163,7 +181,7 @@ namespace DevoidEngine.Core
                         surface.RenderSurface(cmd);
                     }
                     cmd.SetFramebuffer(surface.Framebuffer);
-                    cmd.ClearColor(0, new Vector4(0.1f, 0.3f, 0.1f, 1.0f));
+                    cmd.ClearColor(0, Colors.White);
                     surface.Present();
                 }
 

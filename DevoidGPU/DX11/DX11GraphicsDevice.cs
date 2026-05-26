@@ -133,6 +133,8 @@ namespace DevoidGPU.DX11
                 DX11StateMapper.CreateInputElements(desc.VertexLayout)
             );
 
+            dxPipeline.Layout = (DX11PipelineLayout)desc.PipelineLayout;
+
             return dxPipeline;
         }
 
@@ -156,6 +158,17 @@ namespace DevoidGPU.DX11
         {
             return new DX11UniformBuffer(device, deviceContext, desc);
         }
+
+        public IDescriptorLayout CreateDescriptorLayout(DescriptorBinding[] bindings) 
+        {
+            return new DX11DescriptorLayout(bindings);
+        }
+
+        public IDescriptorSet CreateDescriptorSet(IDescriptorLayout layout)
+        {
+            return new DX11DescriptorSet(layout);
+        }
+
         public ICommandList GetCommandList()
         {
             return new DX11CommandList(deviceContext);

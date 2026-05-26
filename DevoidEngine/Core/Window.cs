@@ -20,6 +20,7 @@ namespace DevoidEngine.Core
         public bool Resizable;
         public bool StartVisible;
         public bool StartFocused;
+        public bool StartCentered;
 
         public bool Transparency;
     }
@@ -49,6 +50,8 @@ namespace DevoidEngine.Core
         }
         )
         {
+            if (specification.StartCentered)
+                CenterWindow();
             WindowUtil.EnableDarkMode(Handle);
         }
 

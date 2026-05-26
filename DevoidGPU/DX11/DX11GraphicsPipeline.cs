@@ -14,5 +14,7 @@ namespace DevoidGPU.DX11
         public SharpDX.Direct3D11.RasterizerState RasterizerState = null!;
         public SharpDX.Direct3D11.DepthStencilState DepthStencilState = null!;
         public SharpDX.Direct3D11.BlendState BlendState = null!;
+
+        public DX11PipelineLayout Layout = null!;
     }
 }
