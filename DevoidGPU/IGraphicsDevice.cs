@@ -11,7 +11,7 @@ namespace DevoidGPU
         IIndexBuffer CreateIndexBuffer(IndexBufferDescription desc);
         ITexture CreateTexture(TextureDescription desc);
         IFrameBuffer CreateFrameBuffer(ITexture[] colorAttachments, ITexture? depthAttachment);
-        IUniformBuffer CreateUniformBuffer(UniformBufferDescription desc);
+        IUniformBuffer CreateUniformBuffer(BufferDescription desc);
         IDescriptorLayout CreateDescriptorLayout(DescriptorBinding[] bindings);
         IDescriptorSet CreateDescriptorSet(IDescriptorLayout layout);
         ICommandList GetCommandList();

@@ -4,7 +4,7 @@
     {
         ulong Size { get; }
         IndexFormat Format { get; }
-        BufferUsage Usage { get; }
+        ResourceUsage Usage { get; }
 
         void Update<T>(ReadOnlySpan<T> data) where T : unmanaged;
     }

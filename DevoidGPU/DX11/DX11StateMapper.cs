@@ -238,25 +238,27 @@ namespace DevoidGPU.DX11
         }
 
 
-        public static ResourceUsage ToDXBufferUsage(BufferUsage usage)
+        public static SharpDX.Direct3D11.ResourceUsage ToDXBufferUsage(ResourceUsage usage)
         {
-            if (usage.HasFlag(BufferUsage.Dynamic))
-                return ResourceUsage.Dynamic;
+            if (usage.HasFlag(ResourceUsage.Dynamic))
+                return SharpDX.Direct3D11.ResourceUsage.Dynamic;
 
-            if (usage.HasFlag(BufferUsage.Staging))
-                return ResourceUsage.Staging;
+            if (usage.HasFlag(ResourceUsage.Staging))
+                return SharpDX.Direct3D11.ResourceUsage.Staging;
 
-            return ResourceUsage.Default;
+            return SharpDX.Direct3D11.ResourceUsage.Default;
         }
-        public static CpuAccessFlags ToDXCpuAccess(BufferUsage usage)
+        public static CpuAccessFlags ToDXCpuAccess(CpuAccess access)
         {
-            if (usage.HasFlag(BufferUsage.Dynamic))
-                return CpuAccessFlags.Write;
+            CpuAccessFlags flags = CpuAccessFlags.None;
 
-            if (usage.HasFlag(BufferUsage.Staging))
-                return CpuAccessFlags.Read | CpuAccessFlags.Write;
+            if (access.HasFlag(CpuAccess.Read))
+                flags |= CpuAccessFlags.Read;
 
-            return CpuAccessFlags.None;
+            if (access.HasFlag(CpuAccess.Write))
+                flags |= CpuAccessFlags.Write;
+
+            return flags;
         }
         public static InputElement[] CreateInputElements(VertexInfo vertexInfo)
         {
@@ -330,6 +332,11 @@ namespace DevoidGPU.DX11
                 WrapMode.MirrorRepeat => TextureAddressMode.Mirror,
                 _ => throw new ArgumentException("Invalid argument: " + nameof(wrap))
             };
+        }
+
+        public static ulong Align16(ulong size)
+        {
+            return (size + 15ul) & ~15ul;
         }
     }
 }

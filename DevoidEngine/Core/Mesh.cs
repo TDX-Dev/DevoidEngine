@@ -71,7 +71,7 @@ namespace DevoidEngine.Core
                 vertices[i] = new Vertex(pos, normal, uv);
             }
 
-            VB = new VertexBuffer<Vertex>(Engine.GraphicsDevice, vertices.AsSpan(), Vertex.VertexInfo, BufferUsage.Vertex);
+            VB = new VertexBuffer<Vertex>(Engine.GraphicsDevice, vertices.AsSpan(), Vertex.VertexInfo, ResourceUsage.Default);
             if (indices != null && indices.Length > 0)
             {
                 IB = new IndexBuffer(Engine.GraphicsDevice, indices.AsSpan());

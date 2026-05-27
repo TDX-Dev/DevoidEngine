@@ -14,13 +14,15 @@ namespace DevoidEngine.Core
 
         public UniformBuffer(
             IGraphicsDevice device,
-            BufferUsage usage,
+            ResourceUsage usage,
             uint size
         )
         {
-            gpuBuffer = device.CreateUniformBuffer(new UniformBufferDescription()
+            gpuBuffer = device.CreateUniformBuffer(new BufferDescription()
             {
                 Usage = usage,
+                Bind = BufferBind.Uniform,
+                CpuAccess = CpuAccess.Write,
                 InitialData = IntPtr.Zero,
                 Size = size
             });

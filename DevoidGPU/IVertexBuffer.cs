@@ -6,7 +6,7 @@
         VertexInfo Layout { get; }
         int Slot { get; }
         int Stride { get; }
-        BufferUsage Usage { get; }
+        ResourceUsage Usage { get; }
 
         void Update<T>(ReadOnlySpan<T> data) where T : unmanaged;
     }

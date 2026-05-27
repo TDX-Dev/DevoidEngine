@@ -13,9 +13,9 @@ namespace DevoidGPU.DX11
         public IDescriptorLayout Layout { get; }
 
 
-        private readonly Dictionary<uint, IUniformBuffer> uniformBuffers = [];
-        private readonly Dictionary<uint, ITexture> textures = [];
-        private readonly Dictionary<uint, ISampler> samplers = [];
+        internal readonly Dictionary<uint, IUniformBuffer> uniformBuffers = [];
+        internal readonly Dictionary<uint, ITexture> textures = [];
+        internal readonly Dictionary<uint, ISampler> samplers = [];
 
         public DX11DescriptorSet(IDescriptorLayout layout)
         {

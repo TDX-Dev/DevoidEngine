@@ -1,5 +1,4 @@
-﻿using SharpDX;
-using SharpDX.Direct3D11;
+﻿using SharpDX.Direct3D11;
 using System.Runtime.CompilerServices;
 using Buffer = SharpDX.Direct3D11.Buffer;
 using Device = SharpDX.Direct3D11.Device;
@@ -8,7 +7,7 @@ using MapFlags = SharpDX.Direct3D11.MapFlags;
 
 namespace DevoidGPU.DX11
 {
-    internal sealed class DX11UniformBuffer : IUniformBuffer
+    internal sealed class DX11ShaderStorageBuffer : IShaderStorageBuffer
     {
         public ulong Size { get; }
         public ResourceUsage Usage { get; }
@@ -17,7 +16,7 @@ namespace DevoidGPU.DX11
         private readonly Device device;
         private readonly DeviceContext deviceContext;
 
-        public DX11UniformBuffer(Device device, DeviceContext context, BufferDescription description)
+        public DX11ShaderStorageBuffer(Device device, DeviceContext context, BufferDescription description)
         {
             this.device = device;
             this.deviceContext = context;
@@ -28,7 +27,7 @@ namespace DevoidGPU.DX11
             SharpDX.Direct3D11.BufferDescription dxDescription = new()
             {
                 SizeInBytes = (int)Size,
-                BindFlags = BindFlags.ConstantBuffer,
+                BindFlags = BindFlags.ShaderResource,
                 Usage = DX11StateMapper.ToDXBufferUsage(description.Usage),
                 CpuAccessFlags = DX11StateMapper.ToDXCpuAccess(description.CpuAccess),
                 OptionFlags = ResourceOptionFlags.None,
@@ -37,11 +36,7 @@ namespace DevoidGPU.DX11
 
             if (description.InitialData != IntPtr.Zero)
             {
-                Buffer = new Buffer(
-                    device,
-                    description.InitialData,
-                    dxDescription
-                );
+                Buffer = new Buffer(device, description.InitialData, dxDescription);
             }
             else
             {
@@ -55,43 +50,6 @@ namespace DevoidGPU.DX11
 
             if ((ulong)totalSize > Size)
                 throw new InvalidOperationException("Update data exceeds uniform buffer size.");
-
-            if (Usage.HasFlag(ResourceUsage.Dynamic))
-            {
-                var box = deviceContext.MapSubresource(
-                    Buffer,
-                    0,
-                    MapMode.WriteDiscard,
-                    MapFlags.None);
-
-                unsafe
-                {
-                    fixed (T* src = data)
-                    {
-                        System.Buffer.MemoryCopy(
-                            src,
-                            (void*)box.DataPointer,
-                            (long)Size,
-                            totalSize);
-                    }
-                }
-
-                deviceContext.UnmapSubresource(Buffer, 0);
-                return;
-            }
-
-            unsafe
-            {
-                fixed (T* src = data)
-                {
-                    deviceContext.UpdateSubresource(
-                        new DataBox((IntPtr)src, 0, 0),
-                        Buffer,
-                        0
-                    );
-                }
-            }
         }
-
     }
 }

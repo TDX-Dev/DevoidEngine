@@ -111,21 +111,23 @@ namespace DevoidEngine.Core
 
             shader = Shader.FromDescriptorFile(Engine.GraphicsDevice, "Content/DevoidShaderDescriptors/basic.dsd");
 
-            ubo = new UniformBuffer(Engine.GraphicsDevice, BufferUsage.Uniform, 4);
+            ubo = new UniformBuffer(Engine.GraphicsDevice, ResourceUsage.Dynamic, 4);
 
-            layout = Engine.GraphicsDevice.CreateDescriptorLayout(new[]
-            {
+            layout = Engine.GraphicsDevice.CreateDescriptorLayout(
+            [
                 new DescriptorBinding()
                 {
-                    Binding = 0,
+                    Binding = 1,
                     Stages = DevoidGPU.ShaderStage.Fragment,
                     Type = DescriptorType.UniformBuffer
                 }
-            });
+            ]);
 
             set = Engine.GraphicsDevice.CreateDescriptorSet(layout);
 
-            set.SetUniformBuffer(0, ubo.GPU);
+            set.SetUniformBuffer(1, ubo.GPU);
+
+            ubo.GPU.Update<uint>([64]);
         }
 
         readonly Mesh mesh;
@@ -170,8 +172,6 @@ namespace DevoidEngine.Core
 
                 ICommandList cmd = Engine.GraphicsDevice.GetCommandList();
 
-                Render(cmd);
-
                 for (int i = 0; i < surfaces.Count; i++)
                 {
                     var surface = surfaces[i];
@@ -182,6 +182,7 @@ namespace DevoidEngine.Core
                     }
                     cmd.SetFramebuffer(surface.Framebuffer);
                     cmd.ClearColor(0, Colors.White);
+                    Render(cmd);
                     surface.Present();
                 }
 
@@ -225,8 +226,9 @@ namespace DevoidEngine.Core
 
         void Render(ICommandList cmd)
         {
+            cmd.SetViewport(0, 0, 50, 100);
             cmd.SetPipeline(shader.GetPass("Forward").GetPipeline(Engine.GraphicsDevice, Vertex.VertexInfo));
-            
+            cmd.SetDescriptorSet(0, set);
             mesh.Draw(cmd);
         }
     }

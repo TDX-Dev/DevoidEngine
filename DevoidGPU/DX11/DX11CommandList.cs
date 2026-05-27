@@ -1,5 +1,9 @@
 ﻿using SharpDX.Direct3D11;
+using System;
 using System.Numerics;
+using static System.Net.Mime.MediaTypeNames;
+using Buffer = SharpDX.Direct3D11.Buffer;
+
 
 namespace DevoidGPU.DX11
 {
@@ -27,6 +31,12 @@ namespace DevoidGPU.DX11
         }
 
         public void End() { /* No Op */ }
+
+        public void Reset()
+        {
+            currentFramebuffer = null;
+            currentViewport = default;
+        }
 
         public void SetViewport(int x, int y, int width, int height)
         {
@@ -110,9 +120,53 @@ namespace DevoidGPU.DX11
             );
         }
 
-        public void SetUniformBuffer()
+        public void SetDescriptorSet(uint setIndex, IDescriptorSet set)
         {
+            var dxSet = (DX11DescriptorSet)set;
+            var layout = (DX11DescriptorLayout)dxSet.Layout;
 
+            foreach (var binding in layout.Bindings)
+            {
+                switch (binding.Type)
+                {
+                    case DescriptorType.UniformBuffer:
+                        {
+                            if (!dxSet.uniformBuffers.TryGetValue(binding.Binding, out var ub))
+                                continue;
+
+                            var dxUB = (DX11UniformBuffer)ub;
+
+                            BindConstantBuffer(binding.Binding, binding.Stages, dxUB.Buffer);
+                            break;
+                        }
+
+                    case DescriptorType.Texture:
+                        {
+                            if (!dxSet.textures.TryGetValue(binding.Binding, out var tex))
+                                continue;
+
+                            var dxTex = (DX11Texture)tex;
+                            if (dxTex.SRV == null)
+                            {
+                                Console.WriteLine($"[DX11]: Cannot bind texture at {binding.Binding} since it does not have a SRV");
+                                continue;
+                            }
+                            BindShaderResourceView(binding.Binding, binding.Stages, dxTex.SRV);
+                            break;
+                        }
+
+                    case DescriptorType.Sampler:
+                        {
+                            if (!dxSet.samplers.TryGetValue(binding.Binding, out var samp))
+                                continue;
+
+                            var dxSampler = (DX11Sampler)samp;
+
+                            BindSampler(binding.Binding, binding.Stages, dxSampler.Sampler);
+                            break;
+                        }
+                }
+            }
         }
 
         public void Draw(int vertexCount, int startVertexLocation)
@@ -122,6 +176,49 @@ namespace DevoidGPU.DX11
         public void DrawIndexed(int indexCount, int startIndexLocation, int baseVertexLocation)
         {
             deviceContext.DrawIndexed(indexCount, startIndexLocation, baseVertexLocation);
+        }
+
+
+        // InternalMethods
+
+        internal void BindConstantBuffer(uint slot, ShaderStage stages, Buffer buffer)
+        {
+            if ((stages & ShaderStage.Vertex) != 0)
+                deviceContext.VertexShader.SetConstantBuffer((int)slot, buffer);
+            if ((stages & ShaderStage.Fragment) != 0)
+                deviceContext.PixelShader.SetConstantBuffer((int)slot, buffer);
+            if ((stages & ShaderStage.Geometry) != 0)
+                deviceContext.GeometryShader.SetConstantBuffer((int)slot, buffer);
+            if ((stages & ShaderStage.Compute) != 0)
+                deviceContext.ComputeShader.SetConstantBuffer((int)slot, buffer);
+        }
+        internal void BindShaderResourceView(uint slot, ShaderStage stages, ShaderResourceView view)
+        {
+            if ((stages & ShaderStage.Vertex) != 0)
+            {
+                deviceContext.VertexShader.SetShaderResource((int)slot, view);
+            }
+
+            if ((stages & ShaderStage.Fragment) != 0)
+            {
+                deviceContext.PixelShader.SetShaderResource((int)slot, view);
+            }
+
+            if ((stages & ShaderStage.Compute) != 0)
+            {
+                deviceContext.ComputeShader.SetShaderResource((int)slot, view);
+            }
+        }
+        internal void BindSampler(uint slot, ShaderStage stages, SamplerState sampler)
+        {
+            if ((stages & ShaderStage.Vertex) != 0)
+                deviceContext.VertexShader.SetSampler((int)slot, sampler);
+            if ((stages & ShaderStage.Fragment) != 0)
+                deviceContext.PixelShader.SetSampler((int)slot, sampler);
+            if ((stages & ShaderStage.Geometry) != 0)
+                deviceContext.GeometryShader.SetSampler((int)slot, sampler);
+            if ((stages & ShaderStage.Compute) != 0)
+                deviceContext.ComputeShader.SetSampler((int)slot, sampler);
         }
     }
 }

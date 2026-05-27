@@ -21,7 +21,7 @@ namespace DevoidEngine.Core
             IGraphicsDevice device,
             ReadOnlySpan<T> data,
             VertexInfo layout,
-            BufferUsage usage)
+            ResourceUsage usage)
         {
             Layout = layout;
             Stride = layout.SizeInBytes;

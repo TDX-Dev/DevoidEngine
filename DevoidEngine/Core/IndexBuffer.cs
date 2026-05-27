@@ -18,7 +18,7 @@ namespace DevoidEngine.Core
         public IndexBuffer(
             IGraphicsDevice device,
             ReadOnlySpan<uint> data,
-            BufferUsage usage = BufferUsage.Index,
+            ResourceUsage usage = ResourceUsage.Default,
             IndexFormat format = IndexFormat.UInt32
         )
         {

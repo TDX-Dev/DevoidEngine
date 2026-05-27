@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 
 namespace DevoidGPU
 {
-    public struct UniformBufferDescription
+    [Flags]
+    public enum CpuAccess
     {
-        public ulong Size;
-        public BufferUsage Usage;
-        public IntPtr InitialData;
+        None = 0,
+        Read = 1 << 0,
+        Write = 1 << 1
     }
 }

@@ -7,6 +7,7 @@ namespace DevoidGPU
         public CommandListType Type { get; }
         void Begin();
         void End();
+        void Reset();
 
         void SetViewport(int x, int y, int width, int height);
         void SetScissor(int x, int y, int width, int height);
@@ -19,6 +20,7 @@ namespace DevoidGPU
         void SetPipeline(IPipeline pipeline);
         void SetVertexBuffer(IVertexBuffer vertexBuffer);
         void SetIndexBuffer(IIndexBuffer indexBuffer);
+        void SetDescriptorSet(uint binding, IDescriptorSet set);
         void Draw(int vertexCount, int startVertexLocation);
         void DrawIndexed(int indexCount, int startIndexLocation, int baseVertexLocation);
     }

@@ -101,7 +101,7 @@ namespace DevoidGPU.DX11
 
                 SampleDescription = new SampleDescription(Description.Samples.Count, Description.Samples.Quality),
 
-                Usage = ResourceUsage.Default,
+                Usage = SharpDX.Direct3D11.ResourceUsage.Default,
                 CpuAccessFlags = CpuAccessFlags.None,
                 OptionFlags = DX11StateMapper.ResolveTextureOptionFlags(Description),
 
@@ -124,7 +124,7 @@ namespace DevoidGPU.DX11
 
                 Format = format,
 
-                Usage = ResourceUsage.Default,
+                Usage = SharpDX.Direct3D11.ResourceUsage.Default,
                 CpuAccessFlags = CpuAccessFlags.None,
 
                 BindFlags = DX11StateMapper.ConvertBindFlags(Description.Usage)

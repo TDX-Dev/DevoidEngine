@@ -12,7 +12,7 @@ namespace DevoidGPU.DX11
     {
         public ulong Size { get; }
         public IndexFormat Format { get; }
-        public BufferUsage Usage { get; }
+        public ResourceUsage Usage { get; }
 
         public Buffer Buffer { get; private set; } = null!;
 
@@ -28,12 +28,12 @@ namespace DevoidGPU.DX11
 
             //var dxFormat = DX11StateMapper.ToDXGIFormat(desc.Format);
 
-            BufferDescription dxDescription = new()
+            SharpDX.Direct3D11.BufferDescription dxDescription = new()
             {
                 SizeInBytes = (int)description.Size,
                 Usage = DX11StateMapper.ToDXBufferUsage(description.Usage),
                 BindFlags = BindFlags.IndexBuffer,
-                CpuAccessFlags = DX11StateMapper.ToDXCpuAccess(description.Usage),
+                CpuAccessFlags = DX11StateMapper.ToDXCpuAccess(description.CpuAccess),
                 OptionFlags = ResourceOptionFlags.None,
                 StructureByteStride = 0
             };
@@ -57,7 +57,7 @@ namespace DevoidGPU.DX11
             if ((ulong)totalSize > Size)
                 throw new InvalidOperationException("Update exceeds buffer size");
 
-            if (Usage.HasFlag(BufferUsage.Dynamic))
+            if (Usage.HasFlag(ResourceUsage.Dynamic))
             {
                 var box = deviceContext.MapSubresource(Buffer, 0, MapMode.WriteDiscard, MapFlags.None);
 

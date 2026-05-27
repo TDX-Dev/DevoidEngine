@@ -17,6 +17,8 @@ namespace DevoidGPU.DX11
         private readonly ICommandQueue computeQueue;
         private readonly ICommandQueue copyQueue;
 
+        private readonly DX11CommandList cachedCommandList;
+
         public DX11GraphicsDevice()
         {
             factory = new Factory1();
@@ -45,6 +47,8 @@ namespace DevoidGPU.DX11
             graphicsQueue = queue;
             computeQueue = queue;
             copyQueue = queue;
+
+            cachedCommandList = new DX11CommandList(deviceContext);
         }
 
         public ISwapchain CreateSwapchain(SwapchainDescription desc)
@@ -62,7 +66,7 @@ namespace DevoidGPU.DX11
             DX11GraphicsPipeline dxPipeline = new()
             {
                 VS = ((DX11Shader)desc.VertexShader).VS!,
-                PS = ((DX11Shader)desc.VertexShader).PS!,
+                PS = ((DX11Shader)desc.PixelShader).PS!,
 
                 Topology = DX11StateMapper.ToDXPrimitiveType(desc.Topology)
             };
@@ -154,7 +158,7 @@ namespace DevoidGPU.DX11
         {
             return new DX11Framebuffer([.. colorAttachments.Cast<DX11Texture>()], depthAttachment as DX11Texture);
         }
-        public IUniformBuffer CreateUniformBuffer(UniformBufferDescription desc)
+        public IUniformBuffer CreateUniformBuffer(BufferDescription desc)
         {
             return new DX11UniformBuffer(device, deviceContext, desc);
         }
@@ -171,7 +175,8 @@ namespace DevoidGPU.DX11
 
         public ICommandList GetCommandList()
         {
-            return new DX11CommandList(deviceContext);
+            cachedCommandList.Reset();
+            return cachedCommandList;
         }
         public ICommandQueue GetCommandQueue(CommandListType type)
         {

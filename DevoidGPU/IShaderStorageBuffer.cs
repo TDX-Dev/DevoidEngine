@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DevoidGPU
 {
-    public interface IUniformBuffer
+    public interface IShaderStorageBuffer
     {
         ulong Size { get; }
         ResourceUsage Usage { get; }

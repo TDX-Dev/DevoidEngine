@@ -6,8 +6,13 @@ struct PSInput
     float4 Tangent : TANGENT;
 };
 
+cbuffer Hello : register(b1)
+{
+    uint HelloWorld;
+};
+
 float4 PSMain(PSInput input) : SV_Target0
 {
     
-    return float4(0.5, 1, 0.2, 1);
+    return float4(HelloWorld,0,0, 1);
 }
