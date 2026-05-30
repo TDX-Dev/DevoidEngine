@@ -23,7 +23,7 @@ namespace DevoidEngine.Core
         public static IGraphicsDevice GraphicsDevice => Instance.graphicsDevice;
 
         public float InterpolationAlpha { get; set; } = 0;
-        public float TargetFramerate { get; } = 60;
+        public float TargetFramerate { get; } = 60f;
         public uint FrameCount { get; internal set; } = 0;
         public float TimeScale { get; set; } = 1.0f;
 

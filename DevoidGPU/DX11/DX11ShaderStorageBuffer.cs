@@ -1,4 +1,6 @@
-﻿using SharpDX.Direct3D11;
+﻿using SharpDX;
+using SharpDX.Direct3D;
+using SharpDX.Direct3D11;
 using System.Runtime.CompilerServices;
 using Buffer = SharpDX.Direct3D11.Buffer;
 using Device = SharpDX.Direct3D11.Device;
@@ -13,6 +15,9 @@ namespace DevoidGPU.DX11
         public ResourceUsage Usage { get; }
         public Buffer Buffer { get; private set; } = null!;
 
+        public ShaderResourceView? SRV { get; private set; }
+        public UnorderedAccessView? UAV { get; private set; }
+
         private readonly Device device;
         private readonly DeviceContext deviceContext;
 
@@ -21,17 +26,22 @@ namespace DevoidGPU.DX11
             this.device = device;
             this.deviceContext = context;
 
-            this.Size = DX11StateMapper.Align16(description.Size);
+            this.Size = description.Size;
             Usage = description.Usage;
+
+            BindFlags bindFlags = BindFlags.ShaderResource;
+
+            if (description.Bind.HasFlag(BufferBind.StorageWritable))
+                bindFlags |= BindFlags.UnorderedAccess;
 
             SharpDX.Direct3D11.BufferDescription dxDescription = new()
             {
                 SizeInBytes = (int)Size,
-                BindFlags = BindFlags.ShaderResource,
+                BindFlags = bindFlags,
                 Usage = DX11StateMapper.ToDXBufferUsage(description.Usage),
                 CpuAccessFlags = DX11StateMapper.ToDXCpuAccess(description.CpuAccess),
-                OptionFlags = ResourceOptionFlags.None,
-                StructureByteStride = 0
+                OptionFlags = ResourceOptionFlags.BufferStructured,
+                StructureByteStride = description.Stride
             };
 
             if (description.InitialData != IntPtr.Zero)
@@ -42,6 +52,37 @@ namespace DevoidGPU.DX11
             {
                 Buffer = new Buffer(device, dxDescription);
             }
+
+            SRV = new ShaderResourceView(
+                device,
+                Buffer,
+                new ShaderResourceViewDescription
+                {
+                    Format = SharpDX.DXGI.Format.Unknown,
+                    Dimension = ShaderResourceViewDimension.Buffer,
+                    Buffer = new ShaderResourceViewDescription.BufferResource
+                    {
+                        ElementOffset = 0,
+                        ElementCount = ((int)Size / description.Stride)
+                    }
+                });
+
+            if (description.Bind.HasFlag(BufferBind.StorageWritable))
+            {
+                UAV = new UnorderedAccessView(
+                    device,
+                    Buffer,
+                    new UnorderedAccessViewDescription
+                    {
+                        Format = SharpDX.DXGI.Format.Unknown,
+                        Dimension = UnorderedAccessViewDimension.Buffer,
+                        Buffer = new UnorderedAccessViewDescription.BufferResource
+                        {
+                            FirstElement = 0,
+                            ElementCount = ((int)Size / description.Stride)
+                        }
+                    });
+            }
         }
 
         public void Update<T>(ReadOnlySpan<T> data) where T : unmanaged
@@ -49,7 +90,44 @@ namespace DevoidGPU.DX11
             int totalSize = Unsafe.SizeOf<T>() * data.Length;
 
             if ((ulong)totalSize > Size)
-                throw new InvalidOperationException("Update data exceeds uniform buffer size.");
+                throw new InvalidOperationException("Update data exceeds shader storage buffer size.");
+
+            if (Usage.HasFlag(ResourceUsage.Dynamic))
+            {
+                var box = deviceContext.MapSubresource(
+                    Buffer,
+                    0,
+                    MapMode.WriteDiscard,
+                    MapFlags.None);
+
+                unsafe
+                {
+                    fixed (T* src = data)
+                    {
+                        System.Buffer.MemoryCopy(
+                            src,
+                            (void*)box.DataPointer,
+                            (long)Size,
+                            totalSize);
+                    }
+                }
+
+                deviceContext.UnmapSubresource(Buffer, 0);
+                return;
+            }
+
+            unsafe
+            {
+                fixed (T* src = data)
+                {
+                    deviceContext.UpdateSubresource(
+                        new DataBox((IntPtr)src, 0, 0),
+                        Buffer,
+                        0
+                    );
+                }
+            }
         }
+
     }
 }

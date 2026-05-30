@@ -10,11 +10,13 @@ namespace Sandbox
             {
                 Height = 480,
                 Width = 640,
-                Name = "Devoid",
+                Name = "DEVOID - Devoid Engine",
                 API = GraphicsAPI.DX11,
                 Resizable = false,
-                VSync = true
+                VSync = false
             });
+
+            application.AddLayer(new SandboxProgram());
 
             application.Run();
         }

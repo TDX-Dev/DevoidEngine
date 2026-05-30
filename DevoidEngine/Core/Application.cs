@@ -28,6 +28,8 @@ namespace DevoidEngine.Core
         private readonly List<WindowSurface> surfaces;
         private readonly FrameTimer frameTimer;
 
+        private readonly LayerManager layerManager;
+
         private float deltaTimeAccumulator = 0f;
         private uint numFrames = 0;
         private bool isRunning = true;
@@ -44,6 +46,8 @@ namespace DevoidEngine.Core
 
             Engine.Initialize(configuration);
 
+            layerManager = new LayerManager();
+
             var window = new Window(new WindowSpecification
             {
                 Title = specification.Name,
@@ -52,7 +56,8 @@ namespace DevoidEngine.Core
                 Resizable = specification.Resizable,
                 StartVisible = false,
                 StartCentered = true,
-                StartFocused = true
+                StartFocused = true,
+                
             });
 
             mainSurface = new WindowSurface(
@@ -66,46 +71,46 @@ namespace DevoidEngine.Core
                     Width = 640,
                     RefreshRate = new System.Numerics.Vector2(165, 0),
                     Samples = new DevoidGPU.TextureSampleDescription(1, 0),
-                    VSync = true,
+                    VSync = specification.VSync,
                     Windowed = true
                 }
             );
 
             surfaces.Add(mainSurface);
 
-            for (int i = 0; i < 0; i++)
-            {
+            //for (int i = 0; i < 10; i++)
+            //{
 
-                var window1 = new Window(new WindowSpecification
-                {
-                    Title = specification.Name,
-                    Width = specification.Width,
-                    Height = specification.Height,
-                    Resizable = true,
-                    StartVisible = false,
-                    StartFocused = true,
-                    StartCentered = true,
-                    Transparency = true,
-                });
+            //    var window1 = new Window(new WindowSpecification
+            //    {
+            //        Title = specification.Name,
+            //        Width = specification.Width,
+            //        Height = specification.Height,
+            //        Resizable = true,
+            //        StartVisible = false,
+            //        StartFocused = true,
+            //        StartCentered = true,
+            //        Transparency = true,
+            //    });
 
-                var surface1 = new WindowSurface(
-                    window1,
-                    Engine.GraphicsDevice,
-                    new SwapchainDescription()
-                    {
-                        BufferCount = 2,
-                        Format = TextureFormat.RGBA8_UNorm,
-                        Height = 480,
-                        Width = 640,
-                        RefreshRate = new Vector2(165, 0),
-                        Samples = new TextureSampleDescription(1, 0),
-                        VSync = true,
-                        Windowed = true,
-                    }
-                );
+            //    var surface1 = new WindowSurface(
+            //        window1,
+            //        Engine.GraphicsDevice,
+            //        new SwapchainDescription()
+            //        {
+            //            BufferCount = 2,
+            //            Format = TextureFormat.RGBA8_UNorm,
+            //            Height = 480,
+            //            Width = 640,
+            //            RefreshRate = new Vector2(165, 0),
+            //            Samples = new TextureSampleDescription(1, 0),
+            //            VSync = true,
+            //            Windowed = true,
+            //        }
+            //    );
 
-                surfaces.Add(surface1);
-            }
+            //    surfaces.Add(surface1);
+            //}
 
             mesh = PrimitiveMeshes.GetCube();
 
@@ -141,6 +146,7 @@ namespace DevoidEngine.Core
             if (surfaces.Count == 0)
                 return;
 
+            layerManager.AttachLayers();
             while (isRunning)
             {
                 Engine.Profiler.BeginFrame();
@@ -172,17 +178,20 @@ namespace DevoidEngine.Core
 
                 ICommandList cmd = Engine.GraphicsDevice.GetCommandList();
 
-                for (int i = 0; i < surfaces.Count; i++)
+                foreach (var surface in surfaces)
                 {
-                    var surface = surfaces[i];
-                    if (i != 0) // Assume index 0 is always main window
-                    {
-                        surface.UpdateSurface(deltaTime * timescale);
-                        surface.RenderSurface(cmd);
-                    }
+                    surface.UpdateSurface(deltaTime);
+
                     cmd.SetFramebuffer(surface.Framebuffer);
                     cmd.ClearColor(0, Colors.White);
-                    Render(cmd);
+
+                    if (surface == mainSurface)
+                    {
+                        Render(cmd); // normal game rendering
+                    }
+
+                    surface.RenderSurface(cmd); // custom window rendering
+
                     surface.Present();
                 }
 
@@ -212,24 +221,37 @@ namespace DevoidEngine.Core
 
                 Engine.Profiler.CPU.EndScope();
             }
+            layerManager.DetachLayers();
         }
 
         void FixedUpdate(float deltaTime)
         {
-
+            layerManager.FixedUpdateLayers(deltaTime);
         }
 
         void Update(float deltaTime)
         {
-
+            layerManager.UpdateLayers(deltaTime);
         }
 
         void Render(ICommandList cmd)
         {
-            cmd.SetViewport(0, 0, 50, 100);
-            cmd.SetPipeline(shader.GetPass("Forward").GetPipeline(Engine.GraphicsDevice, Vertex.VertexInfo));
-            cmd.SetDescriptorSet(0, set);
-            mesh.Draw(cmd);
+            //cmd.SetViewport(0, 0, 50, 100);
+            //cmd.SetPipeline(shader.GetPass("Forward").GetPipeline(Engine.GraphicsDevice, Vertex.VertexInfo));
+            //cmd.SetDescriptorSet(0, set);
+            //mesh.Draw(cmd);
+
+            layerManager.RenderLayers(cmd);
+        }
+
+        public void AddLayer(Layer layer)
+        {
+            layerManager.AddLayer(layer);
+        }
+
+        public void RemoveLayer(Layer layer)
+        {
+            layerManager.RemoveLayer(layer);
         }
     }
 }

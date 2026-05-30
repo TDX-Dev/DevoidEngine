@@ -8,6 +8,6 @@ namespace DevoidGPU
 {
     public interface IDescriptorLayout
     {
-        IReadOnlyList<DescriptorBinding> Bindings { get; }
+        DescriptorBinding[] Bindings { get; }
     }
 }

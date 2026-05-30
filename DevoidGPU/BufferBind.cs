@@ -14,13 +14,12 @@ namespace DevoidGPU
         Vertex = 1 << 0,
         Index = 1 << 1,
         Uniform = 1 << 2,
+
         Storage = 1 << 3,
+        StorageWritable = 1 << 4,
 
-        ShaderResource = 1 << 4,
-        UnorderedAccess = 1 << 5,
-
-        Indirect = 1 << 6,
-        TransferSrc = 1 << 7,
-        TransferDst = 1 << 8
+        Indirect = 1 << 5,
+        TransferSrc = 1 << 6,
+        TransferDst = 1 << 7
     }
 }
