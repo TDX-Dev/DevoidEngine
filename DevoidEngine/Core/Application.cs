@@ -150,21 +150,30 @@ namespace DevoidEngine.Core
                 Update(deltaTime * timescale);
 
                 ICommandList cmd = Engine.GraphicsDevice.GetCommandList();
+                cmd.Begin();
 
                 foreach (var surface in surfaces)
                 {
+                    //if (surface.SkipRefresh)
+                    //    continue;
                     surface.UpdateSurface(deltaTime);
 
                     cmd.SetFramebuffer(surface.Framebuffer);
                     cmd.ClearColor(0, Colors.White);
 
                     if (surface == mainSurface)
-                    {
-                        Render(cmd); // normal game rendering
-                    }
+                        Render(cmd);
 
-                    surface.RenderSurface(cmd); // custom window rendering
+                    surface.RenderSurface(cmd);
 
+                }
+                cmd.End();
+                Engine.GraphicsDevice.Submit(cmd);
+
+                foreach (var surface in surfaces)
+                {
+                    if (surface.SkipRefresh)
+                        continue;
                     surface.Present();
                 }
 

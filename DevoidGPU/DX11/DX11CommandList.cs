@@ -30,7 +30,11 @@ namespace DevoidGPU.DX11
             deviceContext.InputAssembler.InputLayout = null;
         }
 
-        public void End() { /* No Op */ }
+        public void End()
+        {
+            
+            /* No Op */ 
+        }
 
         public void Reset()
         {
