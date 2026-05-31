@@ -72,8 +72,6 @@ namespace DevoidEngine.Core
 
         public void Present()
         {
-            if (Window.ClientSize.X == 0 || Window.ClientSize.Y == 0)
-                return;
             Swapchain.Present();
             ResizeSwapchain();
         }

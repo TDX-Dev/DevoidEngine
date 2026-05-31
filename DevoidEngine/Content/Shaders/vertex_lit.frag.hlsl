@@ -14,5 +14,5 @@ cbuffer Hello : register(b1)
 float4 PSMain(PSInput input) : SV_Target0
 {
     
-    return float4(HelloWorld,0,0, 1);
+    return float4(HelloWorld, HelloWorld, 0, 1);
 }

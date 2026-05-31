@@ -1,4 +1,5 @@
-﻿using DevoidEngine.Profiling;
+﻿using DevoidEngine.InputSystem;
+using DevoidEngine.Profiling;
 using DevoidGPU;
 using DevoidGPU.DX11;
 
@@ -21,6 +22,7 @@ namespace DevoidEngine.Core
 
         public static Profiler Profiler => Instance.profiler;
         public static IGraphicsDevice GraphicsDevice => Instance.graphicsDevice;
+        public static Input InputSystem => Instance.inputSystem;
 
         public float InterpolationAlpha { get; set; } = 0;
         public float TargetFramerate { get; } = 60f;
@@ -31,7 +33,7 @@ namespace DevoidEngine.Core
 
         private readonly Profiler profiler;
         private readonly IGraphicsDevice graphicsDevice;
-
+        private readonly Input inputSystem;
 
         private Engine(EngineConfig config)
         {
@@ -44,6 +46,7 @@ namespace DevoidEngine.Core
             };
 
             SceneManager = new SceneManager();
+            inputSystem = new Input();
         }
 
         public static void Initialize(EngineConfig config)

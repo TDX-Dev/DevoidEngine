@@ -54,15 +54,16 @@ namespace DevoidEngine.Core
             if (specification.StartCentered)
                 CenterWindow();
             WindowUtil.EnableDarkMode(Handle);
+
+            this.Resize += Window_Resize;
+        }
+
+        private void Window_Resize(ResizeEventArgs obj)
+        {
+            OnWindowResize?.Invoke(obj.Width, obj.Height);
         }
 
         public void PumpEvents() => ProcessEvents(0);
-
-        protected override void OnResize(ResizeEventArgs e)
-        {
-            base.OnResize(e);
-            OnWindowResize?.Invoke(e.Width, e.Height);
-        }
 
         public IntPtr GetWindowHandle()
         {

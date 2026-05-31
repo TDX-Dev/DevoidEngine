@@ -2,6 +2,7 @@
 
 #define PROFILING
 
+using DevoidEngine.InputSystem;
 using DevoidEngine.Util;
 using DevoidGPU;
 using SharpDX.DXGI;
@@ -78,6 +79,8 @@ namespace DevoidEngine.Core
 
             surfaces.Add(mainSurface);
 
+            Engine.InputSystem.UpdateInputProviderWindow(window);
+
             //for (int i = 0; i < 10; i++)
             //{
 
@@ -134,6 +137,8 @@ namespace DevoidEngine.Core
                 foreach (var surface in surfaces)
                 {
                     surface.Window.PumpEvents();
+                    if (surface == mainSurface)
+                        Engine.InputSystem.Update(); // Only update main window, change for multi window support
                 }
 
                 deltaTimeAccumulator += deltaTime;
@@ -154,15 +159,17 @@ namespace DevoidEngine.Core
 
                 foreach (var surface in surfaces)
                 {
-                    //if (surface.SkipRefresh)
-                    //    continue;
+                    if (surface.SkipRefresh)
+                        continue;
                     surface.UpdateSurface(deltaTime);
 
                     cmd.SetFramebuffer(surface.Framebuffer);
                     cmd.ClearColor(0, Colors.White);
-
                     if (surface == mainSurface)
+                    {
                         Render(cmd);
+                        Engine.InputSystem.EndFrame();
+                    }
 
                     surface.RenderSurface(cmd);
 
@@ -172,8 +179,6 @@ namespace DevoidEngine.Core
 
                 foreach (var surface in surfaces)
                 {
-                    if (surface.SkipRefresh)
-                        continue;
                     surface.Present();
                 }
 

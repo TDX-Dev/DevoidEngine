@@ -1,4 +1,6 @@
 ﻿using DevoidEngine.Core;
+using DevoidEngine.InputSystem;
+using DevoidEngine.InputSystem.InputDevices;
 using DevoidEngine.Util;
 using DevoidGPU;
 using System;
@@ -50,6 +52,14 @@ namespace Sandbox
             Engine.Instance.SceneManager.LoadScene(scene);
 
             scene.AddGameObject("Hello World");
+
+
+            Engine.InputSystem.AddBinding("Hello", new InputBinding()
+            {
+                DeviceType = InputDeviceType.Keyboard,
+                Control = (ushort)Keys.K,
+                IsClamped = true
+            });
         }
 
         public override void OnDetach()
@@ -59,7 +69,10 @@ namespace Sandbox
 
         public override void OnUpdate(float deltaTime)
         {
-
+            if (Engine.InputSystem.GetActionDown("Hello"))
+            {
+                Console.WriteLine("K was pressed");
+            }
         }
 
         public override void OnRender(ICommandList cmd)

@@ -80,21 +80,21 @@ namespace DevoidEngine.Core
         
         public void Draw(ICommandList cmd)
         {
-            cmd.DrawIndexed(0, 0, 0);
 
-            //if (VB == null)
-            //    return;
-            //cmd.SetVertexBuffer(VB.GPU);
+            if (VB == null)
+                return;
+            cmd.SetVertexBuffer(VB.GPU);
 
-            //if (IB != null)
-            //{
-            //    cmd.SetIndexBuffer(IB.GPU);
-            //    cmd.DrawIndexed(IB.Count, 0, 0);
-            //} else
-            //{
-            //    cmd.Draw(VB.Count, 0);
-            //}
-            
+            if (IB != null)
+            {
+                cmd.SetIndexBuffer(IB.GPU);
+                cmd.DrawIndexed(IB.Count, 0, 0);
+            }
+            else
+            {
+                cmd.Draw(VB.Count, 0);
+            }
+
         }
     }
 }

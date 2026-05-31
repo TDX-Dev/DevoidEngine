@@ -12,7 +12,7 @@ namespace Sandbox
                 Width = 640,
                 Name = "Priceless Summer - Devoid Engine",
                 API = GraphicsAPI.DX11,
-                Resizable = false,
+                Resizable = true,
                 VSync = true
             });
 
