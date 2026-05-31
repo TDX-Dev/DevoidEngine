@@ -41,6 +41,7 @@ namespace DevoidEngine.Core
                 return;
             Swapchain.Resize(Window.ClientSize.X, Window.ClientSize.Y);
             resizePending = false;
+            Console.WriteLine("Resizing");
         }
 
         public void UpdateSurface(float deltaTime)
@@ -57,8 +58,8 @@ namespace DevoidEngine.Core
         {
             if (Window.ClientSize.X == 0 || Window.ClientSize.Y == 0)
                 return;
-            ResizeSwapchain();
             Swapchain.Present();
+            ResizeSwapchain();
         }
 
         public void Dispose()

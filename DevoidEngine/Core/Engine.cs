@@ -26,6 +26,8 @@ namespace DevoidEngine.Core
         public float TargetFramerate { get; } = 60f;
         public uint FrameCount { get; internal set; } = 0;
         public float TimeScale { get; set; } = 1.0f;
+        public bool SimulatePhysics { get; set; } = true;
+        public SceneManager SceneManager { get; set; }
 
         private readonly Profiler profiler;
         private readonly IGraphicsDevice graphicsDevice;
@@ -40,6 +42,8 @@ namespace DevoidEngine.Core
                 GraphicsAPI.DX11 => new DX11GraphicsDevice(),
                 _ => throw new ArgumentException("Invalid Graphics API type."),
             };
+
+            SceneManager = new SceneManager();
         }
 
         public static void Initialize(EngineConfig config)

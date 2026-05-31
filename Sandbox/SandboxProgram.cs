@@ -1,4 +1,6 @@
 ﻿using DevoidEngine.Core;
+using DevoidEngine.Util;
+using DevoidGPU;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,9 +11,45 @@ namespace Sandbox
 {
     internal class SandboxProgram : Layer
     {
+        Mesh mesh = null!;
+        Shader shader = null!;
+        UniformBuffer ubo = null!;
+        IDescriptorLayout layout = null!;
+        IDescriptorSet set = null!;
+
+        Scene scene = null!;
+
         public override void OnAttach()
         {
             Console.WriteLine("Sandbox has launched.");
+
+            mesh = PrimitiveMeshes.GetCube();
+
+            shader = Shader.FromDescriptorFile(Engine.GraphicsDevice, "Content/DevoidShaderDescriptors/basic.dsd");
+
+            ubo = new UniformBuffer(Engine.GraphicsDevice, ResourceUsage.Dynamic, 4);
+
+            layout = Engine.GraphicsDevice.CreateDescriptorLayout(
+            [
+                new DescriptorBinding()
+                {
+                    Binding = 1,
+                    Stages = DevoidGPU.ShaderStage.Fragment,
+                    Type = DescriptorType.UniformBuffer
+                }
+            ]);
+
+            set = Engine.GraphicsDevice.CreateDescriptorSet(layout);
+
+            set.SetUniformBuffer(1, ubo.GPU);
+
+            ubo.GPU.Update<uint>([64]);
+
+
+            scene = new Scene();
+            Engine.Instance.SceneManager.LoadScene(scene);
+
+            scene.AddGameObject("Hello World");
         }
 
         public override void OnDetach()
@@ -21,7 +59,16 @@ namespace Sandbox
 
         public override void OnUpdate(float deltaTime)
         {
-            Console.WriteLine(1/deltaTime);
+
+        }
+
+        public override void OnRender(ICommandList cmd)
+        {
+            cmd.SetViewport(0, 0, 50, 100);
+            cmd.SetPipeline(shader.GetPass("Forward").GetPipeline(Engine.GraphicsDevice, Vertex.VertexInfo));
+            cmd.SetDescriptorSet(0, set);
+            mesh.Draw(cmd);
+
         }
     }
 }

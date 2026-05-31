@@ -83,14 +83,22 @@ namespace DevoidGPU.DX11
 
             if (result != Result.Ok)
             {
-                Console.WriteLine("[DX11]: GPU device problem! Reason: " + device.DeviceRemovedReason);
+                Console.Write("[DX11]: GPU device problem! Reason: ");
+                Console.WriteLine(device.DeviceRemovedReason);
             }
         }
 
         public void Resize(int width, int height)
         {
+            Console.WriteLine("Resizing swapchain");
+
             for (int i = 0; i < backbuffers.Length; i++)
                 backbuffers[i]?.Dispose();
+
+            foreach (var rtv in framebuffer.RTVs)
+            {
+                rtv.Dispose();
+            }
 
             swapchain.ResizeBuffers(
                 bufferCount,

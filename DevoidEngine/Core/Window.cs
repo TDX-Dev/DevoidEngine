@@ -46,6 +46,7 @@ namespace DevoidEngine.Core
             WindowBorder = specification.Resizable ? WindowBorder.Resizable : WindowBorder.Fixed,
 
             Title = specification.Title,
+            Vsync = VSyncMode.Off
 
         }
         )

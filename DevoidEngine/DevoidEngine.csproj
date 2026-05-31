@@ -1,13 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-	<Nullable>enable</Nullable>
-	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-	<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-	<Platforms>AnyCPU;x64</Platforms>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<Platforms>AnyCPU;x64</Platforms>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<PublishAot>true</PublishAot>
+		<IsAotCompatible>true</IsAotCompatible>
+		<EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+		<PermitDynamicIL>false</PermitDynamicIL>
+	</PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="OpenTK" Version="4.9.4" />
@@ -23,7 +30,6 @@
 
 	<ItemGroup>
 	  <Folder Include="Content\Shaders\" />
-	  <Folder Include="Rendering\" />
 	</ItemGroup>
 
 </Project>

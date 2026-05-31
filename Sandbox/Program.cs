@@ -10,10 +10,10 @@ namespace Sandbox
             {
                 Height = 480,
                 Width = 640,
-                Name = "DEVOID - Devoid Engine",
+                Name = "Priceless Summer - Devoid Engine",
                 API = GraphicsAPI.DX11,
                 Resizable = false,
-                VSync = false
+                VSync = true
             });
 
             application.AddLayer(new SandboxProgram());

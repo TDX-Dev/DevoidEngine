@@ -69,7 +69,7 @@ namespace DevoidEngine.Core
                     Format = DevoidGPU.TextureFormat.RGBA8_UNorm,
                     Height = 480,
                     Width = 640,
-                    RefreshRate = new System.Numerics.Vector2(165, 0),
+                    RefreshRate = Vector2.Zero,
                     Samples = new DevoidGPU.TextureSampleDescription(1, 0),
                     VSync = specification.VSync,
                     Windowed = true
@@ -112,34 +112,7 @@ namespace DevoidEngine.Core
             //    surfaces.Add(surface1);
             //}
 
-            mesh = PrimitiveMeshes.GetCube();
-
-            shader = Shader.FromDescriptorFile(Engine.GraphicsDevice, "Content/DevoidShaderDescriptors/basic.dsd");
-
-            ubo = new UniformBuffer(Engine.GraphicsDevice, ResourceUsage.Dynamic, 4);
-
-            layout = Engine.GraphicsDevice.CreateDescriptorLayout(
-            [
-                new DescriptorBinding()
-                {
-                    Binding = 1,
-                    Stages = DevoidGPU.ShaderStage.Fragment,
-                    Type = DescriptorType.UniformBuffer
-                }
-            ]);
-
-            set = Engine.GraphicsDevice.CreateDescriptorSet(layout);
-
-            set.SetUniformBuffer(1, ubo.GPU);
-
-            ubo.GPU.Update<uint>([64]);
         }
-
-        readonly Mesh mesh;
-        readonly Shader shader;
-        readonly UniformBuffer ubo;
-        readonly IDescriptorLayout layout;
-        readonly IDescriptorSet set;
 
         public void Run()
         {
@@ -227,21 +200,19 @@ namespace DevoidEngine.Core
         void FixedUpdate(float deltaTime)
         {
             layerManager.FixedUpdateLayers(deltaTime);
+            Engine.Instance.SceneManager.FixedUpdateScenes(deltaTime);
         }
 
         void Update(float deltaTime)
         {
             layerManager.UpdateLayers(deltaTime);
+            Engine.Instance.SceneManager.UpdateScenes(deltaTime);
         }
 
         void Render(ICommandList cmd)
         {
-            //cmd.SetViewport(0, 0, 50, 100);
-            //cmd.SetPipeline(shader.GetPass("Forward").GetPipeline(Engine.GraphicsDevice, Vertex.VertexInfo));
-            //cmd.SetDescriptorSet(0, set);
-            //mesh.Draw(cmd);
-
             layerManager.RenderLayers(cmd);
+            Engine.Instance.SceneManager.RenderScenes();
         }
 
         public void AddLayer(Layer layer)

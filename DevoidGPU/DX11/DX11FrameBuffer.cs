@@ -54,5 +54,7 @@ namespace DevoidGPU.DX11
                 throw new InvalidOperationException("Depth attachment size must match color attachments.");
             }
         }
+
+        public void Dispose() { }
     }
 }

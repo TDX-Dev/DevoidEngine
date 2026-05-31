@@ -1,0 +1,247 @@
+﻿using DevoidEngine.Util;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DevoidEngine.Components
+{
+    public class Transform3D : Component
+    {
+        public override string Type => nameof(Transform3D);
+
+        public Vector3 LocalPosition
+        {
+            get => localPosition;
+            set
+            {
+                if (localPosition != value)
+                {
+                    localPosition = value;
+                    MarkDirty();
+                    Console.WriteLine("Marked Dirty");
+                }
+            }
+        }
+
+        public Vector3 EulerAngles
+        {
+            get
+            {
+                if (eulerDirty)
+                {
+                    eulerValue = MathHelper.QuaternionToEuler(localRotation);
+                    eulerDirty = false;
+                }
+
+                return eulerValue;
+            }
+            set
+            {
+                eulerValue = value;
+                localRotation = MathHelper.EulerToQuaternion(value);
+                MarkDirty();
+            }
+        }
+
+        public Quaternion LocalRotation
+        {
+            get => localRotation;
+            set
+            {
+                if (localRotation != value)
+                {
+                    localRotation = value;
+                    eulerDirty = true;
+                    MarkDirty();
+                }
+            }
+        }
+
+        public Vector3 LocalScale
+        {
+            get => localScale;
+            set
+            {
+                if (localScale != value)
+                {
+                    localScale = value;
+                    MarkDirty();
+                }
+            }
+        }
+
+        public Matrix4x4 LocalMatrix =>
+            Matrix4x4.CreateScale(localScale) *
+            Matrix4x4.CreateFromQuaternion(localRotation) *
+            Matrix4x4.CreateTranslation(localPosition);
+
+        public Matrix4x4 WorldMatrix
+        {
+            get
+            {
+                if (dirty)
+                    RecalculateWorldMatrix();
+
+                return worldMatrix;
+            }
+        }
+
+        public Transform3D? Parent => parent;
+        public List<Transform3D> Children => children;
+
+        private Transform3D? parent;
+        private readonly List<Transform3D> children;
+
+        private Vector3 localPosition = Vector3.Zero;
+        private Quaternion localRotation = Quaternion.Identity;
+        private Vector3 localScale = Vector3.One;
+
+        private Vector3 prevLocalPosition;
+        private Quaternion prevLocalRotation;
+        private Vector3 prevLocalScale;
+
+        private Matrix4x4 worldMatrix = Matrix4x4.Identity;
+
+        private Vector3 eulerValue;
+        private bool eulerDirty = true;
+        private bool dirty = true;
+
+        public bool hasMoved = false;
+
+        private Matrix4x4 interpolatedWorldMatrix;
+        private uint interpolatedFrame = 0; // cache guard
+
+        public Transform3D()
+        {
+            children = [];
+        }
+
+        public void SetParent(Transform3D? newParent, bool keepWorld = false)
+        {
+            if (parent == newParent)
+                return;
+
+            Transform3D? current = newParent;
+
+            while (current != null)
+            {
+                if (current == this)
+                    return;
+
+                current = current.parent;
+            }
+
+            Matrix4x4 oldWorld = WorldMatrix;
+
+            parent?.children.Remove(this);
+
+            parent = newParent;
+            parent?.children.Add(this);
+
+            if (keepWorld)
+            {
+                if (parent != null)
+                {
+                    Matrix4x4.Invert(parent.WorldMatrix, out var invParent);
+                    // This was changed from:
+                    Matrix4x4 local = oldWorld * invParent;
+                    //Matrix4x4 local = invParent * oldWorld;
+                    Decompose(local);
+                }
+                else
+                {
+                    Decompose(oldWorld);
+                }
+            }
+
+            MarkDirty();
+        }
+
+        private void RecalculateWorldMatrix()
+        {
+            if (parent != null)
+                worldMatrix = LocalMatrix * parent.WorldMatrix;
+            else
+                worldMatrix = LocalMatrix;
+
+            dirty = false;
+        }
+
+        internal void MarkDirty()
+        {
+            dirty = true;
+            hasMoved = true;
+
+            foreach (var child in children)
+                child.MarkDirty();
+        }
+        internal void ClearDirty()
+        {
+            dirty = false;
+            hasMoved = false;
+        }
+        internal void CapturePrevious()
+        {
+            prevLocalPosition = localPosition;
+            prevLocalRotation = localRotation;
+            prevLocalScale = localScale;
+        }
+        public Matrix4x4 GetGlobalTransformInterpolated(uint frameIndex, float alpha)
+        {
+
+            if (interpolatedFrame == frameIndex)
+                return interpolatedWorldMatrix;
+
+            Matrix4x4 local;
+
+            Vector3 pos = Vector3.Lerp(prevLocalPosition, localPosition, alpha);
+            Quaternion rot = Quaternion.Slerp(prevLocalRotation, localRotation, alpha);
+            Vector3 scale = Vector3.Lerp(prevLocalScale, localScale, alpha);
+
+            local = Matrix4x4.CreateScale(scale) * Matrix4x4.CreateFromQuaternion(rot) * Matrix4x4.CreateTranslation(pos);
+            Matrix4x4 result;
+
+            // i hate life
+            if (parent != null)
+            {
+                Matrix4x4 parentGlobal;
+
+                if (parent.interpolatedFrame == frameIndex)
+                {
+                    parentGlobal = parent.interpolatedWorldMatrix;
+                }
+                else
+                {
+                    parentGlobal = parent.GetGlobalTransformInterpolated(frameIndex, alpha);
+                }
+
+                result = local * parentGlobal;
+            }
+            else
+            {
+                result = local;
+            }
+
+            interpolatedWorldMatrix = result;
+            interpolatedFrame = frameIndex;
+
+            return result;
+        }
+        private void Decompose(Matrix4x4 matrix)
+        {
+            Matrix4x4.Decompose(
+                matrix,
+                out Vector3 scale,
+                out Quaternion rotation,
+                out Vector3 translation
+            );
+
+            localPosition = translation;
+            localRotation = rotation;
+            localScale = scale;
+        }
+    }
+}
