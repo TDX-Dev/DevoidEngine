@@ -18,6 +18,7 @@ namespace DevoidEngine.Core
         public RasterizerState Rasterizer;
 
         private readonly Dictionary<VertexInfo, IPipeline> pipelines = [];
+        public IDescriptorLayout DescriptorLayout { get; internal set; } = null!;
 
         public ShaderPass(ShaderStage vertex, ShaderStage fragment)
         {

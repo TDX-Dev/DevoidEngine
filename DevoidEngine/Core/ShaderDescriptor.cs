@@ -9,7 +9,7 @@ namespace DevoidEngine.Core
     public class ShaderDescriptor
     {
         public string Name { get; set; } = string.Empty;
-
+        public MaterialParameterDescriptor? MaterialParameters { get; set; }
         public List<PassDescriptor> Passes { get; set; } = [];
     }
 
@@ -20,6 +20,24 @@ namespace DevoidEngine.Core
         public ShaderFiles Shaders { get; set; } = new();
 
         public StateDescriptor? States { get; set; }
+    }
+
+    public class MaterialParameterDescriptor
+    {
+        public string BufferName { get; set; } = string.Empty;
+
+        public List<MaterialTextureDescriptor> Textures { get; set; } = [];
+    }
+
+    public class MaterialTextureDescriptor
+    {
+        public string Name { get; set; } = string.Empty;
+
+        public string Type { get; set; } = "Texture2D";
+
+        public string? DisplayName { get; set; }
+
+        public string? Default { get; set; }
     }
 
     public class ShaderFiles

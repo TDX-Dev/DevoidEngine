@@ -90,8 +90,6 @@ namespace DevoidGPU.DX11
 
         public void Resize(int width, int height)
         {
-            Console.WriteLine("Resizing swapchain");
-
             for (int i = 0; i < backbuffers.Length; i++)
                 backbuffers[i]?.Dispose();
 

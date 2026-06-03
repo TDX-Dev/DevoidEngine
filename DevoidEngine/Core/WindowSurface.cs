@@ -12,6 +12,8 @@ namespace DevoidEngine.Core
         public event Action<float>? OnUpdate;
         public event Action<ICommandList>? OnRender;
 
+        public event Action<int, int>? OnResize;
+
         private bool isMinimized;
         private bool resizePending;
         private bool isDisposed;
@@ -54,8 +56,9 @@ namespace DevoidEngine.Core
             Swapchain.Resize(Window.ClientSize.X, Window.ClientSize.Y);
             prevWidth = Window.ClientSize.X;
             prevHeight = Window.ClientSize.Y;
+
+            OnResize?.Invoke(Window.ClientSize.X, Window.ClientSize.Y);
             resizePending = false;
-            Console.WriteLine("Resizing");
         }
 
         public void UpdateSurface(float deltaTime)

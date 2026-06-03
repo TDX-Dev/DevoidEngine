@@ -3,6 +3,7 @@
 #define PROFILING
 
 using DevoidEngine.InputSystem;
+using DevoidEngine.Rendering;
 using DevoidEngine.Util;
 using DevoidGPU;
 using SharpDX.DXGI;
@@ -25,6 +26,8 @@ namespace DevoidEngine.Core
 
     public class Application
     {
+        public WindowSurface MainWindow => mainSurface;
+
         private readonly WindowSurface mainSurface;
         private readonly List<WindowSurface> surfaces;
         private readonly FrameTimer frameTimer;
@@ -80,6 +83,11 @@ namespace DevoidEngine.Core
             surfaces.Add(mainSurface);
 
             Engine.InputSystem.UpdateInputProviderWindow(window);
+
+            Engine.Renderer.Initialize(new RendererConfig()
+            {
+                Technique = RenderTechnique.Forward
+            });
 
             //for (int i = 0; i < 10; i++)
             //{
@@ -208,29 +216,33 @@ namespace DevoidEngine.Core
 
                 Engine.Profiler.CPU.EndScope();
             }
+
+            // Application loop terminated.
             layerManager.DetachLayers();
+            Engine.Renderer.Dispose();
         }
 
         void FixedUpdate(float deltaTime)
         {
             layerManager.FixedUpdateLayers(deltaTime);
-            Engine.Instance.SceneManager.FixedUpdateScenes(deltaTime);
+            Engine.Instance.SceneTree.FixedUpdateScenes(deltaTime);
         }
 
         void Update(float deltaTime)
         {
             layerManager.UpdateLayers(deltaTime);
-            Engine.Instance.SceneManager.UpdateScenes(deltaTime);
+            Engine.Instance.SceneTree.UpdateScenes(deltaTime);
         }
 
         void Render(ICommandList cmd)
         {
             layerManager.RenderLayers(cmd);
-            Engine.Instance.SceneManager.RenderScenes();
+            Engine.Instance.SceneTree.RenderScenes();
         }
 
         public void AddLayer(Layer layer)
         {
+            layer.Application = this;
             layerManager.AddLayer(layer);
         }
 

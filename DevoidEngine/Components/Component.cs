@@ -29,6 +29,10 @@ namespace DevoidEngine.Components
         public Component() { }
 
         public GameObject gameObject = null!;
+
+        // Notifications methods
+        public virtual void OnAttach() { }
+
         public virtual void OnStart() { }
         public virtual void OnUpdate(float dt) { }
         public virtual void OnLateUpdate(float dt) { }
@@ -39,5 +43,7 @@ namespace DevoidEngine.Components
         {
 
         }
+
+        public SceneTree GetTree() => Engine.Instance.SceneTree;
     }
 }

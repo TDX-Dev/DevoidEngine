@@ -20,5 +20,96 @@
             }
             return -1;
         }
+
+        public static ShaderReflectionData Merge(
+            params ShaderReflectionData[] reflections
+        )
+        {
+            ShaderReflectionData result = new();
+
+            HashSet<string> resources = new(StringComparer.OrdinalIgnoreCase);
+            HashSet<string> inputs = new(StringComparer.OrdinalIgnoreCase);
+
+            foreach (ShaderReflectionData reflection in reflections)
+            {
+                foreach (UniformBufferInfo buffer in reflection.UniformBuffers)
+                {
+                    AddUniformBuffer(result, buffer);
+                }
+
+                foreach (ShaderResourceInfo resource in reflection.Resources)
+                {
+                    if (resources.Add(resource.Name))
+                    {
+                        result.Resources.Add(resource);
+                    }
+                }
+
+                foreach (TextureBindingInfo texture in reflection.TextureBindings)
+                {
+                    AddTexture(result, texture);
+                }
+
+                foreach (InputParameterInfo input in reflection.InputParameters)
+                {
+                    if (inputs.Add(input.SemanticName))
+                    {
+                        result.InputParameters.Add(input);
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        private static void AddUniformBuffer(
+    ShaderReflectionData result,
+    UniformBufferInfo buffer)
+        {
+            UniformBufferInfo? existing =
+                result.UniformBuffers
+                    .FirstOrDefault(x =>
+                        string.Equals(
+                            x.Name,
+                            buffer.Name,
+                            StringComparison.OrdinalIgnoreCase));
+
+            if (existing == null)
+            {
+                result.UniformBuffers.Add(buffer);
+                return;
+            }
+
+            if (existing.BindSlot != buffer.BindSlot)
+            {
+                throw new Exception(
+                    $"Uniform buffer '{buffer.Name}' uses different slots.");
+            }
+        }
+
+        private static void AddTexture(
+    ShaderReflectionData result,
+    TextureBindingInfo texture)
+        {
+            TextureBindingInfo? existing =
+                result.TextureBindings
+                    .FirstOrDefault(x =>
+                        string.Equals(
+                            x.Name,
+                            texture.Name,
+                            StringComparison.OrdinalIgnoreCase));
+
+            if (existing == null)
+            {
+                result.TextureBindings.Add(texture);
+                return;
+            }
+
+            if (existing.BindSlot != texture.BindSlot)
+            {
+                throw new Exception(
+                    $"Texture '{texture.Name}' uses different slots.");
+            }
+        }
     }
 }

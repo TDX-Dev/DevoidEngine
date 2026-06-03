@@ -6,5 +6,6 @@
         public int Size;
         public int BindSlot;
         public List<ShaderVariableInfo> Variables = [];
+        public ShaderStage Stages;
     }
 }

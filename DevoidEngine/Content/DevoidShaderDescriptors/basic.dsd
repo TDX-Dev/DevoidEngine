@@ -1,9 +1,19 @@
 {
   "$schema": "./dsdschema.json",
   "Name": "Vertex Lit",
+  "MaterialParameters": {
+    "BufferName": "Material",
+    "Textures": [
+      {
+        "Name": "Albedo_Texture",
+        "Type": "Texture2D"
+      }
+    ]
+  },
   "Passes": [
     {
       "Name": "Forward",
+      "MaterialBuffer": "Material",
       "Shaders": {
         "VS": "../Shaders/vertex_lit.vert.hlsl",
         "FS": "../Shaders/vertex_lit.frag.hlsl"

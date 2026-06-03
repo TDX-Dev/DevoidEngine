@@ -1,5 +1,6 @@
 ﻿using SharpDX;
 using SharpDX.Direct3D11;
+using System;
 using System.Runtime.CompilerServices;
 using Buffer = SharpDX.Direct3D11.Buffer;
 using Device = SharpDX.Direct3D11.Device;
@@ -48,6 +49,29 @@ namespace DevoidGPU.DX11
                 Buffer = new Buffer(device, dxDescription);
             }
         }
+
+        public void Update<T>(T data) where T : struct
+        {
+            if (this.Usage == ResourceUsage.Dynamic)
+            {
+                DataBox dataBox = deviceContext.MapSubresource(
+                    Buffer,
+                    0,
+                    MapMode.WriteDiscard, // Use WriteDiscard or WriteNoOverwrite
+                    MapFlags.None
+                );
+
+                // Copy the data
+                Utilities.Write(dataBox.DataPointer, ref data);
+
+                deviceContext.UnmapSubresource(Buffer, 0);
+            }
+            else
+            {
+                deviceContext.UpdateSubresource(ref data, Buffer);
+            }
+        }
+
 
         public void Update<T>(ReadOnlySpan<T> data) where T : unmanaged
         {

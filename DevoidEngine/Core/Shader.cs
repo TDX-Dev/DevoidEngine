@@ -14,6 +14,7 @@ namespace DevoidEngine.Core
         private readonly Dictionary<string, ShaderPass> passes = [];
 
         public string Name { get; private set; } = string.Empty;
+        public MaterialLayout? MaterialLayout { get; private set; } = null!;
 
         public ShaderPass GetPass(string name)
         {
@@ -78,6 +79,13 @@ namespace DevoidEngine.Core
 
                 ShaderPass pass = new(vertex, fragment);
 
+                shader.MaterialLayout ??=
+                        BuildMaterialLayout(
+                            pass,
+                            descriptor.MaterialParameters);
+
+                pass.DescriptorLayout = CreateDescriptorLayout(device, ShaderReflectionData.Merge(pass.Vertex.ShaderReflectionData, pass.Fragment.ShaderReflectionData));
+
 
                 if (passDesc.States != null)
                 {
@@ -94,7 +102,93 @@ namespace DevoidEngine.Core
                 shader.passes[passDesc.Name] = pass;
             }
 
+
             return shader;
+        }
+
+        private static MaterialLayout? BuildMaterialLayout(
+            ShaderPass pass,
+            MaterialParameterDescriptor? materialDesc
+        )
+        {
+            if (materialDesc == null)
+                return null;
+
+            var reflection = ShaderReflectionData.Merge(pass.Vertex.ShaderReflectionData, pass.Fragment.ShaderReflectionData);
+
+            UniformBufferInfo? materialBuffer = null;
+
+            foreach (var buffer in reflection.UniformBuffers)
+            {
+                if (string.Equals(
+                        buffer.Name,
+                        materialDesc.BufferName,
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    materialBuffer = buffer;
+                    break;
+                }
+            }
+
+            if (materialBuffer == null)
+            {
+                throw new Exception(
+                    $"Material buffer '{materialDesc.BufferName}' not found.");
+            }
+
+            MaterialLayout layout = new()
+            {
+                BufferName = materialBuffer.Name,
+                BufferSize = materialBuffer.Size,
+                BufferBindSlot = materialBuffer.BindSlot
+            };
+
+            foreach (var variable in materialBuffer.Variables)
+            {
+                layout.Variables[variable.Name] = variable;
+            }
+
+            foreach (var textureDesc in materialDesc.Textures)
+            {
+                TextureBindingInfo? binding =
+                    reflection.TextureBindings
+                        .FirstOrDefault(x => x.Name == textureDesc.Name) ?? throw new Exception(
+                        $"Material texture '{textureDesc.Name}' not found.");
+                layout.Textures[binding.Name] = binding;
+            }
+
+            return layout;
+        }
+
+        private static IDescriptorLayout CreateDescriptorLayout(
+            IGraphicsDevice device,
+            ShaderReflectionData reflection
+        )
+        {
+            List<DescriptorBinding> bindings = [];
+
+            foreach (var buffer in reflection.UniformBuffers)
+            {
+                bindings.Add(new DescriptorBinding
+                {
+                    Binding = (uint)buffer.BindSlot,
+                    Type = DescriptorType.UniformBuffer,
+                    Stages = buffer.Stages
+                });
+            }
+
+            foreach (var texture in reflection.TextureBindings)
+            {
+                bindings.Add(new DescriptorBinding
+                {
+                    Binding = (uint)texture.BindSlot,
+                    Type = DescriptorType.Texture,
+                    Stages = texture.Stage
+                });
+            }
+
+            return device.CreateDescriptorLayout(
+                bindings.ToArray());
         }
 
         private static BlendStateDescription ParseBlend(string? blend)

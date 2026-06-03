@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace DevoidEngine.Core
 {
-    public class UniformBuffer
+    public sealed class UniformBuffer : IDisposable
     {
         private readonly IUniformBuffer gpuBuffer;
         public IUniformBuffer GPU => gpuBuffer;
@@ -26,6 +26,26 @@ namespace DevoidEngine.Core
                 InitialData = IntPtr.Zero,
                 Size = size
             });
+        }
+
+        public static UniformBuffer Create(ResourceUsage usage, uint size)
+        {
+            return new UniformBuffer(Engine.GraphicsDevice, usage, size);
+        }
+
+        public void Update<T>(T data) where T : struct
+        {
+            GPU.Update(data);
+        }
+
+        public void Update<T>(ReadOnlySpan<T> data) where T : unmanaged
+        {
+            GPU.Update<T>(data);
+        }
+
+        public void Dispose()
+        {
+
         }
     }
 }

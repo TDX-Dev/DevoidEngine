@@ -1,5 +1,6 @@
 ﻿using DevoidEngine.InputSystem;
 using DevoidEngine.Profiling;
+using DevoidEngine.Rendering;
 using DevoidGPU;
 using DevoidGPU.DX11;
 
@@ -23,17 +24,19 @@ namespace DevoidEngine.Core
         public static Profiler Profiler => Instance.profiler;
         public static IGraphicsDevice GraphicsDevice => Instance.graphicsDevice;
         public static Input InputSystem => Instance.inputSystem;
+        public static Renderer Renderer => Instance.renderer;
 
         public float InterpolationAlpha { get; set; } = 0;
         public float TargetFramerate { get; } = 60f;
         public uint FrameCount { get; internal set; } = 0;
         public float TimeScale { get; set; } = 1.0f;
         public bool SimulatePhysics { get; set; } = true;
-        public SceneManager SceneManager { get; set; }
+        public SceneTree SceneTree { get; set; }
 
         private readonly Profiler profiler;
         private readonly IGraphicsDevice graphicsDevice;
         private readonly Input inputSystem;
+        private readonly Renderer renderer;
 
         private Engine(EngineConfig config)
         {
@@ -45,8 +48,9 @@ namespace DevoidEngine.Core
                 _ => throw new ArgumentException("Invalid Graphics API type."),
             };
 
-            SceneManager = new SceneManager();
+            SceneTree = new SceneTree();
             inputSystem = new Input();
+            renderer = new Renderer();
         }
 
         public static void Initialize(EngineConfig config)

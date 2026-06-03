@@ -1,4 +1,5 @@
-﻿using DevoidEngine.Util;
+﻿using DevoidEngine.Rendering;
+using DevoidEngine.Util;
 using DevoidGPU;
 using System;
 using System.Collections.Generic;
@@ -16,8 +17,8 @@ namespace DevoidEngine.Core
         public Frustum? Frustum { get; private set; }
 
         public float FOV { get => MathHelper.RadToDeg(fov_radians); set => fov_radians = MathHelper.DegToRad(value); }
-        public float Near { get; } = 0.1f;
-        public float Far { get; } = 1000f;
+        public float Near { get; set; } = 0.1f;
+        public float Far { get; set; } = 1000f;
         public Vector3 Position { get; private set; } = Vector3.Zero;
 
         public Vector3 Front { get; private set; } = Vector3.UnitZ;
@@ -32,12 +33,34 @@ namespace DevoidEngine.Core
         public Matrix4x4 InverseViewProjection;
 
         internal float fov_radians = MathF.PI / 3.0f;
+        internal float prev_aspectratio = 0;
+        internal bool view_dirty = true;
+
+        public CameraData GetCameraData(Vector2 screenSize)
+        {
+            return new CameraData
+            {
+                View = View,
+                Projection = Projection,
+                InverseProjection = InverseProjection,
+                InverseView = InverseView,
+                InverseViewProjection = InverseViewProjection,
+                CameraPosition = Position,
+                NearClip = Near,
+                FarClip = Far,
+                ScreenSize = screenSize,
+            };
+        }
 
         public void UpdateProjectionMatrix(float aspectRatio)
         {
+            if (aspectRatio == prev_aspectratio && !view_dirty)
+                return;
             Projection = Matrix4x4.CreatePerspectiveFieldOfView(fov_radians, aspectRatio, Near, Far);
             Matrix4x4.Invert(Projection, out InverseProjection);
             Frustum = Frustum.FromMatrix(View * Projection);
+            prev_aspectratio = aspectRatio;
+            view_dirty = false;
         }
 
         public void UpdateView(Vector3 position, Vector3 front, Vector3 up)
@@ -53,6 +76,7 @@ namespace DevoidEngine.Core
             Matrix4x4.Invert(View * Projection, out InverseViewProjection);
 
             Frustum = Frustum.FromMatrix(View * Projection);
+            view_dirty = true;
         }
 
         public Vector3 WorldToScreen(Vector3 worldPos, float screenWidth, float screenHeight)

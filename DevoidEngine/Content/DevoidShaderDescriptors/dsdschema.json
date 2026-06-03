@@ -8,6 +8,57 @@
       "description": "Name of the shader"
     },
 
+    "MaterialParameters": {
+      "type": "object",
+      "properties": {
+        "BufferName": {
+          "type": "string",
+          "description": "Material buffer name"
+        },
+
+        "Textures": {
+          "type": "array",
+          "description": "Textures exposed to materials",
+          "items": {
+            "type": "object",
+            "properties": {
+              "Name": {
+                "type": "string",
+                "description": "Shader texture name"
+              },
+
+              "DisplayName": {
+                "type": "string",
+                "description": "Editor display name"
+              },
+
+              "Type": {
+                "type": "string",
+                "enum": [
+                  "Texture2D",
+                  "TextureCube",
+                  "Texture2DArray"
+                ]
+              },
+
+              "Default": {
+                "type": "string",
+                "description": "Default texture asset path"
+              }
+            },
+            "required": [
+              "Name",
+              "Type"
+            ]
+          }
+        }
+      },
+
+      "required": [
+        "BufferName"
+      ]
+    },
+
     "Passes": {
       "type": "array",
       "items": {
@@ -30,7 +81,7 @@
                 "description": "Fragment shader path"
               }
             },
-            "required": ["VS", "FS"]
+            "required": [ "VS", "FS" ]
           },
 
           "States": {
@@ -38,20 +89,20 @@
             "properties": {
               "Blend": {
                 "type": "string",
-                "enum": ["Off", "Alpha", "Additive"]
+                "enum": [ "Off", "Alpha", "Additive" ]
               },
               "Depth": {
                 "type": "string",
-                "enum": ["Less", "LessEqual", "Always"]
+                "enum": [ "Less", "LessEqual", "Always" ]
               },
               "Cull": {
                 "type": "string",
-                "enum": ["Back", "Front", "None"]
+                "enum": [ "Back", "Front", "None" ]
               }
             }
           }
         },
-        "required": ["Name", "Shaders"]
+        "required": [ "Name", "Shaders" ]
       }
     }
   },

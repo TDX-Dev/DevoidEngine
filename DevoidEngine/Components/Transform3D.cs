@@ -12,6 +12,8 @@ namespace DevoidEngine.Components
     {
         public override string Type => nameof(Transform3D);
 
+        public event Action? TransformChanged;
+
         public Vector3 LocalPosition
         {
             get => localPosition;
@@ -182,6 +184,8 @@ namespace DevoidEngine.Components
         {
             dirty = false;
             hasMoved = false;
+
+            TransformChanged?.Invoke();
         }
         internal void CapturePrevious()
         {

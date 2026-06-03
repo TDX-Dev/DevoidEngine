@@ -72,7 +72,25 @@ namespace DevoidEngine.Core
                 Components[i].OnFixedUpdate(dt);
             }
         }
-
+        
+        public void OnRender()
+        {
+            for (int i = 0; i < Components.Count; i++)
+            {
+                Components[i].OnRender();
+            }
+        }
+        public T AddComponent<T>() where T : Component, new()
+        {
+            T _component = new()
+            {
+                gameObject = this
+            };
+            Components.Add(_component);
+            scene?.ComponentAdded(_component);
+            _component.OnAttach();
+            return _component;
+        }
         public void RemoveComponent(Component component)
         {
             if (Components.Contains(component))

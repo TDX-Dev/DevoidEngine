@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace DevoidEngine.Core
 {
-    public class Texture
+    public sealed class Texture : IDisposable
     {
         public ITexture GPU { get; }
 
@@ -15,6 +15,8 @@ namespace DevoidEngine.Core
         public int Width => GPU.Description.Width;
         public int Height => GPU.Description.Height;
         public int Depth => GPU.Description.Depth;
+
+        public static Texture Default => Texture.Create2D(1,1,TextureFormat.RGBA16_Float, TextureUsage.ShaderResource);
 
         internal Texture(ITexture gpu)
         {
@@ -43,6 +45,11 @@ namespace DevoidEngine.Core
             });
 
             return new Texture(gpu);
+        }
+
+        public void Dispose()
+        {
+            GPU.Dispose();
         }
     }
 }

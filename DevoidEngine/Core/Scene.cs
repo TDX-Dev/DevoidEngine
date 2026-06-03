@@ -14,6 +14,8 @@ namespace DevoidEngine.Core
         public event Action<Component>? OnComponentAdded;
         public event Action<Component>? OnComponentRemoved;
 
+        public string SceneName { get; set; } = "Empty Scene";
+
         public List<GameObject> GameObjects { get; private set; }
 
         private bool isPlaying = false;
@@ -42,16 +44,32 @@ namespace DevoidEngine.Core
 
         public void Update(float deltaTime)
         {
-            for (int i = 0; i < transforms.Count; i++)
-            {
-                transforms[i].ClearDirty();
-            }
             if (isPlaying)
             {
                 for (int i = 0; i < GameObjects.Count; i++)
                 {
                     GameObjects[i].OnUpdate(deltaTime);
                 }
+            }
+
+            for (int i = 0; i < transforms.Count; i++)
+            {
+                Transform3D transform = transforms[i];
+
+                if (!transform.hasMoved)
+                    continue;
+
+                _ = transform.WorldMatrix;
+
+                transform.hasMoved = false;
+            }
+        }
+
+        public void LateUpdate(float deltaTime)
+        {
+            for (int i = 0; i < transforms.Count; i++)
+            {
+                transforms[i].ClearDirty();
             }
         }
 
@@ -72,7 +90,13 @@ namespace DevoidEngine.Core
             if (Engine.Instance.SimulatePhysics) { }
         }
 
-        public void Render() { }
+        public void Render()
+        {
+            for (int i = 0; i < GameObjects.Count; i++)
+            {
+                GameObjects[i].OnRender();
+            }
+        }
 
         public void Play(bool value = true)
         {

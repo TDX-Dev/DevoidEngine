@@ -1,4 +1,5 @@
-﻿using DevoidEngine.Core;
+﻿using DevoidEngine.Components;
+using DevoidEngine.Core;
 using DevoidEngine.InputSystem;
 using DevoidEngine.InputSystem.InputDevices;
 using DevoidEngine.Util;
@@ -6,11 +7,20 @@ using DevoidGPU;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Sandbox
 {
+    struct Hello
+    {
+        public uint HelloWorld;
+        public uint ByeWorld;
+        public uint This;
+        public uint Bye;
+    }
+
     internal class SandboxProgram : Layer
     {
         Mesh mesh = null!;
@@ -23,6 +33,9 @@ namespace Sandbox
 
         public override void OnAttach()
         {
+            Application.MainWindow.OnResize += MainWindow_OnResize;
+            Engine.Instance.SceneTree.OnSceneChanged += SceneTree_OnSceneChanged;
+
             Console.WriteLine("Sandbox has launched.");
 
             mesh = PrimitiveMeshes.GetCube();
@@ -31,28 +44,12 @@ namespace Sandbox
 
             ubo = new UniformBuffer(Engine.GraphicsDevice, ResourceUsage.Dynamic, 4);
 
-            layout = Engine.GraphicsDevice.CreateDescriptorLayout(
-            [
-                new DescriptorBinding()
-                {
-                    Binding = 1,
-                    Stages = DevoidGPU.ShaderStage.Fragment,
-                    Type = DescriptorType.UniformBuffer
-                }
-            ]);
-
-            set = Engine.GraphicsDevice.CreateDescriptorSet(layout);
-
-            set.SetUniformBuffer(1, ubo.GPU);
-
-            ubo.GPU.Update<uint>([64]);
-
 
             scene = new Scene();
-            Engine.Instance.SceneManager.LoadScene(scene);
+            Engine.Instance.SceneTree.LoadScene(scene);
 
-            scene.AddGameObject("Hello World");
-
+            go = scene.AddGameObject("Hello World");
+            go.AddComponent<MeshRenderer>();
 
             Engine.InputSystem.AddBinding("Hello", new InputBinding()
             {
@@ -60,6 +57,19 @@ namespace Sandbox
                 Control = (ushort)Keys.K,
                 IsClamped = true
             });
+        }
+
+        GameObject go;
+
+        private void SceneTree_OnSceneChanged(Scene obj)
+        {
+            Console.WriteLine("Scene changed");
+            Application.MainWindow.Window.Title = obj.SceneName + " - Devoid Engine";
+        }
+
+        private void MainWindow_OnResize(int width, int height)
+        {
+            Engine.Instance.SceneTree.RootViewport.Resize(width, height);
         }
 
         public override void OnDetach()
@@ -77,9 +87,9 @@ namespace Sandbox
 
         public override void OnRender(ICommandList cmd)
         {
-            cmd.SetViewport(0, 0, 50, 100);
+            cmd.SetViewport(0, 0, Application.MainWindow.Window.Size.X, Application.MainWindow.Window.Size.Y);
             cmd.SetPipeline(shader.GetPass("Forward").GetPipeline(Engine.GraphicsDevice, Vertex.VertexInfo));
-            cmd.SetDescriptorSet(0, set);
+            //cmd.SetDescriptorSet(0, set);
             mesh.Draw(cmd);
 
         }
