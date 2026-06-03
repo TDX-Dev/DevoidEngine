@@ -15,6 +15,7 @@ namespace DevoidEngine.Core
 
         public string Name { get; private set; } = string.Empty;
         public MaterialLayout? MaterialLayout { get; private set; } = null!;
+        public ShaderDescriptor ShaderDescriptor { get; private set; } = null!;
 
         public ShaderPass GetPass(string name)
         {
@@ -79,13 +80,12 @@ namespace DevoidEngine.Core
 
                 ShaderPass pass = new(vertex, fragment);
 
-                shader.MaterialLayout ??=
-                        BuildMaterialLayout(
-                            pass,
-                            descriptor.MaterialParameters);
+                ShaderReflectionData reflection_data = ShaderReflectionData.Merge(pass.Vertex.ShaderReflectionData, pass.Fragment.ShaderReflectionData);
 
-                pass.DescriptorLayout = CreateDescriptorLayout(device, ShaderReflectionData.Merge(pass.Vertex.ShaderReflectionData, pass.Fragment.ShaderReflectionData));
 
+                shader.MaterialLayout ??= BuildMaterialLayout( pass, descriptor.MaterialParameters, reflection_data);
+
+                pass.DescriptorLayout = CreateDescriptorLayout(device, reflection_data);
 
                 if (passDesc.States != null)
                 {
@@ -99,26 +99,43 @@ namespace DevoidEngine.Core
                         ParseRasterizer(passDesc.States.Cull);
                 }
 
+                pass.Pipeline =
+                    device.CreateGraphicsPipeline(
+                        new GraphicsPipelineDescription
+                        {
+                            VertexShader = pass.Vertex.GPU,
+                            PixelShader = pass.Fragment.GPU,
+
+                            PipelineLayout = pass.PipelineLayout,
+
+                            Topology = PrimitiveType.Triangles,
+
+                            VertexLayout = Vertex.VertexInfo, // HARDCODED FOR THE TIME BEING, ISSUE THO
+
+                            Rasterizer = pass.Rasterizer,
+                            DepthStencil = pass.Depth,
+                            Blend = pass.Blend
+                        });
+
                 shader.passes[passDesc.Name] = pass;
             }
 
-
+            shader.ShaderDescriptor = descriptor;
             return shader;
         }
 
         private static MaterialLayout? BuildMaterialLayout(
             ShaderPass pass,
-            MaterialParameterDescriptor? materialDesc
+            MaterialParameterDescriptor? materialDesc,
+            ShaderReflectionData reflectionData
         )
         {
             if (materialDesc == null)
                 return null;
 
-            var reflection = ShaderReflectionData.Merge(pass.Vertex.ShaderReflectionData, pass.Fragment.ShaderReflectionData);
-
             UniformBufferInfo? materialBuffer = null;
 
-            foreach (var buffer in reflection.UniformBuffers)
+            foreach (var buffer in reflectionData.UniformBuffers)
             {
                 if (string.Equals(
                         buffer.Name,
@@ -151,7 +168,7 @@ namespace DevoidEngine.Core
             foreach (var textureDesc in materialDesc.Textures)
             {
                 TextureBindingInfo? binding =
-                    reflection.TextureBindings
+                    reflectionData.TextureBindings
                         .FirstOrDefault(x => x.Name == textureDesc.Name) ?? throw new Exception(
                         $"Material texture '{textureDesc.Name}' not found.");
                 layout.Textures[binding.Name] = binding;
@@ -188,7 +205,7 @@ namespace DevoidEngine.Core
             }
 
             return device.CreateDescriptorLayout(
-                bindings.ToArray());
+                [.. bindings]);
         }
 
         private static BlendStateDescription ParseBlend(string? blend)

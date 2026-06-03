@@ -9,6 +9,7 @@ namespace DevoidEngine.Core
     public class ShaderDescriptor
     {
         public string Name { get; set; } = string.Empty;
+        public string DefaultPass { get; set; } = string.Empty;
         public MaterialParameterDescriptor? MaterialParameters { get; set; }
         public List<PassDescriptor> Passes { get; set; } = [];
     }

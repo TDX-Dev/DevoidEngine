@@ -43,6 +43,11 @@ namespace DevoidEngine.Core
             GPU.Update<T>(data);
         }
 
+        public void Update(ReadOnlySpan<byte> data)
+        {
+            GPU.Update(data);
+        }
+
         public void Dispose()
         {
 

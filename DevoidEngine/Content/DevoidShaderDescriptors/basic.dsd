@@ -1,14 +1,11 @@
 {
   "$schema": "./dsdschema.json",
   "Name": "Vertex Lit",
+
+  "DefaultPass": "Forward",
+
   "MaterialParameters": {
-    "BufferName": "Material",
-    "Textures": [
-      {
-        "Name": "Albedo_Texture",
-        "Type": "Texture2D"
-      }
-    ]
+    "BufferName": "Material"
   },
   "Passes": [
     {

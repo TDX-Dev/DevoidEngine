@@ -12,16 +12,25 @@ namespace DevoidEngine.Core
     public class MaterialInstance : IDisposable
     {
         public Material BaseMaterial { get; }
+        public IDescriptorSet DescriptorSet
+        {
+            get
+            {
+                UpdateBuffer();
+                return descriptorSet;
+            }
+        }
 
-        private Dictionary<string, Texture> textureOverrides;
+        private readonly Dictionary<string, Texture> textureOverrides;
 
-        private byte[] cpuBuffer;
-        private UniformBuffer gpuBuffer;
+        private readonly byte[] cpuBuffer;
+        private readonly UniformBuffer gpuBuffer;
 
         private readonly IDescriptorSet descriptorSet;
 
         private bool isDirty;
         private bool disposed;
+        private readonly ShaderPass defaultPass;
 
         public MaterialInstance(Material material)
         {
@@ -35,10 +44,25 @@ namespace DevoidEngine.Core
             descriptorSet =
                 Engine.GraphicsDevice.CreateDescriptorSet(BaseMaterial.Shader.GetPass("Forward").DescriptorLayout);
 
-            textureOverrides = new Dictionary<string, Texture>();
+            textureOverrides = [];
             isDirty = true;
 
             descriptorSet.SetUniformBuffer((uint)BaseMaterial.MaterialBufferBindSlot, gpuBuffer.GPU);
+
+            foreach (var kv in BaseMaterial.GetTextureBindings())
+            {
+                string name = kv.Key;
+                TextureBindingInfo binding = kv.Value;
+
+                Texture texture =
+                    BaseMaterial.GetDefaultTexture(name);
+
+                descriptorSet.SetTexture(
+                    (uint)binding.BindSlot,
+                    texture.GPU);
+            }
+
+            defaultPass = BaseMaterial.Shader.GetPass(BaseMaterial.Shader.ShaderDescriptor.DefaultPass);
 
         }
 
@@ -49,25 +73,6 @@ namespace DevoidEngine.Core
             gpuBuffer.Update(cpuBuffer);
 
             isDirty = false;
-        }
-
-        public void Bind()
-        {
-            UpdateBuffer();
-            BaseMaterial.Shader.Use();
-
-            foreach (var kv in BaseMaterial.GetTextureBindings())
-            {
-                var texName = kv.Key;
-                var binding = kv.Value;
-
-                Texture texture =
-                    textureOverrides.TryGetValue(texName, out var overrideTex)
-                        ? overrideTex
-                        : BaseMaterial.GetDefaultTexture(texName);
-
-                texture.Bind(binding.BindSlot);
-            }
         }
 
         public void SetInt(string name, int value)
@@ -111,11 +116,22 @@ namespace DevoidEngine.Core
             }
 
             textureOverrides[name] = texture ?? Texture.Default;
+
+            TextureBindingInfo binding = BaseMaterial.GetTextureBinding(name);
+
+            descriptorSet.SetTexture((uint)binding.BindSlot, texture?.GPU ?? Texture.Default.GPU);
         }
 
         public void ClearTextureOverride(string name)
         {
             textureOverrides.Remove(name);
+
+            TextureBindingInfo binding =
+                BaseMaterial.GetTextureBinding(name);
+
+            descriptorSet.SetTexture(
+                (uint)binding.BindSlot,
+                BaseMaterial.GetDefaultTexture(name).GPU);
         }
 
         public void Dispose()

@@ -12,11 +12,18 @@ struct PSInput
     float3 Normal : NORMAL;
     float2 UV : TEXCOORD0;
     float4 Tangent : TANGENT;
+    float3 WorldspacePosition : TEXCOORD3;
 };
+
+#include "./Common/RenderConstants.hlsl"
 
 PSInput VSMain(VSInput input)
 {
     PSInput output;
-    output.Position = float4(input.Position,1.0);
+    float4 worldPos = mul(Model, float4(input.Position, 1.0));
+    output.Position = mul(Projection, mul(View, worldPos));
+    output.WorldspacePosition = worldPos.xyz;
+    output.UV = input.UV;
+    
     return output;
 }

@@ -21,9 +21,11 @@ namespace DevoidEngine.Rendering
     {
         public IRenderTechnique? ActiveTechnique { get; set; }
 
+        public ShaderLibrary ShaderLibrary { get; set; } = null!;
+
         public RenderWorld World { get; private set; } = null!;
 
-
+        public Material DefaultMaterial { get; private set; } = null!;
 
         public void Initialize(RendererConfig config)
         {
@@ -36,7 +38,11 @@ namespace DevoidEngine.Rendering
                 _ => throw new NotImplementedException(nameof(config.Technique) + " is not implemented."),
             };
 
+            ShaderLibrary = new ShaderLibrary();
             World = new RenderWorld();
+        
+
+
         }
 
 

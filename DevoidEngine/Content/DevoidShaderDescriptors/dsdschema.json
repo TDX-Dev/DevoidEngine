@@ -8,6 +8,11 @@
       "description": "Name of the shader"
     },
 
+    "DefaultPass": {
+      "type": "string",
+      "description": "Name of the pass that materials will use by default."
+    }
+
     "MaterialParameters": {
       "type": "object",
       "properties": {
@@ -107,5 +112,5 @@
     }
   },
 
-  "required": ["Passes"]
+  "required": ["Passes", "DefaultPass", "Name"]
 }

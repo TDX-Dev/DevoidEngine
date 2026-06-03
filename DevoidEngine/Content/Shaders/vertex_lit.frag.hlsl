@@ -4,6 +4,7 @@ struct PSInput
     float3 Normal : NORMAL;
     float2 UV : TEXCOORD0;
     float4 Tangent : TANGENT;
+    float3 WorldspacePosition : TEXCOORD3;
 };
 
 cbuffer Material : register(b1)
@@ -17,5 +18,5 @@ SamplerState Albedo_Sampler : register(s0);
 float4 PSMain(PSInput input) : SV_Target0
 {
     
-    return float4(Albedo.xyz + Albedo_Texture.Sample(Albedo_Sampler, float2(0, 0)), 1);
+    return float4(Albedo.xyz, 1);
 }

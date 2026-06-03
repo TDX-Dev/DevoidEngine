@@ -13,12 +13,9 @@ using System.Threading.Tasks;
 
 namespace Sandbox
 {
-    struct Hello
+    struct Material
     {
-        public uint HelloWorld;
-        public uint ByeWorld;
-        public uint This;
-        public uint Bye;
+        public Vector4 Albedo;
     }
 
     internal class SandboxProgram : Layer
@@ -43,7 +40,24 @@ namespace Sandbox
             shader = Shader.FromDescriptorFile(Engine.GraphicsDevice, "Content/DevoidShaderDescriptors/basic.dsd");
 
             ubo = new UniformBuffer(Engine.GraphicsDevice, ResourceUsage.Dynamic, 4);
+            ubo.Update<Material>(new Material()
+            {
+                Albedo = new Vector4(0, 1, 0, 1)
+            });
 
+
+            layout = Engine.GraphicsDevice.CreateDescriptorLayout(
+            [
+                new DescriptorBinding()
+                {
+                    Binding = 0,
+                    Stages = DevoidGPU.ShaderStage.Fragment,
+                    Type = DescriptorType.UniformBuffer
+                }
+            ]);
+
+            set = Engine.GraphicsDevice.CreateDescriptorSet(layout);
+            set.SetUniformBuffer(1, ubo.GPU);
 
             scene = new Scene();
             Engine.Instance.SceneTree.LoadScene(scene);
@@ -89,7 +103,7 @@ namespace Sandbox
         {
             cmd.SetViewport(0, 0, Application.MainWindow.Window.Size.X, Application.MainWindow.Window.Size.Y);
             cmd.SetPipeline(shader.GetPass("Forward").GetPipeline(Engine.GraphicsDevice, Vertex.VertexInfo));
-            //cmd.SetDescriptorSet(0, set);
+            cmd.SetDescriptorSet(0, set);
             mesh.Draw(cmd);
 
         }

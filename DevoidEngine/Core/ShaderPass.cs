@@ -19,6 +19,8 @@ namespace DevoidEngine.Core
 
         private readonly Dictionary<VertexInfo, IPipeline> pipelines = [];
         public IDescriptorLayout DescriptorLayout { get; internal set; } = null!;
+        public IPipelineLayout PipelineLayout { get; set; } = null!;
+        public IPipeline Pipeline { get; set; } = null!;
 
         public ShaderPass(ShaderStage vertex, ShaderStage fragment)
         {
