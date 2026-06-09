@@ -1,4 +1,5 @@
 ﻿using DevoidEngine.Core;
+using DevoidEngine.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,7 @@ namespace DevoidEngine.Rendering
     {
         public Mesh render_mesh;
         public Matrix4x4 render_transform;
+        public MaterialInstance? render_material;
 
         public RenderMeshData(Mesh mesh)
         {

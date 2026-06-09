@@ -72,5 +72,21 @@ namespace DevoidEngine.Util
 
             freeList.Push(rid.Index);
         }
+
+        public IEnumerable<(RID Rid, T Value)> Enumerate()
+        {
+            for (int i = 0; i < entries.Count; i++)
+            {
+                var entry = entries[i];
+
+                if (!entry.Occupied)
+                    continue;
+
+                yield return (
+                    new RID(i, entry.Generation),
+                    entry.Value
+                );
+            }
+        }
     }
 }

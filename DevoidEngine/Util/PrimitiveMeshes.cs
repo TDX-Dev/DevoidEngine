@@ -6,13 +6,18 @@ namespace DevoidEngine.Util
     public static class PrimitiveMeshes
     {
         private static Mesh? cube;
+        private static Mesh? fullscreenMesh;
 
         public static Mesh GetCube()
         {
             cube ??= CreateCube();
             return cube;
         }
-
+        public static Mesh GetFullscreenPlane()
+        {
+            fullscreenMesh ??= CreateFullscreenTriangle();
+            return fullscreenMesh;
+        }
 
         public static Mesh CreateCube()
         {
@@ -160,6 +165,36 @@ namespace DevoidEngine.Util
                     // Bottom
                         20, 21, 22,
                         22, 23, 20
+                ]
+            };
+
+            mesh.Upload();
+
+            return mesh;
+        }
+        public static Mesh CreateFullscreenTriangle()
+        {
+            Mesh mesh = new()
+            {
+                Positions =
+                [
+                    new Vector3(-1.0f, -1.0f, 0.0f),
+            new Vector3(-1.0f,  3.0f, 0.0f),
+            new Vector3( 3.0f, -1.0f, 0.0f)
+                ],
+
+                UVs =
+                [
+                    new Vector2(0.0f, 1.0f),
+            new Vector2(0.0f, -1.0f),
+            new Vector2(2.0f, 1.0f)
+                ],
+
+                Normals =
+                [
+                    Vector3.UnitZ,
+            Vector3.UnitZ,
+            Vector3.UnitZ
                 ]
             };
 

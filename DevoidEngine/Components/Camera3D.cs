@@ -3,6 +3,7 @@ using DevoidEngine.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -73,6 +74,26 @@ namespace DevoidEngine.Components
             bool firstCamera = viewport.AddCamera3D(this);
             if (firstCamera || is_current_camera)
                 viewport.SetCamera3D(this);
+        }
+
+        public override void OnUpdate(float dt)
+        {
+            var transform = gameObject.Transform;
+            //if (!transform.hasMoved && IsInitialized && !dirty)
+            //    return;
+
+
+            Vector3 position = transform.Position;
+
+            Vector3 forward = Vector3.Normalize(
+                Vector3.Transform(Vector3.UnitZ, transform.Rotation)
+            );
+
+            Vector3 up = Vector3.Normalize(
+                Vector3.Transform(Vector3.UnitY, transform.Rotation)
+            );
+
+            camera.UpdateView(position, forward, up);
         }
 
         public Camera GetCamera()

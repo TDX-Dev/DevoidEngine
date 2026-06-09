@@ -63,6 +63,7 @@ namespace DevoidGPU.DX11
 
             currentFramebuffer = dx11Fb;
 
+            dx11Fb.ValidateFrameBuffer();
             deviceContext.OutputMerger.SetRenderTargets(dx11Fb.DSV, dx11Fb.RTVs);
         }
 
@@ -100,6 +101,9 @@ namespace DevoidGPU.DX11
             deviceContext.PixelShader.Set(p.PS);
 
             deviceContext.Rasterizer.State = p.RasterizerState;
+            deviceContext.OutputMerger.SetDepthStencilState(p.DepthStencilState);
+            deviceContext.OutputMerger.SetBlendState(p.BlendState);
+
             deviceContext.OutputMerger.SetBlendState(p.BlendState);
             deviceContext.OutputMerger.SetDepthStencilState(p.DepthStencilState);
         }

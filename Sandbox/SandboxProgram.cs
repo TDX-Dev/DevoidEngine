@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -20,11 +21,6 @@ namespace Sandbox
 
     internal class SandboxProgram : Layer
     {
-        Mesh mesh = null!;
-        Shader shader = null!;
-        UniformBuffer ubo = null!;
-        IDescriptorLayout layout = null!;
-        IDescriptorSet set = null!;
 
         Scene scene = null!;
 
@@ -33,37 +29,19 @@ namespace Sandbox
             Application.MainWindow.OnResize += MainWindow_OnResize;
             Engine.Instance.SceneTree.OnSceneChanged += SceneTree_OnSceneChanged;
 
+            Engine.Instance.SceneTree.RootViewport.Resize(Application.MainWindow.Window.Size.X, Application.MainWindow.Window.Size.Y);
+
             Console.WriteLine("Sandbox has launched.");
-
-            mesh = PrimitiveMeshes.GetCube();
-
-            shader = Shader.FromDescriptorFile(Engine.GraphicsDevice, "Content/DevoidShaderDescriptors/basic.dsd");
-
-            ubo = new UniformBuffer(Engine.GraphicsDevice, ResourceUsage.Dynamic, 4);
-            ubo.Update<Material>(new Material()
-            {
-                Albedo = new Vector4(0, 1, 0, 1)
-            });
-
-
-            layout = Engine.GraphicsDevice.CreateDescriptorLayout(
-            [
-                new DescriptorBinding()
-                {
-                    Binding = 0,
-                    Stages = DevoidGPU.ShaderStage.Fragment,
-                    Type = DescriptorType.UniformBuffer
-                }
-            ]);
-
-            set = Engine.GraphicsDevice.CreateDescriptorSet(layout);
-            set.SetUniformBuffer(1, ubo.GPU);
 
             scene = new Scene();
             Engine.Instance.SceneTree.LoadScene(scene);
 
             go = scene.AddGameObject("Hello World");
-            go.AddComponent<MeshRenderer>();
+            
+            go.AddComponent<Camera3D>();
+
+            meshGo = scene.AddGameObject("Hello Mesh Object");
+            meshGo.AddComponent<MeshRenderer>();
 
             Engine.InputSystem.AddBinding("Hello", new InputBinding()
             {
@@ -74,6 +52,7 @@ namespace Sandbox
         }
 
         GameObject go;
+        GameObject meshGo;
 
         private void SceneTree_OnSceneChanged(Scene obj)
         {
@@ -97,15 +76,22 @@ namespace Sandbox
             {
                 Console.WriteLine("K was pressed");
             }
+            meshGo.Transform.Position = new Vector3(0, 0, meshGo.Transform.Position.Z + deltaTime);
         }
 
         public override void OnRender(ICommandList cmd)
         {
-            cmd.SetViewport(0, 0, Application.MainWindow.Window.Size.X, Application.MainWindow.Window.Size.Y);
-            cmd.SetPipeline(shader.GetPass("Forward").GetPipeline(Engine.GraphicsDevice, Vertex.VertexInfo));
-            cmd.SetDescriptorSet(0, set);
-            mesh.Draw(cmd);
+            //cmd.SetViewport(0, 0, Application.MainWindow.Window.Size.X, Application.MainWindow.Window.Size.Y);
+            ////cmd.SetPipeline(shader.GetPass("Forward").GetPipeline(Engine.GraphicsDevice, Vertex.VertexInfo));
+            ////cmd.SetDescriptorSet(1, set);
+            ////mesh.Draw(cmd);
 
+        }
+
+        public override void OnPostRender(ICommandList cmd)
+        {
+            cmd.SetFramebuffer(Application.MainWindow.Framebuffer);
+            Engine.Renderer.API.RenderToScreen(cmd, Engine.Instance.SceneTree.RootViewport.OutputTexture!);
         }
     }
 }

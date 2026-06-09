@@ -46,6 +46,10 @@ namespace DevoidEngine.Core
             EngineConfig configuration = new()
             {
                 API = GraphicsAPI.DX11,
+                RendererConfig = new RendererConfig()
+                {
+                    Technique = RenderTechnique.Forward
+                }
             };
 
             Engine.Initialize(configuration);
@@ -83,11 +87,6 @@ namespace DevoidEngine.Core
             surfaces.Add(mainSurface);
 
             Engine.InputSystem.UpdateInputProviderWindow(window);
-
-            Engine.Renderer.Initialize(new RendererConfig()
-            {
-                Technique = RenderTechnique.Forward
-            });
 
             //for (int i = 0; i < 10; i++)
             //{
@@ -238,6 +237,14 @@ namespace DevoidEngine.Core
         {
             layerManager.RenderLayers(cmd);
             Engine.Instance.SceneTree.RenderScenes();
+
+            List<Viewport> viewports = Engine.Instance.SceneTree.GetViewports();
+
+            foreach (Viewport viewport in viewports)
+            {
+                Engine.Renderer.Render(cmd, viewport);
+            }
+            layerManager.PostRenderLayers(cmd);
         }
 
         public void AddLayer(Layer layer)

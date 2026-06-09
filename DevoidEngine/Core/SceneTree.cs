@@ -19,6 +19,11 @@ namespace DevoidEngine.Core
             RootViewport = new Viewport();
         }
 
+        public List<Viewport> GetViewports()
+        {
+            return [RootViewport];
+        }
+
         public void LoadScene(Scene scene)
         {
             if (CurrentScene != null)

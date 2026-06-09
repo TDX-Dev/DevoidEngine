@@ -16,6 +16,7 @@ namespace DevoidEngine.Core
         public string Name { get; private set; } = string.Empty;
         public MaterialLayout? MaterialLayout { get; private set; } = null!;
         public ShaderDescriptor ShaderDescriptor { get; private set; } = null!;
+        public ShaderPass DefaultPass { get; private set; } = null!;
 
         public ShaderPass GetPass(string name)
         {
@@ -118,6 +119,11 @@ namespace DevoidEngine.Core
                         });
 
                 shader.passes[passDesc.Name] = pass;
+
+                if (passDesc.Name == descriptor.DefaultPass)
+                {
+                    shader.DefaultPass = pass;
+                }
             }
 
             shader.ShaderDescriptor = descriptor;
@@ -201,6 +207,16 @@ namespace DevoidEngine.Core
                     Binding = (uint)texture.BindSlot,
                     Type = DescriptorType.Texture,
                     Stages = texture.Stage
+                });
+            }
+
+            foreach (var sampler in reflection.SamplerBindings)
+            {
+                bindings.Add(new DescriptorBinding
+                {
+                    Binding = (uint)sampler.BindSlot,
+                    Type = DescriptorType.Sampler,
+                    Stages = sampler.Stage
                 });
             }
 

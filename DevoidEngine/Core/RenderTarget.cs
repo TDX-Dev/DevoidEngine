@@ -9,18 +9,36 @@ namespace DevoidEngine.Core
 {
     public sealed class RenderTarget
     {
-        public IReadOnlyList<Texture> ColorTextures => colorTextures;
-        public Texture? DepthTexture { get; }
+        public IReadOnlyList<Texture?> ColorTextures => colorTextures;
+        public Texture? DepthTexture { get; private set; }
 
         public IFrameBuffer GPU { get; }
 
-        public int Width => ColorTextures[0].Width;
-        public int Height => ColorTextures[0].Height;
+        public int Width
+        {
+            get
+            {
+                Texture tex = colorTextures.FirstOrDefault(t => t != null)
+                    ?? throw new InvalidOperationException("RenderTarget has no attachments.");
 
-        private readonly Texture[] colorTextures;
+                return tex.Width;
+            }
+        }
+        public int Height
+        {
+            get
+            {
+                Texture tex = colorTextures.FirstOrDefault(t => t != null)
+                    ?? throw new InvalidOperationException("RenderTarget has no attachments.");
+
+                return tex.Height;
+            }
+        }
+
+        private readonly Texture?[] colorTextures;
         internal RenderTarget(
             IFrameBuffer gpu,
-            Texture[] colorTextures,
+            Texture?[] colorTextures,
             Texture? depthTexture = null
         )
         {
@@ -39,6 +57,36 @@ namespace DevoidEngine.Core
             IFrameBuffer frameBuffer = device.CreateFrameBuffer([.. colorTextures.Select(e => e.GPU)], depthTexture?.GPU);
 
             return new RenderTarget(frameBuffer, colorTextures, depthTexture);
+        }
+
+        public static RenderTarget Create(int colorAttachmentCount)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(colorAttachmentCount);
+
+            IGraphicsDevice device = Engine.GraphicsDevice;
+
+            IFrameBuffer frameBuffer = device.CreateFrameBuffer(
+                new ITexture?[colorAttachmentCount],
+                null
+            );
+
+            return new RenderTarget(
+                frameBuffer,
+                new Texture?[colorAttachmentCount],
+                null
+            );
+        }
+
+        public void SetColorAttachment(int slot, Texture texture)
+        {
+            colorTextures[slot] = texture;
+            GPU.SetColorAttachment(slot, texture.GPU);
+        }
+
+        public void SetDepthAttachment(Texture texture)
+        {
+            DepthTexture = texture;
+            GPU.SetDepthAttachment(texture.GPU);
         }
     }
 }

@@ -1,0 +1,20 @@
+{
+  "$schema": "./dsdschema.json",
+  "Name": "BlitShader",
+  "DefaultPass": "Forward",
+  "Passes": [
+    {
+      "Name": "Forward",
+      "MaterialBuffer": "Material",
+      "Shaders": {
+        "VS": "../Shaders/fullscreen.vert.hlsl",
+        "FS": "../Shaders/blit.frag.hlsl"
+      },
+      "States": {
+        "Blend": "Off",
+        "Cull": "None",
+        "Depth": "LessEqual"
+      }
+    }
+  ]
+}

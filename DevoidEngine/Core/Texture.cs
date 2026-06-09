@@ -34,7 +34,7 @@ namespace DevoidEngine.Core
                 Format = format,
                 Usage = usage,
                 ArraySize = 1,
-                Depth = 0,
+                Depth = 1,
                 Dimension = TextureDimension.Texture2D,
                 MipLevels = 1,
                 Samples = new TextureSampleDescription()

@@ -13,12 +13,10 @@ namespace DevoidGPU.DX11
         internal SamplerState Sampler;
 
         private readonly Device device;
-        private readonly DeviceContext deviceContext;
 
-        public DX11Sampler(Device device, DeviceContext context, SamplerDescription description)
+        public DX11Sampler(Device device, SamplerDescription description)
         {
             this.device = device;
-            this.deviceContext = context;
 
             SamplerStateDescription dxDescription = new()
             {

@@ -1,0 +1,20 @@
+{
+  "$schema": "./dsdschema.json",
+  "Name": "NullMaterial",
+  "DefaultPass": "Forward",
+  "Passes": [
+    {
+      "Name": "Forward",
+      "MaterialBuffer": "Material",
+      "Shaders": {
+        "VS": "../Shaders/vertex_lit.vert.hlsl",
+        "FS": "../Shaders/null_material.frag.hlsl"
+      },
+      "States": {
+        "Blend": "Off",
+        "Cull": "None",
+        "Depth": "LessEqual"
+      }
+    }
+  ]
+}

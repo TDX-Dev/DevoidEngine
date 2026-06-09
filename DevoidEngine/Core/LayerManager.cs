@@ -73,11 +73,11 @@ namespace DevoidEngine.Core
             }
         }
 
-        public void PostRenderLayers()
+        public void PostRenderLayers(ICommandList cmd)
         {
             for (int i = 0; i < layers.Count; i++)
             {
-                layers[i].OnPostRender();
+                layers[i].OnPostRender(cmd);
             }
         }
 

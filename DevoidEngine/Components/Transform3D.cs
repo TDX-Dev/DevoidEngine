@@ -74,7 +74,69 @@ namespace DevoidEngine.Components
                 }
             }
         }
+        public Vector3 Position
+        {
+            get => WorldMatrix.Translation;
+            set
+            {
+                if (parent != null)
+                {
+                    Matrix4x4.Invert(parent.WorldMatrix, out var invParent);
+                    Vector3 local = Vector3.Transform(value, invParent);
+                    localPosition = local;
+                }
+                else
+                {
+                    localPosition = value;
+                }
 
+                MarkDirty();
+            }
+        }
+        public Quaternion Rotation
+        {
+            get
+            {
+                if (parent == null)
+                    return localRotation;
+
+                return parent.Rotation * localRotation;
+            }
+            set
+            {
+                if (parent != null)
+                {
+                    Quaternion invParent = Quaternion.Inverse(parent.Rotation);
+                    localRotation = invParent * value;
+                }
+                else
+                {
+                    localRotation = value;
+                }
+
+                MarkDirty();
+            }
+        }
+
+        public Vector3 Scale
+        {
+            get
+            {
+                if (parent == null)
+                    return localScale;
+
+                return parent.Scale * localScale;
+            }
+            set
+            {
+                if (parent != null)
+                    localScale = value / parent.Scale;
+                else
+                    localScale = value;
+
+                MarkDirty();
+            }
+        }
         public Matrix4x4 LocalMatrix =>
             Matrix4x4.CreateScale(localScale) *
             Matrix4x4.CreateFromQuaternion(localRotation) *

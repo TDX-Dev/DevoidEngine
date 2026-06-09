@@ -62,7 +62,7 @@ namespace DevoidEngine.Core
                     texture.GPU);
             }
 
-            defaultPass = BaseMaterial.Shader.GetPass(BaseMaterial.Shader.ShaderDescriptor.DefaultPass);
+            defaultPass = BaseMaterial.Shader.DefaultPass;
 
         }
 

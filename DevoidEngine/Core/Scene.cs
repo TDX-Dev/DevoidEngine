@@ -44,12 +44,13 @@ namespace DevoidEngine.Core
 
         public void Update(float deltaTime)
         {
-            if (isPlaying)
+            //if (isPlaying)
+            //{
+            //}
+
+            for (int i = 0; i < GameObjects.Count; i++)
             {
-                for (int i = 0; i < GameObjects.Count; i++)
-                {
-                    GameObjects[i].OnUpdate(deltaTime);
-                }
+                GameObjects[i].OnUpdate(deltaTime);
             }
 
             for (int i = 0; i < transforms.Count; i++)

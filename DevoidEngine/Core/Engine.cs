@@ -13,6 +13,7 @@ namespace DevoidEngine.Core
     public struct EngineConfig
     {
         public GraphicsAPI API;
+        public RendererConfig RendererConfig;
     }
 
     public sealed class Engine
@@ -31,12 +32,13 @@ namespace DevoidEngine.Core
         public uint FrameCount { get; internal set; } = 0;
         public float TimeScale { get; set; } = 1.0f;
         public bool SimulatePhysics { get; set; } = true;
-        public SceneTree SceneTree { get; set; }
+        public SceneTree SceneTree { get; set; } = null!;
 
         private readonly Profiler profiler;
         private readonly IGraphicsDevice graphicsDevice;
-        private readonly Input inputSystem;
         private readonly Renderer renderer;
+
+        private Input inputSystem = null!;
 
         private Engine(EngineConfig config)
         {
@@ -48,8 +50,6 @@ namespace DevoidEngine.Core
                 _ => throw new ArgumentException("Invalid Graphics API type."),
             };
 
-            SceneTree = new SceneTree();
-            inputSystem = new Input();
             renderer = new Renderer();
         }
 
@@ -59,6 +59,10 @@ namespace DevoidEngine.Core
                 throw new InvalidOperationException("Engine already initialized");
 
             instance = new Engine(config);
+
+            instance.renderer.Initialize(config.RendererConfig);
+            instance.SceneTree = new SceneTree();
+            instance.inputSystem = new Input();
         }
     }
 }

@@ -10,7 +10,8 @@ namespace DevoidGPU
         IVertexBuffer CreateVertexBuffer(VertexBufferDescription desc);
         IIndexBuffer CreateIndexBuffer(IndexBufferDescription desc);
         ITexture CreateTexture(TextureDescription desc);
-        IFrameBuffer CreateFrameBuffer(ITexture[] colorAttachments, ITexture? depthAttachment);
+        ISampler CreateSampler(SamplerDescription desc);
+        IFrameBuffer CreateFrameBuffer(ITexture?[] colorAttachments, ITexture? depthAttachment);
         IUniformBuffer CreateUniformBuffer(BufferDescription desc);
         IDescriptorLayout CreateDescriptorLayout(DescriptorBinding[] bindings);
         IDescriptorSet CreateDescriptorSet(IDescriptorLayout layout);

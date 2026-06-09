@@ -1,4 +1,5 @@
-﻿using DevoidGPU;
+﻿using DevoidEngine.Util;
+using DevoidGPU;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -18,6 +19,8 @@ namespace DevoidEngine.Core
         public Vector4[]? Tangents { get => tangents; set => tangents = value; }
 
         public uint[]? Indices { get => indices; set => indices = value; }
+
+        public BoundingBox LocalBounds { get; private set; } = null!;
 
         private IndexBuffer? IB;
         private VertexBuffer<Vertex>? VB;
@@ -71,13 +74,35 @@ namespace DevoidEngine.Core
                 vertices[i] = new Vertex(pos, normal, uv);
             }
 
+            ComputeLocalBounds();
+
             VB = new VertexBuffer<Vertex>(Engine.GraphicsDevice, vertices.AsSpan(), Vertex.VertexInfo, ResourceUsage.Default);
             if (indices != null && indices.Length > 0)
             {
                 IB = new IndexBuffer(Engine.GraphicsDevice, indices.AsSpan());
             }
         }
-        
+
+        private void ComputeLocalBounds()
+        {
+            if (Positions == null || Positions.Length == 0)
+            {
+                LocalBounds = BoundingBox.Empty;
+                return;
+            }
+
+            Vector3 min = Positions[0];
+            Vector3 max = Positions[0];
+
+            for (int i = 1; i < Positions.Length; i++)
+            {
+                min = Vector3.Min(min, Positions[i]);
+                max = Vector3.Max(max, Positions[i]);
+            }
+
+            LocalBounds = new BoundingBox(min, max);
+        }
+
         public void Draw(ICommandList cmd)
         {
 

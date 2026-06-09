@@ -144,6 +144,15 @@ namespace DevoidGPU.DX11
                     });
 
                 }
+                else if (resc.Type == ShaderInputType.Sampler)
+                {
+                    ReflectionData.SamplerBindings.Add(new SamplerBindingInfo()
+                    {
+                        Name = resc.Name,
+                        BindSlot = resc.BindPoint,
+                        Stage = Stage,
+                    });
+                }
             }
             //PrintReflectionInfo(reflection);
         }

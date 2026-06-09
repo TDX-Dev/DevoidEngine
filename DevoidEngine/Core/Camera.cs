@@ -54,8 +54,6 @@ namespace DevoidEngine.Core
 
         public void UpdateProjectionMatrix(float aspectRatio)
         {
-            if (aspectRatio == prev_aspectratio && !view_dirty)
-                return;
             Projection = Matrix4x4.CreatePerspectiveFieldOfView(fov_radians, aspectRatio, Near, Far);
             Matrix4x4.Invert(Projection, out InverseProjection);
             Frustum = Frustum.FromMatrix(View * Projection);
@@ -96,6 +94,37 @@ namespace DevoidEngine.Core
             screen.Y = (1.0f - (ndc.Y * 0.5f + 0.5f)) * screenHeight;
 
             return new (screen, w);
+        }
+
+        public bool IntersectsAABB(Vector3 min, Vector3 max)
+        {
+            if (Frustum == null)
+                return false;
+            var planes = Frustum.Planes;
+
+            for (int i = 0; i < 6; i++)
+            {
+                var plane = planes[i];
+
+                Vector3 normal = plane.Normal;
+
+                Vector3 positive;
+
+                positive.X = normal.X >= 0 ? max.X : min.X;
+                positive.Y = normal.Y >= 0 ? max.Y : min.Y;
+                positive.Z = normal.Z >= 0 ? max.Z : min.Z;
+
+                float distance =
+                    normal.X * positive.X +
+                    normal.Y * positive.Y +
+                    normal.Z * positive.Z +
+                    plane.D;
+
+                if (distance < 0)
+                    return false;
+            }
+
+            return true;
         }
     }
 }

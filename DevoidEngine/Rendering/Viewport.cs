@@ -11,8 +11,8 @@ namespace DevoidEngine.Rendering
 {
     public class Viewport
     {
-        public uint Width { get; private set; }
-        public uint Height { get; private set; }
+        public int Width { get; private set; }
+        public int Height { get; private set; }
 
         public Camera3D? Camera3D { get; private set; }
 
@@ -26,6 +26,8 @@ namespace DevoidEngine.Rendering
             Console.WriteLine("Root Viewport Created");
 
             Camera3Ds = [];
+
+            Engine.Renderer.RegisterViewport(this);
         }
 
         public bool AddCamera3D(Camera3D camera)
@@ -41,12 +43,19 @@ namespace DevoidEngine.Rendering
 
         public void Resize(int width, int height)
         {
-            Width = (uint)width;
-            Height = (uint)height;
+            Width = width;
+            Height = height;
 
             OutputTexture?.Dispose();
 
             OutputTexture = Texture.Create2D(width, height, TextureFormat.RGBA16_Float, TextureUsage.ShaderResource | TextureUsage.RenderTarget);
+
+            Engine.Renderer.ResizeViewport(this);
+        }
+
+        ~Viewport()
+        {
+            Engine.Renderer.RemoveViewport(this);
         }
     }
 }

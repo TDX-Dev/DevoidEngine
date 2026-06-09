@@ -8,51 +8,81 @@ namespace DevoidGPU.DX11
 
         public int Height { get; }
 
-        public IReadOnlyList<ITexture> ColorAttachments => colorAttachments;
+        public IReadOnlyList<ITexture?> ColorAttachments => colorAttachments;
         public ITexture? DepthAttachment => depthAttachment;
 
-        private readonly DX11Texture[] colorAttachments;
-        private readonly DX11Texture? depthAttachment;
+        private readonly DX11Texture?[] colorAttachments;
+        private DX11Texture? depthAttachment;
 
-        internal readonly RenderTargetView[] RTVs;
-        internal readonly DepthStencilView? DSV;
+        internal readonly RenderTargetView?[] RTVs;
+        internal DepthStencilView? DSV;
 
         public DX11Framebuffer(
-            DX11Texture[] colorAttachments,
+            DX11Texture?[] colorAttachments,
             DX11Texture? depthAttachment = null
         )
         {
             this.colorAttachments = colorAttachments;
             this.depthAttachment = depthAttachment;
 
-            Width = colorAttachments[0].Width;
-            Height = colorAttachments[0].Height;
+            RTVs = new RenderTargetView?[colorAttachments.Length];
 
-            ValidateFrameBuffer();
-
-            RTVs = new RenderTargetView[colorAttachments.Length];
             for (int i = 0; i < colorAttachments.Length; i++)
             {
-                RTVs[i] = colorAttachments[i].RTV!;
+                RTVs[i] = colorAttachments[i]?.RTV;
             }
 
             DSV = depthAttachment?.DSV;
         }
 
-        private void ValidateFrameBuffer()
+        internal void ValidateFrameBuffer()
         {
-            for (int i = 1; i < colorAttachments.Length; i++)
+            DX11Texture? reference =
+                colorAttachments.FirstOrDefault(x => x != null)
+                ?? depthAttachment;
+
+            if (reference == null)
+                return;
+
+            foreach (var attachment in colorAttachments)
             {
-                if (colorAttachments[i].Width != Width ||
-                    colorAttachments[i].Height != Height)
+                if (attachment == null)
+                    continue;
+
+                if (attachment.Width != reference.Width ||
+                    attachment.Height != reference.Height)
                 {
-                    throw new InvalidOperationException("All framebuffer attachments must have the same dimensions.");
+                    throw new InvalidOperationException(
+                        "All framebuffer attachments must have the same dimensions.");
                 }
             }
-            if (depthAttachment != null && (depthAttachment.Width != Width || depthAttachment.Height != Height))
+
+            if (depthAttachment != null)
             {
-                throw new InvalidOperationException("Depth attachment size must match color attachments.");
+                if (depthAttachment.Width != reference.Width ||
+                    depthAttachment.Height != reference.Height)
+                {
+                    throw new InvalidOperationException(
+                        "Depth attachment size must match color attachments.");
+                }
             }
+        }
+
+        public void SetColorAttachment(int index, ITexture texture)
+        {
+            var dxTex = (DX11Texture)texture;
+
+            colorAttachments[index] = dxTex;
+            RTVs[index] = dxTex.RTV!;
+            
+        }
+
+        public void SetDepthAttachment(ITexture texture)
+        {
+            var dxTex = (DX11Texture)texture;
+
+            depthAttachment = dxTex;
+            DSV = dxTex.DSV;
         }
 
         public void Dispose()

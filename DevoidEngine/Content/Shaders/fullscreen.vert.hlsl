@@ -15,14 +15,10 @@ struct PSInput
     float3 WorldspacePosition : TEXCOORD1;
 };
 
-#include "./Common/RenderConstants.hlsl"
-
 PSInput VSMain(VSInput input)
 {
     PSInput output;
-    float4 worldPos = mul(Model, float4(input.Position, 1.0));
-    output.Position = mul(Projection, mul(View, worldPos));
-    output.WorldspacePosition = worldPos.xyz;
+    output.Position = float4(input.Position.x, input.Position.y, 0, 1);
     output.UV = input.UV;
     
     return output;

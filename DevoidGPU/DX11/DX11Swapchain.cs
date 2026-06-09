@@ -95,7 +95,7 @@ namespace DevoidGPU.DX11
 
             foreach (var rtv in framebuffer.RTVs)
             {
-                rtv.Dispose();
+                rtv?.Dispose();
             }
 
             swapchain.ResizeBuffers(

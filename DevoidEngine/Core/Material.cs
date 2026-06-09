@@ -37,10 +37,11 @@ namespace DevoidEngine.Core
             textureBindings = [];
             textures = [];
 
-            MaterialLayout layout =
-                  shader.MaterialLayout
-                  ?? throw new Exception(
-                      $"Shader '{shader.Name}' has no material layout.");
+
+            MaterialLayout? layout = shader.MaterialLayout;
+
+            if (layout == null)
+                return;
 
             materialBufferSize =
                     layout.BufferSize;

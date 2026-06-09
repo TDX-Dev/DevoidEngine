@@ -5,6 +5,7 @@
         public List<UniformBufferInfo> UniformBuffers { get; } = [];
         public List<ShaderResourceInfo> Resources { get; } = [];
         public List<TextureBindingInfo> TextureBindings { get; } = [];
+        public List<SamplerBindingInfo> SamplerBindings { get; } = [];
         public List<InputParameterInfo> InputParameters { get; } = [];
 
         public int GetUniformBufferSlot(string name)
@@ -48,6 +49,11 @@
                 foreach (TextureBindingInfo texture in reflection.TextureBindings)
                 {
                     AddTexture(result, texture);
+                }
+
+                foreach (SamplerBindingInfo sampler in reflection.SamplerBindings)
+                {
+                    AddSampler(result, sampler);
                 }
 
                 foreach (InputParameterInfo input in reflection.InputParameters)
@@ -109,6 +115,31 @@
             {
                 throw new Exception(
                     $"Texture '{texture.Name}' uses different slots.");
+            }
+        }
+
+        private static void AddSampler(
+    ShaderReflectionData result,
+    SamplerBindingInfo sampler)
+        {
+            SamplerBindingInfo? existing =
+                result.SamplerBindings
+                    .FirstOrDefault(x =>
+                        string.Equals(
+                            x.Name,
+                            sampler.Name,
+                            StringComparison.OrdinalIgnoreCase));
+
+            if (existing == null)
+            {
+                result.SamplerBindings.Add(sampler);
+                return;
+            }
+
+            if (existing.BindSlot != sampler.BindSlot)
+            {
+                throw new Exception(
+                    $"Sampler '{sampler.Name}' uses different slots.");
             }
         }
     }

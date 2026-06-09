@@ -155,7 +155,12 @@ namespace DevoidGPU.DX11
         {
             return new DX11Texture(device, desc);
         }
-        public IFrameBuffer CreateFrameBuffer(ITexture[] colorAttachments, ITexture? depthAttachment)
+
+        public ISampler CreateSampler(SamplerDescription desc)
+        {
+            return new DX11Sampler(device, desc);
+        }
+        public IFrameBuffer CreateFrameBuffer(ITexture?[] colorAttachments, ITexture? depthAttachment)
         {
             return new DX11Framebuffer([.. colorAttachments.Cast<DX11Texture>()], depthAttachment as DX11Texture);
         }

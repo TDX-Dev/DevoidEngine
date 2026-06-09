@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DevoidEngine.Core;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,6 +10,6 @@ namespace DevoidEngine.Rendering
     public interface IRenderTechnique : IDisposable
     {
         void Initialize();
-        void Render(CameraRenderContext ctx);
+        RenderTarget Render(RenderContext ctx, RenderView view);
     }
 }

@@ -41,6 +41,28 @@ namespace DevoidEngine.Rendering
             RenderMeshData data = meshIdAllocator.Get(instance_id);
             data.render_mesh = mesh;
         }
+        public RenderMeshData GetMeshInstance(RID rid)
+        {
+            return meshIdAllocator.Get(rid);
+        }
 
+        public void BuildView(
+            Camera camera,
+            RenderView view)
+        {
+            view.Objects.Clear();
+
+            foreach ((RID rid, RenderMeshData mesh) in meshIdAllocator.Enumerate())
+            {
+                if (!camera.IntersectsAABB(
+                        mesh.render_mesh.LocalBounds.min,
+                        mesh.render_mesh.LocalBounds.max))
+                {
+                    continue;
+                }
+
+                view.Objects.Add(meshIdAllocator.Get(rid));
+            }
+        }
     }
 }

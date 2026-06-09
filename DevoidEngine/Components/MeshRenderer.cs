@@ -38,7 +38,7 @@ namespace DevoidEngine.Components
             if (!has_moved_current_frame)
                 return;
             Matrix4x4 worldMatrixInterpolated = gameObject.Transform.GetGlobalTransformInterpolated(Engine.Instance.FrameCount, Engine.Instance.InterpolationAlpha);
-
+            Console.WriteLine(gameObject.Transform.Position);
             Engine.Renderer.World.InstanceSetTransform(instance_id, worldMatrixInterpolated);
             has_moved_current_frame = false;
         }
