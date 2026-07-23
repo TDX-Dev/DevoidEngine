@@ -155,8 +155,7 @@ namespace DevoidEngine.Core
 
             if (materialBuffer == null)
             {
-                throw new Exception(
-                    $"Material buffer '{materialDesc.BufferName}' not found.");
+                return null;
             }
 
             MaterialLayout layout = new()
@@ -178,6 +177,11 @@ namespace DevoidEngine.Core
                         .FirstOrDefault(x => x.Name == textureDesc.Name) ?? throw new Exception(
                         $"Material texture '{textureDesc.Name}' not found.");
                 layout.Textures[binding.Name] = binding;
+            }
+
+            foreach (var samplerBinding in reflectionData.SamplerBindings)
+            {
+                layout.Samplers[samplerBinding.Name] = samplerBinding;
             }
 
             return layout;
@@ -306,6 +310,13 @@ namespace DevoidEngine.Core
                     DepthTest = true,
                     DepthWrite = false,
                     DepthFunc = CompareFunc.Always
+                },
+
+                "Disabled" => new DepthStencilState
+                {
+                    DepthTest = false,
+                    DepthWrite = false,
+                    DepthFunc = CompareFunc.LessEqual
                 },
 
                 _ => throw new Exception($"Unknown depth mode '{depth}'")

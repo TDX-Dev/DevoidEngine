@@ -1,0 +1,45 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DevoidEngine.Audio
+{
+    public struct AudioPlayDescription
+    {
+        public AudioClipHandle Clip;
+
+        public Vector3 Position;
+
+        public float Volume;
+        public bool Loop;
+
+        public float MinDistance;
+        public float MaxDistance;
+
+        public AudioAttenuation Attenuation;
+
+        public bool Is3D;
+
+        public static AudioPlayDescription Default3D(AudioClipHandle clip, Vector3 pos)
+        {
+            return new AudioPlayDescription
+            {
+                Clip = clip,
+                Position = pos,
+
+                Volume = 1.0f,
+                Loop = false,
+
+                MinDistance = 1.0f,
+                MaxDistance = 50.0f,
+
+                Attenuation = AudioAttenuation.InverseDistance,
+
+                Is3D = true
+            };
+        }
+    }
+}

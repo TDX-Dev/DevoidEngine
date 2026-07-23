@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -58,6 +59,25 @@ namespace DevoidEngine.Util
             return entries[rid.Index].Value;
         }
 
+        public ref T GetRef(RID rid)
+        {
+            Span<Slot<T>> span =
+                CollectionsMarshal.AsSpan(entries);
+
+            if ((uint)rid.Index >= (uint)span.Length)
+                throw new InvalidOperationException();
+
+            ref Slot<T> slot = ref span[rid.Index];
+
+            if (!slot.Occupied ||
+                slot.Generation != rid.Generation)
+            {
+                throw new InvalidOperationException();
+            }
+
+            return ref slot.Value;
+        }
+
         public void Free(RID rid)
         {
             if (!Owns(rid))
@@ -73,20 +93,9 @@ namespace DevoidEngine.Util
             freeList.Push(rid.Index);
         }
 
-        public IEnumerable<(RID Rid, T Value)> Enumerate()
+        public ReadOnlySpan<Slot<T>> AsSpan()
         {
-            for (int i = 0; i < entries.Count; i++)
-            {
-                var entry = entries[i];
-
-                if (!entry.Occupied)
-                    continue;
-
-                yield return (
-                    new RID(i, entry.Generation),
-                    entry.Value
-                );
-            }
+            return CollectionsMarshal.AsSpan(entries);
         }
     }
 }

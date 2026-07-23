@@ -8,15 +8,19 @@ namespace Sandbox
         {
             var application = new Application(new ApplicationSpecification()
             {
-                Height = 480,
-                Width = 640,
-                Name = " - Devoid Engine",
+                Height = 720,
+                Width = 1280,
+                Name = "Devoid Engine",
                 API = GraphicsAPI.DX11,
                 Resizable = true,
                 VSync = true
             });
 
             application.AddLayer(new SandboxProgram());
+
+            Engine.Instance.ProjectSystem.Load(
+                "D:/Devoid Engine/DevoidProject/new_project.devoid"
+            );
 
             application.Run();
         }

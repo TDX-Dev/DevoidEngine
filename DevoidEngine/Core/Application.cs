@@ -1,6 +1,7 @@
 ﻿
 
 #define PROFILING
+#define DISPLAY_DEBUG_INFO
 
 using DevoidEngine.InputSystem;
 using DevoidEngine.Rendering;
@@ -26,6 +27,10 @@ namespace DevoidEngine.Core
 
     public class Application
     {
+        public const int ENGINE_MAJOR_VER = 0;
+        public const int ENGINE_MINOR_VER = 1;
+
+
         public WindowSurface MainWindow => mainSurface;
 
         private readonly WindowSurface mainSurface;
@@ -49,7 +54,8 @@ namespace DevoidEngine.Core
                 RendererConfig = new RendererConfig()
                 {
                     Technique = RenderTechnique.Forward
-                }
+                },
+                EngineVersion = new Version(ENGINE_MAJOR_VER, ENGINE_MINOR_VER)
             };
 
             Engine.Initialize(configuration);
@@ -75,8 +81,8 @@ namespace DevoidEngine.Core
                 {
                     BufferCount = 2,
                     Format = DevoidGPU.TextureFormat.RGBA8_UNorm,
-                    Height = 480,
-                    Width = 640,
+                    Height = specification.Height,
+                    Width = specification.Width,
                     RefreshRate = Vector2.Zero,
                     Samples = new DevoidGPU.TextureSampleDescription(1, 0),
                     VSync = specification.VSync,
@@ -122,6 +128,16 @@ namespace DevoidEngine.Core
             //    surfaces.Add(surface1);
             //}
 
+
+#if DISPLAY_DEBUG_INFO
+            Console.WriteLine("==============================================");
+            Console.WriteLine($"Devoid Version: {Engine.Instance.EngineVersion}");
+            Console.WriteLine($"Renderer: {Engine.Renderer.ActiveTechnique}");
+            Console.WriteLine($"Rendering Backend: {specification.API}");
+            Console.WriteLine("==============================================");
+#endif
+
+
         }
 
         public void Run()
@@ -147,6 +163,8 @@ namespace DevoidEngine.Core
                     if (surface == mainSurface)
                         Engine.InputSystem.Update(); // Only update main window, change for multi window support
                 }
+
+                Engine.AudioSystem.Update();
 
                 deltaTimeAccumulator += deltaTime;
                 while (deltaTimeAccumulator >= targetDeltaTime)
@@ -174,6 +192,7 @@ namespace DevoidEngine.Core
                     cmd.ClearColor(0, Colors.White);
                     if (surface == mainSurface)
                     {
+                        UpdateCursor();
                         Render(cmd);
                         Engine.InputSystem.EndFrame();
                     }
@@ -218,6 +237,7 @@ namespace DevoidEngine.Core
 
             // Application loop terminated.
             layerManager.DetachLayers();
+            Engine.Instance.ProjectSystem.Unload();
             Engine.Renderer.Dispose();
         }
 
@@ -256,6 +276,30 @@ namespace DevoidEngine.Core
         public void RemoveLayer(Layer layer)
         {
             layerManager.RemoveLayer(layer);
+        }
+
+        void UpdateCursor()
+        {
+            if (Cursor.stateDirty)
+            {
+                MainWindow.Window!.CursorState =
+                    (OpenTK.Windowing.Common.CursorState)Cursor.cursorState;
+
+                Cursor.stateDirty = false;
+            }
+
+            if (Cursor.shapeDirty)
+            {
+                MainWindow!.Window!.Cursor = WindowUtil.ConvertCursorShape(Cursor.cursorShape);
+
+                Cursor.shapeDirty = false;
+            }
+
+            if (Cursor.posDirty)
+            {
+                MainWindow!.Window.MousePosition = new OpenTK.Mathematics.Vector2(Cursor.mousePosition.X, Cursor.mousePosition.Y);
+                Cursor.posDirty = false;
+            }
         }
     }
 }

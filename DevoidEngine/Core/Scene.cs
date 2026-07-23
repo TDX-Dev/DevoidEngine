@@ -1,5 +1,7 @@
 ﻿using DevoidEngine.Assets;
+using DevoidEngine.Audio;
 using DevoidEngine.Components;
+using DevoidEngine.Physics;
 using DevoidEngine.Rendering;
 using System;
 using System.Collections.Generic;
@@ -17,6 +19,9 @@ namespace DevoidEngine.Core
         public string SceneName { get; set; } = "Empty Scene";
 
         public List<GameObject> GameObjects { get; private set; }
+
+        public PhysicsSystem Physics { get; internal set; } = null!;
+        public AudioManager Audio { get; internal set; } = null!;
 
         private bool isPlaying = false;
         private bool isStarted = false;
@@ -64,6 +69,10 @@ namespace DevoidEngine.Core
 
                 transform.hasMoved = false;
             }
+
+            Camera3D? currentSceneCamera3D = Engine.Instance.SceneTree.RootViewport.Camera3D;
+            if (currentSceneCamera3D != null)
+                Audio.SetListener(currentSceneCamera3D.gameObject.Transform.Position, currentSceneCamera3D.gameObject.Transform.Forward, currentSceneCamera3D.gameObject.Transform.Up);
         }
 
         public void LateUpdate(float deltaTime)
@@ -88,7 +97,13 @@ namespace DevoidEngine.Core
                 GameObjects[i].OnFixedUpdate(deltaTime);
             }
 
-            if (Engine.Instance.SimulatePhysics) { }
+            if (Engine.Instance.SimulatePhysics)
+            {
+                Physics.Step(deltaTime);
+                Physics.SyncTransforms(deltaTime);
+                Physics.ResolveFrameCollisions();
+
+            }
         }
 
         public void Render()
@@ -102,7 +117,7 @@ namespace DevoidEngine.Core
         public void Play(bool value = true)
         {
             isPlaying = value;
-            if (isStarted)
+            if (!isStarted)
                 throw new InvalidOperationException("Scene cannot be played before it is started.");
         }
 

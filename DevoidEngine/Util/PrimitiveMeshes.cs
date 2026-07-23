@@ -7,6 +7,7 @@ namespace DevoidEngine.Util
     {
         private static Mesh? cube;
         private static Mesh? fullscreenMesh;
+        private static Mesh? uvsphereMesh;
 
         public static Mesh GetCube()
         {
@@ -18,7 +19,11 @@ namespace DevoidEngine.Util
             fullscreenMesh ??= CreateFullscreenTriangle();
             return fullscreenMesh;
         }
-
+        public static Mesh GetUVSphere()
+        {
+            uvsphereMesh ??= CreateSphere();
+            return uvsphereMesh;
+        }
         public static Mesh CreateCube()
         {
             Mesh mesh = new()
@@ -139,33 +144,32 @@ namespace DevoidEngine.Util
                     new(1, 0),
                     new(0, 0),
             ],
-
                 Indices =
-                [
+            [
                 // Front
-                        0, 1, 2,
-                        2, 3, 0,
+                0, 2, 1,
+                2, 0, 3,
 
-                    // Back
-                        4, 5, 6,
-                        6, 7, 4,
+                // Back
+                4, 6, 5,
+                6, 4, 7,
 
-                    // Left
-                        8, 9, 10,
-                        10, 11, 8,
+                // Left
+                8, 10, 9,
+                10, 8, 11,
 
-                    // Right
-                        12, 13, 14,
-                        14, 15, 12,
+                // Right
+                12, 14, 13,
+                14, 12, 15,
 
-                    // Top
-                        16, 17, 18,
-                        18, 19, 16,
+                // Top
+                16, 18, 17,
+                18, 16, 19,
 
-                    // Bottom
-                        20, 21, 22,
-                        22, 23, 20
-                ]
+                // Bottom
+                20, 22, 21,
+                22, 20, 23
+            ]
             };
 
             mesh.Upload();
@@ -197,6 +201,70 @@ namespace DevoidEngine.Util
             Vector3.UnitZ
                 ]
             };
+
+            mesh.Upload();
+
+            return mesh;
+        }
+
+        public static Mesh CreateSphere(float radius = 0.5f, int slices = 64, int stacks = 32)
+        {
+            Mesh mesh = new();
+
+            List<Vector3> positions = [];
+            List<Vector3> normals = [];
+            List<Vector2> uvs = [];
+            List<uint> indices = [];
+
+            for (int stack = 0; stack <= stacks; stack++)
+            {
+                float v = (float)stack / stacks;
+                float phi = MathF.PI * v;
+
+                float y = MathF.Cos(phi);
+                float r = MathF.Sin(phi);
+
+                for (int slice = 0; slice <= slices; slice++)
+                {
+                    float u = (float)slice / slices;
+                    float theta = u * MathF.PI * 2.0f;
+
+                    float x = r * MathF.Cos(theta);
+                    float z = r * MathF.Sin(theta);
+
+                    Vector3 normal = new(x, y, z);
+
+                    positions.Add(normal * radius);
+                    normals.Add(normal);
+                    uvs.Add(new Vector2(u, 1.0f - v));
+                }
+            }
+
+            int stride = slices + 1;
+
+            for (int stack = 0; stack < stacks; stack++)
+            {
+                for (int slice = 0; slice < slices; slice++)
+                {
+                    uint a = (uint)(stack * stride + slice);
+                    uint b = (uint)((stack + 1) * stride + slice);
+                    uint c = (uint)(a + 1);
+                    uint d = (uint)(b + 1);
+
+                    indices.Add(a);
+                    indices.Add(b);
+                    indices.Add(c);
+
+                    indices.Add(c);
+                    indices.Add(b);
+                    indices.Add(d);
+                }
+            }
+
+            mesh.Positions = [.. positions];
+            mesh.Normals = [.. normals];
+            mesh.UVs = [.. uvs];
+            mesh.Indices = [.. indices];
 
             mesh.Upload();
 

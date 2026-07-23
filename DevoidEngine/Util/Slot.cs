@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DevoidEngine.Util
 {
-    internal struct Slot<T>
+    public struct Slot<T>
     {
         public T Value;
         public uint Generation;

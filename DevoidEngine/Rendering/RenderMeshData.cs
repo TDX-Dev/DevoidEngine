@@ -11,9 +11,11 @@ namespace DevoidEngine.Rendering
 {
     public class RenderMeshData
     {
-        public Mesh render_mesh;
+        public Mesh render_mesh = null!;
         public Matrix4x4 render_transform;
         public MaterialInstance? render_material;
+
+        public RenderMeshData() { }
 
         public RenderMeshData(Mesh mesh)
         {

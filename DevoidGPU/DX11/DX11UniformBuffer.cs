@@ -117,5 +117,10 @@ namespace DevoidGPU.DX11
             }
         }
 
+        public void Dispose()
+        {
+            Buffer.Dispose();
+        }
+
     }
 }

@@ -1,5 +1,7 @@
-﻿using SharpDX.Direct3D;
+﻿using SharpDX;
+using SharpDX.Direct3D;
 using SharpDX.Direct3D11;
+using System.Runtime.InteropServices;
 using Device = SharpDX.Direct3D11.Device;
 using Format = SharpDX.DXGI.Format;
 using SampleDescription = SharpDX.DXGI.SampleDescription;
@@ -21,6 +23,7 @@ namespace DevoidGPU.DX11
         public Resource TextureResource { get; private set; } = null!;
 
         private readonly Device device;
+        private readonly DeviceContext deviceContext = null!;
         private readonly bool ownsResource;
 
         internal DX11Texture(Device device, Texture2D existing)
@@ -50,9 +53,10 @@ namespace DevoidGPU.DX11
             ownsResource = false;
         }
 
-        public DX11Texture(Device device, TextureDescription description)
+        public DX11Texture(Device device, DeviceContext deviceContext, TextureDescription description)
         {
             this.device = device;
+            this.deviceContext = deviceContext;
             this.Description = description;
 
             Format format = DX11StateMapper.ResolveResourceFormat(Description);
@@ -264,6 +268,47 @@ namespace DevoidGPU.DX11
             };
 
             return new RenderTargetView(device, TextureResource, desc);
+        }
+        public void Update(ReadOnlySpan<byte> data)
+        {
+            unsafe
+            {
+                fixed (byte* ptr = data)
+                {
+                    DataBox box = new(
+                        (IntPtr)ptr,
+                        GetRowPitch(),
+                        GetSlicePitch());
+
+                    var bytes = data.ToArray();
+
+                    //Console.WriteLine(
+                    //    string.Join(" ",
+                    //        bytes.Select(x => x.ToString("X2"))));
+
+                    deviceContext.UpdateSubresource(
+                        box,
+                        TextureResource,
+                        0);
+                }
+            }
+        }
+        public void Update<T>(ReadOnlySpan<T> data)
+    where T : unmanaged
+        {
+            Update(
+                MemoryMarshal.AsBytes(data));
+        }
+
+
+        private int GetRowPitch()
+        {
+            return Description.Width * DX11StateMapper.BytesPerPixel(Format);
+        }
+
+        private int GetSlicePitch()
+        {
+            return GetRowPitch() * Description.Height;
         }
         public void Dispose()
         {

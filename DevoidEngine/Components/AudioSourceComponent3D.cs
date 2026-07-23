@@ -1,0 +1,177 @@
+﻿using DevoidEngine.Audio;
+using DevoidEngine.Core;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DevoidEngine.Components
+{
+    public class AudioSource3D : Component
+    {
+        public override string Type => nameof(AudioSource3D);
+
+        public bool PlayOnStart = true;
+        public bool Looping = false;
+
+        public float Volume
+        {
+            get => volume;
+            set
+            {
+                volume = value;
+                ApplySettings();
+            }
+        }
+
+        public float MinDistance
+        {
+            get => minDistance;
+            set
+            {
+                minDistance = value;
+                ApplySettings();
+            }
+        }
+
+        public float MaxDistance
+        {
+            get => maxDistance;
+            set
+            {
+                maxDistance = value;
+                ApplySettings();
+            }
+        }
+
+        public AudioAttenuation Attenuation
+        {
+            get => attenuation;
+            set
+            {
+                attenuation = value;
+                ApplySettings();
+            }
+        }
+
+        internal float volume = 1.0f;
+        internal float minDistance = 1.0f;
+        internal float maxDistance = 50.0f;
+        internal AudioAttenuation attenuation = AudioAttenuation.LinearDistance;
+        public AudioClip? Audio;
+
+        private AudioPlayObject? player;
+
+        public bool IsPlaying => player != null;
+
+        public override void OnStart()
+        {
+            if (Audio == null)
+                return;
+
+            if (PlayOnStart)
+                Play();
+        }
+
+        public override void OnUpdate(float dt)
+        {
+            if (player == null) return;
+
+            player.Position = gameObject.Transform.Position;
+        }
+
+        public override void OnDestroy()
+        {
+            Stop();
+        }
+
+
+        public void Play()
+        {
+            if (Audio == null)
+            {
+                Console.WriteLine("Cannot play without audio clip");
+                return;
+            }
+
+            Stop();
+
+            var desc = new AudioPlayDescription
+            {
+                Clip = Audio._handle,
+                Position = gameObject.Transform.Position,
+
+                Volume = Volume,
+                Loop = Looping,
+
+                MinDistance = MinDistance,
+                MaxDistance = MaxDistance,
+
+                Attenuation = attenuation,
+                Is3D = true
+            };
+
+            player = gameObject.Scene.Audio.Play(desc);
+        }
+
+        public void Stop()
+        {
+            if (player == null) return;
+
+            gameObject.Scene.Audio.Stop(player);
+            player = null;
+        }
+
+        public void Pause()
+        {
+            if (player == null) return;
+            gameObject.Scene.Audio.Pause(player);
+        }
+
+        public void Resume()
+        {
+            if (player == null) return;
+            gameObject.Scene.Audio.Pause(player, false);
+        }
+
+
+        public void SetVolume(float volume)
+        {
+            Volume = volume;
+            if (player != null)
+                player.Volume = volume;
+        }
+
+        public void SetLooping(bool looping)
+        {
+            Looping = looping;
+            if (player != null)
+                player.Loop = looping;
+        }
+
+        public void SetDistance(float min, float max)
+        {
+            MinDistance = min;
+            MaxDistance = max;
+
+            if (player != null)
+            {
+                player.minDistance = min;
+                player.maxDistance = max;
+            }
+        }
+
+        private void ApplySettings()
+        {
+            if (player == null) return;
+
+            player.Volume = Volume;
+            player.Loop = Looping;
+            player.minDistance = minDistance;
+            player.maxDistance = maxDistance;
+            player.attenuationFunc = attenuation;
+        }
+    }
+}

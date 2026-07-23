@@ -11,7 +11,7 @@
     "DefaultPass": {
       "type": "string",
       "description": "Name of the pass that materials will use by default."
-    }
+    },
 
     "MaterialParameters": {
       "type": "object",
@@ -98,7 +98,7 @@
               },
               "Depth": {
                 "type": "string",
-                "enum": [ "Less", "LessEqual", "Always" ]
+                "enum": [ "Less", "LessEqual", "Always", "Disabled" ]
               },
               "Cull": {
                 "type": "string",

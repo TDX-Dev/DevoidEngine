@@ -105,7 +105,8 @@ namespace DevoidGPU.DX11
                 {
                     Name = cbDesc.Name,
                     Size = cbDesc.Size,
-                    BindSlot = GetBindSlot(reflection, cbDesc.Name)
+                    BindSlot = GetBindSlot(reflection, cbDesc.Name),
+                    Stages = Stage
                 };
 
                 for (int v = 0; v < cbDesc.VariableCount; v++)

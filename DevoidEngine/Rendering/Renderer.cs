@@ -33,6 +33,10 @@ namespace DevoidEngine.Rendering
     {
         public IRenderTechnique? ActiveTechnique { get; set; }
 
+        public const uint MAX_POINT_LIGHTS = 100;
+        public const uint MAX_SPOT_LIGHTS = 15;
+        public const uint MAX_DIRECTIONAL_LIGHTS = 2;
+
         public ShaderLibrary ShaderLibrary { get; set; } = null!;
 
         public RenderWorld World { get; private set; } = null!;
@@ -45,7 +49,9 @@ namespace DevoidEngine.Rendering
 
         public RenderTarget ViewportBlitTarget { get; private set; } = null!;
         public UniformBuffer CameraBuffer { get; private set; } = null!;
+        public UniformBuffer SceneBuffer { get; private set;} = null!;
         public UniformBuffer PerObjectBuffer { get; private set; } = null!;
+        public SkyRenderer SkyRenderer { get; private set; } = null!;
 
         private IDescriptorLayout PerCameraDescriptorLayout = null!;
         private IDescriptorSet PerCameraDescriptor = null!;
@@ -55,6 +61,13 @@ namespace DevoidEngine.Rendering
 
         private Stack<ViewportRect> viewportStack = null!;
         private ViewportRect currentViewport;
+
+        private RenderView renderView;
+
+        private ShaderStorageBuffer<GPUPointLight> PointLightBuffer = null!;
+        private ShaderStorageBuffer<GPUSpotLight> SpotLightBuffer = null!;
+        private ShaderStorageBuffer<GPUDirectionalLight> DirectionalLightBuffer = null!;
+
         public void PushViewport(ICommandList cmd, ViewportRect viewport)
         {
             viewportStack.Push(currentViewport);
@@ -101,7 +114,7 @@ namespace DevoidEngine.Rendering
             ShaderLibrary = new ShaderLibrary();
             World = new RenderWorld();
 
-            DefaultShader = Shader.FromDescriptorFile(Engine.GraphicsDevice, "Content/DevoidShaderDescriptors/basic.dsd");
+            DefaultShader = Shader.FromDescriptorFile(Engine.GraphicsDevice, "Content/DevoidShaderDescriptors/pbr_mat.dsd");
             DefaultMaterial = new Material(DefaultShader);
 
             Shader NullShader = Shader.FromDescriptorFile(Engine.GraphicsDevice, "Content/DevoidShaderDescriptors/null_mat.dsd");
@@ -111,8 +124,28 @@ namespace DevoidEngine.Rendering
             PerCameraDescriptorLayout = Engine.GraphicsDevice.CreateDescriptorLayout([
                 new() {
                     Binding = 0,
-                    Stages = DevoidGPU.ShaderStage.Vertex,
+                    Stages = DevoidGPU.ShaderStage.Vertex | DevoidGPU.ShaderStage.Fragment,
                     Type = DescriptorType.UniformBuffer
+                },
+                new() {
+                    Binding = 2,
+                    Stages = DevoidGPU.ShaderStage.Fragment,
+                    Type = DescriptorType.UniformBuffer
+                },
+                new() {
+                    Binding = 10,
+                    Stages = DevoidGPU.ShaderStage.Fragment,
+                    Type = DescriptorType.StorageBuffer
+                },
+                new() {
+                    Binding = 11,
+                    Stages = DevoidGPU.ShaderStage.Fragment,
+                    Type = DescriptorType.StorageBuffer
+                },
+                new() {
+                    Binding = 12,
+                    Stages = DevoidGPU.ShaderStage.Fragment,
+                    Type = DescriptorType.StorageBuffer
                 }
             ]);
 
@@ -130,12 +163,22 @@ namespace DevoidEngine.Rendering
 
             CameraBuffer = UniformBuffer.Create(ResourceUsage.Dynamic, (uint)Unsafe.SizeOf<CameraData>());
             PerObjectBuffer = UniformBuffer.Create(ResourceUsage.Dynamic, (uint)Unsafe.SizeOf<MeshRenderData>());
+            SceneBuffer = UniformBuffer.Create(ResourceUsage.Dynamic, (uint)Unsafe.SizeOf<SceneData>());
 
+            PerCameraDescriptor.SetUniformBuffer(2, SceneBuffer.GPU);
             PerObjectDescriptor.SetUniformBuffer(1, PerObjectBuffer.GPU);
 
             API = new RenderAPI();
 
             ViewportBlitTarget = RenderTarget.Create(1);
+
+            renderView = new RenderView();
+
+            PointLightBuffer = ShaderStorageBuffer<GPUPointLight>.Create(ResourceUsage.Dynamic, Renderer.MAX_POINT_LIGHTS);
+            SpotLightBuffer = ShaderStorageBuffer<GPUSpotLight>.Create(ResourceUsage.Dynamic, Renderer.MAX_SPOT_LIGHTS);
+            DirectionalLightBuffer = ShaderStorageBuffer<GPUDirectionalLight>.Create(ResourceUsage.Dynamic, Renderer.MAX_DIRECTIONAL_LIGHTS);
+
+            SkyRenderer = new SkyRenderer();
 
             ActiveTechnique.Initialize();
         }
@@ -158,13 +201,18 @@ namespace DevoidEngine.Rendering
                 Resources = RenderResources[viewport]
             };
 
-            RenderView view = new();
-            World.BuildView(camera, view);
+            renderView.Clear();
+            World.BuildView(camera, ref renderView);
 
-            camera.UpdateProjectionMatrix((float)viewport.Width / viewport.Height);
+            camera.UpdateProjectionMatrix(((float)viewport.Width) / viewport.Height);
             UpdateCameraBuffer(camera.GetCameraData(new Vector2(viewport.Width, viewport.Height)));
+            UpdateSceneData(renderView);
+            UpdateLights(renderView);
 
-            RenderTarget activeTechniqueTarget = ActiveTechnique.Render(context, view);
+            
+
+
+            RenderTarget activeTechniqueTarget = ActiveTechnique.Render(context, renderView);
 
             ViewportBlitTarget.SetColorAttachment(0, viewport.OutputTexture!);
             cmd.SetFramebuffer(ViewportBlitTarget.GPU);
@@ -192,9 +240,50 @@ namespace DevoidEngine.Rendering
             PerObjectBuffer.Update(meshRenderData);
         }
 
+        public void UpdateSceneData(RenderView view)
+        {
+            SceneBuffer.Update(new SceneData()
+            {
+                pointLightCount = (uint)view.PointLightCount,
+                spotLightCount = (uint)view.SpotLightCount,
+                directionalLightCount = (uint)view.DirectionalLightCount
+            });
+        }
+
+        public void UpdateLights(RenderView view)
+        {
+            PointLightBuffer.Update(view.PointLights);
+            SpotLightBuffer.Update(view.SpotLights);
+            DirectionalLightBuffer.Update(view.DirectionalLights);
+
+            PerCameraDescriptor.SetShaderStorageBuffer(10, PointLightBuffer.GPU);
+            PerCameraDescriptor.SetShaderStorageBuffer(11, SpotLightBuffer.GPU);
+            PerCameraDescriptor.SetShaderStorageBuffer(12, DirectionalLightBuffer.GPU);
+        }
+
         public MaterialInstance GetDefaultMaterial()
         {
             return new MaterialInstance(DefaultMaterial);
+        }
+
+        // Method to draw a single mesh, i made it for the sky dome. expensive.
+        public void Execute(ICommandList cmd, RenderMeshData item)
+        {
+            MaterialInstance material = item.render_material ?? NullMaterialInstance;
+            ShaderPass pass = material.BaseMaterial.Shader.GetPass("Forward");
+            cmd.SetPipeline(pass.Pipeline);
+            cmd.SetDescriptorSet(
+                        0,
+                        PerCameraDescriptor);
+
+            cmd.SetDescriptorSet(
+                1,
+                material.DescriptorSet);
+
+            UpdatePerObjectData(item.render_transform);
+            cmd.SetDescriptorSet(2, PerObjectDescriptor);
+
+            item.render_mesh.Draw(cmd);
         }
 
         public void Execute(ICommandList cmd, RenderView ctx)
@@ -235,7 +324,6 @@ namespace DevoidEngine.Rendering
 
 
                 item.render_mesh.Draw(cmd);
-                Console.WriteLine("Drawing mesh");
             }
         }
 
@@ -253,7 +341,6 @@ namespace DevoidEngine.Rendering
             if (!RenderResources.TryGetValue(viewport, out var cache))
                 throw new InvalidOperationException(
                     "Viewport was not registered.");
-
             cache.Clear();
         }
 

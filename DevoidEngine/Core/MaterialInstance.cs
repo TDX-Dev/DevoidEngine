@@ -41,6 +41,19 @@ namespace DevoidEngine.Core
 
             gpuBuffer = UniformBuffer.Create(ResourceUsage.Dynamic, (uint)Math.Max(1, BaseMaterial.MaterialBufferSize));
 
+
+            //StringBuilder sb = new();
+
+            //sb.AppendLine($"Descriptor Layout: {BaseMaterial.Shader.Name}");
+            //sb.AppendLine("-----------------");
+
+            //foreach (var binding in BaseMaterial.Shader.GetPass("Forward").DescriptorLayout.Bindings)
+            //{
+            //    sb.AppendLine(binding.ToString());
+            //}
+
+            //Console.WriteLine(sb.ToString());
+
             descriptorSet =
                 Engine.GraphicsDevice.CreateDescriptorSet(BaseMaterial.Shader.GetPass("Forward").DescriptorLayout);
 
@@ -62,6 +75,21 @@ namespace DevoidEngine.Core
                     texture.GPU);
             }
 
+            foreach (var kv in BaseMaterial.GetSamplerBindings())
+            {
+                string name = kv.Key;
+
+                SamplerBindingInfo binding = kv.Value;
+
+                Sampler sampler = BaseMaterial.GetDefaultSampler(name);
+
+                descriptorSet.SetSampler(
+                    (uint)binding.BindSlot,
+                    sampler.GPU
+                );
+
+            }
+
             defaultPass = BaseMaterial.Shader.DefaultPass;
 
         }
@@ -69,9 +97,8 @@ namespace DevoidEngine.Core
         private void UpdateBuffer()
         {
             if (!isDirty) return;
-
             gpuBuffer.Update(cpuBuffer);
-
+            descriptorSet.SetUniformBuffer((uint)BaseMaterial.MaterialBufferBindSlot, gpuBuffer.GPU);
             isDirty = false;
         }
 

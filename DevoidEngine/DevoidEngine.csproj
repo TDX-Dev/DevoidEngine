@@ -17,7 +17,12 @@
 	</PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="BepuPhysics" Version="2.4.0" />
+    <PackageReference Include="MessagePack" Version="3.1.8" />
     <PackageReference Include="OpenTK" Version="4.9.4" />
+    <PackageReference Include="Sharploud" Version="2020.2.7" />
+    <PackageReference Include="StbiSharp" Version="1.2.1" />
+    <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -29,7 +34,18 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Content\Shaders\Common\" />
+	  <None Update="Content\DevoidShaderDescriptors\pbr_mat.dsd">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	    <Visible>true</Visible>
+	  </None>
+	  <None Update="Content\Shaders\sky_procedural.frag.hlsl">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	    <Visible>true</Visible>
+	  </None>
+	  <None Update="Content\Shaders\sky_procedural.vert.hlsl">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	    <Visible>true</Visible>
+	  </None>
 	</ItemGroup>
 
 </Project>

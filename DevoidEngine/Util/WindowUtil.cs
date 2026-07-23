@@ -1,4 +1,6 @@
-﻿using System.Runtime.InteropServices;
+﻿using OpenTK.Windowing.Common.Input;
+using OpenTK.Windowing.GraphicsLibraryFramework;
+using System.Runtime.InteropServices;
 
 namespace DevoidEngine.Util
 {
@@ -79,6 +81,16 @@ namespace DevoidEngine.Util
                     SetPreferredAppMode(PreferredAppMode.ForceDark);
                 }
             }
+        }
+        public static MouseCursor ConvertCursorShape(DevoidEngine.Core.CursorShape shape)
+        {
+            return shape switch
+            {
+                Core.CursorShape.Arrow => MouseCursor.Default,
+                Core.CursorShape.ResizeEW => MouseCursor.ResizeEW,
+                Core.CursorShape.ResizeNS => MouseCursor.ResizeNS,
+                _ => MouseCursor.Default,
+            };
         }
     }
 }

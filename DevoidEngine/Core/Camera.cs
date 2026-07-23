@@ -14,7 +14,7 @@ namespace DevoidEngine.Core
     public class Camera
     {
         public RenderTarget? RenderTarget { get; set; }
-        public Frustum? Frustum { get; private set; }
+        public Frustum Frustum { get; private set; }
 
         public float FOV { get => MathHelper.RadToDeg(fov_radians); set => fov_radians = MathHelper.DegToRad(value); }
         public float Near { get; set; } = 0.1f;
@@ -36,6 +36,11 @@ namespace DevoidEngine.Core
         internal float prev_aspectratio = 0;
         internal bool view_dirty = true;
 
+        public Camera()
+        {
+            Frustum = new Frustum();
+        }
+
         public CameraData GetCameraData(Vector2 screenSize)
         {
             return new CameraData
@@ -54,9 +59,16 @@ namespace DevoidEngine.Core
 
         public void UpdateProjectionMatrix(float aspectRatio)
         {
-            Projection = Matrix4x4.CreatePerspectiveFieldOfView(fov_radians, aspectRatio, Near, Far);
+            Projection = Matrix4x4.CreatePerspectiveFieldOfView(
+                fov_radians,
+                aspectRatio,
+                Near,
+                Far);
+
             Matrix4x4.Invert(Projection, out InverseProjection);
-            Frustum = Frustum.FromMatrix(View * Projection);
+
+            Frustum.Update(View * Projection);
+
             prev_aspectratio = aspectRatio;
             view_dirty = false;
         }
@@ -68,12 +80,16 @@ namespace DevoidEngine.Core
             Up = Vector3.Normalize(up);
             Right = Vector3.Normalize(Vector3.Cross(Up, Front));
 
-            View = Matrix4x4.CreateLookAt(Position, Position + Front, Up);
+            View = Matrix4x4.CreateLookAt(
+                Position,
+                Position + Front,
+                Up);
 
             Matrix4x4.Invert(View, out InverseView);
             Matrix4x4.Invert(View * Projection, out InverseViewProjection);
 
-            Frustum = Frustum.FromMatrix(View * Projection);
+            Frustum.Update(View * Projection);
+
             view_dirty = true;
         }
 

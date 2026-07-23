@@ -17,6 +17,8 @@ namespace DevoidGPU
         void ClearColor(int attachmentIndex, Vector4 color);
         void ClearDepthStencil(float depth, byte stencil);
 
+        void GenerateMipmaps(ITexture texture);
+
         void SetPipeline(IPipeline pipeline);
         void SetVertexBuffer(IVertexBuffer vertexBuffer);
         void SetIndexBuffer(IIndexBuffer indexBuffer);

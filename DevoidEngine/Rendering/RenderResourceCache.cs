@@ -27,7 +27,7 @@ namespace DevoidEngine.Rendering
 
             ITexture gpuTexture = device.CreateTexture(description);
             texture = new(gpuTexture);
-            Console.WriteLine("Texture Created for: " + description.Width + " x " + description.Height);
+            //Console.WriteLine("Texture Created for: " + description.Width + " x " + description.Height);
 
             textures.Add(key, texture);
 
@@ -59,7 +59,7 @@ namespace DevoidEngine.Rendering
 
         public void Clear()
         {
-            Console.WriteLine($"Clearing: {textures.Count} Textures");
+            //Console.WriteLine($"Clearing: {textures.Count} Textures");
 
             foreach (var texture in textures.Values)
                 texture.Dispose();

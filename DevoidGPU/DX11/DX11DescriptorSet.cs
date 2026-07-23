@@ -12,7 +12,7 @@ namespace DevoidGPU.DX11
 
         public IDescriptorLayout Layout { get; }
 
-
+        internal readonly Dictionary<uint, IShaderStorageBuffer> storageBuffers = [];
         internal readonly Dictionary<uint, IUniformBuffer> uniformBuffers = [];
         internal readonly Dictionary<uint, ITexture> textures = [];
         internal readonly Dictionary<uint, ISampler> samplers = [];
@@ -20,6 +20,14 @@ namespace DevoidGPU.DX11
         public DX11DescriptorSet(IDescriptorLayout layout)
         {
             Layout = layout;
+        }
+
+        public void SetShaderStorageBuffer(
+            uint binding,
+            IShaderStorageBuffer buffer
+        )
+        {
+            storageBuffers[binding] = buffer;
         }
 
         public void SetUniformBuffer(

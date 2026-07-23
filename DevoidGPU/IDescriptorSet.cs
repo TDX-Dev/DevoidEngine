@@ -10,6 +10,7 @@ namespace DevoidGPU
     {
         IDescriptorLayout Layout { get; }
 
+        void SetShaderStorageBuffer(uint binding, IShaderStorageBuffer buffer);
         void SetUniformBuffer(uint binding, IUniformBuffer buffer);
         void SetTexture(uint binding, ITexture texture);
         void SetSampler(uint binding, ISampler sampler);

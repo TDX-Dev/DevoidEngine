@@ -50,7 +50,7 @@ namespace DevoidEngine.Core
 
         public void Dispose()
         {
-
+            GPU.Dispose();
         }
     }
 }

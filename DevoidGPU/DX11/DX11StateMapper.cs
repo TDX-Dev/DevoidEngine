@@ -135,6 +135,35 @@ namespace DevoidGPU.DX11
                 _ => throw new NotSupportedException($"Unsupported texture format: {format}")
             };
         }
+
+        internal static int BytesPerPixel(TextureFormat format)
+        {
+            return format switch
+            {
+                TextureFormat.R8_UNorm => 1,
+                TextureFormat.R8_UInt => 1,
+
+                TextureFormat.R16_Float => 2,
+                TextureFormat.R32_Float => 4,
+
+                TextureFormat.RG16_Float => 4,
+
+                TextureFormat.RGBA8_UNorm => 4,
+                TextureFormat.RGBA8_UNorm_SRGB => 4,
+                TextureFormat.BGRA8_UNorm => 4,
+
+                TextureFormat.RGBA16_Float => 8,
+
+                TextureFormat.RGBA32_Float => 16,
+
+                TextureFormat.Depth24_Stencil8 => 4,
+                TextureFormat.Depth32_Float => 4,
+
+                _ => throw new NotSupportedException(
+                    $"Unsupported texture format: {format}")
+            };
+        }
+
         internal static ShaderResourceType ConvertResourceType(ShaderInputType type)
         {
             return type switch

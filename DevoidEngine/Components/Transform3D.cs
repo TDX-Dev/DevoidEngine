@@ -1,4 +1,5 @@
-﻿using DevoidEngine.Util;
+﻿using DevoidEngine.Serialization;
+using DevoidEngine.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,7 +24,7 @@ namespace DevoidEngine.Components
                 {
                     localPosition = value;
                     MarkDirty();
-                    Console.WriteLine("Marked Dirty");
+                    //Console.WriteLine("Marked Dirty");
                 }
             }
         }
@@ -153,6 +154,12 @@ namespace DevoidEngine.Components
             }
         }
 
+        [DontSerialize]
+        public Vector3 Forward => Vector3.Normalize(Vector3.Transform(Vector3.UnitZ, Rotation));
+        [DontSerialize]
+        public Vector3 Up => Vector3.Normalize(Vector3.Transform(Vector3.UnitY, Rotation));
+        [DontSerialize]
+        public Vector3 Right => Vector3.Normalize(Vector3.Transform(Vector3.UnitX, Rotation));
         public Transform3D? Parent => parent;
         public List<Transform3D> Children => children;
 

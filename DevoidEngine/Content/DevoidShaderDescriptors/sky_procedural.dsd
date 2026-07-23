@@ -1,0 +1,22 @@
+{
+  "$schema": "./dsdschema.json",
+  "Name": "Vertex Lit",
+
+  "DefaultPass": "Forward",
+
+  "Passes": [
+    {
+      "Name": "Forward",
+      "MaterialBuffer": "Material",
+      "Shaders": {
+        "VS": "../Shaders/sky_procedural.vert.hlsl",
+        "FS": "../Shaders/sky_procedural.frag.hlsl"
+      },
+      "States": {
+        "Blend": "Off",
+        "Cull": "Front",
+        "Depth": "Disabled"
+      }
+    }
+  ]
+}

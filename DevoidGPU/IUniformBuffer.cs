@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DevoidGPU
 {
-    public interface IUniformBuffer
+    public interface IUniformBuffer : IDisposable
     {
         ulong Size { get; }
         ResourceUsage Usage { get; }

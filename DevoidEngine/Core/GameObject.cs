@@ -1,4 +1,5 @@
 ﻿using DevoidEngine.Components;
+using DevoidEngine.Physics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,6 +36,7 @@ namespace DevoidEngine.Core
         public override string ToString() => $"GameObject {Name}";
 
         private Scene scene = null!;
+        private readonly List<Component> _componentSnapshot = [];
 
         public GameObject(string name = "")
         {
@@ -79,6 +81,53 @@ namespace DevoidEngine.Core
             {
                 Components[i].OnRender();
             }
+        }
+
+        internal void InvokeCollisionEnter(GameObject other)
+        {
+            _componentSnapshot.Clear();
+            _componentSnapshot.AddRange(Components);
+
+            for (int i = 0; i < _componentSnapshot.Count; i++)
+            {
+                if (_componentSnapshot[i] is ICollisionListener listener)
+                    listener.OnCollisionEnter(other);
+            }
+        }
+
+        internal void InvokeCollisionStay(GameObject other)
+        {
+            _componentSnapshot.Clear();
+            _componentSnapshot.AddRange(Components);
+
+            for (int i = 0; i < _componentSnapshot.Count; i++)
+            {
+                if (_componentSnapshot[i] is ICollisionListener listener)
+                    listener.OnCollisionStay(other);
+            }
+        }
+
+        internal void InvokeCollisionExit(GameObject other)
+        {
+            _componentSnapshot.Clear();
+            _componentSnapshot.AddRange(Components);
+
+            for (int i = 0; i < _componentSnapshot.Count; i++)
+            {
+                if (_componentSnapshot[i] is ICollisionListener listener)
+                    listener.OnCollisionExit(other);
+            }
+        }
+
+        public T? GetComponent<T>() where T : Component
+        {
+            for (int i = 0; i < Components.Count; i++)
+            {
+                if (Components[i] is T t)
+                    return t;
+            }
+
+            return null;
         }
         public T AddComponent<T>() where T : Component, new()
         {

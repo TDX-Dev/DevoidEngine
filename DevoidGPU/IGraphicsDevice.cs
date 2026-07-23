@@ -13,6 +13,7 @@ namespace DevoidGPU
         ISampler CreateSampler(SamplerDescription desc);
         IFrameBuffer CreateFrameBuffer(ITexture?[] colorAttachments, ITexture? depthAttachment);
         IUniformBuffer CreateUniformBuffer(BufferDescription desc);
+        IShaderStorageBuffer CreateShaderStorageBuffer(BufferDescription desc);
         IDescriptorLayout CreateDescriptorLayout(DescriptorBinding[] bindings);
         IDescriptorSet CreateDescriptorSet(IDescriptorLayout layout);
         ICommandList GetCommandList();

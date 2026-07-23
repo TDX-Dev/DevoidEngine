@@ -53,7 +53,6 @@ namespace DevoidGPU.DX11
 
         public ISwapchain CreateSwapchain(SwapchainDescription desc)
         {
-            Console.WriteLine("Swapchain created");
             return new DX11SwapChain(factory, device, desc);
         }
 
@@ -153,7 +152,7 @@ namespace DevoidGPU.DX11
         }
         public ITexture CreateTexture(TextureDescription desc)
         {
-            return new DX11Texture(device, desc);
+            return new DX11Texture(device, deviceContext, desc);
         }
 
         public ISampler CreateSampler(SamplerDescription desc)
@@ -167,6 +166,11 @@ namespace DevoidGPU.DX11
         public IUniformBuffer CreateUniformBuffer(BufferDescription desc)
         {
             return new DX11UniformBuffer(device, deviceContext, desc);
+        }
+
+        public IShaderStorageBuffer CreateShaderStorageBuffer(BufferDescription desc)
+        {
+            return new DX11ShaderStorageBuffer(device, deviceContext, desc);
         }
 
         public IDescriptorLayout CreateDescriptorLayout(DescriptorBinding[] bindings) 

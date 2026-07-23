@@ -1,0 +1,51 @@
+﻿using BepuPhysics;
+using BepuUtilities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DevoidEngine.Physics.Bepu
+{
+    internal struct BepuPoseIntegratorCallbacks : IPoseIntegratorCallbacks
+    {
+        public Vector3 Gravity;
+        //public float LinearDamping;
+        //public float AngularDamping;
+
+
+        private Vector3Wide gravityWideDt;
+
+        public readonly AngularIntegrationMode AngularIntegrationMode => AngularIntegrationMode.Nonconserving;
+
+        public readonly bool AllowSubstepsForUnconstrainedBodies => false;
+
+        public readonly bool IntegrateVelocityForKinematics => false;
+
+        public void Initialize(Simulation simulation)
+        {
+            // Convert gravity into wide representation once
+            gravityWideDt = Vector3Wide.Broadcast(Gravity);
+        }
+
+        public void PrepareForIntegration(float dt)
+        {
+            gravityWideDt = Vector3Wide.Broadcast(Gravity * dt);
+        }
+
+        public readonly void IntegrateVelocity(
+            Vector<int> bodyIndices,
+            Vector3Wide position,
+            QuaternionWide orientation,
+            BodyInertiaWide localInertia,
+            Vector<int> integrationMask,
+            int workerIndex,
+            Vector<float> dt,
+            ref BodyVelocityWide velocity)
+        {
+            velocity.Linear += gravityWideDt;
+        }
+    }
+}

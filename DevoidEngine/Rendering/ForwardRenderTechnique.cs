@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -18,6 +19,7 @@ namespace DevoidEngine.Rendering
 
         private RenderTarget colorOutput = null!;
         private List<RenderMeshData> visibleItems = null!;
+
 
         public void Initialize()
         {
@@ -66,40 +68,10 @@ namespace DevoidEngine.Rendering
             ctx.CommandList.ClearColor(0, Vector4.Zero);
             ctx.CommandList.ClearDepthStencil(1, 0);
 
+            ctx.Renderer.SkyRenderer.Render(ctx);
             ctx.Renderer.Execute(ctx.CommandList, view);
 
             return colorOutput;
-        }
-
-        void BuildVisibleList(RenderView ctx)
-        {
-            int culledCount = 0;
-            visibleItems.Clear();
-
-            var camera = ctx.Camera;
-
-            foreach (var item in ctx.Objects)
-            {
-                if (item.render_mesh == null)
-                    continue;
-
-
-                BoundingBox.TransformAABB(
-                    item.render_mesh.LocalBounds.min,
-                    item.render_mesh.LocalBounds.max,
-                    item.render_transform,
-                    out Vector3 worldMin,
-                    out Vector3 worldMax
-                );
-
-                if (!camera.IntersectsAABB(worldMin, worldMax))
-                {
-                    culledCount++;
-                    continue;
-                }
-
-                visibleItems.Add(item);
-            }
         }
 
         public void Dispose()

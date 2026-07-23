@@ -17,6 +17,23 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Assets\ground_tex.png" />
+    <None Remove="Assets\mesh_tex.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\ground_tex.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\mesh_tex.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\DevoidEngine\DevoidEngine.csproj" />
   </ItemGroup>
 

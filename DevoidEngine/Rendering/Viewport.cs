@@ -23,7 +23,6 @@ namespace DevoidEngine.Rendering
 
         public Viewport()
         {
-            Console.WriteLine("Root Viewport Created");
 
             Camera3Ds = [];
 
@@ -43,6 +42,7 @@ namespace DevoidEngine.Rendering
 
         public void Resize(int width, int height)
         {
+
             Width = width;
             Height = height;
 

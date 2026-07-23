@@ -18,6 +18,12 @@ namespace DevoidGPU.DX11
         private DX11Framebuffer? currentFramebuffer;
         private (int, int, int, int) currentViewport;
 
+        private readonly DX11Texture?[] boundPS_SRVs = new DX11Texture?[16];
+        private readonly DX11Texture?[] boundVS_SRVs = new DX11Texture?[16];
+        private readonly DX11Texture?[] boundCS_SRVs = new DX11Texture?[16];
+
+        private readonly DX11Texture?[] boundRTVs = new DX11Texture?[8];
+        private DX11Texture? boundDSV;
 
         public DX11CommandList(DeviceContext context) { deviceContext = context; }
 
@@ -64,6 +70,24 @@ namespace DevoidGPU.DX11
             currentFramebuffer = dx11Fb;
 
             dx11Fb.ValidateFrameBuffer();
+
+            for (int i = 0; i < dx11Fb.ColorAttachments.Count; i++)
+            {
+                if (dx11Fb.ColorAttachments[i] is DX11Texture tex)
+                {
+                    ResolveForRTV(tex);
+
+                    boundRTVs[i] = tex;
+                }
+            }
+
+            if (dx11Fb.DepthAttachment is DX11Texture depth)
+            {
+                ResolveForRTV(depth);
+
+                boundDSV = depth;
+            }
+
             deviceContext.OutputMerger.SetRenderTargets(dx11Fb.DSV, dx11Fb.RTVs);
         }
 
@@ -90,6 +114,14 @@ namespace DevoidGPU.DX11
                 stencil
             );
         }
+
+        public void GenerateMipmaps(ITexture texture)
+        {
+            var dx11Texture = (DX11Texture)texture;
+
+            deviceContext.GenerateMips(dx11Texture.SRV);
+        }
+
         public void SetPipeline(IPipeline pipeline)
         {
             var p = (DX11GraphicsPipeline)pipeline;
@@ -159,7 +191,10 @@ namespace DevoidGPU.DX11
                                 Console.WriteLine($"[DX11]: Cannot bind texture at {binding.Binding} since it does not have a SRV");
                                 continue;
                             }
-                            BindShaderResourceView(binding.Binding, binding.Stages, dxTex.SRV);
+                            BindShaderResourceView(
+                                binding.Binding,
+                                binding.Stages,
+                                dxTex);
                             break;
                         }
 
@@ -171,6 +206,18 @@ namespace DevoidGPU.DX11
                             var dxSampler = (DX11Sampler)samp;
 
                             BindSampler(binding.Binding, binding.Stages, dxSampler.Sampler);
+                            break;
+                        }
+
+                    case DescriptorType.StorageBuffer:
+                        {
+                            if (!dxSet.storageBuffers.TryGetValue(binding.Binding, out var storageBuffer))
+                                continue;
+
+                            var dxStorageBuffer = (DX11ShaderStorageBuffer)storageBuffer;
+
+                            BindShaderResourceView(binding.Binding, binding.Stages, dxStorageBuffer.SRV!);
+
                             break;
                         }
                 }
@@ -217,6 +264,43 @@ namespace DevoidGPU.DX11
                 deviceContext.ComputeShader.SetShaderResource((int)slot, view);
             }
         }
+
+        internal void BindShaderResourceView(
+            uint slot,
+            ShaderStage stages,
+            DX11Texture tex
+        )
+        {
+            ResolveForSRV(tex);
+
+            if ((stages & ShaderStage.Vertex) != 0)
+            {
+                deviceContext.VertexShader.SetShaderResource(
+                    (int)slot,
+                    tex.SRV);
+
+                boundVS_SRVs[slot] = tex;
+            }
+
+            if ((stages & ShaderStage.Fragment) != 0)
+            {
+                deviceContext.PixelShader.SetShaderResource(
+                    (int)slot,
+                    tex.SRV);
+
+                boundPS_SRVs[slot] = tex;
+            }
+
+            if ((stages & ShaderStage.Compute) != 0)
+            {
+                deviceContext.ComputeShader.SetShaderResource(
+                    (int)slot,
+                    tex.SRV);
+
+                boundCS_SRVs[slot] = tex;
+            }
+        }
+
         internal void BindSampler(uint slot, ShaderStage stages, SamplerState sampler)
         {
             if ((stages & ShaderStage.Vertex) != 0)
@@ -227,6 +311,57 @@ namespace DevoidGPU.DX11
                 deviceContext.GeometryShader.SetSampler((int)slot, sampler);
             if ((stages & ShaderStage.Compute) != 0)
                 deviceContext.ComputeShader.SetSampler((int)slot, sampler);
+        }
+
+        private void ResolveForSRV(DX11Texture tex)
+        {
+            bool dirty = false;
+
+            for (int i = 0; i < boundRTVs.Length; i++)
+            {
+                if (boundRTVs[i] == tex)
+                {
+                    boundRTVs[i] = null;
+                    dirty = true;
+                }
+            }
+
+            if (boundDSV == tex)
+            {
+                boundDSV = null;
+                dirty = true;
+            }
+
+            if (dirty)
+            {
+                deviceContext.OutputMerger.SetRenderTargets(
+                    (DepthStencilView?)null,
+                    []);
+            }
+        }
+
+        private void ResolveForRTV(DX11Texture tex)
+        {
+            for (int i = 0; i < 16; i++)
+            {
+                if (boundPS_SRVs[i] == tex)
+                {
+                    deviceContext.PixelShader.SetShaderResource(i, null);
+                    boundPS_SRVs[i] = null;
+                }
+
+                if (boundVS_SRVs[i] == tex)
+                {
+                    deviceContext.VertexShader.SetShaderResource(i, null);
+                    boundVS_SRVs[i] = null;
+                }
+
+                if (boundCS_SRVs[i] == tex)
+                {
+                    deviceContext.ComputeShader.SetShaderResource(i, null);
+                    boundCS_SRVs[i] = null;
+                }
+            }
         }
     }
 }

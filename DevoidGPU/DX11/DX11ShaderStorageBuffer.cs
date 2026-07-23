@@ -87,12 +87,13 @@ namespace DevoidGPU.DX11
 
         public void Update<T>(ReadOnlySpan<T> data) where T : unmanaged
         {
+
             int totalSize = Unsafe.SizeOf<T>() * data.Length;
 
             if ((ulong)totalSize > Size)
                 throw new InvalidOperationException("Update data exceeds shader storage buffer size.");
 
-            if (Usage.HasFlag(ResourceUsage.Dynamic))
+            if ((Usage & ResourceUsage.Dynamic) != 0)
             {
                 var box = deviceContext.MapSubresource(
                     Buffer,
@@ -127,6 +128,11 @@ namespace DevoidGPU.DX11
                     );
                 }
             }
+        }
+
+        public void Dispose()
+        {
+            Buffer.Dispose();
         }
 
     }

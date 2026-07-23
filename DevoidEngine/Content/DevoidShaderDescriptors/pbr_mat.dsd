@@ -1,0 +1,45 @@
+{
+  "$schema": "./dsdschema.json",
+  "Name": "PBR Material",
+  "DefaultPass": "Forward",
+  "MaterialParameters": {
+    "BufferName": "Material",
+    "Textures": [
+      {
+        "Name": "MAT_AlbedoMap",
+        "Type": "Texture2D"
+      },
+      {
+        "Name": "MAT_NormalMap",
+        "Type": "Texture2D"
+      },
+      {
+        "Name": "MAT_MetallicMap",
+        "Type": "Texture2D"
+      },
+      {
+        "Name": "MAT_RoughnessMap",
+        "Type": "Texture2D"
+      },
+      {
+        "Name": "MAT_EmissiveMap",
+        "Type": "Texture2D"
+      }
+    ]
+  },
+  "Passes": [
+    {
+      "Name": "Forward",
+      "MaterialBuffer": "Material",
+      "Shaders": {
+        "VS": "../Shaders/pbr.vert.hlsl",
+        "FS": "../Shaders/pbr.frag.hlsl"
+      },
+      "States": {
+        "Blend": "Off",
+        "Cull": "Back",
+        "Depth": "LessEqual"
+      }
+    }
+  ]
+}

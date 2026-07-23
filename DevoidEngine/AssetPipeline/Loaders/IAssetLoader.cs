@@ -1,0 +1,14 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DevoidEngine.AssetPipeline.Loaders
+{
+    public interface IAssetLoader<T>
+    {
+        T Load(ReadOnlySpan<byte> data);
+
+    }
+}
