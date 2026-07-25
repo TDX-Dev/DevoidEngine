@@ -66,6 +66,7 @@ namespace Sandbox
             MeshRenderer meshRenderer = meshGo.AddComponent<MeshRenderer>();
             meshRenderer.Mesh = PrimitiveMeshes.GetCube();
             meshRenderer.Material = GroundPBRMaterial;
+            meshGo.Transform.Position = new Vector3(0, 0, -10);
             meshGo.Transform.Scale = new Vector3(20, 1f, 20);
             meshGo.Transform.EulerAngles = new Vector3(10, 0, 0);
             StaticColliderComponent sb = meshGo.AddComponent<StaticColliderComponent>();
@@ -82,6 +83,14 @@ namespace Sandbox
             meshRenderer1.Material = PBRMaterial;
             meshGo1.Transform.Position = new Vector3(0, 10, 0);
             RigidBodyComponent rb = meshGo1.AddComponent<RigidBodyComponent>();
+
+            GameObject childObject = scene.AddGameObject("PhyChildObj");
+            MeshRenderer meshRenderer2 = childObject.AddComponent<MeshRenderer>();
+            meshRenderer2.Mesh = PrimitiveMeshes.GetCube();
+            meshRenderer2.Material = PBRMaterial;
+            childObject.Transform.SetParent(meshGo1.Transform);
+            childObject.Transform.LocalPosition = new Vector3(0, 2, -2);
+
             //rb.Shape = new DevoidEngine.Physics.PhysicsShapeDescription()
             //{
             //    Radius = 1,

@@ -1,5 +1,6 @@
 ﻿using DevoidEngine.Components;
 using DevoidEngine.Core;
+using DevoidEngine.UI;
 using DevoidGPU;
 using System;
 using System.Collections.Generic;
@@ -15,6 +16,7 @@ namespace DevoidEngine.Rendering
         public int Height { get; private set; }
 
         public Camera3D? Camera3D { get; private set; }
+        public UIContext UIContext { get; private set; }
 
         public List<Camera3D> Camera3Ds { get; private set; }
         public Texture? OutputTexture = null!;
@@ -25,6 +27,7 @@ namespace DevoidEngine.Rendering
         {
 
             Camera3Ds = [];
+            UIContext = new();
 
             Engine.Renderer.RegisterViewport(this);
         }
