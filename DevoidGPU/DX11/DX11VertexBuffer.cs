@@ -1,8 +1,9 @@
-﻿using SharpDX.Direct3D11;
+﻿using SharpDX;
+using SharpDX.Direct3D11;
 using System.Runtime.CompilerServices;
 using Buffer = SharpDX.Direct3D11.Buffer;
-using MapFlags = SharpDX.Direct3D11.MapFlags;
 using Device = SharpDX.Direct3D11.Device;
+using MapFlags = SharpDX.Direct3D11.MapFlags;
 
 namespace DevoidGPU.DX11
 {
@@ -36,7 +37,7 @@ namespace DevoidGPU.DX11
                 SizeInBytes = (int)description.Size,
                 BindFlags = BindFlags.VertexBuffer,
                 Usage = DX11StateMapper.ToDXBufferUsage(description.Usage),
-                CpuAccessFlags = DX11StateMapper.ToDXCpuAccess(description.CpuAccess),
+                CpuAccessFlags = description.Usage == ResourceUsage.Dynamic ? CpuAccessFlags.Write : DX11StateMapper.ToDXCpuAccess(description.CpuAccess),
                 OptionFlags = ResourceOptionFlags.None,
                 StructureByteStride = 0
             };
@@ -66,11 +67,16 @@ namespace DevoidGPU.DX11
                 throw new InvalidOperationException("Update data exceeds buffer size.");
 
             if (elementSize != Stride)
-                throw new InvalidOperationException($"Stride mismatch. Expected {Stride}, got {elementSize}");
+                throw new InvalidOperationException(
+                    $"Stride mismatch. Expected {Stride}, got {elementSize}");
 
-            if (Usage.HasFlag(ResourceUsage.Dynamic))
+            if ((Usage & ResourceUsage.Dynamic) != 0)
             {
-                var box = deviceContext.MapSubresource(Buffer, 0, MapMode.WriteDiscard, MapFlags.None);
+                var box = deviceContext.MapSubresource(
+                    Buffer,
+                    0,
+                    MapMode.WriteDiscard,
+                    MapFlags.None);
 
                 unsafe
                 {
@@ -79,27 +85,24 @@ namespace DevoidGPU.DX11
                         System.Buffer.MemoryCopy(
                             src,
                             (void*)box.DataPointer,
-                            (long)Size,
-                            totalSize
-                        );
+                            totalSize,
+                            totalSize);
                     }
                 }
 
                 deviceContext.UnmapSubresource(Buffer, 0);
-                return;
             }
-
-            unsafe
+            else
             {
-                fixed (T* src = data)
+                unsafe
                 {
-                    IntPtr ptr = (IntPtr)src;
-
-                    deviceContext.UpdateSubresource(
-                        ref ptr,
-                        Buffer,
-                        0
-                    );
+                    fixed (T* src = data)
+                    {
+                        deviceContext.UpdateSubresource(
+                            new DataBox((IntPtr)src, 0, 0),
+                            Buffer,
+                            0);
+                    }
                 }
             }
         }

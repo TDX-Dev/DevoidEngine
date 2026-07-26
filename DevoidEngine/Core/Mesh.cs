@@ -13,6 +13,8 @@ namespace DevoidEngine.Core
 {
     public class Mesh
     {
+        public ResourceUsage Usage { get; }
+
         public Vector3[]? Positions { get => positions; set => positions = value; }
         public Vector2[]? UVs { get => uvs; set => uvs = value; }
         public Vector3[]? Normals { get => normals; set => normals = value; }
@@ -32,8 +34,9 @@ namespace DevoidEngine.Core
         private Vector4[]? tangents;
         private uint[]? indices;
 
-        public Mesh()
+        public Mesh(ResourceUsage usage = ResourceUsage.Default)
         {
+            Usage = usage;
             positions = [];
             normals = [];
             uvs = [];
@@ -45,7 +48,7 @@ namespace DevoidEngine.Core
             Positions = positions;
         }
 
-        public void Upload()
+        public void Upload(bool computeLocalBounds = true)
         {
             if (Positions == null || Positions.Length == 0)
                 throw new InvalidOperationException("Mesh must have positions");
@@ -74,12 +77,26 @@ namespace DevoidEngine.Core
                 vertices[i] = new Vertex(pos, normal, uv);
             }
 
-            ComputeLocalBounds();
+            if (computeLocalBounds)
+                ComputeLocalBounds();
 
-            VB = new VertexBuffer<Vertex>(Engine.GraphicsDevice, vertices.AsSpan(), Vertex.VertexInfo, ResourceUsage.Default);
+            if (VB == null)
+            {
+                VB = new VertexBuffer<Vertex>(Engine.GraphicsDevice, vertices.AsSpan(), Vertex.VertexInfo, Usage);
+            } else
+            {
+                VB.Update(vertices);
+            }
+
             if (indices != null && indices.Length > 0)
             {
-                IB = new IndexBuffer(Engine.GraphicsDevice, indices.AsSpan());
+                if (IB == null)
+                {
+                    IB = new IndexBuffer(Engine.GraphicsDevice, indices.AsSpan(), Usage);
+                } else
+                {
+                    IB.Update(indices);
+                }
             }
         }
 

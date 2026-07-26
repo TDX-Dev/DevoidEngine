@@ -6,16 +6,25 @@ using System.Threading.Tasks;
 
 namespace DevoidEngine.UI.Text
 {
-    public class TextLayoutResult
+    public sealed class TextLayoutResult
     {
-        public List<PositionedGlyph> Glyphs = [];
-
-        public List<int> LineStarts = [];
-        public List<float> LineWidths = [];
+        public readonly List<PositionedGlyph> Glyphs = [];
+        public readonly List<int> LineStarts = [];
+        public readonly List<float> LineWidths = [];
 
         public float Width;
         public float Height;
-
         public int LineCount;
+
+        public void Clear()
+        {
+            Glyphs.Clear();
+            LineStarts.Clear();
+            LineWidths.Clear();
+
+            Width = 0;
+            Height = 0;
+            LineCount = 0;
+        }
     }
 }

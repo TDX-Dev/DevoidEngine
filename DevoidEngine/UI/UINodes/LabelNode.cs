@@ -2,6 +2,7 @@
 using DevoidEngine.UI.Text;
 using DevoidEngine.UI.Theme;
 using DevoidEngine.Util;
+using DevoidGPU;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -15,6 +16,21 @@ namespace DevoidEngine.UI.UINodes
     public class LabelNode : UINode
     {
         public override string ThemeType => "Label";
+
+        public TextOverflow Overflow
+        {
+            get => _overflow;
+            set
+            {
+                if (_overflow == value)
+                    return;
+
+                _overflow = value;
+                _layoutDirty = true;
+            }
+        }
+
+        private TextOverflow _overflow = TextOverflow.None;
 
         public string Text
         {
@@ -61,9 +77,11 @@ namespace DevoidEngine.UI.UINodes
         private Font _font = null!;
         private float _fontSize = 16;
 
-        private Mesh? _mesh;
-        private TextLayoutResult? _layout;
-        private Vector2 _layoutSize;
+        private readonly Mesh _mesh = new(ResourceUsage.Dynamic);
+        private readonly TextLayoutResult _measureLayout = new();
+        private readonly TextLayoutResult _renderLayout = new();
+
+        private Vector2 _renderConstraint;
         private bool _layoutDirty = true;
         private bool _meshDirty = true;
 
@@ -95,14 +113,37 @@ namespace DevoidEngine.UI.UINodes
 
         protected override Vector2 MeasureCore(Vector2 availableSize)
         {
-            UpdateLayout(availableSize);
+            Vector2 constraint = Overflow == TextOverflow.None
+                ? Vector2.Zero
+                : availableSize;
 
-            return new Vector2(_layout!.Width, _layout.Height);
+            BuildLayout(
+                _measureLayout,
+                constraint);
+
+            return new Vector2(
+                _measureLayout.Width,
+                _measureLayout.Height);
         }
 
         protected override void ArrangeCore(Rect finalRect)
         {
-            UpdateLayout(finalRect.Size);
+            Vector2 constraint = Overflow == TextOverflow.None
+                ? Vector2.Zero
+                : finalRect.Size;
+
+            if (!_layoutDirty &&
+                _renderConstraint == constraint)
+                return;
+
+            BuildLayout(
+                _renderLayout,
+                constraint);
+
+            _renderConstraint = constraint;
+
+            _layoutDirty = false;
+            _meshDirty = true;
         }
 
         protected override void UpdateCore(float dt)
@@ -115,8 +156,6 @@ namespace DevoidEngine.UI.UINodes
             UIDrawList drawList,
             int order)
         {
-            if (_mesh == null)
-                return;
 
             if (Material == null)
                 return;
@@ -139,44 +178,50 @@ namespace DevoidEngine.UI.UINodes
 
         }
 
-        private void UpdateLayout(Vector2 maxSize)
+        private void BuildLayout(
+            TextLayoutResult layout,
+            Vector2 constraint)
         {
-            if (!_layoutDirty &&
-                _layoutSize == maxSize)
-                return;
-
             TextLayoutSettings settings = new()
             {
                 FontSize = FontSize,
-                MaxWidth = maxSize.X,
-                MaxHeight = maxSize.Y,
-                HorizontalAlignment = TextHorizontalAlignment.Left,
+
+                Overflow = Overflow,
+
+                MaxWidth = Overflow == TextOverflow.None
+                    ? 0
+                    : constraint.X,
+
+                MaxHeight = Overflow == TextOverflow.None
+                    ? 0
+                    : constraint.Y,
+
+                HorizontalAlignment = TextHorizontalAlignment.Right,
                 VerticalAlignment = TextVerticalAlignment.Top,
             };
 
-            _layout = TextLayout.Layout(Font, Text, settings);
-
-            _layoutSize = maxSize;
-
-            _layoutDirty = false;
-            _meshDirty = true;
+            TextLayout.Layout(
+                Font,
+                Text,
+                settings,
+                layout);
         }
 
         private void RebuildMesh()
         {
-            if (_layout == null)
-                return;
-
-            _mesh = TextMeshBuilder.Build(
+            TextMeshBuilder.Build(
                 Font,
-                _layout,
-                FontSize);
+                _renderLayout,
+                FontSize,
+                _mesh);
 
             Material?.SetTexture(
                 "MAT_Texture",
                 Font.FontAtlasTexture);
 
             _meshDirty = false;
+
+            Console.WriteLine("Rebuilt Mesh");
         }
     }
 }

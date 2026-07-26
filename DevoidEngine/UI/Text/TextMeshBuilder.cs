@@ -14,17 +14,15 @@ namespace DevoidEngine.UI.Text
         public static Mesh Build(
             Font font,
             TextLayoutResult layout,
-            float fontSize)
+            float fontSize,
+            Mesh mesh)
         {
             float scale = fontSize / font.ReferenceSize;
             int glyphCount = layout.Glyphs.Count;
 
-            Mesh mesh = new()
-            {
-                Positions = new Vector3[glyphCount * 4],
-                UVs = new Vector2[glyphCount * 4],
-                Indices = new uint[glyphCount * 6]
-            };
+            mesh.Positions = new Vector3[glyphCount * 4];
+            mesh.UVs = new Vector2[glyphCount * 4];
+            mesh.Indices = new uint[glyphCount * 6];
 
             int vertex = 0;
             int index = 0;

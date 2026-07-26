@@ -25,6 +25,7 @@ namespace DevoidGPU.DX11
             this.deviceContext = deviceContext;
             Size = description.Size;
             Format = description.Format;
+            Usage = description.Usage;
 
             //var dxFormat = DX11StateMapper.ToDXGIFormat(desc.Format);
 
@@ -33,7 +34,7 @@ namespace DevoidGPU.DX11
                 SizeInBytes = (int)description.Size,
                 Usage = DX11StateMapper.ToDXBufferUsage(description.Usage),
                 BindFlags = BindFlags.IndexBuffer,
-                CpuAccessFlags = DX11StateMapper.ToDXCpuAccess(description.CpuAccess),
+                CpuAccessFlags = description.Usage == ResourceUsage.Dynamic ? CpuAccessFlags.Write : DX11StateMapper.ToDXCpuAccess(description.CpuAccess),
                 OptionFlags = ResourceOptionFlags.None,
                 StructureByteStride = 0
             };
@@ -51,13 +52,15 @@ namespace DevoidGPU.DX11
 
         public void Update<T>(ReadOnlySpan<T> data) where T : unmanaged
         {
+
+
             int elementSize = Unsafe.SizeOf<T>();
             int totalSize = elementSize * data.Length;
 
             if ((ulong)totalSize > Size)
                 throw new InvalidOperationException("Update exceeds buffer size");
 
-            if (Usage.HasFlag(ResourceUsage.Dynamic))
+            if ((Usage & ResourceUsage.Dynamic) != 0)
             {
                 var box = deviceContext.MapSubresource(Buffer, 0, MapMode.WriteDiscard, MapFlags.None);
 

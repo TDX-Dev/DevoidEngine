@@ -42,6 +42,8 @@ namespace DevoidEngine.Core
 
         public void Update(ReadOnlySpan<uint> data)
         {
+
+
             Count = data.Length;
 
             gpuBuffer.Update(data);

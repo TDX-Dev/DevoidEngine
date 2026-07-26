@@ -10,7 +10,6 @@ namespace DevoidEngine.UI.Text
     {
         public float FontSize;
 
-        // 0 = no wrapping
         public float MaxWidth;
         public float MaxHeight;
 

@@ -221,7 +221,9 @@ namespace Sandbox
                 {
                     FlexGrowMain = 1,
                     FlexGrowCross = 0
-                }
+                },
+                Direction = FlexDirection.Column,
+                Padding = Padding.GetAll(10)
             };
 
             subContainer.AddStyleBoxOverride(StyleKeys.Normal, new StyleBoxFlat()
@@ -255,10 +257,9 @@ namespace Sandbox
 
             LabelNode labelNode = new()
             {
-                Offset = new Vector2(10, 10),
                 Size = new Vector2(100, 100),
-                ParticipatesInLayout = false,
                 Font = interFont,
+                Overflow = TextOverflow.Wrap,
                 Text = "A game engine is a software framework primarily designed for the development of video games.\n\nGame engines typically provide facilities for rendering graphics, processing physics simulations, playing audio, handling user input, animation, scripting, and asset management.\n\nModern game engines often support multiple platforms, allowing developers to deploy the same game to desktop computers, mobile devices, and game consoles with minimal code changes.\n\nPopular game engines include Unreal Engine, Unity, Godot, CryEngine, and Source. These engines offer integrated editors and development tools that simplify the creation of interactive applications.\n\nMany engines also include scene management, resource loading, lighting systems, user interface frameworks, networking, and debugging tools, enabling developers to focus on gameplay rather than low-level engine implementation.",
             };
 
