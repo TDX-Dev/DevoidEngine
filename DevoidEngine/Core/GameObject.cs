@@ -83,6 +83,20 @@ namespace DevoidEngine.Core
             }
         }
 
+        public void SetParent(GameObject? parent, bool keepWorld = false)
+        {
+            if (Parent == parent)
+                return;
+
+            Parent?.Children.Remove(this);
+
+            Parent = parent;
+
+            Parent?.Children.Add(this);
+
+            Transform.SetParent(parent?.Transform, keepWorld);
+        }
+
         internal void InvokeCollisionEnter(GameObject other)
         {
             _componentSnapshot.Clear();
@@ -129,6 +143,22 @@ namespace DevoidEngine.Core
 
             return null;
         }
+
+        public bool TryGetComponent<T>(out T? value)
+        {
+            for (int i = 0; i < Components.Count; i++)
+            {
+                if (Components[i] is T t)
+                {
+                    value = t;
+                    return true;
+                }
+            }
+
+            value = default;
+            return false;
+        }
+
         public T AddComponent<T>() where T : Component, new()
         {
             T _component = new()

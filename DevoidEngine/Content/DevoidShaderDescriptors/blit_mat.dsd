@@ -11,7 +11,7 @@
         "FS": "../Shaders/blit.frag.hlsl"
       },
       "States": {
-        "Blend": "Off",
+        "Blend": "Alpha",
         "Cull": "None",
         "Depth": "LessEqual"
       }

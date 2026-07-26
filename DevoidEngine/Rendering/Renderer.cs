@@ -1,9 +1,12 @@
 ﻿using DevoidEngine.Core;
+using DevoidEngine.UI;
+using DevoidEngine.UI.UINodes;
 using DevoidEngine.Util;
 using DevoidGPU;
 using OpenTK.Windowing.Common;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -48,6 +51,7 @@ namespace DevoidEngine.Rendering
         public Shader DefaultShader { get; private set; } = null!;
 
         public RenderTarget ViewportBlitTarget { get; private set; } = null!;
+        public RenderTarget UIRenderTarget { get; private set; } = null!;
         public UniformBuffer CameraBuffer { get; private set; } = null!;
         public UniformBuffer SceneBuffer { get; private set;} = null!;
         public UniformBuffer PerObjectBuffer { get; private set; } = null!;
@@ -67,6 +71,9 @@ namespace DevoidEngine.Rendering
         private ShaderStorageBuffer<GPUPointLight> PointLightBuffer = null!;
         private ShaderStorageBuffer<GPUSpotLight> SpotLightBuffer = null!;
         private ShaderStorageBuffer<GPUDirectionalLight> DirectionalLightBuffer = null!;
+
+        private Pool<RenderMeshData> uiRenderPool = null!;
+        private readonly List<RenderMeshData> uiRenderCache = [];
 
         public void PushViewport(ICommandList cmd, ViewportRect viewport)
         {
@@ -103,6 +110,7 @@ namespace DevoidEngine.Rendering
                 throw new Exception("Graphics device not initialized yet.");
 
             viewportStack = new Stack<ViewportRect>();
+            uiRenderPool = new Pool<RenderMeshData>();
             RenderResources = [];
 
             ActiveTechnique = config.Technique switch
@@ -171,6 +179,7 @@ namespace DevoidEngine.Rendering
             API = new RenderAPI();
 
             ViewportBlitTarget = RenderTarget.Create(1);
+            UIRenderTarget = RenderTarget.Create(1);
 
             renderView = new RenderView();
 
@@ -192,13 +201,15 @@ namespace DevoidEngine.Rendering
 
             Camera camera = viewport.Camera3D.GetCamera();
 
+            RenderResourceCache viewportResources = RenderResources[viewport];
+
             RenderContext context = new()
             {
                 Viewport = viewport,
                 Camera = camera,
                 CommandList = cmd,
                 Renderer = this,
-                Resources = RenderResources[viewport]
+                Resources = viewportResources
             };
 
             renderView.Clear();
@@ -209,15 +220,145 @@ namespace DevoidEngine.Rendering
             UpdateSceneData(renderView);
             UpdateLights(renderView);
 
-            
-
 
             RenderTarget activeTechniqueTarget = ActiveTechnique.Render(context, renderView);
+
+            RenderUI(cmd, viewport, viewportResources);
 
             ViewportBlitTarget.SetColorAttachment(0, viewport.OutputTexture!);
             cmd.SetFramebuffer(ViewportBlitTarget.GPU);
             API.RenderToScreen(cmd, activeTechniqueTarget.ColorTextures[0]!);
+            API.RenderToScreen(cmd, UIRenderTarget.ColorTextures[0]!);
             
+            
+        }
+
+        public void RenderUI(ICommandList cmd, Viewport viewport, RenderResourceCache resources)
+        {
+            UIContext context = viewport.UIContext;
+            context.DrawList.Clear();
+
+            TextureDescription uiColorTexture = new()
+            {
+                Width = viewport.Width,
+                Height = viewport.Height,
+                Depth = 1,
+                Format = TextureFormat.RGBA16_Float,
+                Dimension = TextureDimension.Texture2D,
+                ArraySize = 1,
+                Samples = new TextureSampleDescription(1, 0),
+                MipLevels = 1,
+                Usage = TextureUsage.RenderTarget | TextureUsage.ShaderResource
+            };
+
+            Texture UIColorTexture = resources.GetOrCreateTexture("UI_RENDER_COLOR", uiColorTexture);
+
+            Matrix4x4 ortho = Matrix4x4.CreateOrthographicOffCenter(
+                0f, viewport.Width,
+                viewport.Height, 0f,
+                -1f, 1f
+            );
+
+            CameraData ScreenData = new()
+            {
+                View = Matrix4x4.Identity,
+                Projection = ortho,
+                CameraPosition = Vector3.Zero,
+                NearClip = -1f,
+                FarClip = 1f,
+                ScreenSize = new Vector2(viewport.Width, viewport.Height)
+            };
+
+            Matrix4x4.Invert(ortho, out ScreenData.InverseProjection);
+
+            UpdateCameraBuffer(ScreenData);
+
+            UIRenderTarget.SetColorAttachment(0, UIColorTexture);
+
+            cmd.SetFramebuffer(UIRenderTarget.GPU);
+
+            cmd.ClearColor(0, Vector4.Zero);
+
+            foreach (var canvas in context.Canvases)
+            {
+                canvas.Render(context.DrawList, 0);
+            }
+
+            List<UICommand> commands = context.DrawList.Commands;
+
+            Matrix4x4 cachedTransform = Matrix4x4.Identity;
+
+
+            for (var i = 0; i < commands.Count; i++)
+            {
+                var command = commands[i];
+
+                switch (command.Type)
+                {
+                    case UICommandType.PushTransform:
+                        {
+                            cachedTransform = command.Transform.Transform;
+                            break;
+                        }
+                    case UICommandType.PopTransform:
+                        {
+                            cachedTransform = Matrix4x4.Identity;
+                            break;
+                        }
+
+                    case UICommandType.Quad:
+                        {
+                            RenderMeshData meshData = uiRenderPool.Get();
+
+                            meshData.render_mesh = PrimitiveMeshes.GetQuad();
+                            meshData.render_material = command.Quad.Material;
+
+                            Matrix4x4 quadTransform =
+                                Matrix4x4.CreateScale(command.Quad.Rect.Size.X, command.Quad.Rect.Size.Y, 1) *
+                                Matrix4x4.CreateTranslation(command.Quad.PivotOffset.X, command.Quad.PivotOffset.Y, 0f) *
+                                Matrix4x4.CreateRotationZ(command.Quad.Rotation) *
+                                Matrix4x4.CreateTranslation(command.Quad.Rect.Position.X, command.Quad.Rect.Position.Y, UIResources.OrderEpsilon * command.Quad.Order) *
+                                cachedTransform;
+
+                            meshData.render_transform = quadTransform;
+
+                            uiRenderCache.Add(meshData);
+
+                            break;
+                        }
+
+                    case UICommandType.Text:
+                        {
+                            RenderMeshData meshData = uiRenderPool.Get();
+
+                            meshData.render_mesh = command.Text.TextMesh;
+                            meshData.render_material = command.Text.Material;
+
+                            Matrix4x4 quadTransform =
+                                //Matrix4x4.CreateScale(command.Text.Rect.Size.X, command.Text.Rect.Size.Y, 1) *
+                                Matrix4x4.CreateTranslation(command.Text.PivotOffset.X, command.Text.PivotOffset.Y, 0f) *
+                                Matrix4x4.CreateRotationZ(command.Text.Rotation) *
+                                Matrix4x4.CreateTranslation(command.Text.Rect.Position.X, command.Text.Rect.Position.Y, UIResources.OrderEpsilon * command.Text.Order) *
+                                cachedTransform;
+
+                            meshData.render_transform = quadTransform;
+
+                            uiRenderCache.Add(meshData);
+
+                            break;
+                        }
+                }
+            }
+
+            Execute(cmd, uiRenderCache);
+
+            for (var i = 0; i < uiRenderCache.Count; i++)
+            {
+                uiRenderPool.Return(uiRenderCache[i]);
+            }
+
+
+            uiRenderCache.Clear();
         }
 
         public void UpdateCameraBuffer(CameraData cameraData)
@@ -286,13 +427,15 @@ namespace DevoidEngine.Rendering
             item.render_mesh.Draw(cmd);
         }
 
-        public void Execute(ICommandList cmd, RenderView ctx)
+        public void Execute(ICommandList cmd, List<RenderMeshData> objects)
         {
             ShaderPass? currentPass = null;
             MaterialInstance? currentMaterial = null;
             //Mesh? currentMesh = null;
 
-            foreach (var item in ctx.Objects)
+
+
+            foreach (var item in objects)
             {
 
                 MaterialInstance material = item.render_material ?? NullMaterialInstance;

@@ -172,6 +172,57 @@ namespace DevoidGPU.DX11
             return -1;
         }
 
+        private void PrintReflectionInfo(ShaderReflection reflection)
+        {
+            Console.WriteLine();
+            Console.WriteLine("======================================================");
+            Console.WriteLine($"Shader Reflection: {Name}");
+            Console.WriteLine($"Stage : {Stage}");
+            Console.WriteLine("======================================================");
+
+            var shaderDesc = reflection.Description;
+
+            Console.WriteLine($"Constant Buffers : {shaderDesc.ConstantBuffers}");
+            Console.WriteLine($"Bound Resources  : {shaderDesc.BoundResources}");
+            Console.WriteLine();
+
+            // Constant Buffers
+            for (int i = 0; i < shaderDesc.ConstantBuffers; i++)
+            {
+                var cb = reflection.GetConstantBuffer(i);
+                var cbDesc = cb.Description;
+
+                Console.WriteLine(
+                    $"CBUFFER '{cbDesc.Name}'  Size={cbDesc.Size} bytes  Slot={GetBindSlot(reflection, cbDesc.Name)}");
+
+                for (int v = 0; v < cbDesc.VariableCount; v++)
+                {
+                    var variable = cb.GetVariable(v);
+                    var varDesc = variable.Description;
+                    var type = variable.GetVariableType().Description;
+
+                    Console.WriteLine(
+                        $"    {varDesc.Name,-24} Offset={varDesc.StartOffset,3}  Size={varDesc.Size,3}  Type={type.Name}");
+                }
+
+                Console.WriteLine();
+            }
+
+            // Resources
+            Console.WriteLine("Resources:");
+
+            for (int i = 0; i < shaderDesc.BoundResources; i++)
+            {
+                var res = reflection.GetResourceBindingDescription(i);
+
+                Console.WriteLine(
+                    $"    {res.Name,-24} Type={res.Type,-18} Slot={res.BindPoint}");
+            }
+
+            Console.WriteLine("======================================================");
+            Console.WriteLine();
+        }
+
         private static string GetProfileForType(ShaderStage type)
         {
             return type switch

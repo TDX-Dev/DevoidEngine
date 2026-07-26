@@ -1,0 +1,31 @@
+{
+  "$schema": "./dsdschema.json",
+  "Name": "UI Box Shader",
+  "DefaultPass": "Forward",
+
+  "MaterialParameters": {
+    "BufferName": "Material",
+    "Textures": [
+      {
+        "Name": "MAT_Texture",
+        "Type": "Texture2D"
+      }
+    ]
+  },
+
+  "Passes": [
+    {
+      "Name": "Forward",
+      "MaterialBuffer": "Material",
+      "Shaders": {
+        "VS": "../Shaders/ui.vert.hlsl",
+        "FS": "../Shaders/ui.frag.hlsl"
+      },
+      "States": {
+        "Blend": "Alpha",
+        "Cull": "Back",
+        "Depth": "LessEqual"
+      }
+    }
+  ]
+}

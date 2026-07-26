@@ -83,7 +83,6 @@ namespace DevoidEngine.Core
 
                 ShaderReflectionData reflection_data = ShaderReflectionData.Merge(pass.Vertex.ShaderReflectionData, pass.Fragment.ShaderReflectionData);
 
-
                 shader.MaterialLayout ??= BuildMaterialLayout( pass, descriptor.MaterialParameters, reflection_data);
 
                 pass.DescriptorLayout = CreateDescriptorLayout(device, reflection_data);
@@ -194,6 +193,7 @@ namespace DevoidEngine.Core
         {
             List<DescriptorBinding> bindings = [];
 
+
             foreach (var buffer in reflection.UniformBuffers)
             {
                 bindings.Add(new DescriptorBinding
@@ -202,6 +202,11 @@ namespace DevoidEngine.Core
                     Type = DescriptorType.UniformBuffer,
                     Stages = buffer.Stages
                 });
+
+                if (buffer.BindSlot == 3)
+                {
+                    Console.WriteLine(buffer.Stages);
+                }
             }
 
             foreach (var texture in reflection.TextureBindings)

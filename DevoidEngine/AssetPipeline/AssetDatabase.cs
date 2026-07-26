@@ -2,6 +2,7 @@
 using DevoidEngine.AssetPipeline.Loaders;
 using DevoidEngine.Audio;
 using DevoidEngine.Core;
+using DevoidEngine.UI.Text;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -94,7 +95,7 @@ namespace DevoidEngine.AssetPipeline
             }
         }
 
-        void SaveDatabase()
+        public void SaveDatabase()
         {
             var state = new AssetDatabaseState
             {
@@ -118,11 +119,11 @@ namespace DevoidEngine.AssetPipeline
             DatabasePath = Path.Combine(Engine.Instance.ProjectSystem.EngineCachePath, "AssetDatabase.bin");
             ImporterRegistry.Register<Texture>(new TextureImporter());
             ImporterRegistry.Register<AudioClip>(new AudioImporter());
+            ImporterRegistry.Register<Font>(new FontImporter());
 
             AssetLoaderRegistry.Register<Texture>(new TextureLoader());
             AssetLoaderRegistry.Register<AudioClip>(new AudioLoader());
-
-            ScanAssets();
+            AssetLoaderRegistry.Register<Font>(new FontLoader());
 
             RefreshDatabase();
 

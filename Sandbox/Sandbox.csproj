@@ -13,6 +13,7 @@
 	  <IlcOptimizationPreference>Size</IlcOptimizationPreference>
 	  <TrimMode>full</TrimMode>
 	  <PublishTrimmed>true</PublishTrimmed>
+	  <Platforms>AnyCPU;x64</Platforms>
     <!--End of Optimizations-->
   </PropertyGroup>
 

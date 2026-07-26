@@ -5,6 +5,11 @@ using DevoidEngine.Core;
 using DevoidEngine.InputSystem;
 using DevoidEngine.InputSystem.InputDevices;
 using DevoidEngine.Rendering;
+using DevoidEngine.UI;
+using DevoidEngine.UI.Text;
+using DevoidEngine.UI.Theme;
+using DevoidEngine.UI.Theme.Styleboxes;
+using DevoidEngine.UI.UINodes;
 using DevoidEngine.Util;
 using DevoidGPU;
 using OpenTK.Windowing.Common;
@@ -34,7 +39,7 @@ namespace Sandbox
             Application.MainWindow.OnResize += MainWindow_OnResize;
             Engine.Instance.SceneTree.OnSceneChanged += SceneTree_OnSceneChanged;
 
-            Engine.Instance.SceneTree.RootViewport.Resize(Application.MainWindow.Window.Size.X, Application.MainWindow.Window.Size.Y);
+            Engine.Instance.SceneTree.RootViewport.Resize(Application.MainWindow.Window.ClientSize.X, Application.MainWindow.Window.ClientSize.Y);
 
             Console.WriteLine("Sandbox has launched.");
 
@@ -88,7 +93,7 @@ namespace Sandbox
             MeshRenderer meshRenderer2 = childObject.AddComponent<MeshRenderer>();
             meshRenderer2.Mesh = PrimitiveMeshes.GetCube();
             meshRenderer2.Material = PBRMaterial;
-            childObject.Transform.SetParent(meshGo1.Transform);
+            childObject.SetParent(meshGo1);
             childObject.Transform.LocalPosition = new Vector3(0, 2, -2);
 
             //rb.Shape = new DevoidEngine.Physics.PhysicsShapeDescription()
@@ -170,6 +175,108 @@ namespace Sandbox
                 Control = (ushort)Keys.P
             });
 
+            SetupUI();
+        }
+
+        void SetupUI()
+        {
+            Viewport viewport = Engine.Instance.SceneTree.RootViewport;
+
+            CanvasNode canvas = new()
+            {
+                Justify = JustifyContent.Center,
+                Align = AlignItems.Center,
+            };
+
+            viewport.UIContext.Canvases.Add(canvas);
+
+            ContainerNode container = new()
+            {
+                Size = new Vector2(720, 520),
+                Layout = new LayoutOptions()
+                {
+                    FlexGrowCross = 0
+                },
+                Direction = FlexDirection.Column,
+                Gap = 10,
+                Padding = new Padding()
+                {
+                    Top = 10,
+                    Bottom = 10,
+                    Left = 10,
+                    Right = 10,
+                }
+            };
+
+            container.AddStyleBoxOverride(StyleKeys.Normal, new StyleBoxFlat()
+            {
+                BorderRadius = new Vector4(10, 10, 10, 10),
+                BackgroundColor = new Vector4(0, 0, 0f, 0.5f)
+            });
+
+            ContainerNode subContainer = new()
+            {
+                Size = new Vector2(10, 10),
+                Layout = new LayoutOptions()
+                {
+                    FlexGrowMain = 1,
+                    FlexGrowCross = 0
+                }
+            };
+
+            subContainer.AddStyleBoxOverride(StyleKeys.Normal, new StyleBoxFlat()
+            {
+                BorderRadius = new Vector4(0, 0, 10, 10),
+                BackgroundColor = new Vector4(0, 0, 0f, 0.5f)
+            });
+
+            ContainerNode subContainer2 = new()
+            {
+                Size = new Vector2(10, 10),
+                Layout = new LayoutOptions()
+                {
+                    FlexGrowMain = 1,
+                    FlexGrowCross = 0
+                },
+
+                Padding = Padding.GetAll(10)
+            };
+
+            subContainer2.AddStyleBoxOverride(StyleKeys.Normal, new StyleBoxFlat()
+            {
+                BorderRadius = new Vector4(10, 10, 10, 10),
+                BackgroundColor = new Vector4(0, 0, 0f, 0.5f)
+            });
+
+            container.Add(subContainer);
+            //container.Add(subContainer2);
+
+            Font interFont = Asset.Load<Font>("InterFont.ttf")!;
+
+            LabelNode labelNode = new()
+            {
+                Offset = new Vector2(10, 10),
+                Size = new Vector2(100, 100),
+                ParticipatesInLayout = false,
+                Font = interFont,
+                Text = "A game engine is a software framework primarily designed for the development of video games.\n\nGame engines typically provide facilities for rendering graphics, processing physics simulations, playing audio, handling user input, animation, scripting, and asset management.\n\nModern game engines often support multiple platforms, allowing developers to deploy the same game to desktop computers, mobile devices, and game consoles with minimal code changes.\n\nPopular game engines include Unreal Engine, Unity, Godot, CryEngine, and Source. These engines offer integrated editors and development tools that simplify the creation of interactive applications.\n\nMany engines also include scene management, resource loading, lighting systems, user interface frameworks, networking, and debugging tools, enabling developers to focus on gameplay rather than low-level engine implementation.",
+            };
+
+            //ContainerNode labelNode1 = new()
+            //{
+            //    Offset = new Vector2(10, 10),
+            //    Size = new Vector2(100, 100),
+            //    ParticipatesInLayout = false,
+            //};
+
+            subContainer.Add(labelNode);
+
+            canvas.Add(container);
+            //canvas.Add(labelNode);
+            //canvas.Add(labelNode1);
+
+            canvas.Initialize();
+            
         }
 
         GameObject go = null!;

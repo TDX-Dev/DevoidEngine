@@ -5,10 +5,16 @@ namespace DevoidEngine.Util
 {
     public static class PrimitiveMeshes
     {
+        private static Mesh? quad;
         private static Mesh? cube;
         private static Mesh? fullscreenMesh;
         private static Mesh? uvsphereMesh;
 
+        public static Mesh GetQuad()
+        {
+            quad ??= CreateQuad();
+            return quad;
+        }
         public static Mesh GetCube()
         {
             cube ??= CreateCube();
@@ -199,6 +205,46 @@ namespace DevoidEngine.Util
                     Vector3.UnitZ,
             Vector3.UnitZ,
             Vector3.UnitZ
+                ]
+            };
+
+            mesh.Upload();
+
+            return mesh;
+        }
+
+        public static Mesh CreateQuad()
+        {
+            Mesh mesh = new()
+            {
+                Positions =
+                [
+                    new Vector3(0.0f, 0.0f, 0.0f), // Bottom Left
+            new Vector3(1.0f, 0.0f, 0.0f), // Bottom Right
+            new Vector3(1.0f, 1.0f, 0.0f), // Top Right
+            new Vector3(0.0f, 1.0f, 0.0f), // Top Left
+        ],
+
+                UVs =
+                [
+                    new Vector2(0.0f, 0.0f),
+            new Vector2(1.0f, 0.0f),
+            new Vector2(1.0f, 1.0f),
+            new Vector2(0.0f, 1.0f),
+        ],
+
+                Normals =
+                [
+                    Vector3.UnitZ,
+            Vector3.UnitZ,
+            Vector3.UnitZ,
+            Vector3.UnitZ
+                ],
+
+                Indices =
+                [
+                    0, 1, 2,
+                    2, 3, 0
                 ]
             };
 

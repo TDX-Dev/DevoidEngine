@@ -80,7 +80,7 @@ namespace DevoidGPU.DX11
             if ((ulong)totalSize > Size)
                 throw new InvalidOperationException("Update data exceeds uniform buffer size.");
 
-            if (Usage.HasFlag(ResourceUsage.Dynamic))
+            if ((Usage & ResourceUsage.Dynamic) != 0)
             {
                 var box = deviceContext.MapSubresource(
                     Buffer,

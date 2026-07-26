@@ -69,7 +69,7 @@ namespace DevoidEngine.Rendering
             ctx.CommandList.ClearDepthStencil(1, 0);
 
             ctx.Renderer.SkyRenderer.Render(ctx);
-            ctx.Renderer.Execute(ctx.CommandList, view);
+            ctx.Renderer.Execute(ctx.CommandList, view.Objects);
 
             return colorOutput;
         }

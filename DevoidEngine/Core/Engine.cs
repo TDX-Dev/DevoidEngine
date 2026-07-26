@@ -6,6 +6,7 @@ using DevoidEngine.Physics;
 using DevoidEngine.Physics.Bepu;
 using DevoidEngine.Profiling;
 using DevoidEngine.Rendering;
+using DevoidEngine.UI;
 using DevoidGPU;
 using DevoidGPU.DX11;
 
@@ -35,6 +36,7 @@ namespace DevoidEngine.Core
         public static Cursor Cursor => Instance.cursor;
         public static PhysicsSystem PhysicsSystem => Instance.physicsSystem;
         public static AudioManager AudioSystem => Instance.audioSystem;
+        public static UISystem UISystem => Instance.uiSystem;
 
         public float InterpolationAlpha { get; set; } = 0;
         public float TargetFramerate { get; } = 5f;
@@ -57,6 +59,7 @@ namespace DevoidEngine.Core
         private Input inputSystem = null!;
         private PhysicsSystem physicsSystem = null!;
         private AudioManager audioSystem = null!;
+        private UISystem uiSystem = null!;
 
         private Engine(EngineConfig config)
         {
@@ -91,8 +94,11 @@ namespace DevoidEngine.Core
             instance.inputSystem = new Input();
             instance.physicsSystem = new PhysicsSystem(new BepuPhysicsBackend());
             instance.audioSystem = new AudioManager(new SoLoudAudioBackend());
+            instance.uiSystem = new UISystem();
 
             instance.VirtualFileSystem = new VirtualFileSystem();
+
+            instance.uiSystem.Initialize();
 
         }
     }

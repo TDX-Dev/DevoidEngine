@@ -7,7 +7,6 @@ using DevoidEngine.InputSystem;
 using DevoidEngine.Rendering;
 using DevoidEngine.Util;
 using DevoidGPU;
-using SharpDX.DXGI;
 using System.Numerics;
 
 namespace DevoidEngine.Core
@@ -250,6 +249,10 @@ namespace DevoidEngine.Core
         void Update(float deltaTime)
         {
             layerManager.UpdateLayers(deltaTime);
+
+            List<Viewport> viewports = Engine.Instance.SceneTree.GetViewports();
+            Engine.UISystem.Update(deltaTime, viewports);
+
             Engine.Instance.SceneTree.UpdateScenes(deltaTime);
         }
 

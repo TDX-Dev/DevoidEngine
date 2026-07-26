@@ -1,10 +1,12 @@
 ﻿using DevoidEngine.Components;
 using DevoidEngine.Core;
 using DevoidEngine.UI;
+using DevoidEngine.Util;
 using DevoidGPU;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -12,6 +14,7 @@ namespace DevoidEngine.Rendering
 {
     public class Viewport
     {
+        public Rect Bounds => bounds;
         public int Width { get; private set; }
         public int Height { get; private set; }
 
@@ -21,15 +24,20 @@ namespace DevoidEngine.Rendering
         public List<Camera3D> Camera3Ds { get; private set; }
         public Texture? OutputTexture = null!;
 
-
+        private Rect bounds;
 
         public Viewport()
         {
 
             Camera3Ds = [];
-            UIContext = new();
+            UIContext = new()
+            {
+                Viewport = this,
+            };
 
             Engine.Renderer.RegisterViewport(this);
+        
+            bounds = new Rect(Vector2.Zero, new Vector2(Width, Height));
         }
 
         public bool AddCamera3D(Camera3D camera)
@@ -48,6 +56,8 @@ namespace DevoidEngine.Rendering
 
             Width = width;
             Height = height;
+
+            bounds = new Rect(Vector2.Zero, new Vector2(Width, Height));
 
             OutputTexture?.Dispose();
 

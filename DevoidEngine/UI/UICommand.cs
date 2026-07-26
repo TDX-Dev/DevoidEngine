@@ -13,15 +13,34 @@ namespace DevoidEngine.UI
     {
         public UICommandType Type;
 
+        public TransformCommand Transform;
         public QuadCommand Quad;
+        public TextCommand Text;
         public ClipCommand Clip;
+    }
+
+    public struct TransformCommand
+    {
+        public Matrix4x4 Transform;
+    }
+
+    public struct TextCommand
+    {
+        public int Order;
+        public Rect Rect;
+        public Mesh TextMesh;
+        public MaterialInstance Material;
+        public float Rotation;
+        public Vector2 PivotOffset;
     }
 
     public struct QuadCommand
     {
+        public int Order;
         public Rect Rect;
-        public Vector4 Color;
-        public Texture Texture;
+        public float Rotation;
+        public MaterialInstance Material;
+        public Vector2 PivotOffset;
     }
 
     public struct ClipCommand

@@ -1,0 +1,45 @@
+struct VSInput
+{
+    float3 Position : POSITION;
+    float3 Normal : NORMAL;
+    float2 UV : TEXCOORD0;
+    float4 Tangent : TANGENT;
+};
+
+struct PSInput
+{
+    float4 Position : SV_POSITION;
+    float2 NDC : TEXCOORD4;
+    float2 UV : TEXCOORD0;
+    float2 LocalPos : TEXCOORD1;
+};
+
+#include "./Common/RenderConstants.hlsl"
+
+cbuffer MATERIAL : register(b3)
+{
+    float4 COLOR;
+    float2 RECT_SIZE;
+    int SDF_PIXEL_RANGE;
+    float _pad;
+};
+
+PSInput VSMain(VSInput input)
+{
+    PSInput output;
+
+    float4 local = float4(input.Position.xy, 0.0, 1.0);
+
+    float4 world = mul(Model, local);
+    float4 view = mul(View, world);
+    float4 clip = mul(Projection, view);
+
+    output.Position = clip;
+    output.NDC = clip.xy / clip.w;
+    output.UV = input.UV;
+
+    // convert quad (-0.5..0.5) or (0..1) to rect space
+    output.LocalPos = input.UV * RECT_SIZE - RECT_SIZE * 0.5;
+
+    return output;
+}

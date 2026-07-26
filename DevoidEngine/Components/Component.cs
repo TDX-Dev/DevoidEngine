@@ -1,4 +1,5 @@
 ﻿using DevoidEngine.Core;
+using DevoidEngine.Rendering;
 using DevoidEngine.Serialization;
 using System;
 using System.Collections.Generic;
@@ -45,5 +46,17 @@ namespace DevoidEngine.Components
         }
 
         public SceneTree GetTree() => Engine.Instance.SceneTree;
+        //public Viewport GetViewport()
+        //{
+        //    GameObject? current = gameObject;
+
+        //    while (current != null)
+        //    {
+        //        if (current.TryGetComponent<>(out var vp))
+        //            return vp;
+
+        //        current = current.Parent;
+        //    }
+        //}
     }
 }

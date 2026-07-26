@@ -18,5 +18,18 @@ namespace DevoidEngine.Util
             Position = start;
             Size = end;
         }
+
+        public readonly bool Contains(Vector2 value)
+        {
+            if (value.X > Position.X && value.Y > Position.Y)
+            {
+                if (value.X < Size.X &&  value.Y < Size.Y)
+                {
+                    return true;
+                }
+            }
+            return false;
+
+        }
     }
 }

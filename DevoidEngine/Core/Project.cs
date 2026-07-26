@@ -64,7 +64,7 @@ namespace DevoidEngine.Core
 
         public void Unload()
         {
-            Engine.Instance.AssetDatabase.RefreshDatabase();
+            Engine.Instance.AssetDatabase.SaveDatabase();
         }
 
         public void Create(
