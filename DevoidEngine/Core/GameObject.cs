@@ -170,6 +170,16 @@ namespace DevoidEngine.Core
             _component.OnAttach();
             return _component;
         }
+
+        public Component AddComponent(Component component)
+        {
+            Component _component = component;
+            _component.gameObject = this;
+            Components.Add(_component);
+            scene?.ComponentAdded(_component);
+            return _component;
+        }
+
         public void RemoveComponent(Component component)
         {
             if (Components.Contains(component))

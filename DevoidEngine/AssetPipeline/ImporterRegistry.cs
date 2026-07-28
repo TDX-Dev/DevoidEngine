@@ -31,6 +31,12 @@ namespace DevoidEngine.AssetPipeline
             return extensionMap.ContainsKey(ext);
         }
 
+        public static bool IsAssetFolderOnly(string ext)
+        {
+            IAssetImporter importer = extensionMap[ext.ToLower()];
+            return importer.IsAssetFolderOnly;
+        }
+
         public static IAssetImporter GetImporter(string ext)
         {
             return extensionMap[ext];

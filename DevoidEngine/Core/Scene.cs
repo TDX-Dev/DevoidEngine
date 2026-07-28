@@ -133,6 +133,34 @@ namespace DevoidEngine.Core
             return gameObject;
         }
 
+        public GameObject AddGameObject(GameObject gameObject)
+        {
+            gameObject.Scene = this;
+            GameObjects.Add(gameObject);
+            transforms.Add(gameObject.Transform);
+            return gameObject;
+        }
+
+        public GameObject? GetGameObject(Guid id)
+        {
+            for (int i = 0; i < GameObjects.Count; i++)
+            {
+                if (GameObjects[i].Id == id)
+                    return GameObjects[i];
+            }
+            return null;
+        }
+
+        public GameObject? GetGameObject(string name)
+        {
+            for (int i = 0; i < GameObjects.Count; i++)
+            {
+                if (GameObjects[i].Name == name)
+                    return GameObjects[i];
+            }
+            return null;
+        }
+
         public void ComponentAdded(Component component)
         {
             if (component is IRenderComponent renderComponent)

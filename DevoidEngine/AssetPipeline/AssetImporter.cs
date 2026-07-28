@@ -17,6 +17,8 @@ namespace DevoidEngine.AssetPipeline
         public int SettingsVersion => 0;
         public virtual int Priority => 100;
 
+        public virtual bool IsAssetFolderOnly => false;
+
         public abstract TSettings DefaultSettings();
         public abstract void Import(
             string assetPath,

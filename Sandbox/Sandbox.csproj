@@ -17,6 +17,16 @@
     <!--End of Optimizations-->
   </PropertyGroup>
 
+	<ItemGroup>
+		<ProjectReference Include="..\DevoidEngine.SourceGen\DevoidEngine.SourceGen.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+	</ItemGroup>
+
+
+	<PropertyGroup>
+		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+		<CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
+	</PropertyGroup>
+
   <ItemGroup>
     <None Remove="Assets\ground_tex.png" />
     <None Remove="Assets\mesh_tex.png" />

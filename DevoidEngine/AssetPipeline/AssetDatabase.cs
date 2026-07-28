@@ -391,6 +391,16 @@ namespace DevoidEngine.AssetPipeline
             return $"{guid:N}.{extension}";
         }
 
+        public string GetAssetPath(Guid guid)
+        {
+            return guidToAsset[guid].AssetPath;
+        }
+
+        public AssetEntry GetAssetEntry(Guid guid)
+        {
+            return guidToAsset[guid];
+        }
+
         private void CleanupMeta()
         {
             var assetRoot = Engine.Instance.ProjectSystem.AssetPath;

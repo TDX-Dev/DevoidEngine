@@ -12,7 +12,7 @@ namespace DevoidEngine.UI.UINodes
 {
     public class ButtonNode : ContainerNode
     {
-        LabelNode label;
+        private readonly LabelNode label;
 
         bool hovered;
         bool pressed;

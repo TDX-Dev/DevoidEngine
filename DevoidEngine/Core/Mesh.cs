@@ -1,4 +1,5 @@
-﻿using DevoidEngine.Util;
+﻿using DevoidEngine.Assets;
+using DevoidEngine.Util;
 using DevoidGPU;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace DevoidEngine.Core
 {
-    public class Mesh
+    public class Mesh : AssetType
     {
         public ResourceUsage Usage { get; }
 

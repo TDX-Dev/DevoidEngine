@@ -14,6 +14,7 @@ namespace DevoidEngine.AssetPipeline
         Type SettingsType { get; }
         int SettingsVersion { get; }
         int Priority { get; }
+        bool IsAssetFolderOnly { get; }
 
 
         byte[] CreateDefaultSettings();

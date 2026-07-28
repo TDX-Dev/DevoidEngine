@@ -45,7 +45,17 @@ namespace DevoidEngine.AssetPipeline
                 return default;
             }
 
-            string path = Engine.Instance.AssetDatabase.GetLibraryPath(guid, extension);
+
+
+            string path;
+            if (ImporterRegistry.IsAssetFolderOnly(Path.GetExtension(Engine.Instance.AssetDatabase.GetAssetEntry(guid).AssetPath)))
+            {
+                path = Engine.Instance.AssetDatabase.GetAssetPath(guid);
+            } 
+            else
+            {
+                path = Engine.Instance.AssetDatabase.GetLibraryPath(guid, extension);
+            }
 
             if (!Engine.Instance.VirtualFileSystem.Exists(path))
             {

@@ -43,9 +43,9 @@ namespace DevoidEngine.UI.UINodes
         }
 
         public float BorderThickness = 0f;
-        public Vector4 BorderColor = new Vector4(0, 0, 0, 1);
+        public Vector4 BorderColor = new(0, 0, 0, 1);
 
-        private Vector4 _color = new Vector4(1, 1, 1, 1);
+        private Vector4 _color = new(1, 1, 1, 1);
         private float _opacity = 1f;
 
         protected override void InitializeCore()
