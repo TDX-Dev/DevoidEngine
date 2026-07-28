@@ -20,6 +20,7 @@ namespace DevoidEngine.UI.Text
             float scale = fontSize / font.ReferenceSize;
             int glyphCount = layout.Glyphs.Count;
 
+
             mesh.Positions = new Vector3[glyphCount * 4];
             mesh.UVs = new Vector2[glyphCount * 4];
             mesh.Indices = new uint[glyphCount * 6];

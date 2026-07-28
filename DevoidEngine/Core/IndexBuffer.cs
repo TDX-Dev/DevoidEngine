@@ -1,4 +1,5 @@
 ﻿using DevoidGPU;
+using SharpDX.DXGI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,10 +11,13 @@ namespace DevoidEngine.Core
     public sealed class IndexBuffer
     {
         public int Count { get; private set; }
+        public int Capacity { get; private set; }
         public IndexFormat Format { get; }
 
-        private readonly IIndexBuffer gpuBuffer;
+        private IIndexBuffer gpuBuffer;
         public IIndexBuffer GPU => gpuBuffer;
+
+        private readonly ResourceUsage usage;
 
         public IndexBuffer(
             IGraphicsDevice device,
@@ -23,7 +27,9 @@ namespace DevoidEngine.Core
         )
         {
             Count = data.Length;
+            Capacity = data.Length;
             Format = IndexFormat.UInt32;
+            this.usage = usage;
 
             unsafe
             {
@@ -31,7 +37,7 @@ namespace DevoidEngine.Core
                 {
                     gpuBuffer = device.CreateIndexBuffer(new IndexBufferDescription
                     {
-                        Size = (ulong)(data.Length * sizeof(uint)),
+                        Size = (ulong)(Capacity * sizeof(uint)),
                         Format = Format,
                         Usage = usage,
                         InitialData = data.Length > 0 ? (IntPtr)ptr : IntPtr.Zero
@@ -42,11 +48,30 @@ namespace DevoidEngine.Core
 
         public void Update(ReadOnlySpan<uint> data)
         {
-
+            EnsureCapacity(data.Length);
 
             Count = data.Length;
 
             gpuBuffer.Update(data);
+        }
+
+        private void EnsureCapacity(int required)
+        {
+            if (required <= Capacity)
+                return;
+
+            int newCapacity = Math.Max(required, Capacity * 2);
+
+            gpuBuffer.Dispose();
+
+            gpuBuffer = Engine.GraphicsDevice.CreateIndexBuffer(new IndexBufferDescription
+            {
+                Size = (ulong)(newCapacity * sizeof(uint)),
+                Format = Format,
+                Usage = usage
+            });
+
+            Capacity = newCapacity;
         }
     }
 }

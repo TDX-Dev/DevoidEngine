@@ -55,6 +55,13 @@ namespace DevoidEngine.UI
 
             if (e.DeviceType == InputDeviceType.Keyboard)
             {
+                if (e.EventType == InputEventType.Text)
+                {
+                    Engine.UISystem.TextInput(e.Character);
+                    return true;
+                }
+
+
                 Keys key = (Keys)e.Control;
 
                 if (e.Value > 0)

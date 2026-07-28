@@ -1,5 +1,6 @@
 ﻿using DevoidEngine.Core;
 using DevoidEngine.InputSystem.InputDevices;
+using SharpDX.DXGI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,6 +29,8 @@ namespace DevoidEngine.InputSystem
             Backend.AddInputDevice(new KeyboardInputHandler(currentWindow.KeyboardState));
             Backend.AddInputDevice(new MouseInputHandler(currentWindow.MouseState));
             Backend.AddInputDevice(new GamepadInputHandler(currentWindow.JoystickStates));
+
+            window.OnWindowTextInput += TextInput;
         }
 
         public void LoadInputActions(List<InputAction> inputActions)
@@ -47,11 +50,22 @@ namespace DevoidEngine.InputSystem
         {
             Backend.UpdateInput();
             Router.Route(Backend.GetEvents(), State);
+            Backend.ClearEvents();
         }
 
         public void EndFrame()
         {
             State.EndFrame();
+        }
+
+        public void TextInput(char input)
+        {
+            Backend.Emit(new InputEvent
+            {
+                EventType = InputEventType.Text,
+                DeviceType = InputDeviceType.Keyboard,
+                Character = (char)input
+            });
         }
 
         public void AddBinding(string action, InputBinding binding)

@@ -39,9 +39,9 @@ namespace DevoidEngine.Core
         public static UISystem UISystem => Instance.uiSystem;
 
         public float InterpolationAlpha { get; set; } = 0;
-        public float TargetFramerate { get; } = 5f;
+        public float TargetFramerate { get; } = 60f;
         public uint FrameCount { get; internal set; } = 0;
-        public float TimeScale { get; set; } = 0.1f;
+        public float TimeScale { get; set; } = 1f;
         public bool SimulatePhysics { get; set; } = true;
         public bool UseInterpolation { get; set; } = true;
         public SceneTree SceneTree { get; set; } = null!;

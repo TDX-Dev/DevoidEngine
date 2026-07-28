@@ -48,12 +48,17 @@ namespace DevoidEngine.InputSystem
 
         public void UpdateInput()
         {
-            _events.Clear();
+            
             for (int i = 0; i < _inputDeviceHandlers.Count; i++)
             {
                 InputDeviceHandler handler = _inputDeviceHandlers[i];
                 handler.Update(this);
             }
+        }
+
+        public void ClearEvents()
+        {
+            _events.Clear();
         }
     }
 }

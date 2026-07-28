@@ -14,6 +14,8 @@ namespace DevoidEngine.Core
 
         public event Action<int, int>? OnResize;
 
+        public event Action<char>? OnTextInput;
+
         private bool isMinimized;
         private bool resizePending;
         private bool isDisposed;
@@ -32,9 +34,15 @@ namespace DevoidEngine.Core
             Swapchain = device.CreateSwapchain(desc);
             Window.OnWindowResize += Window_Resize;
             Window.Minimized += Window_Minimized;
+            window.OnWindowTextInput += Window_OnWindowTextInput;
 
             prevWidth = Window.ClientSize.X;
             prevHeight = Window.ClientSize.Y;
+        }
+
+        private void Window_OnWindowTextInput(char obj)
+        {
+            OnTextInput?.Invoke(obj);
         }
 
         private void Window_Minimized(OpenTK.Windowing.Common.MinimizedEventArgs obj)

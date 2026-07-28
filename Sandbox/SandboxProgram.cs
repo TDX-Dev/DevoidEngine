@@ -71,9 +71,7 @@ namespace Sandbox
             MeshRenderer meshRenderer = meshGo.AddComponent<MeshRenderer>();
             meshRenderer.Mesh = PrimitiveMeshes.GetCube();
             meshRenderer.Material = GroundPBRMaterial;
-            meshGo.Transform.Position = new Vector3(0, 0, -10);
             meshGo.Transform.Scale = new Vector3(20, 1f, 20);
-            meshGo.Transform.EulerAngles = new Vector3(10, 0, 0);
             StaticColliderComponent sb = meshGo.AddComponent<StaticColliderComponent>();
             sb.Shape = new DevoidEngine.Physics.PhysicsShapeDescription()
             {
@@ -117,7 +115,7 @@ namespace Sandbox
 
             AudioClip clip = Asset.Load<AudioClip>("tone.mp3")!;
             audio.Audio = clip;
-            audio.Play();
+            //audio.Play();
 
             Engine.InputSystem.Map.Bind("Forward", new InputBinding()
             {
@@ -184,93 +182,167 @@ namespace Sandbox
 
             CanvasNode canvas = new()
             {
-                Justify = JustifyContent.Center,
-                Align = AlignItems.Center,
+                Justify = JustifyContent.Start,
             };
 
             viewport.UIContext.Canvases.Add(canvas);
 
             ContainerNode container = new()
             {
-                Size = new Vector2(720, 520),
+                Size = new Vector2(600, 0),
                 Layout = new LayoutOptions()
                 {
-                    FlexGrowCross = 0
+                    FlexGrowCross = 1,
+                    FlexGrowMain = 0,
                 },
                 Direction = FlexDirection.Column,
-                Gap = 10,
-                Padding = new Padding()
-                {
-                    Top = 10,
-                    Bottom = 10,
-                    Left = 10,
-                    Right = 10,
-                }
             };
 
             container.AddStyleBoxOverride(StyleKeys.Normal, new StyleBoxFlat()
             {
-                BorderRadius = new Vector4(10, 10, 10, 10),
                 BackgroundColor = new Vector4(0, 0, 0f, 0.5f)
             });
 
-            ContainerNode subContainer = new()
+            ContainerNode headerBar = new()
             {
-                Size = new Vector2(10, 10),
                 Layout = new LayoutOptions()
                 {
-                    FlexGrowMain = 1,
-                    FlexGrowCross = 0
+                    FlexGrowCross = 1,
+                    FlexGrowMain = 0,
                 },
+                Padding = Padding.GetAll(10),
+                Gap = 10,
+            };
+
+            ContainerNode innerContainer = new()
+            {
+                Layout = new LayoutOptions()
+                {
+                    FlexGrowCross = 1,
+                    FlexGrowMain = 1,
+                },
+                Padding = Padding.GetAll(10),
                 Direction = FlexDirection.Column,
-                Padding = Padding.GetAll(10)
+                Gap = 10
             };
 
-            subContainer.AddStyleBoxOverride(StyleKeys.Normal, new StyleBoxFlat()
+            innerContainer.AddStyleBoxOverride(StyleKeys.Normal, new StyleBoxFlat()
             {
-                BorderRadius = new Vector4(0, 0, 10, 10),
-                BackgroundColor = new Vector4(0, 0, 0f, 0.5f)
+                BackgroundColor = Vector4.Zero,
+                
             });
 
-            ContainerNode subContainer2 = new()
-            {
-                Size = new Vector2(10, 10),
-                Layout = new LayoutOptions()
-                {
-                    FlexGrowMain = 1,
-                    FlexGrowCross = 0
-                },
-
-                Padding = Padding.GetAll(10)
-            };
-
-            subContainer2.AddStyleBoxOverride(StyleKeys.Normal, new StyleBoxFlat()
-            {
-                BorderRadius = new Vector4(10, 10, 10, 10),
-                BackgroundColor = new Vector4(0, 0, 0f, 0.5f)
-            });
-
-            container.Add(subContainer);
             //container.Add(subContainer2);
 
-            Font interFont = Asset.Load<Font>("InterFont.ttf")!;
+            Font valvepulp = Asset.Load<Font>("valvepulp-bold.ttf")!;
 
-            LabelNode labelNode = new()
+            Font valveoracle = Asset.Load<Font>("valveoracle-semibold.ttf")!;
+
+            Font Adine = Asset.Load<Font>("Adine Kirnberg.ttf")!;
+
+            LabelNode headerLabelNode1 = new()
             {
-                Size = new Vector2(100, 100),
-                Font = interFont,
-                Overflow = TextOverflow.Wrap,
-                Text = "A game engine is a software framework primarily designed for the development of video games.\n\nGame engines typically provide facilities for rendering graphics, processing physics simulations, playing audio, handling user input, animation, scripting, and asset management.\n\nModern game engines often support multiple platforms, allowing developers to deploy the same game to desktop computers, mobile devices, and game consoles with minimal code changes.\n\nPopular game engines include Unreal Engine, Unity, Godot, CryEngine, and Source. These engines offer integrated editors and development tools that simplify the creation of interactive applications.\n\nMany engines also include scene management, resource loading, lighting systems, user interface frameworks, networking, and debugging tools, enabling developers to focus on gameplay rather than low-level engine implementation.",
+                Font = valveoracle,
+                FontSize = 32,
+                Overflow = TextOverflow.Clip,
+                Text = "Here are some UI preview panels:",
             };
 
-            //ContainerNode labelNode1 = new()
-            //{
-            //    Offset = new Vector2(10, 10),
-            //    Size = new Vector2(100, 100),
-            //    ParticipatesInLayout = false,
-            //};
+            headerBar.Add(headerLabelNode1);
+            container.Add(headerBar);
 
-            subContainer.Add(labelNode);
+
+            // Text preview
+
+            ContainerNode textPreviewContainer = GetPreviewBox();
+
+            LabelNode textPreviewLabel = new()
+            {
+                Font = valvepulp,
+                FontSize = 16,
+                Overflow = TextOverflow.Wrap,
+                Text = "Text Preview",
+                VerticalAlignment = TextVerticalAlignment.Center,
+                HorizontalAlignment = TextHorizontalAlignment.Center,
+            };
+
+
+            LabelNode textPreviewLabelDescription = new()
+            {
+                Font = valvepulp,
+                FontSize = 14,
+                Overflow = TextOverflow.Wrap,
+                Text = "This is some fancy text :)",
+                VerticalAlignment = TextVerticalAlignment.Center,
+                HorizontalAlignment = TextHorizontalAlignment.Center,
+            };
+
+            LabelNode textPreviewLabelDescription2 = new()
+            {
+                Font = Adine,
+                FontSize = 32,
+                Overflow = TextOverflow.Wrap,
+                Text = "This text is fancier than the one above.",
+                VerticalAlignment = TextVerticalAlignment.Center,
+                HorizontalAlignment = TextHorizontalAlignment.Center,
+            };
+
+            textPreviewContainer.Add(textPreviewLabel);
+            textPreviewContainer.Add(textPreviewLabelDescription);
+            textPreviewContainer.Add(textPreviewLabelDescription2);
+
+
+            // Buttons
+
+            ContainerNode buttonPreviewContainer = GetPreviewBox();
+
+            LabelNode buttonPreviewLabel = new()
+            {
+                Font = valvepulp,
+                FontSize = 16,
+                Overflow = TextOverflow.Wrap,
+                Text = "Button Preview",
+                VerticalAlignment = TextVerticalAlignment.Center,
+                HorizontalAlignment = TextHorizontalAlignment.Center,
+            };
+
+            LabelNode buttonPreviewLabelDescription = new()
+            {
+                Font = valvepulp,
+                FontSize = 14,
+                Overflow = TextOverflow.Wrap,
+                Text = "This is a button",
+                VerticalAlignment = TextVerticalAlignment.Center,
+                HorizontalAlignment = TextHorizontalAlignment.Center,
+            };
+
+
+            ButtonNode buttonPreview = new()
+            {
+                Text = "Click Me!",
+                Layout = new()
+                {
+                    FlexGrowCross = 0,
+                    FlexGrowMain = 0
+                },
+            };
+
+            InputFieldNode inputField = new()
+            {
+
+            };
+
+            buttonPreviewContainer.Add(buttonPreviewLabel);
+            buttonPreviewContainer.Add(buttonPreviewLabelDescription);
+            buttonPreviewContainer.Add(buttonPreview);
+            buttonPreviewContainer.Add(inputField);
+
+
+            innerContainer.Add(textPreviewContainer);
+            innerContainer.Add(buttonPreviewContainer);
+
+
+            container.Add(innerContainer);
 
             canvas.Add(container);
             //canvas.Add(labelNode);
@@ -278,6 +350,27 @@ namespace Sandbox
 
             canvas.Initialize();
             
+        }
+
+        ContainerNode GetPreviewBox()
+        {
+            ContainerNode container = new()
+            {
+                Layout = new LayoutOptions()
+                {
+                    FlexGrowCross = 0,
+                    FlexGrowMain = 0
+                },
+                Direction = FlexDirection.Column,
+                Padding = Padding.GetAll(10),
+                Gap = 10
+            };
+
+            container.AddStyleBoxOverride(StyleKeys.Normal, new StyleBoxFlat()
+            {
+                BackgroundColor = new Vector4(0, 0, 0, 0.3f)
+            });
+            return container;
         }
 
         GameObject go = null!;

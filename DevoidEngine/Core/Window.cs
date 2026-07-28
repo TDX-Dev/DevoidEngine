@@ -29,6 +29,7 @@ namespace DevoidEngine.Core
         public IntPtr Handle => GetWindowHandle();
 
         public event Action<int, int>? OnWindowResize;
+        public event Action<char>? OnWindowTextInput;
 
         public Window(WindowSpecification specification) : base(new NativeWindowSettings()
         {
@@ -56,11 +57,17 @@ namespace DevoidEngine.Core
             WindowUtil.EnableDarkMode(Handle);
 
             this.Resize += Window_Resize;
+            this.TextInput += Window_TextInput;
         }
 
         private void Window_Resize(ResizeEventArgs obj)
         {
             OnWindowResize?.Invoke(obj.Width, obj.Height);
+        }
+
+        private void Window_TextInput(TextInputEventArgs e)
+        {
+            OnWindowTextInput?.Invoke((char)e.Unicode);
         }
 
         public void PumpEvents() => ProcessEvents(0);

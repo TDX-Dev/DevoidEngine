@@ -3,13 +3,7 @@ using DevoidEngine.UI.Text;
 using DevoidEngine.UI.Theme;
 using DevoidEngine.Util;
 using DevoidGPU;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DevoidEngine.UI.UINodes
 {
@@ -26,6 +20,32 @@ namespace DevoidEngine.UI.UINodes
                     return;
 
                 _overflow = value;
+                _layoutDirty = true;
+            }
+        }
+
+        public TextHorizontalAlignment HorizontalAlignment
+        {
+            get => _horizontalAlignment;
+            set
+            {
+                if (_horizontalAlignment == value)
+                    return;
+
+                _horizontalAlignment = value;
+                _layoutDirty = true;
+            }
+        }
+
+        public TextVerticalAlignment VerticalAlignment
+        {
+            get => _verticalAlignment;
+            set
+            {
+                if (_verticalAlignment == value)
+                    return;
+
+                _verticalAlignment = value;
                 _layoutDirty = true;
             }
         }
@@ -84,6 +104,9 @@ namespace DevoidEngine.UI.UINodes
         private Vector2 _renderConstraint;
         private bool _layoutDirty = true;
         private bool _meshDirty = true;
+
+        private TextHorizontalAlignment _horizontalAlignment = TextHorizontalAlignment.Left;
+        private TextVerticalAlignment _verticalAlignment = TextVerticalAlignment.Top;
 
         //private MaterialInstance? _material;
 
@@ -157,12 +180,13 @@ namespace DevoidEngine.UI.UINodes
             int order)
         {
 
-            if (Material == null)
+            if (Material == null || string.IsNullOrEmpty(Text))
                 return;
 
             //Vector2 size = VisualRect.Size;
             //Vector2 pivotOffset = (Pivot - new Vector2(0.5f)) * size;
             Vector2 pivotOffset = Vector2.Zero;
+
 
             drawList.AddText(
                 VisualRect,
@@ -196,7 +220,7 @@ namespace DevoidEngine.UI.UINodes
                     ? 0
                     : constraint.Y,
 
-                HorizontalAlignment = TextHorizontalAlignment.Right,
+                HorizontalAlignment = TextHorizontalAlignment.Left,
                 VerticalAlignment = TextVerticalAlignment.Top,
             };
 
@@ -209,6 +233,12 @@ namespace DevoidEngine.UI.UINodes
 
         private void RebuildMesh()
         {
+            if (string.IsNullOrEmpty(Text))
+            {
+                _meshDirty = false;
+                return;
+            }
+
             TextMeshBuilder.Build(
                 Font,
                 _renderLayout,

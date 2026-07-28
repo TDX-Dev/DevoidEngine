@@ -53,6 +53,8 @@ namespace DevoidEngine.Rendering
 
         public void Resize(int width, int height)
         {
+            width = Math.Max(1, width);
+            height = Math.Max(1, height);
 
             Width = width;
             Height = height;

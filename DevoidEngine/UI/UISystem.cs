@@ -57,7 +57,7 @@ namespace DevoidEngine.UI
                         Vector2 scaledScreen = new Vector2(viewport.Width, viewport.Height) / context.UIScale;
 
                         canvas.Measure(scaledScreen);
-                        canvas.Arrange(new Rect(Vector2.Zero, scaledScreen));
+                        canvas.Arrange(new Rect(viewport.Bounds.Position, scaledScreen));
                     }
 
                     canvas.Update(deltaTime);
@@ -65,7 +65,6 @@ namespace DevoidEngine.UI
             }
         }
 
-        // Render is handled by canvasComponent, since it is a IRenderable component
 
         public void MouseMove(Vector2 mouse)
         {
