@@ -27,11 +27,11 @@ namespace DevoidEngine.AssetPipeline.Importers
             return new FontImportSettings();
         }
 
-        public override void Import(string assetPath, Guid guid, FontImportSettings settings, string outputPath)
+        public override void Import(ImportContext context, FontImportSettings settings)
         {
             Library fontLib = Engine.UISystem.FontLibrary.GetLibrary();
 
-            Face fontFace = new(fontLib, assetPath);
+            Face fontFace = new(fontLib, context.AssetPath);
 
             uint scale = (uint)settings.SuperSampleScale;
 
@@ -130,14 +130,14 @@ namespace DevoidEngine.AssetPipeline.Importers
             Console.WriteLine("Number of kerning found: " + asset.Kerning.Count);
 
             SavePGM(
-                $"Debug/font_atlas_{Path.GetFileName(assetPath)}.pgm",
+                $"Debug/font_atlas_{Path.GetFileName(context.AssetPath)}.pgm",
                 atlas.Pixels,
                 atlas.Width,
                 atlas.Height
             );
 
             File.WriteAllBytes(
-                outputPath,
+                context.OutputFinalPath,
                 MessagePackSerializer.Serialize(asset)
             );
         }

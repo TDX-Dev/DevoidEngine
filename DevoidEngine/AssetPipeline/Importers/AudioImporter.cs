@@ -21,17 +21,15 @@ namespace DevoidEngine.AssetPipeline.Importers
         }
 
         public override void Import(
-            string assetPath,
-            Guid guid,
-            AudioImportSettings settings,
-            string outputPath
+            ImportContext context,
+            AudioImportSettings settings
         )
         {
-            Console.WriteLine($"Importing audio {assetPath}");
+            Console.WriteLine($"Importing audio {context.AssetPath}");
 
-            var bytes = File.ReadAllBytes(assetPath);
+            var bytes = File.ReadAllBytes(context.AssetPath);
 
-            File.WriteAllBytes(outputPath, bytes);
+            File.WriteAllBytes(context.OutputFinalPath, bytes);
         }
     }
 }

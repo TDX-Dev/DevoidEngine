@@ -192,12 +192,15 @@ namespace DevoidEngine.AssetPipeline
             if (!NeedsReimport(assetPath, meta, entry.Guid))
                 return;
 
-            string output = Path.Combine(
-                project.EngineCachePath,
-                GetLibraryPath(entry.Guid, importer.OutputExtension)
-            );
+            ImportContext context = new()
+            {
+                AssetPath = absolutePath,
+                OutputExtension = importer.OutputExtension,
+                OutputDirectory = project.EngineCachePath,
+                Guid = entry.Guid,
+            };
 
-            importer.Import(absolutePath, entry.Guid, meta.Settings, output);
+            importer.Import(context, meta.Settings);
 
             meta.SourceTimestamp = File.GetLastWriteTimeUtc(absolutePath).Ticks;
 
@@ -290,17 +293,15 @@ namespace DevoidEngine.AssetPipeline
                 Path.GetExtension(assetPath).ToLower()
             );
 
-            string output = Path.Combine(
-                project.EngineCachePath,
-                GetLibraryPath(guid, importer.OutputExtension)
-            );
+            ImportContext context = new()
+            {
+                AssetPath = absolutePath,
+                OutputExtension = importer.OutputExtension,
+                OutputDirectory = project.EngineCachePath,
+                Guid = entry.Guid,
+            };
 
-            importer.Import(
-                absolutePath,
-                guid,
-                meta.Settings,
-                output
-            );
+            importer.Import(context, meta.Settings);
 
             Console.WriteLine($"[Asset] Reimported {assetPath}");
         }

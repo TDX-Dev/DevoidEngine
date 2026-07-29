@@ -19,10 +19,9 @@ namespace DevoidEngine.AssetPipeline.Importers
             return new SceneImportSettings();
         }
 
-        public override void Import(string assetPath, Guid guid, SceneImportSettings settings, string outputPath)
+        public override void Import(ImportContext context, SceneImportSettings settings)
         {
             // Do Nothing
-            Console.WriteLine("Scene was successfully imported");
         }
     }
 }

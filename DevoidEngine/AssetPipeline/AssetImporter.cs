@@ -21,10 +21,8 @@ namespace DevoidEngine.AssetPipeline
 
         public abstract TSettings DefaultSettings();
         public abstract void Import(
-            string assetPath,
-            Guid guid,
-            TSettings settings,
-            string outputPath
+            ImportContext importContext,
+            TSettings settings
         );
 
         byte[] IAssetImporter.CreateDefaultSettings()
@@ -32,7 +30,7 @@ namespace DevoidEngine.AssetPipeline
             return MessagePackSerializer.Serialize(DefaultSettings());
         }
 
-        void IAssetImporter.Import(string path, Guid guid, byte[] data, string outputPath)
+        void IAssetImporter.Import(ImportContext context, byte[] data)
         {
             TSettings settings;
 
@@ -46,7 +44,7 @@ namespace DevoidEngine.AssetPipeline
                 settings = DefaultSettings();
             }
 
-            Import(path, guid, settings, outputPath);
+            Import(context, settings);
         }
     }
 }

@@ -26,13 +26,9 @@ namespace DevoidEngine.AssetPipeline.Importers
             return new TextureImportSettings();
         }
 
-        public override void Import(
-            string assetPath,
-            Guid guid,
-            TextureImportSettings settings,
-            string outputPath)
+        public override void Import(ImportContext context, TextureImportSettings settings)
         {
-            byte[] fileBytes = File.ReadAllBytes(assetPath);
+            byte[] fileBytes = File.ReadAllBytes(context.AssetPath);
 
             ImageData image = TextureUtil.LoadImage(fileBytes);
 
@@ -90,7 +86,7 @@ namespace DevoidEngine.AssetPipeline.Importers
             };
 
             File.WriteAllBytes(
-                outputPath,
+                context.OutputFinalPath,
                 MessagePackSerializer.Serialize(asset)
             );
         }
