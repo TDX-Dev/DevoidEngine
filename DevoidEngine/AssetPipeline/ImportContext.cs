@@ -14,7 +14,26 @@ namespace DevoidEngine.AssetPipeline
 
         public string OutputExtension;
 
-        public string OutputFinalName => $"{Guid:N}.{OutputExtension}";
-        public string OutputFinalPath => Path.Join(OutputDirectory, OutputFinalName);
+        public readonly string OutputFinalName => $"{Guid:N}.{OutputExtension}";
+        public readonly string OutputFinalPath => Path.Join(OutputDirectory, OutputFinalName);
+
+        public readonly string GetOutputPath(
+            ulong localId,
+            string extension
+        )
+        {
+            return Path.Combine(
+                OutputDirectory,
+                $"{Guid:N}-{localId}.{extension}");
+        }
+
+        public readonly string GetRootOutputPath(
+            string extension
+        )
+        {
+            return Path.Combine(
+                OutputDirectory,
+                $"{Guid:N}.{extension}");
+        }
     }
 }

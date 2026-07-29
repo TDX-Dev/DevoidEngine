@@ -3,12 +3,7 @@ using DevoidEngine.AssetPipeline.Loaders;
 using DevoidEngine.Audio;
 using DevoidEngine.Core;
 using DevoidEngine.UI.Text;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace DevoidEngine.AssetPipeline
 {
@@ -241,6 +236,38 @@ namespace DevoidEngine.AssetPipeline
 
             return entry.Guid;
         }
+        public Guid RegisterSubAsset(
+            Guid container,
+            ulong localId
+        )
+        {
+            foreach (var entry in guidToAsset.Values)
+            {
+                if (entry.ContainerGuid == container &&
+                    entry.LocalId == localId)
+                {
+                    return entry.Guid;
+                }
+            }
+
+            Guid guid = new();
+            AssetEntry assetEntry = new()
+            {
+                Guid = guid,
+
+                // Root asset path isn't meaningful for sub-assets,
+                // but keeping the parent's path is useful.
+                AssetPath = guidToAsset[container].AssetPath,
+
+                MetaPath = "",
+
+                ContainerGuid = container,
+                LocalId = localId
+            };
+            guidToAsset.Add(guid, assetEntry);
+
+            return guid;
+        }
 
         private bool NeedsReimport(string assetPath, AssetMeta meta, Guid guid)
         {
@@ -397,7 +424,14 @@ namespace DevoidEngine.AssetPipeline
         {
             return guidToAsset[guid].AssetPath;
         }
-
+        public IEnumerable<AssetEntry> GetSubAssets(Guid containerGuid)
+        {
+            foreach (var entry in guidToAsset.Values)
+            {
+                if (entry.ContainerGuid == containerGuid)
+                    yield return entry;
+            }
+        }
         public AssetEntry GetAssetEntry(Guid guid)
         {
             return guidToAsset[guid];
