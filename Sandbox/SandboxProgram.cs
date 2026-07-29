@@ -192,7 +192,7 @@ namespace Sandbox
 
             ContainerNode container = new()
             {
-                Size = new Vector2(600, 0),
+                Size = new Vector2(300, 0),
                 Layout = new LayoutOptions()
                 {
                     FlexGrowCross = 1,
@@ -241,58 +241,16 @@ namespace Sandbox
 
             Font valveoracle = Asset.Load<Font>("valveoracle-semibold.ttf")!;
 
-            Font Adine = Asset.Load<Font>("Adine Kirnberg.ttf")!;
-
             LabelNode headerLabelNode1 = new()
             {
                 Font = valveoracle,
                 FontSize = 32,
                 Overflow = TextOverflow.Clip,
-                Text = "Here are some UI preview panels:",
+                Text = "Tools",
             };
 
             headerBar.Add(headerLabelNode1);
             container.Add(headerBar);
-
-
-            // Text preview
-
-            ContainerNode textPreviewContainer = GetPreviewBox();
-
-            LabelNode textPreviewLabel = new()
-            {
-                Font = valvepulp,
-                FontSize = 16,
-                Overflow = TextOverflow.Wrap,
-                Text = "Text Preview",
-                VerticalAlignment = TextVerticalAlignment.Center,
-                HorizontalAlignment = TextHorizontalAlignment.Center,
-            };
-
-
-            LabelNode textPreviewLabelDescription = new()
-            {
-                Font = valvepulp,
-                FontSize = 14,
-                Overflow = TextOverflow.Wrap,
-                Text = "This is some fancy text :)",
-                VerticalAlignment = TextVerticalAlignment.Center,
-                HorizontalAlignment = TextHorizontalAlignment.Center,
-            };
-
-            LabelNode textPreviewLabelDescription2 = new()
-            {
-                Font = Adine,
-                FontSize = 32,
-                Overflow = TextOverflow.Wrap,
-                Text = "This text is fancier than the one above.",
-                VerticalAlignment = TextVerticalAlignment.Center,
-                HorizontalAlignment = TextHorizontalAlignment.Center,
-            };
-
-            textPreviewContainer.Add(textPreviewLabel);
-            textPreviewContainer.Add(textPreviewLabelDescription);
-            textPreviewContainer.Add(textPreviewLabelDescription2);
 
 
             // Buttons
@@ -304,17 +262,7 @@ namespace Sandbox
                 Font = valvepulp,
                 FontSize = 16,
                 Overflow = TextOverflow.Wrap,
-                Text = "Button Preview",
-                VerticalAlignment = TextVerticalAlignment.Center,
-                HorizontalAlignment = TextHorizontalAlignment.Center,
-            };
-
-            LabelNode buttonPreviewLabelDescription = new()
-            {
-                Font = valvepulp,
-                FontSize = 14,
-                Overflow = TextOverflow.Wrap,
-                Text = "This is a button",
+                Text = "Scene Tools",
                 VerticalAlignment = TextVerticalAlignment.Center,
                 HorizontalAlignment = TextHorizontalAlignment.Center,
             };
@@ -322,26 +270,28 @@ namespace Sandbox
 
             ButtonNode buttonPreview = new()
             {
-                Text = "Click Me!",
+                Text = "Save Scene To Disk",
                 Layout = new()
                 {
                     FlexGrowCross = 0,
                     FlexGrowMain = 0
                 },
+                OnPressed = () => {
+                    MessagePackSerializer.Serialize(SceneSerializer.Serialize(scene));
+                    Console.WriteLine("Saved Scene to disk");
+                }
             };
 
             InputFieldNode inputField = new()
             {
-
+                HintText = "Save Path",
             };
 
             buttonPreviewContainer.Add(buttonPreviewLabel);
-            buttonPreviewContainer.Add(buttonPreviewLabelDescription);
-            buttonPreviewContainer.Add(buttonPreview);
             buttonPreviewContainer.Add(inputField);
+            buttonPreviewContainer.Add(buttonPreview);
 
 
-            innerContainer.Add(textPreviewContainer);
             innerContainer.Add(buttonPreviewContainer);
 
 

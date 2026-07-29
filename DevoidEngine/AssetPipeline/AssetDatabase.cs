@@ -120,6 +120,7 @@ namespace DevoidEngine.AssetPipeline
             ImporterRegistry.Register<Texture>(new TextureImporter());
             ImporterRegistry.Register<AudioClip>(new AudioImporter());
             ImporterRegistry.Register<Font>(new FontImporter());
+            ImporterRegistry.Register<Scene>(new SceneImporter());
 
             AssetLoaderRegistry.Register<Texture>(new TextureLoader());
             AssetLoaderRegistry.Register<AudioClip>(new AudioLoader());
@@ -145,7 +146,7 @@ namespace DevoidEngine.AssetPipeline
 
                 string relativePath = NormalizePath(Path.GetRelativePath(assetRoot, file));
 
-                string extension = Path.GetExtension(relativePath);
+                string extension = Path.GetExtension(relativePath).ToLowerInvariant();
 
                 if (!ImporterRegistry.HasImporter(extension))
                     continue;
