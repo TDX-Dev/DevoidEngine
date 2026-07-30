@@ -123,6 +123,7 @@ namespace DevoidEngine.AssetPipeline
             AssetLoaderRegistry.Register<AudioClip>(new AudioLoader());
             AssetLoaderRegistry.Register<Font>(new FontLoader());
             AssetLoaderRegistry.Register<PackedScene>(new PackedSceneLoader());
+            AssetLoaderRegistry.Register<Mesh>(new MeshLoader());
 
             RefreshDatabase();
 
@@ -294,6 +295,12 @@ namespace DevoidEngine.AssetPipeline
                 return;
             }
 
+            if (entry.ContainerGuid != null)
+            {
+                guid = entry.ContainerGuid.Value;
+                entry = guidToAsset[guid];
+            }
+
             var project = Engine.Instance.ProjectSystem;
             string assetPath = entry.AssetPath;
 
@@ -411,7 +418,14 @@ namespace DevoidEngine.AssetPipeline
 
         public string GetLibraryPath(Guid guid, string extension)
         {
-            return $"{guid:N}.{extension}";
+            AssetEntry entry = guidToAsset[guid];
+
+            if (entry.ContainerGuid == null)
+            {
+                return $"{guid:N}.{extension}";
+            }
+
+            return $"{entry.ContainerGuid:N}-{entry.LocalId}.{extension}";
         }
 
         public string GetAssetPath(Guid guid)

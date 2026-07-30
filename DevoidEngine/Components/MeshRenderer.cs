@@ -13,8 +13,11 @@ namespace DevoidEngine.Components
             get => mesh;
             set
             {
+                if (value == null)
+                    return;
+
                 mesh = value;
-                instance_id = Engine.Renderer.World.CreateMeshInstance(mesh!);
+                instance_id = Engine.Renderer.World.CreateMeshInstance(mesh);
             }
         }
 
@@ -23,9 +26,11 @@ namespace DevoidEngine.Components
             get => material;
             set
             {
+                if (value == null)
+                    return;
+
                 material = value;
-                if (material != null)
-                    Engine.Renderer.World.InstanceSetMaterial(instance_id, material);
+                Engine.Renderer.World.InstanceSetMaterial(instance_id, material);
             }
         }
 

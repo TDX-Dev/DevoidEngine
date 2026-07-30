@@ -8,6 +8,7 @@ namespace DevoidEngine.AssetPipeline.Loaders
 {
     internal class TextureLoader : IAssetLoader<Texture>
     {
+        public string RuntimeExtension => "texture";
         public Texture Load(ReadOnlySpan<byte> data)
         {
 

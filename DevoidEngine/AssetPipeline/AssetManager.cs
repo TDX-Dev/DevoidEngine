@@ -33,7 +33,7 @@ namespace DevoidEngine.AssetPipeline
                 return default;
             }
 
-            string? extension = ImporterRegistry.GetRuntimeExtension<T>();
+            string? extension = AssetLoaderRegistry.GetRuntimeExtension<T>();
             if (extension == null)
             {
                 Console.WriteLine($"No runtime extension registered for {typeof(T).Name} in importer.");

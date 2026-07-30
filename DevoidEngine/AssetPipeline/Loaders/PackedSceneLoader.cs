@@ -11,6 +11,7 @@ namespace DevoidEngine.AssetPipeline.Loaders
 {
     public class PackedSceneLoader : IAssetLoader<PackedScene>
     {
+        public string RuntimeExtension => "packedscene";
         public PackedScene Load(ReadOnlySpan<byte> data)
         {
             PackedScene asset;

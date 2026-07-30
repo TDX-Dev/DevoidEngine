@@ -1,4 +1,5 @@
 ﻿using DevoidEngine.AssetPipeline;
+using DevoidEngine.Assets;
 using DevoidEngine.Audio;
 using DevoidEngine.Components;
 using DevoidEngine.Core;
@@ -39,7 +40,7 @@ namespace Sandbox
 
             Console.WriteLine("Sandbox has launched.");
 
-            scene = new Scene();
+            scene = Asset.Load<PackedScene>("models/turret_advanced.glb")!.Instantiate();
             Engine.Instance.SceneTree.LoadScene(scene);
             scene.Play();
 

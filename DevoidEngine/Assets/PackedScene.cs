@@ -1,4 +1,7 @@
-﻿using MessagePack;
+﻿using DevoidEngine.AssetPipeline;
+using DevoidEngine.Components;
+using DevoidEngine.Core;
+using MessagePack;
 
 namespace DevoidEngine.Assets
 {
@@ -15,5 +18,52 @@ namespace DevoidEngine.Assets
         public PackedCamera[] Cameras = [];
         [Key(4)]
         public PackedLight[] Lights = [];
+
+        public Scene Instantiate()
+        {
+            Scene scene = new();
+
+            List<GameObject> objects = new(Nodes.Length);
+
+            // Pass 1
+            foreach (var node in Nodes)
+            {
+                GameObject go = scene.AddGameObject(node.Name);
+
+                go.Transform.LocalPosition = node.Translation;
+                go.Transform.LocalRotation = node.Rotation;
+                go.Transform.LocalScale = node.Scale;
+
+                objects.Add(go);
+            }
+
+            // Pass 2
+            for (int i = 0; i < Nodes.Length; i++)
+            {
+                if (Nodes[i].Parent != -1)
+                    objects[i].SetParent(objects[Nodes[i].Parent]);
+            }
+
+            // Pass 3
+            for (int i = 0; i < Nodes.Length; i++)
+            {
+                var node = Nodes[i];
+
+                if (node.MeshIndices.Length == 0)
+                    continue;
+
+                foreach (int meshIndex in node.MeshIndices)
+                {
+                    Mesh mesh = Asset.Load<Mesh>(MeshGuids[meshIndex])!;
+
+                    MeshRenderer renderer =
+                        objects[i].AddComponent<MeshRenderer>();
+
+                    renderer.Mesh = mesh;
+                }
+            }
+
+            return scene;
+        }
     }
 }

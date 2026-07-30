@@ -7,6 +7,7 @@ namespace DevoidEngine.AssetPipeline.Loaders
 {
     internal class FontLoader : IAssetLoader<Font>
     {
+        public string RuntimeExtension => "font";
         public Font Load(ReadOnlySpan<byte> data)
         {
             FontAsset asset;
