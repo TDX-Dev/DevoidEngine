@@ -1,11 +1,5 @@
 ﻿using DevoidEngine.Components;
 using DevoidEngine.Physics;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace DevoidEngine.Core
 {
@@ -74,7 +68,7 @@ namespace DevoidEngine.Core
                 Components[i].OnFixedUpdate(dt);
             }
         }
-        
+
         public void OnRender()
         {
             for (int i = 0; i < Components.Count; i++)

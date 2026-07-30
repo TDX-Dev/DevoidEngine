@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DevoidEngine.Util
+﻿namespace DevoidEngine.Util
 {
     internal class SkylinePacker
     {
@@ -109,7 +103,7 @@ namespace DevoidEngine.Util
             bool needsRightNode = true;
             if (removeStart < nodes.Count && nodes[removeStart].X == newRight)
             {
-                needsRightNode = false; 
+                needsRightNode = false;
             }
 
             if (needsRightNode && newRight < this.width)

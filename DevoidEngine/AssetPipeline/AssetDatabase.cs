@@ -1,5 +1,6 @@
 ﻿using DevoidEngine.AssetPipeline.Importers;
 using DevoidEngine.AssetPipeline.Loaders;
+using DevoidEngine.Assets;
 using DevoidEngine.Audio;
 using DevoidEngine.Core;
 using DevoidEngine.UI.Text;
@@ -116,6 +117,7 @@ namespace DevoidEngine.AssetPipeline
             ImporterRegistry.Register<AudioClip>(new AudioImporter());
             ImporterRegistry.Register<Font>(new FontImporter());
             ImporterRegistry.Register<Scene>(new SceneImporter());
+            ImporterRegistry.Register<PackedScene>(new ModelImporter());
 
             AssetLoaderRegistry.Register<Texture>(new TextureLoader());
             AssetLoaderRegistry.Register<AudioClip>(new AudioLoader());
@@ -173,7 +175,7 @@ namespace DevoidEngine.AssetPipeline
             var project = Engine.Instance.ProjectSystem;
             string assetPath = entry.AssetPath;
 
-            string absolutePath = Path.Combine(project.AssetPath, assetPath);
+            string absolutePath = NormalizePath(Path.Combine(project.AssetPath, assetPath));
 
             var meta = LoadMeta(
                 Path.Combine(project.AssetPath, entry.MetaPath),
@@ -250,7 +252,7 @@ namespace DevoidEngine.AssetPipeline
                 }
             }
 
-            Guid guid = new();
+            Guid guid = Guid.NewGuid();
             AssetEntry assetEntry = new()
             {
                 Guid = guid,
@@ -303,7 +305,7 @@ namespace DevoidEngine.AssetPipeline
             var project = Engine.Instance.ProjectSystem;
             string assetPath = entry.AssetPath;
 
-            string absolutePath = Path.Combine(project.AssetPath, assetPath);
+            string absolutePath = NormalizePath(Path.Combine(project.AssetPath, assetPath));
 
             if (!File.Exists(absolutePath))
             {

@@ -1,11 +1,6 @@
 ﻿using DevoidEngine.Serialization;
 using DevoidGPU;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace DevoidEngine.Core
 {
@@ -83,7 +78,7 @@ namespace DevoidEngine.Core
 
                 ShaderReflectionData reflection_data = ShaderReflectionData.Merge(pass.Vertex.ShaderReflectionData, pass.Fragment.ShaderReflectionData);
 
-                shader.MaterialLayout ??= BuildMaterialLayout( pass, descriptor.MaterialParameters, reflection_data);
+                shader.MaterialLayout ??= BuildMaterialLayout(pass, descriptor.MaterialParameters, reflection_data);
 
                 pass.DescriptorLayout = CreateDescriptorLayout(device, reflection_data);
 

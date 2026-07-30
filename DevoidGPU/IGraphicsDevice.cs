@@ -1,6 +1,4 @@
-﻿using SharpDX.Direct3D11;
-
-namespace DevoidGPU
+﻿namespace DevoidGPU
 {
     public interface IGraphicsDevice
     {

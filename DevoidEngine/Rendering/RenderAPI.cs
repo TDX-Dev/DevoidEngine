@@ -1,11 +1,6 @@
 ﻿using DevoidEngine.Core;
 using DevoidEngine.Util;
 using DevoidGPU;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DevoidEngine.Rendering
 {
@@ -35,7 +30,7 @@ namespace DevoidEngine.Rendering
         public void RenderToScreen(ICommandList cmd, Texture texture)
         {
             if (texture == null) return;
-            
+
             cmd.SetPipeline(FullscreenShader.DefaultPass.Pipeline);
             FullscreenDescriptor.SetTexture(0, texture.GPU);
 

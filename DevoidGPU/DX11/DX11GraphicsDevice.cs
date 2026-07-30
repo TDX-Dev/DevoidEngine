@@ -173,7 +173,7 @@ namespace DevoidGPU.DX11
             return new DX11ShaderStorageBuffer(device, deviceContext, desc);
         }
 
-        public IDescriptorLayout CreateDescriptorLayout(DescriptorBinding[] bindings) 
+        public IDescriptorLayout CreateDescriptorLayout(DescriptorBinding[] bindings)
         {
             return new DX11DescriptorLayout(bindings);
         }

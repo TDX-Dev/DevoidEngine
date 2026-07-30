@@ -1,16 +1,9 @@
 ﻿using DevoidEngine.Assets;
 using DevoidEngine.Core;
 using DevoidEngine.UI.Text;
-using DevoidGPU;
 using MessagePack;
 using SharpFont;
-using StbiSharp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DevoidEngine.AssetPipeline.Importers
 {
@@ -36,7 +29,7 @@ namespace DevoidEngine.AssetPipeline.Importers
             uint scale = (uint)settings.SuperSampleScale;
 
             fontFace.SetPixelSizes(0, settings.SourceGlyphSize * scale);
-            
+
             switch (settings.FontEncoding)
             {
                 case FontEncodingTypes.Unicode:
@@ -68,7 +61,7 @@ namespace DevoidEngine.AssetPipeline.Importers
                 glyph.Height = 0;
             });
 
-            
+
             FontAtlas atlas = FontAtlasPacker.Build(glyphs);
 
             FontAsset asset = new()
@@ -127,7 +120,6 @@ namespace DevoidEngine.AssetPipeline.Importers
                 }
             }
 
-            Console.WriteLine("Number of kerning found: " + asset.Kerning.Count);
 
             SavePGM(
                 $"Debug/font_atlas_{Path.GetFileName(context.AssetPath)}.pgm",
@@ -137,7 +129,7 @@ namespace DevoidEngine.AssetPipeline.Importers
             );
 
             File.WriteAllBytes(
-                context.OutputFinalPath,
+                context.GetRootOutputPath(context.OutputExtension),
                 MessagePackSerializer.Serialize(asset)
             );
         }
@@ -189,7 +181,7 @@ namespace DevoidEngine.AssetPipeline.Importers
 
                 if (glyphData == null)
                     continue;
-                
+
                 glyphs.Add(glyphData);
 
                 character = face.GetNextChar(character, out glyphIndex);
@@ -202,7 +194,7 @@ namespace DevoidEngine.AssetPipeline.Importers
             if (glyphIndex == 0)
                 return null;
 
-            face.LoadChar(codepoint, LoadFlags.Render , LoadTarget.Normal);
+            face.LoadChar(codepoint, LoadFlags.Render, LoadTarget.Normal);
 
             GlyphSlot slot = face.Glyph;
 

@@ -15,13 +15,7 @@ using DevoidEngine.Util;
 using DevoidGPU;
 using MessagePack;
 using OpenTK.Windowing.Common;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sandbox
 {
@@ -66,7 +60,7 @@ namespace Sandbox
             PBRMaterial.SetFloat("Roughness", 0.2f);
 
             go = scene.AddGameObject("Hello World");
-            
+
             cam = go.AddComponent<Camera3D>();
 
             meshGo = scene.AddGameObject("Hello Mesh Object");
@@ -79,7 +73,7 @@ namespace Sandbox
             {
                 Type = DevoidEngine.Physics.PhysicsShapeType.Box,
                 Size = new Vector3(20, 1f, 20),
-                
+
             };
 
             meshGo1 = scene.AddGameObject("Hello Mesh 2 Object");
@@ -101,7 +95,7 @@ namespace Sandbox
             //    Radius = 1,
             //    Type = DevoidEngine.Physics.PhysicsShapeType.Sphere
             //};
-            
+
 
             lightGo = scene.AddGameObject("Light Object");
             LightComponent light = lightGo.AddComponent<LightComponent>();
@@ -232,7 +226,7 @@ namespace Sandbox
             innerContainer.AddStyleBoxOverride(StyleKeys.Normal, new StyleBoxFlat()
             {
                 BackgroundColor = Vector4.Zero,
-                
+
             });
 
             //container.Add(subContainer2);
@@ -276,7 +270,8 @@ namespace Sandbox
                     FlexGrowCross = 0,
                     FlexGrowMain = 0
                 },
-                OnPressed = () => {
+                OnPressed = () =>
+                {
                     MessagePackSerializer.Serialize(SceneSerializer.Serialize(scene));
                     Console.WriteLine("Saved Scene to disk");
                 }
@@ -302,7 +297,7 @@ namespace Sandbox
             //canvas.Add(labelNode1);
 
             canvas.Initialize();
-            
+
         }
 
         ContainerNode GetPreviewBox()

@@ -1,7 +1,5 @@
 ﻿using SharpDX.Direct3D11;
-using System;
 using System.Numerics;
-using static System.Net.Mime.MediaTypeNames;
 using Buffer = SharpDX.Direct3D11.Buffer;
 
 
@@ -11,7 +9,7 @@ namespace DevoidGPU.DX11
     {
         public CommandListType Type { get; }
 
-    
+
         private readonly DeviceContext deviceContext;
 
         // binding cache;
@@ -38,8 +36,8 @@ namespace DevoidGPU.DX11
 
         public void End()
         {
-            
-            /* No Op */ 
+
+            /* No Op */
         }
 
         public void Reset()

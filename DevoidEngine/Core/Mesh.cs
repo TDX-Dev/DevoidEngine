@@ -1,14 +1,7 @@
 ﻿using DevoidEngine.Assets;
 using DevoidEngine.Util;
 using DevoidGPU;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Diagnostics;
-using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DevoidEngine.Core
 {
@@ -84,7 +77,8 @@ namespace DevoidEngine.Core
             if (VB == null)
             {
                 VB = new VertexBuffer<Vertex>(Engine.GraphicsDevice, vertices.AsSpan(), Vertex.VertexInfo, Usage);
-            } else
+            }
+            else
             {
                 VB.Update(vertices);
             }
@@ -94,7 +88,8 @@ namespace DevoidEngine.Core
                 if (IB == null)
                 {
                     IB = new IndexBuffer(Engine.GraphicsDevice, indices.AsSpan(), Usage);
-                } else
+                }
+                else
                 {
                     IB.Update(indices);
                 }

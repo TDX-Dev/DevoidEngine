@@ -1,5 +1,5 @@
-﻿using OpenTK.Windowing.GraphicsLibraryFramework;
-using OpenTK.Mathematics;
+﻿using OpenTK.Mathematics;
+using OpenTK.Windowing.GraphicsLibraryFramework;
 
 namespace DevoidEngine.InputSystem.InputDevices
 {

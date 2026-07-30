@@ -3,7 +3,6 @@
 #define PROFILING
 #define DISPLAY_DEBUG_INFO
 
-using DevoidEngine.InputSystem;
 using DevoidEngine.Rendering;
 using DevoidEngine.Util;
 using DevoidGPU;
@@ -70,7 +69,7 @@ namespace DevoidEngine.Core
                 StartVisible = false,
                 StartCentered = true,
                 StartFocused = true,
-                
+
             });
 
             mainSurface = new WindowSurface(

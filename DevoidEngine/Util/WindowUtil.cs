@@ -1,5 +1,4 @@
 ﻿using OpenTK.Windowing.Common.Input;
-using OpenTK.Windowing.GraphicsLibraryFramework;
 using System.Runtime.InteropServices;
 
 namespace DevoidEngine.Util

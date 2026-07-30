@@ -1,13 +1,6 @@
 ﻿using DevoidEngine.Core;
-using DevoidEngine.Util;
 using DevoidGPU;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DevoidEngine.Rendering
 {
@@ -40,7 +33,7 @@ namespace DevoidEngine.Rendering
                 Format = TextureFormat.RGBA16_Float,
                 Dimension = TextureDimension.Texture2D,
                 ArraySize = 1,
-                Samples =  new TextureSampleDescription(1, 0),
+                Samples = new TextureSampleDescription(1, 0),
                 MipLevels = 1,
                 Usage = TextureUsage.RenderTarget | TextureUsage.ShaderResource
             };

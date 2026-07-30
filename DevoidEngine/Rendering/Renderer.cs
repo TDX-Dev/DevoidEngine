@@ -1,17 +1,9 @@
 ﻿using DevoidEngine.Core;
 using DevoidEngine.UI;
-using DevoidEngine.UI.UINodes;
 using DevoidEngine.Util;
 using DevoidGPU;
-using OpenTK.Windowing.Common;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DevoidEngine.Rendering
 {
@@ -28,7 +20,8 @@ namespace DevoidEngine.Rendering
         Clustered
     }
 
-    public struct RendererConfig {
+    public struct RendererConfig
+    {
         public RenderTechnique Technique;
     }
 
@@ -53,7 +46,7 @@ namespace DevoidEngine.Rendering
         public RenderTarget ViewportBlitTarget { get; private set; } = null!;
         public RenderTarget UIRenderTarget { get; private set; } = null!;
         public UniformBuffer CameraBuffer { get; private set; } = null!;
-        public UniformBuffer SceneBuffer { get; private set;} = null!;
+        public UniformBuffer SceneBuffer { get; private set; } = null!;
         public UniformBuffer PerObjectBuffer { get; private set; } = null!;
         public SkyRenderer SkyRenderer { get; private set; } = null!;
 
@@ -229,8 +222,8 @@ namespace DevoidEngine.Rendering
             cmd.SetFramebuffer(ViewportBlitTarget.GPU);
             API.RenderToScreen(cmd, activeTechniqueTarget.ColorTextures[0]!);
             API.RenderToScreen(cmd, UIRenderTarget.ColorTextures[0]!);
-            
-            
+
+
         }
 
         public void RenderUI(ICommandList cmd, Viewport viewport, RenderResourceCache resources)

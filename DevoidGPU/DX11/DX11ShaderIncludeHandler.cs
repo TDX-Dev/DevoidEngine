@@ -1,5 +1,4 @@
 ﻿using SharpDX.D3DCompiler;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace DevoidGPU.DX11
 {

@@ -2,12 +2,6 @@
 using DevoidEngine.Util;
 using DevoidGPU;
 using MessagePack;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DevoidEngine.AssetPipeline.Importers
 {
@@ -86,7 +80,7 @@ namespace DevoidEngine.AssetPipeline.Importers
             };
 
             File.WriteAllBytes(
-                context.OutputFinalPath,
+                context.GetRootOutputPath(context.OutputExtension),
                 MessagePackSerializer.Serialize(asset)
             );
         }

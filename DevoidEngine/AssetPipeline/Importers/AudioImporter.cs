@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DevoidEngine.AssetPipeline.Importers
+﻿namespace DevoidEngine.AssetPipeline.Importers
 {
     internal class AudioImporter : AssetImporter<AudioImportSettings>
     {
@@ -29,7 +23,7 @@ namespace DevoidEngine.AssetPipeline.Importers
 
             var bytes = File.ReadAllBytes(context.AssetPath);
 
-            File.WriteAllBytes(context.OutputFinalPath, bytes);
+            File.WriteAllBytes(context.GetRootOutputPath(context.OutputExtension), bytes);
         }
     }
 }

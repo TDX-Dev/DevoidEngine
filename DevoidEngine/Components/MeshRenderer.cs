@@ -1,11 +1,6 @@
 ﻿using DevoidEngine.Core;
 using DevoidEngine.Util;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DevoidEngine.Components
 {
@@ -59,11 +54,12 @@ namespace DevoidEngine.Components
             if (Engine.Instance.UseInterpolation)
             {
                 worldMatrixInterpolated = gameObject.Transform.GetGlobalTransformInterpolated(Engine.Instance.FrameCount, Engine.Instance.InterpolationAlpha);
-            } else
+            }
+            else
             {
                 worldMatrixInterpolated = gameObject.Transform.WorldMatrix;
             }
-                Engine.Renderer.World.InstanceSetTransform(instance_id, worldMatrixInterpolated);
+            Engine.Renderer.World.InstanceSetTransform(instance_id, worldMatrixInterpolated);
             has_moved_current_frame = false;
         }
     }

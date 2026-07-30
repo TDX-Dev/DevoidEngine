@@ -2,12 +2,7 @@
 using DevoidEngine.Core;
 using DevoidGPU;
 using MessagePack;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DevoidEngine.AssetPipeline.Loaders
 {
@@ -28,7 +23,7 @@ namespace DevoidEngine.AssetPipeline.Loaders
                 return Texture.Default;
             }
 
-            TextureDescription description = new ()
+            TextureDescription description = new()
             {
                 ArraySize = 1,
                 Depth = 1,
@@ -41,7 +36,7 @@ namespace DevoidEngine.AssetPipeline.Loaders
                 Usage = TextureUsage.ShaderResource
             };
 
-            Texture texture = new (description);
+            Texture texture = new(description);
 
             //Texture texture = new Texture2D(new TextureDescription()
             //{

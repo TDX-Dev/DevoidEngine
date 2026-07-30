@@ -1,11 +1,6 @@
 ﻿using DevoidEngine.AssetPipeline.Loaders;
 using DevoidEngine.Assets;
 using DevoidEngine.Core;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DevoidEngine.AssetPipeline
 {
@@ -51,7 +46,7 @@ namespace DevoidEngine.AssetPipeline
             if (ImporterRegistry.IsAssetFolderOnly(Path.GetExtension(Engine.Instance.AssetDatabase.GetAssetEntry(guid).AssetPath)))
             {
                 path = Engine.Instance.AssetDatabase.GetAssetPath(guid);
-            } 
+            }
             else
             {
                 path = Engine.Instance.AssetDatabase.GetLibraryPath(guid, extension);

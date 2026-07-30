@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Numerics;
 
 namespace DevoidEngine.Util
 {
@@ -23,7 +18,7 @@ namespace DevoidEngine.Util
         {
             if (value.X > Position.X && value.Y > Position.Y)
             {
-                if (value.X < Size.X &&  value.Y < Size.Y)
+                if (value.X < Size.X && value.Y < Size.Y)
                 {
                     return true;
                 }

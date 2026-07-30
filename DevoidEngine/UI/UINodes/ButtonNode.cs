@@ -1,12 +1,6 @@
 ﻿using DevoidEngine.AssetPipeline;
 using DevoidEngine.UI.Text;
-using DevoidEngine.UI.Theme;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DevoidEngine.UI.UINodes
 {

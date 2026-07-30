@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace DevoidGPU
+﻿namespace DevoidGPU
 {
     public struct TextureDescription : IEquatable<TextureDescription>
     {

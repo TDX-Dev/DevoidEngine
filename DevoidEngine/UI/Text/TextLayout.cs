@@ -1,11 +1,4 @@
-﻿using SharpFont;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Numerics;
 
 namespace DevoidEngine.UI.Text
 {
@@ -227,7 +220,7 @@ namespace DevoidEngine.UI.Text
                 result.LineWidths.Add(line.Width);
 
                 if (line.Width > maxContentWidth)
-                        maxContentWidth = line.Width;
+                    maxContentWidth = line.Width;
             }
 
             result.Width = settings.Overflow == TextOverflow.None ? maxContentWidth : Math.Min(maxContentWidth, settings.MaxWidth);

@@ -327,7 +327,7 @@ namespace DevoidEngine.UI
         {
 
         }
-        
+
         protected virtual void ApplyTheme() { }
         protected virtual void UpdateMaterial() { }
         public virtual void OnDragStart(Vector2 mouse) { }

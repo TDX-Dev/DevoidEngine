@@ -78,7 +78,7 @@ namespace DevoidGPU.DX11
 
         public void Present()
         {
-            
+
             Result result = swapchain.TryPresent(VSync ? 1 : 0, PresentFlags.None);
 
             if (result != Result.Ok)

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DevoidEngine.InputSystem
+﻿namespace DevoidEngine.InputSystem
 {
     public class InputBackend
     {
@@ -48,7 +42,7 @@ namespace DevoidEngine.InputSystem
 
         public void UpdateInput()
         {
-            
+
             for (int i = 0; i < _inputDeviceHandlers.Count; i++)
             {
                 InputDeviceHandler handler = _inputDeviceHandlers[i];

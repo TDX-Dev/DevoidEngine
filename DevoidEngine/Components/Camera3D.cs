@@ -1,11 +1,6 @@
 ﻿using DevoidEngine.Core;
 using DevoidEngine.Rendering;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DevoidEngine.Components
 {
@@ -70,7 +65,7 @@ namespace DevoidEngine.Components
         public override void OnAttach()
         {
             Viewport viewport = GetTree().RootViewport;
-            
+
             bool firstCamera = viewport.AddCamera3D(this);
             if (firstCamera || is_current_camera)
                 viewport.SetCamera3D(this);

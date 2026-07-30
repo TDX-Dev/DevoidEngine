@@ -1,5 +1,4 @@
 ﻿using SharpDX.Direct3D11;
-using SharpDX.DXGI;
 using System.Runtime.CompilerServices;
 using Buffer = SharpDX.Direct3D11.Buffer;
 using Device = SharpDX.Direct3D11.Device;

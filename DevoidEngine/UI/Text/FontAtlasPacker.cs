@@ -1,5 +1,4 @@
 ﻿using DevoidEngine.Util;
-using System.Diagnostics;
 using System.Numerics;
 
 namespace DevoidEngine.UI.Text

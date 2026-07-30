@@ -4,12 +4,7 @@ using DevoidEngine.Rendering;
 using DevoidEngine.UI.Theme;
 using DevoidEngine.UI.UINodes;
 using DevoidEngine.Util;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DevoidEngine.UI
 {

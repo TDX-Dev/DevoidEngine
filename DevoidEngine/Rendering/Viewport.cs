@@ -3,12 +3,7 @@ using DevoidEngine.Core;
 using DevoidEngine.UI;
 using DevoidEngine.Util;
 using DevoidGPU;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DevoidEngine.Rendering
 {
@@ -36,7 +31,7 @@ namespace DevoidEngine.Rendering
             };
 
             Engine.Renderer.RegisterViewport(this);
-        
+
             bounds = new Rect(Vector2.Zero, new Vector2(Width, Height));
         }
 

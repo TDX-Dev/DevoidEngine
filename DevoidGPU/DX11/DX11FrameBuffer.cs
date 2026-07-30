@@ -74,7 +74,7 @@ namespace DevoidGPU.DX11
 
             colorAttachments[index] = dxTex;
             RTVs[index] = dxTex.RTV!;
-            
+
         }
 
         public void SetDepthAttachment(ITexture texture)

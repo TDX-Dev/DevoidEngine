@@ -1,13 +1,6 @@
 ﻿using DevoidEngine.Rendering;
 using DevoidEngine.Util;
-using DevoidGPU;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace DevoidEngine.Core
 {
@@ -109,7 +102,7 @@ namespace DevoidEngine.Core
             screen.X = (ndc.X * 0.5f + 0.5f) * screenWidth;
             screen.Y = (1.0f - (ndc.Y * 0.5f + 0.5f)) * screenHeight;
 
-            return new (screen, w);
+            return new(screen, w);
         }
 
         public bool IntersectsAABB(Vector3 min, Vector3 max)

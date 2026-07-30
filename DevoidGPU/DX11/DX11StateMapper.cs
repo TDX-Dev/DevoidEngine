@@ -350,7 +350,7 @@ namespace DevoidGPU.DX11
         {
             return format == IndexFormat.UInt16 ? SharpDX.DXGI.Format.R16_UInt : SharpDX.DXGI.Format.R32_UInt;
         }
-    
+
         public static TextureAddressMode ToDXTextureAddressMode(WrapMode wrap)
         {
             return wrap switch
