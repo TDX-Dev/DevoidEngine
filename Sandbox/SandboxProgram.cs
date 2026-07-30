@@ -40,7 +40,8 @@ namespace Sandbox
 
             Console.WriteLine("Sandbox has launched.");
 
-            scene = Asset.Load<PackedScene>("models/turret_advanced.glb")!.Instantiate();
+            scene = Asset.Load<PackedScene>("models/turret_advanced.gltf")!.Instantiate();
+            scene.GameObjects[0].Transform.Position = new Vector3(0, 10, 0);
             Engine.Instance.SceneTree.LoadScene(scene);
             scene.Play();
 
@@ -51,7 +52,7 @@ namespace Sandbox
 
             Texture dvsTex = Asset.Load<Texture>("mesh_tex.png")!;
             //Texture dvsTex = Texture.CreateFromImage2D(TextureUtil.LoadImage("Assets/mesh_tex.png"), TextureUsage.ShaderResource);
-            Texture terrTex = Texture.CreateFromImage2D(TextureUtil.LoadImage("Assets/ground_tex.png"), TextureUsage.ShaderResource);
+            Texture terrTex = Asset.Load<Texture>("ground_tex.png")!;
 
             GroundPBRMaterial.SetTexture("MAT_AlbedoMap", terrTex);
             GroundPBRMaterial.SetFloat("Roughness", 0.2f);
@@ -91,11 +92,11 @@ namespace Sandbox
             childObject.SetParent(meshGo1);
             childObject.Transform.LocalPosition = new Vector3(0, 2, -2);
 
-            //rb.Shape = new DevoidEngine.Physics.PhysicsShapeDescription()
-            //{
-            //    Radius = 1,
-            //    Type = DevoidEngine.Physics.PhysicsShapeType.Sphere
-            //};
+            rb.Shape = new DevoidEngine.Physics.PhysicsShapeDescription()
+            {
+                Radius = 1,
+                Type = DevoidEngine.Physics.PhysicsShapeType.Sphere
+            };
 
 
             lightGo = scene.AddGameObject("Light Object");
@@ -110,8 +111,8 @@ namespace Sandbox
             lightGo.Transform.Position = new Vector3(5, 10, -7);
             AudioSource3D audio = lightGo.AddComponent<AudioSource3D>();
 
-            AudioClip clip = Asset.Load<AudioClip>("tone.mp3")!;
-            audio.Audio = clip;
+            //AudioClip clip = Asset.Load<AudioClip>("tone.mp3")!;
+            //audio.Audio = clip;
             //audio.Play();
 
             Engine.InputSystem.Map.Bind("Forward", new InputBinding()
@@ -171,7 +172,6 @@ namespace Sandbox
             });
 
             SetupUI();
-
         }
 
         void SetupUI()

@@ -170,7 +170,9 @@ float4 PSMain(PSInput input) : SV_TARGET
     //);
     
     float3 ambient = 0.05 * albedo;// * ao;
-    float3 color = ambient + Lo + emission;
+    float3 color = ambient + Lo;// + emission;
+    
+    //return float4(N * 0.5 + 0.5 + (color * 0.00001), 1.0);
     return float4(color, 1);
     //return float4(color, 1.0);
 }

@@ -12,7 +12,5 @@ namespace DevoidEngine.Assets
         [Key(4)] public float[] Bitangents = [];
         [Key(5)] public uint[] Indices = [];
 
-        [Key(6)] public Guid Material;
-        [Key(7)] public int MaterialIndex = -1;
     }
 }

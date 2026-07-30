@@ -64,11 +64,11 @@ namespace DevoidEngine.Core
                     ? UVs[i]
                     : Vector2.Zero;
 
-                //var tangent = (Tangents != null && Tangents.Length == count)
-                //    ? Tangents[i]
-                //    : new Vector4(1, 0, 0, 1); // safe default
+                var tangent = (Tangents != null && Tangents.Length == count)
+                    ? Tangents[i]
+                    : new Vector4(1, 0, 0, 1); // safe default
 
-                vertices[i] = new Vertex(pos, normal, uv);
+                vertices[i] = new Vertex(pos, normal, uv, tangent);
             }
 
             if (computeLocalBounds)

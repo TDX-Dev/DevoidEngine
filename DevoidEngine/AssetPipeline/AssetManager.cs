@@ -1,6 +1,7 @@
 ﻿using DevoidEngine.AssetPipeline.Loaders;
 using DevoidEngine.Assets;
 using DevoidEngine.Core;
+using System.Runtime.CompilerServices;
 
 namespace DevoidEngine.AssetPipeline
 {
@@ -57,6 +58,8 @@ namespace DevoidEngine.AssetPipeline
                 Console.WriteLine($"[Asset] Cache missing for {guid}, reimporting...");
                 Engine.Instance.AssetDatabase.Reimport(guid);
             }
+
+
 
             byte[] data = Engine.Instance.VirtualFileSystem.ReadAllBytes(path);
 

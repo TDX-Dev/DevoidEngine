@@ -60,6 +60,7 @@ namespace DevoidEngine.AssetPipeline.Loaders
 
                 if (asset.Tangents.Length >= (i + 1) * 3)
                 {
+
                     Vector3 tangent = new(
                         asset.Tangents[i * 3 + 0],
                         asset.Tangents[i * 3 + 1],

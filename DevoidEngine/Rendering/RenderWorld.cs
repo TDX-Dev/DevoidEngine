@@ -24,7 +24,7 @@ namespace DevoidEngine.Rendering
 
         public RID CreateMeshInstance(Mesh mesh)
         {
-            if (mesh == null) throw new ArgumentNullException();
+            ArgumentNullException.ThrowIfNull(mesh);
             RenderMeshData data = new(mesh);
 
             RID instanceId = meshIdAllocator.MakeRID(data);

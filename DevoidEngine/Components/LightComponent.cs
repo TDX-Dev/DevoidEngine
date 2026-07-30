@@ -127,6 +127,8 @@ namespace DevoidEngine.Components
         public override void OnAttach()
         {
             CreateRenderLight();
+            Console.WriteLine("Light OnAttach");
+
         }
 
         public override void OnDestroy()

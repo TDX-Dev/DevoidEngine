@@ -32,14 +32,13 @@ namespace DevoidEngine.AssetPipeline.Importers
 
         public override void Import(ImportContext importContext, ModelImportSettings settings)
         {
-            Console.WriteLine($"Model Path: {importContext.AssetPath}");
 
             AssimpContext ctx = new();
 
             var scene = ctx.ImportFile(importContext.AssetPath,
                 PostProcessSteps.Triangulate |
                 PostProcessSteps.GenerateNormals |
-                PostProcessSteps.GenerateSmoothNormals |
+                //PostProcessSteps.GenerateSmoothNormals |
                 PostProcessSteps.CalculateTangentSpace |
                 PostProcessSteps.GenerateUVCoords |
                 PostProcessSteps.FlipUVs |
@@ -116,6 +115,15 @@ namespace DevoidEngine.AssetPipeline.Importers
                 out Quaternion rotation,
                 out Vector3 translation);
 
+            PackedMesh[] meshes =
+    [.. node.MeshIndices
+        .Select(meshIndex => new PackedMesh
+        {
+            MeshIndex = meshIndex,
+            MaterialIndex = scene.Meshes[meshIndex].MaterialIndex
+        })];
+
+
             PackedSceneNode packed = new()
             {
                 Name = node.Name,
@@ -123,7 +131,7 @@ namespace DevoidEngine.AssetPipeline.Importers
                 Translation = translation,
                 Rotation = rotation,
                 Scale = scale,
-                MeshIndices = [.. node.MeshIndices]
+                Meshes = meshes
             };
 
             nodes.Add(packed);
@@ -201,9 +209,6 @@ namespace DevoidEngine.AssetPipeline.Importers
                 Indices = [.. mesh.Faces
                     .SelectMany(f => f.Indices)
                     .Select(i => (uint)i)],
-
-                MaterialIndex = mesh.MaterialIndex,
-                Material = _materialGuids[mesh.MaterialIndex]
             };
 
             return asset;
@@ -214,18 +219,7 @@ namespace DevoidEngine.AssetPipeline.Importers
 
             MaterialProperty roughnessProperty = mat.GetProperty("$mat.roughnessFactor,0,0");
             MaterialProperty metallicProperty = mat.GetProperty("$mat.metallicFactor,0,0");
-            MaterialProperty transmissionProperty = mat.GetProperty("$mat.transmission.factor,0,0");
-
-
-            // This is where im deciding if a material is glass or not.
-            if (transmissionProperty != null)
-            {
-                asset.Shader = "PBR/ForwardPBRGlass";
-            }
-            else
-            {
-                asset.Shader = "PBR/ForwardPBR";
-            }
+            //MaterialProperty transmissionProperty = mat.GetProperty("$mat.transmission.factor,0,0");
 
             asset.Floats["AO"] = 1f;
 
@@ -278,7 +272,6 @@ namespace DevoidEngine.AssetPipeline.Importers
                     0,
                     out var tex);
 
-                Console.WriteLine(tex.FilePath);
                 Guid texGuid = ImportTexture(tex.FilePath, modelPath);
 
                 asset.Textures["MAT_AlbedoMap"] = texGuid;
@@ -327,11 +320,11 @@ namespace DevoidEngine.AssetPipeline.Importers
             //    Console.WriteLine(slot.TextureType);
             //}
 
-            MaterialProperty[] mps = mat.GetAllProperties();
-            foreach (MaterialProperty mp in mps)
-            {
-                Console.WriteLine(mp.FullyQualifiedName + " : " + mp.GetFloatValue());
-            }
+            //MaterialProperty[] mps = mat.GetAllProperties();
+            //foreach (MaterialProperty mp in mps)
+            //{
+            //    Console.WriteLine(mp.FullyQualifiedName + " : " + mp.GetFloatValue());
+            //}
 
             //Console.WriteLine(mat.Opacity);
 
@@ -340,15 +333,22 @@ namespace DevoidEngine.AssetPipeline.Importers
 
         Guid ImportTexture(string texturePath, string currentModelPath)
         {
-            string resolvedPath = Path.Combine(Path.GetDirectoryName(currentModelPath)!, texturePath);
-            resolvedPath = resolvedPath.Replace('\\', '/');   // normalize
+            string absolutePath = Path.Combine(
+                Path.GetDirectoryName(currentModelPath)!,
+                texturePath);
 
-            Console.WriteLine("[Model Importer]: " + resolvedPath);
+            absolutePath = Path.GetFullPath(absolutePath);
 
-            if (Engine.Instance.AssetDatabase.TryGetGuid(resolvedPath, out var guid))
+            string assetPath = Path.GetRelativePath(
+                Engine.Instance.ProjectSystem.AssetPath,
+                absolutePath);
+
+            assetPath = assetPath.Replace('\\', '/');
+
+            if (Engine.Instance.AssetDatabase.TryGetGuid(assetPath, out var guid))
                 return guid;
 
-            Console.WriteLine($"Texture not found in AssetDatabase: {resolvedPath}");
+            Console.WriteLine($"Texture not found in AssetDatabase: {assetPath}");
             return Guid.Empty;
         }
     }

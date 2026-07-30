@@ -7,6 +7,7 @@
         public override IReadOnlyList<string> Extensions => [".scene"];
 
         public override string OutputExtension => "scene";
+        public override bool IsAssetFolderOnly => true;
 
         public override SceneImportSettings DefaultSettings()
         {

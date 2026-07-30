@@ -36,8 +36,8 @@ namespace DevoidEngine.Components
 
 
 
-        private Mesh? mesh;
-        private MaterialInstance? material;
+        internal Mesh? mesh;
+        internal MaterialInstance? material;
         private RID instance_id;
         private bool has_moved_current_frame = true;
 

@@ -124,10 +124,12 @@ namespace DevoidEngine.AssetPipeline
             AssetLoaderRegistry.Register<Font>(new FontLoader());
             AssetLoaderRegistry.Register<PackedScene>(new PackedSceneLoader());
             AssetLoaderRegistry.Register<Mesh>(new MeshLoader());
+            AssetLoaderRegistry.Register<Material>(new MaterialLoader());
+            AssetLoaderRegistry.Register<Scene>(new SceneLoader());
 
             RefreshDatabase();
 
-            DisplayDatabase();
+            //DisplayDatabase();
         }
 
         public void ScanAssets()
@@ -525,8 +527,6 @@ namespace DevoidEngine.AssetPipeline
     string file,
     out Guid guid)
         {
-            guid = default;
-
             string name = Path.GetFileNameWithoutExtension(file);
 
             int dash = name.IndexOf('-');

@@ -49,17 +49,22 @@ namespace DevoidEngine.Assets
             {
                 var node = Nodes[i];
 
-                if (node.MeshIndices.Length == 0)
+                if (node.Meshes.Length == 0)
                     continue;
 
-                foreach (int meshIndex in node.MeshIndices)
+                foreach (var mr in node.Meshes)
                 {
-                    Mesh mesh = Asset.Load<Mesh>(MeshGuids[meshIndex])!;
+                    Mesh mesh =
+                        Asset.Load<Mesh>(MeshGuids[mr.MeshIndex])!;
+
+                    Material? material =
+                        Asset.Load<Material>(MaterialGuids[mr.MaterialIndex]);
 
                     MeshRenderer renderer =
                         objects[i].AddComponent<MeshRenderer>();
 
                     renderer.Mesh = mesh;
+                    renderer.Material = material == null ? null : new MaterialInstance(material);
                 }
             }
 

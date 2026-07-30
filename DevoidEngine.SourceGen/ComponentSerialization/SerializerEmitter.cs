@@ -340,14 +340,14 @@ namespace DevoidEngine.SourceGen.ComponentSerialization
             return field.GetAttributes().Any(a => a.AttributeClass?.Name == "DontSerialize");
         }
 
-        private static bool IsAssetType(ITypeSymbol type)
+        private static bool IsAssetType(ITypeSymbol? type)
         {
             while (type != null)
             {
-                if (type.Name == "AssetType")
+                if (type.ToDisplayString() == "DevoidEngine.Assets.AssetType")
                     return true;
 
-                type = type.BaseType!;
+                type = type.BaseType;
             }
 
             return false;

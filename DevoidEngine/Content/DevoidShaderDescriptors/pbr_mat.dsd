@@ -20,10 +20,6 @@
       {
         "Name": "MAT_RoughnessMap",
         "Type": "Texture2D"
-      },
-      {
-        "Name": "MAT_EmissiveMap",
-        "Type": "Texture2D"
       }
     ]
   },

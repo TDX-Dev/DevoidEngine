@@ -168,8 +168,15 @@ namespace DevoidEngine.Core
             {
                 TextureBindingInfo? binding =
                     reflectionData.TextureBindings
-                        .FirstOrDefault(x => x.Name == textureDesc.Name) ?? throw new Exception(
+                        .FirstOrDefault(x => x.Name == textureDesc.Name);
+
+                if (binding == null)
+                {
+                    Console.WriteLine(
                         $"Material texture '{textureDesc.Name}' not found.");
+                    continue;
+                }
+
                 layout.Textures[binding.Name] = binding;
             }
 
