@@ -50,6 +50,8 @@ namespace DevoidEngine.Rendering
         public UniformBuffer PerObjectBuffer { get; private set; } = null!;
         public SkyRenderer SkyRenderer { get; private set; } = null!;
 
+        public EnvironmentLighting Environment => SkyRenderer.Environment;
+
         private IDescriptorLayout PerCameraDescriptorLayout = null!;
         private IDescriptorSet PerCameraDescriptor = null!;
 

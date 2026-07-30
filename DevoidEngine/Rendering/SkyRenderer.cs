@@ -6,10 +6,13 @@ namespace DevoidEngine.Rendering
     {
         public ISky Sky = null!;
 
+        public EnvironmentLighting Environment;
+
         readonly RenderMeshData skyMeshData;
 
         public SkyRenderer()
         {
+            Environment = new();
             Sky = new ProceduralSky();
 
             skyMeshData = new RenderMeshData
@@ -18,15 +21,33 @@ namespace DevoidEngine.Rendering
                 render_material = Sky.Material,
             };
         }
-
         public void Render(RenderContext ctx)
         {
             if (Sky == null)
                 return;
 
-            skyMeshData.render_transform = Matrix4x4.CreateScale(2) * Matrix4x4.CreateTranslation(ctx.Camera.Position);
+            if (Sky.Dirty)
+            {
+                Sky.BuildEnvironment(ctx);
 
-            ctx.Renderer.Execute(ctx.CommandList, skyMeshData);
+                ProcessCubemap(Sky);
+            }
+            
         }
+
+        void ProcessCubemap(ISky sky)
+        {
+
+        }
+
+        //public void Render(RenderContext ctx)
+        //{
+        //    if (Sky == null)
+        //        return;
+
+        //    skyMeshData.render_transform = Matrix4x4.CreateScale(2) * Matrix4x4.CreateTranslation(ctx.Camera.Position);
+
+        //    ctx.Renderer.Execute(ctx.CommandList, skyMeshData);
+        //}
     }
 }

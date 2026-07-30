@@ -7,19 +7,25 @@ namespace DevoidEngine.Rendering
     public sealed class ProceduralSky : ISky
     {
         public Vector3 SunDirection;
+
         public float Turbidity;
+
         public float Exposure;
+
+        public bool Dirty { get; private set; } = true;
 
         public MaterialInstance Material { get; } = null!;
 
-        public Mesh Mesh => PrimitiveMeshes.GetUVSphere();
+        public Mesh Mesh => PrimitiveMeshes.GetCube();
 
-        public ProceduralSky()
+        public void BuildEnvironment(RenderContext context)
         {
-            Shader proceduralSkyShader = Shader.FromDescriptorFile(Engine.GraphicsDevice, "Content/DevoidShaderDescriptors/sky_procedural.dsd");
-            Material mat = new(proceduralSkyShader);
+            throw new NotImplementedException();
+        }
 
-            Material = new MaterialInstance(mat);
+        public void Dispose()
+        {
+            throw new NotImplementedException();
         }
     }
 }

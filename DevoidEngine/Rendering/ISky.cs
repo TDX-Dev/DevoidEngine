@@ -2,9 +2,16 @@
 
 namespace DevoidEngine.Rendering
 {
-    public interface ISky
+    public interface ISky : IDisposable
     {
         MaterialInstance Material { get; }
+
         Mesh Mesh { get; }
+
+        bool Dirty { get; }
+
+        
+
+        void BuildEnvironment(RenderContext context);
     }
 }
