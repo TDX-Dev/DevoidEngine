@@ -14,6 +14,8 @@ namespace DevoidGPU
 
         void SetFramebuffer(IFrameBuffer framebuffer);
 
+        void SetFramebuffer(IFrameBuffer framebuffer, int mipLevel = 0, int arraySlice = 0);
+
         void ClearColor(int attachmentIndex, Vector4 color);
         void ClearDepthStencil(float depth, byte stencil);
 

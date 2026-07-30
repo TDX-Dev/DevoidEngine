@@ -16,15 +16,22 @@ namespace DevoidGPU.DX11
         public TextureFormat Format => Description.Format;
 
         public ShaderResourceView? SRV { get; private set; }
-        public RenderTargetView? RTV { get; private set; }
+        public RenderTargetView? RTV => rtvs?[0, 0];
         public DepthStencilView? DSV { get; private set; }
         public UnorderedAccessView? UAV { get; private set; }
 
         public Resource TextureResource { get; private set; } = null!;
 
+        public TextureDimension Dimension => Description.Dimension;
+
+        public int MipLevels => Description.MipLevels;
+
+        public int ArraySize => Description.ArraySize;
+
         private readonly Device device;
         private readonly DeviceContext deviceContext = null!;
         private readonly bool ownsResource;
+        private RenderTargetView[,]? rtvs;
 
         internal DX11Texture(Device device, Texture2D existing)
         {
@@ -48,7 +55,20 @@ namespace DevoidGPU.DX11
                 Usage = TextureUsage.RenderTarget,
                 Samples = new TextureSampleDescription(desc.SampleDescription.Count, desc.SampleDescription.Quality)
             };
-            RTV = CreateRTV2D(desc.Format);
+
+            if (Description.Usage.HasFlag(TextureUsage.RenderTarget))
+            {
+                rtvs = new RenderTargetView[Description.MipLevels, Description.ArraySize];
+                for (int mip = 0; mip < Description.MipLevels; mip++)
+                {
+                    for (int slice = 0; slice < Description.ArraySize; slice++)
+                    {
+                        rtvs[mip, slice] = CreateRTV(desc.Format, mip, slice);
+                    }
+                }
+            }
+
+            //RTV = CreateRTV2D(desc.Format);
 
             ownsResource = false;
         }
@@ -68,10 +88,20 @@ namespace DevoidGPU.DX11
 
             if (Description.Usage.HasFlag(TextureUsage.RenderTarget))
             {
-                if (Description.Dimension == TextureDimension.Texture3D)
-                    RTV = CreateRTV3D(format);
-                else
-                    RTV = CreateRTV2D(format);
+                rtvs = new RenderTargetView[Description.MipLevels, Description.ArraySize];
+
+                for (int mip = 0; mip < Description.MipLevels; mip++)
+                {
+                    for (int slice = 0; slice < Description.ArraySize; slice++)
+                    {
+                        rtvs[mip, slice] = CreateRTV(format, mip, slice);
+                    }
+                }
+
+                //if (Description.Dimension == TextureDimension.Texture3D)
+                //    RTV = CreateRTV3D(format);
+                //else
+                //    RTV = CreateRTV2D(format);
             }
 
             if (Description.Usage.HasFlag(TextureUsage.DepthStencil))
@@ -229,6 +259,11 @@ namespace DevoidGPU.DX11
             return new DepthStencilView(device, TextureResource, desc);
         }
 
+        internal RenderTargetView GetRTV(int mip = 0, int slice = 0)
+        {
+            return rtvs![mip, slice];
+        }
+
         private RenderTargetView CreateRTV2D(Format format)
         {
             if (Description.ArraySize > 1)
@@ -268,6 +303,60 @@ namespace DevoidGPU.DX11
             };
 
             return new RenderTargetView(device, TextureResource, desc);
+        }
+
+        private RenderTargetView CreateRTV(
+    Format format,
+    int mip,
+    int slice)
+        {
+            if (Description.Dimension == TextureDimension.Texture3D)
+            {
+                return new RenderTargetView(device, TextureResource,
+                    new RenderTargetViewDescription
+                    {
+                        Format = format,
+                        Dimension = RenderTargetViewDimension.Texture3D,
+                        Texture3D =
+                            new RenderTargetViewDescription.Texture3DResource
+                            {
+                                FirstDepthSlice = slice,
+                                DepthSliceCount = 1,
+                                MipSlice = mip
+                            }
+                    });
+            }
+
+            if (Description.Dimension == TextureDimension.TextureCube || Description.ArraySize > 1)
+            {
+                return new RenderTargetView(device, TextureResource,
+                    new RenderTargetViewDescription
+                    {
+                        Format = format,
+                        Dimension = RenderTargetViewDimension.Texture2DArray,
+
+                        Texture2DArray =
+                            new RenderTargetViewDescription.Texture2DArrayResource
+                            {
+                                FirstArraySlice = slice,
+                                ArraySize = 1,
+                                MipSlice = mip
+                            }
+                    });
+            }
+
+            return new RenderTargetView(device, TextureResource,
+                new RenderTargetViewDescription
+                {
+                    Format = format,
+                    Dimension = RenderTargetViewDimension.Texture2D,
+
+                    Texture2D =
+                        new RenderTargetViewDescription.Texture2DResource
+                        {
+                            MipSlice = mip
+                        }
+                });
         }
         public void Update(ReadOnlySpan<byte> data)
         {
@@ -314,7 +403,11 @@ namespace DevoidGPU.DX11
         {
             UAV?.Dispose();
             SRV?.Dispose();
-            RTV?.Dispose();
+            if (rtvs != null)
+            {
+                foreach (var rtv in rtvs)
+                    rtv?.Dispose();
+            }
             DSV?.Dispose();
 
             if (ownsResource)

@@ -7,7 +7,7 @@
 
         IReadOnlyList<ITexture?> ColorAttachments { get; }
         ITexture? DepthAttachment { get; }
-        public void SetColorAttachment(int index, ITexture texture);
+        public void SetColorAttachment(int index, ITexture texture, int mip = 0, int slice = 0);
         public void SetDepthAttachment(ITexture texture);
     }
 }

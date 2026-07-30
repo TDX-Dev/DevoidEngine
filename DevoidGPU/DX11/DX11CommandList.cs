@@ -361,5 +361,10 @@ namespace DevoidGPU.DX11
                 }
             }
         }
+
+        public void SetFramebuffer(IFrameBuffer framebuffer, int mipLevel = 0, int arraySlice = 0)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

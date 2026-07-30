@@ -20,12 +20,12 @@ namespace DevoidEngine.Rendering
 
         public void BuildEnvironment(RenderContext context)
         {
-            throw new NotImplementedException();
+
         }
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+
         }
     }
 }

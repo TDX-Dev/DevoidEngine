@@ -29,7 +29,7 @@ namespace DevoidGPU.DX11
 
             for (int i = 0; i < colorAttachments.Length; i++)
             {
-                RTVs[i] = colorAttachments[i]?.RTV;
+                RTVs[i] = colorAttachments[i]?.GetRTV();
             }
 
             DSV = depthAttachment?.DSV;
@@ -68,12 +68,12 @@ namespace DevoidGPU.DX11
             }
         }
 
-        public void SetColorAttachment(int index, ITexture texture)
+        public void SetColorAttachment(int index, ITexture texture, int mip = 0, int slice = 0)
         {
             var dxTex = (DX11Texture)texture;
 
             colorAttachments[index] = dxTex;
-            RTVs[index] = dxTex.RTV!;
+            RTVs[index] = dxTex.GetRTV(mip, slice);
 
         }
 

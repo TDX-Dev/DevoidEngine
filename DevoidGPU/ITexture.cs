@@ -5,6 +5,11 @@
         TextureDescription Description { get; }
         int Width { get; }
         int Height { get; }
+        TextureDimension Dimension { get; }
+
+        int MipLevels { get; }
+
+        int ArraySize { get; }
 
         TextureFormat Format { get; }
 

@@ -58,10 +58,10 @@ namespace DevoidEngine.Rendering
 
             ctx.CommandList.SetFramebuffer(colorOutput.GPU);
 
-            ctx.CommandList.ClearColor(0, Vector4.Zero);
+            ctx.CommandList.ClearColor(0, new Vector4(0, 0, 0, 1));
             ctx.CommandList.ClearDepthStencil(1, 0);
 
-            ctx.Renderer.SkyRenderer.Render(ctx);
+            //ctx.Renderer.SkyRenderer.Render(ctx);
             ctx.Renderer.Execute(ctx.CommandList, view.Objects);
 
             return colorOutput;
