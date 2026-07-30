@@ -20,6 +20,8 @@ namespace DevoidEngine.AssetPipeline
             TSettings settings
         );
 
+        public abstract bool Exists(ImportContext importContext);
+
         byte[] IAssetImporter.CreateDefaultSettings()
         {
             return MessagePackSerializer.Serialize(DefaultSettings());
@@ -40,6 +42,11 @@ namespace DevoidEngine.AssetPipeline
             }
 
             Import(context, settings);
+        }
+
+        bool IAssetImporter.Exists(ImportContext context)
+        {
+            return Exists(context);
         }
     }
 }

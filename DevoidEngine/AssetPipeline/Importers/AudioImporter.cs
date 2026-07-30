@@ -25,5 +25,10 @@
 
             File.WriteAllBytes(context.GetRootOutputPath(context.OutputExtension), bytes);
         }
+
+        public override bool Exists(ImportContext context)
+        {
+            return File.Exists(context.GetRootOutputPath(OutputExtension));
+        }
     }
 }

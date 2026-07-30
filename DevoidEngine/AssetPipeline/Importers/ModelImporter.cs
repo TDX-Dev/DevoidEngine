@@ -19,7 +19,7 @@ namespace DevoidEngine.AssetPipeline.Importers
         public override IReadOnlyList<string> Extensions =>
             [".fbx", ".gltf", ".glb", ".obj"];
 
-        public override string OutputExtension => "model";
+        public override string OutputExtension => "packedscene";
         public override int Priority => 200;
 
         public override ModelImportSettings DefaultSettings()
@@ -53,8 +53,90 @@ namespace DevoidEngine.AssetPipeline.Importers
             _meshGuids.Clear();
             _materialGuids.Clear();
 
-            PackedScene packed = new();
+            ImportMaterials(scene, importContext);
 
+            ImportMeshes(scene, importContext);
+
+            PackedScene packed =
+                BuildPackedScene(scene, settings, axis);
+
+            packed.MeshGuids = [.. _meshGuids];
+            packed.MaterialGuids = [.. _materialGuids];
+
+            File.WriteAllBytes(
+                importContext.GetRootOutputPath("packedscene"),
+                MessagePackSerializer.Serialize(packed));
+
+        }
+
+        public override bool Exists(ImportContext importContext)
+        {
+            return File.Exists(importContext.GetRootOutputPath(OutputExtension));
+        }
+
+        private PackedScene BuildPackedScene(
+    AssimpScene scene,
+    ModelImportSettings settings,
+    Matrix4x4 axis)
+        {
+            List<PackedSceneNode> nodes = [];
+
+            ProcessNode(
+                scene.RootNode,
+                -1,
+                nodes,
+                scene,
+                axis);
+
+            return new PackedScene
+            {
+                Nodes = [.. nodes],
+                MeshGuids = [.. _meshGuids],
+                MaterialGuids = [.. _materialGuids]
+            };
+        }
+
+        private void ProcessNode(
+    Node node,
+    int parent,
+    List<PackedSceneNode> nodes,
+    AssimpScene scene,
+    Matrix4x4 axis)
+        {
+            int nodeIndex = nodes.Count;
+
+            Matrix4x4 local = Matrix4x4.Transpose(node.Transform);
+
+            if (parent == -1)
+                local = axis * local;
+
+            Matrix4x4.Decompose(
+                local,
+                out Vector3 scale,
+                out Quaternion rotation,
+                out Vector3 translation);
+
+            PackedSceneNode packed = new()
+            {
+                Name = node.Name,
+                Parent = parent,
+                Translation = translation,
+                Rotation = rotation,
+                Scale = scale,
+                MeshIndices = [.. node.MeshIndices]
+            };
+
+            nodes.Add(packed);
+
+            foreach (var child in node.Children)
+            {
+                ProcessNode(
+                    child,
+                    nodeIndex,
+                    nodes,
+                    scene,
+                    axis);
+            }
         }
 
         private void ImportMaterials(
@@ -94,7 +176,7 @@ namespace DevoidEngine.AssetPipeline.Importers
 
                 MeshAsset mesh = ConvertMesh(scene.Meshes[i]);
 
-                mesh.Material = _materialGuids[mesh.MaterialIndex];
+                //mesh.Material = _materialGuids[mesh.MaterialIndex];
 
                 File.WriteAllBytes(
                     ctx.GetOutputPath((ulong)i, "mesh"),
@@ -104,32 +186,25 @@ namespace DevoidEngine.AssetPipeline.Importers
 
         MeshAsset ConvertMesh(AssimpMesh mesh)
         {
-            MeshAsset asset = new();
+            MeshAsset asset = new()
+            {
+                Positions = [.. mesh.Vertices.SelectMany(v => new float[] { v.X, v.Y, v.Z })],
 
-            asset.Positions = [.. mesh.Vertices.SelectMany(v => new float[] { v.X, v.Y, v.Z })];
+                Normals = [.. mesh.Normals.SelectMany(v => new float[] { v.X, v.Y, v.Z })],
 
-            asset.Normals = mesh.Normals
-                .SelectMany(v => new float[] { v.X, v.Y, v.Z })
-                .ToArray();
+                UVs = [.. mesh.TextureCoordinateChannels[0].SelectMany(v => new float[] { v.X, v.Y })],
 
-            asset.UVs = mesh.TextureCoordinateChannels[0]
-                .SelectMany(v => new float[] { v.X, v.Y })
-                .ToArray();
+                Tangents = [.. mesh.Tangents.SelectMany(v => new float[] { v.X, v.Y, v.Z })],
 
-            asset.Tangents = mesh.Tangents
-                .SelectMany(v => new float[] { v.X, v.Y, v.Z })
-                .ToArray();
+                Bitangents = [.. mesh.BiTangents.SelectMany(v => new float[] { v.X, v.Y, v.Z })],
 
-            asset.Bitangents = mesh.BiTangents
-                .SelectMany(v => new float[] { v.X, v.Y, v.Z })
-                .ToArray();
+                Indices = [.. mesh.Faces
+                    .SelectMany(f => f.Indices)
+                    .Select(i => (uint)i)],
 
-            asset.Indices = mesh.Faces
-                .SelectMany(f => f.Indices)
-                .Select(i => (uint)i)
-                .ToArray();
-
-            asset.MaterialIndex = mesh.MaterialIndex;
+                MaterialIndex = mesh.MaterialIndex,
+                Material = _materialGuids[mesh.MaterialIndex]
+            };
 
             return asset;
         }
@@ -186,7 +261,7 @@ namespace DevoidEngine.AssetPipeline.Importers
                 Vector3 emissiveColor = e.AsVector3();
                 float emissiveStrength = mat.GetProperty("$mat.emissiveIntensity,0,0")?.GetFloatValue() ?? 0f;
 
-                asset.Vector3s["EmissiveColor"] = mat.ColorEmissive.AsVector3();
+                asset.Vector3s["EmissiveColor"] = emissiveColor;
                 asset.Floats["EmissiveStrength"] = emissiveStrength;
             }
             else

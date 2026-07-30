@@ -122,6 +122,7 @@ namespace DevoidEngine.AssetPipeline
             AssetLoaderRegistry.Register<Texture>(new TextureLoader());
             AssetLoaderRegistry.Register<AudioClip>(new AudioLoader());
             AssetLoaderRegistry.Register<Font>(new FontLoader());
+            AssetLoaderRegistry.Register<PackedScene>(new PackedSceneLoader());
 
             RefreshDatabase();
 
@@ -240,33 +241,21 @@ namespace DevoidEngine.AssetPipeline
         }
         public Guid RegisterSubAsset(
             Guid container,
-            ulong localId
-        )
+            ulong localId)
         {
-            foreach (var entry in guidToAsset.Values)
+            Guid guid = CreateSubAssetGuid(container, localId);
+
+            if (!guidToAsset.ContainsKey(guid))
             {
-                if (entry.ContainerGuid == container &&
-                    entry.LocalId == localId)
+                guidToAsset.Add(guid, new AssetEntry
                 {
-                    return entry.Guid;
-                }
+                    Guid = guid,
+                    AssetPath = guidToAsset[container].AssetPath,
+                    MetaPath = "",
+                    ContainerGuid = container,
+                    LocalId = localId
+                });
             }
-
-            Guid guid = Guid.NewGuid();
-            AssetEntry assetEntry = new()
-            {
-                Guid = guid,
-
-                // Root asset path isn't meaningful for sub-assets,
-                // but keeping the parent's path is useful.
-                AssetPath = guidToAsset[container].AssetPath,
-
-                MetaPath = "",
-
-                ContainerGuid = container,
-                LocalId = localId
-            };
-            guidToAsset.Add(guid, assetEntry);
 
             return guid;
         }
@@ -283,12 +272,15 @@ namespace DevoidEngine.AssetPipeline
 
             var importer = ImporterRegistry.GetImporter(Path.GetExtension(assetPath).ToLower());
 
-            var libraryPath = Path.Combine(
-                project.EngineCachePath,
-                GetLibraryPath(guid, importer.OutputExtension)
-            );
+            ImportContext context = new()
+            {
+                AssetPath = absolutePath,
+                OutputDirectory = project.EngineCachePath,
+                Guid = guid,
+                OutputExtension = importer.OutputExtension,
+            };
 
-            if (!File.Exists(libraryPath))
+            if (!importer.Exists(context))
                 return true;
 
             return false;
@@ -455,20 +447,19 @@ namespace DevoidEngine.AssetPipeline
             }
         }
 
-        private void CleanupLibrary(HashSet<Guid> validGuids)
+        private void CleanupLibrary(HashSet<Guid> validContainers)
         {
-            var library = Engine.Instance.ProjectSystem.EngineCachePath;
+            string library =
+                Engine.Instance.ProjectSystem.EngineCachePath;
 
-            foreach (var file in Directory.GetFiles(library))
+            foreach (string file in Directory.GetFiles(library))
             {
-                var name = Path.GetFileNameWithoutExtension(file);
-
-                if (!Guid.TryParse(name, out var guid))
+                if (!TryGetContainerGuid(file, out Guid container))
                     continue;
 
-                if (!validGuids.Contains(guid))
+                if (!validContainers.Contains(container))
                 {
-                    Console.WriteLine($"Deleting orphaned asset: {file}");
+                    Console.WriteLine($"Deleting {file}");
                     File.Delete(file);
                 }
             }
@@ -493,6 +484,43 @@ namespace DevoidEngine.AssetPipeline
             {
                 Console.WriteLine($"{kvp.Key} => {kvp.Value.Guid}");
             }
+        }
+
+        private static Guid CreateSubAssetGuid(
+            Guid container,
+            ulong localId)
+        {
+            Span<byte> buffer = stackalloc byte[24];
+
+            container.TryWriteBytes(buffer);
+
+            BitConverter.TryWriteBytes(
+                buffer[16..],
+                localId);
+
+            Span<byte> hash = stackalloc byte[16];
+
+            System.Security.Cryptography.MD5.HashData(
+                buffer,
+                hash);
+
+            return new Guid(hash);
+        }
+
+        private static bool TryGetContainerGuid(
+    string file,
+    out Guid guid)
+        {
+            guid = default;
+
+            string name = Path.GetFileNameWithoutExtension(file);
+
+            int dash = name.IndexOf('-');
+
+            if (dash != -1)
+                name = name[..dash];
+
+            return Guid.TryParse(name, out guid);
         }
     }
 }

@@ -1,0 +1,30 @@
+﻿using DevoidEngine.Assets;
+using DevoidEngine.Audio;
+using MessagePack;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DevoidEngine.AssetPipeline.Loaders
+{
+    public class PackedSceneLoader : IAssetLoader<PackedScene>
+    {
+        public PackedScene Load(ReadOnlySpan<byte> data)
+        {
+            PackedScene asset;
+            try
+            {
+                asset = MessagePackSerializer.Deserialize<PackedScene>(data.ToArray());
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"[PackedScene Loader]: Error Loading PackedScene {e.Message}");
+                throw new Exception();
+            }
+
+            return asset;
+        }
+    }
+}

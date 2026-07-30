@@ -17,5 +17,10 @@
         {
             // Do Nothing
         }
+
+        public override bool Exists(ImportContext context)
+        {
+            return File.Exists(context.GetRootOutputPath(OutputExtension));
+        }
     }
 }

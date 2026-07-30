@@ -84,5 +84,10 @@ namespace DevoidEngine.AssetPipeline.Importers
                 MessagePackSerializer.Serialize(asset)
             );
         }
+
+        public override bool Exists(ImportContext context)
+        {
+            return File.Exists(context.GetRootOutputPath(OutputExtension));
+        }
     }
 }

@@ -13,5 +13,6 @@
 
         byte[] CreateDefaultSettings();
         void Import(ImportContext importContext, byte[] settingsData);
+        bool Exists(ImportContext importContext);
     }
 }

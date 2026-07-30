@@ -134,6 +134,11 @@ namespace DevoidEngine.AssetPipeline.Importers
             );
         }
 
+        public override bool Exists(ImportContext context)
+        {
+            return File.Exists(context.GetRootOutputPath(OutputExtension));
+        }
+
         private static void LoadRange(
             Face face,
             List<GlyphData> glyphs,
