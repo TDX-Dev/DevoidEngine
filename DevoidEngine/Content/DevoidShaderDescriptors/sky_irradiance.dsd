@@ -1,28 +1,22 @@
 {
   "$schema": "./dsdschema.json",
-  "Name": "Sky Irradiance",
+  "Name": "Sky Irradiance Compute",
   "DefaultPass": "Forward",
   "MaterialParameters": {
     "BufferName": "Material"
   },
-  "Textures": [
+  "Resources": [
     {
-      "Name": "MAT_Skybox",
-      "Type": "Texture2D"
+      "Name": "DebugOutput",
+      "Type": "TextureCube",
+      "Kind": "StorageTexture"
     }
   ],
   "Passes": [
     {
       "Name": "Forward",
-      "MaterialBuffer": "Material",
       "Shaders": {
-        "VS": "../Shaders/sky.vert.hlsl",
-        "FS": "../Shaders/cubemap_irradiance.frag.hlsl"
-      },
-      "States": {
-        "Blend": "Off",
-        "Cull": "None",
-        "Depth": "Disabled"
+        "CS": "../Shaders/irradiance_spherical_convolve.comp.hlsl"
       }
     }
   ]

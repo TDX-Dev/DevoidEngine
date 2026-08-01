@@ -5,22 +5,26 @@
   "MaterialParameters": {
     "BufferName": "Material"
   },
-  "Textures": [
+  "Resources": [
     {
       "Name": "MAT_AlbedoMap",
-      "Type": "Texture2D"
+      "Type": "Texture2D",
+      "Kind": "SampledTexture"
     },
     {
       "Name": "MAT_NormalMap",
-      "Type": "Texture2D"
+      "Type": "Texture2D",
+      "Kind": "SampledTexture"
     },
     {
       "Name": "MAT_MetallicMap",
-      "Type": "Texture2D"
+      "Type": "Texture2D",
+      "Kind": "SampledTexture"
     },
     {
       "Name": "MAT_RoughnessMap",
-      "Type": "Texture2D"
+      "Type": "Texture2D",
+      "Kind": "SampledTexture"
     }
   ],
   "Passes": [

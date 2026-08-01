@@ -2,10 +2,11 @@
   "$schema": "./dsdschema.json",
   "Name": "Sky Panorama To Cubemap",
   "DefaultPass": "Forward",
-  "Textures": [
+  "Resources": [
     {
       "Name": "MAT_Panorama",
-      "Type": "Texture2D"
+      "Type": "Texture2D",
+      "Kind": "SampledTexture"
     }
   ],
   "Passes": [

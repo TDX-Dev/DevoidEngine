@@ -44,39 +44,74 @@ namespace DevoidEngine.Core
 
             foreach (var passDesc in descriptor.Passes)
             {
-                string vsPath = Path.Combine(
-                    baseDirectory,
-                    passDesc.Shaders.VS);
+                ShaderStage? vertex = null;
+                ShaderStage? fragment = null;
+                ShaderStage? compute = null;
 
-                string fsPath = Path.Combine(
-                    baseDirectory,
-                    passDesc.Shaders.FS);
+                if (!string.IsNullOrWhiteSpace(passDesc.Shaders.VS))
+                {
+                    string vsPath = Path.Combine(baseDirectory, passDesc.Shaders.VS);
 
-                ShaderStage vertex = new(
-                    device.CreateShader(new ShaderDescription
-                    {
-                        Name = $"{descriptor.Name}_{passDesc.Name}_VS",
-                        FilePath = vsPath,
-                        Source = File.ReadAllText(vsPath),
-                        EntryPoint = "VSMain",
-                        Stage = DevoidGPU.ShaderStage.Vertex,
-                        Defines = []
-                    }));
+                    vertex = new ShaderStage(
+                        device.CreateShader(new ShaderDescription
+                        {
+                            Name = $"{descriptor.Name}_{passDesc.Name}_VS",
+                            FilePath = vsPath,
+                            Source = File.ReadAllText(vsPath),
+                            EntryPoint = "VSMain",
+                            Stage = DevoidGPU.ShaderStage.Vertex,
+                            Defines = []
+                        }));
+                }
 
-                ShaderStage fragment = new(
-                    device.CreateShader(new ShaderDescription
-                    {
-                        Name = $"{descriptor.Name}_{passDesc.Name}_FS",
-                        FilePath = fsPath,
-                        Source = File.ReadAllText(fsPath),
-                        EntryPoint = "PSMain",
-                        Stage = DevoidGPU.ShaderStage.Fragment,
-                        Defines = []
-                    }));
+                if (!string.IsNullOrWhiteSpace(passDesc.Shaders.FS))
+                {
+                    string fsPath = Path.Combine(baseDirectory, passDesc.Shaders.FS);
 
-                ShaderPass pass = new(vertex, fragment);
+                    fragment = new ShaderStage(
+                        device.CreateShader(new ShaderDescription
+                        {
+                            Name = $"{descriptor.Name}_{passDesc.Name}_FS",
+                            FilePath = fsPath,
+                            Source = File.ReadAllText(fsPath),
+                            EntryPoint = "PSMain",
+                            Stage = DevoidGPU.ShaderStage.Fragment,
+                            Defines = []
+                        }));
+                }
 
-                ShaderReflectionData reflection_data = ShaderReflectionData.Merge(pass.Vertex.ShaderReflectionData, pass.Fragment.ShaderReflectionData);
+                if (!string.IsNullOrWhiteSpace(passDesc.Shaders.CS))
+                {
+                    string csPath = Path.Combine(baseDirectory, passDesc.Shaders.CS);
+
+                    compute = new ShaderStage(
+                        device.CreateShader(new ShaderDescription
+                        {
+                            Name = $"{descriptor.Name}_{passDesc.Name}_CS",
+                            FilePath = csPath,
+                            Source = File.ReadAllText(csPath),
+                            EntryPoint = "CSMain",
+                            Stage = DevoidGPU.ShaderStage.Compute,
+                            Defines = []
+                        }));
+                }
+
+                ShaderPass pass = new(vertex, fragment, compute);
+
+                List<ShaderReflectionData> reflections = [];
+
+                if (vertex != null)
+                    reflections.Add(vertex.ShaderReflectionData);
+
+                if (fragment != null)
+                    reflections.Add(fragment.ShaderReflectionData);
+
+                if (compute != null)
+                    reflections.Add(compute.ShaderReflectionData);
+
+                ShaderReflectionData reflection_data =
+                    ShaderReflectionData.Merge([.. reflections]);
+
                 ShaderReflectionData.Print(reflection_data);
 
                 shader.MaterialLayout ??= BuildMaterialLayout(descriptor, reflection_data);
@@ -95,23 +130,35 @@ namespace DevoidEngine.Core
                         ParseRasterizer(passDesc.States.Cull);
                 }
 
-                pass.Pipeline =
-                    device.CreateGraphicsPipeline(
-                        new GraphicsPipelineDescription
+                if (pass.Vertex != null && pass.Fragment != null)
+                {
+                    pass.Pipeline =
+                        device.CreateGraphicsPipeline(
+                            new GraphicsPipelineDescription
+                            {
+                                VertexShader = pass.Vertex!.GPU,
+                                PixelShader = pass.Fragment!.GPU,
+
+                                PipelineLayout = pass.PipelineLayout,
+
+                                Topology = PrimitiveType.Triangles,
+
+                                VertexLayout = Vertex.VertexInfo, // HARDCODED FOR THE TIME BEING, ISSUE THO
+
+                                Rasterizer = pass.Rasterizer,
+                                DepthStencil = pass.Depth,
+                                Blend = pass.Blend
+                            });
+                }
+
+                if (pass.Compute != null)
+                {
+                    pass.ComputePipeline =
+                        device.CreateComputePipeline(new ComputePipelineDescription()
                         {
-                            VertexShader = pass.Vertex.GPU,
-                            PixelShader = pass.Fragment.GPU,
-
-                            PipelineLayout = pass.PipelineLayout,
-
-                            Topology = PrimitiveType.Triangles,
-
-                            VertexLayout = Vertex.VertexInfo, // HARDCODED FOR THE TIME BEING, ISSUE THO
-
-                            Rasterizer = pass.Rasterizer,
-                            DepthStencil = pass.Depth,
-                            Blend = pass.Blend
+                            ComputeShader = pass.Compute.GPU
                         });
+                }
 
                 shader.passes[passDesc.Name] = pass;
 
@@ -153,20 +200,57 @@ namespace DevoidEngine.Core
                 }
             }
 
-            foreach (var textureDesc in descriptor.Textures)
+            foreach (var resource in descriptor.Resources)
             {
-                TextureBindingInfo? binding =
-                    reflectionData.TextureBindings
-                        .FirstOrDefault(x => x.Name == textureDesc.Name);
-
-                if (binding == null)
+                switch (resource.Kind)
                 {
-                    Console.WriteLine(
-                        $"Material texture '{textureDesc.Name}' not found.");
-                    continue;
-                }
+                    case ShaderResourceKind.SampledTexture:
+                        {
+                            TextureBindingInfo? binding =
+                                reflectionData.TextureBindings
+                                    .FirstOrDefault(x => x.Name == resource.Name);
 
-                layout.Textures[binding.Name] = binding;
+                            if (binding == null)
+                            {
+                                Console.WriteLine(
+                                    $"Material texture '{resource.Name}' not found.");
+                                continue;
+                            }
+
+                            layout.Textures[binding.Name] = binding;
+                            break;
+                        }
+
+                    case ShaderResourceKind.StorageTexture:
+                        {
+                            StorageTextureBindingInfo? binding =
+                                reflectionData.StorageTextureBindings
+                                    .FirstOrDefault(x => x.Name == resource.Name);
+
+                            if (binding == null)
+                            {
+                                Console.WriteLine(
+                                    $"Storage texture '{resource.Name}' not found.");
+                                continue;
+                            }
+
+                            layout.StorageTextures[binding.Name] = binding;
+                            break;
+                        }
+
+                    case ShaderResourceKind.StorageBuffer:
+                        {
+                            StorageBufferBindingInfo? binding =
+                                reflectionData.StorageBufferBindings
+                                    .FirstOrDefault(x => x.Name == resource.Name);
+
+                            if (binding == null)
+                                continue;
+
+                            layout.StorageBuffers[binding.Name] = binding;
+                            break;
+                        }
+                }
             }
 
             foreach (var samplerBinding in reflectionData.SamplerBindings)
@@ -215,6 +299,26 @@ namespace DevoidEngine.Core
                     Binding = (uint)texture.BindSlot,
                     Type = DescriptorType.Texture,
                     Stages = texture.Stage
+                });
+            }
+
+            foreach (var texture in reflection.StorageTextureBindings)
+            {
+                bindings.Add(new DescriptorBinding
+                {
+                    Binding = (uint)texture.BindSlot,
+                    Type = DescriptorType.RWTexture,
+                    Stages = texture.Stage
+                });
+            }
+
+            foreach (var buffer in reflection.StorageBufferBindings)
+            {
+                bindings.Add(new DescriptorBinding
+                {
+                    Binding = (uint)buffer.BindSlot,
+                    Type = DescriptorType.RWStorageBuffer,
+                    Stages = buffer.Stage
                 });
             }
 

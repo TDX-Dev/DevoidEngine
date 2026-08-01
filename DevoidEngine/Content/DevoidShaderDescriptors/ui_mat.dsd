@@ -6,10 +6,11 @@
   "MaterialParameters": {
     "BufferName": "Material"
   },
-  "Textures": [
+  "Resources": [
     {
       "Name": "MAT_Texture",
-      "Type": "Texture2D"
+      "Type": "Texture2D",
+      "Kind": "SampledTexture"
     }
   ],
 

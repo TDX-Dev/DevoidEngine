@@ -227,7 +227,6 @@ namespace DevoidGPU.DX11
                         }
                 }
             }
-            //PrintReflectionInfo(reflection);
         }
 
         private static int GetBindSlot(ShaderReflection reflection, string cbName)

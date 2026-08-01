@@ -26,13 +26,17 @@ namespace DevoidEngine.Rendering
 
         private readonly Texture IrradianceCubeTexture;
 
-        private readonly MaterialInstance IrradianceMaterial;
-
         private readonly RenderTarget PanoramaRenderTarget;
 
         private readonly MaterialInstance PanoramaToCubemapMaterial;
 
         private readonly Texture SkyboxTexture;
+
+        private readonly MaterialInstance ProjectToSHMaterial;
+
+        private readonly IComputePipeline ProjectToSHPipeline;
+
+        private readonly Texture DebugCube;
 
         // End of ze clutter
 
@@ -64,12 +68,20 @@ namespace DevoidEngine.Rendering
 
             IrradianceRenderTarget = RenderTarget.Create(1);
 
-            IrradianceMaterial = new MaterialInstance(new Material(Shader.FromDescriptorFile(Engine.GraphicsDevice, "Content/DevoidShaderDescriptors/sky_irradiance.dsd")));
+            ProjectToSHMaterial = new MaterialInstance(new Material(Shader.FromDescriptorFile(Engine.GraphicsDevice, "Content/DevoidShaderDescriptors/sky_irradiance.dsd")));
 
             PanoramaRenderTarget = RenderTarget.Create(1);
 
             PanoramaToCubemapMaterial = new MaterialInstance(new Material(Shader.FromDescriptorFile(Engine.GraphicsDevice, "Content/DevoidShaderDescriptors/sky_panoramatocubemap.dsd")));
 
+            ProjectToSHPipeline = ProjectToSHMaterial.BaseMaterial.DefaultPass.ComputePipeline!;
+
+            DebugCube =
+    Texture.CreateCube(
+        32,
+        TextureFormat.RGBA16_Float,
+        TextureUsage.UnorderedAccess |
+        TextureUsage.ShaderResource);
 
             CubemapCaptureViews =
             [
@@ -133,7 +145,7 @@ namespace DevoidEngine.Rendering
                 X = 0,
                 Y = 0
             });
-            GenerateIrradiance(cmd, SkyboxTexture, IrradianceCubeTexture);
+            ProjectToSH(cmd);
             Engine.Renderer.PopViewport(cmd);
 
 
@@ -168,23 +180,20 @@ namespace DevoidEngine.Rendering
             Engine.Renderer.PopViewport(cmd);
         }
 
-        void GenerateIrradiance(ICommandList cmd, Texture SkyboxTexture, Texture IrradianceTextureTargetCube)
+        void ProjectToSH(ICommandList cmd)
         {
-            ConversionRenderData.render_material = IrradianceMaterial;
+            ProjectToSHMaterial.SetTexture("MAT_Skybox", SkyboxTexture);
 
-            IrradianceMaterial.SetTexture("MAT_Skybox", SkyboxTexture);
-            ConversionRenderData.render_material = IrradianceMaterial;
-            for (int face = 0; face < 6; face++)
-            {
-                ConversionCameraData.View = CubemapCaptureViews[face];
+            cmd.SetComputePipeline(ProjectToSHPipeline);
 
-                Engine.Renderer.UpdateCameraBuffer(ConversionCameraData);
+            ProjectToSHMaterial.DescriptorSet.SetTexture(0, DebugCube.GPU);
 
-                IrradianceRenderTarget.SetColorAttachment(0, IrradianceTextureTargetCube, 0, face);
-                cmd.SetFramebuffer(IrradianceRenderTarget.GPU, 0, face);
+            cmd.SetDescriptorSet(0, ProjectToSHMaterial.DescriptorSet);
 
-                Engine.Renderer.Execute(cmd, ConversionRenderData);
-            }
+            cmd.Dispatch(
+                (uint)IrradianceResolution / 8,
+                (uint)IrradianceResolution / 8,
+                6);
         }
 
         //public void Render(RenderContext ctx)

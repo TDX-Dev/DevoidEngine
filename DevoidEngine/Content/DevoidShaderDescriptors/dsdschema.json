@@ -27,20 +27,29 @@
       ]
     },
 
-    "Textures": {
+    "Resources": {
       "type": "array",
-      "description": "Textures exposed to materials",
+      "description": "Shader resources exposed to materials",
       "items": {
         "type": "object",
         "properties": {
           "Name": {
-            "type": "string",
-            "description": "Shader texture name"
+            "type": "string"
           },
 
           "DisplayName": {
+            "type": "string"
+          },
+
+          "Kind": {
             "type": "string",
-            "description": "Editor display name"
+            "enum": [
+              "SampledTexture",
+              "StorageTexture",
+              "UniformBuffer",
+              "StorageBuffer",
+              "Sampler"
+            ]
           },
 
           "Type": {
@@ -48,18 +57,19 @@
             "enum": [
               "Texture2D",
               "TextureCube",
-              "Texture2DArray"
+              "Texture2DArray",
+              "Texture3D"
             ]
           },
 
           "Default": {
-            "type": "string",
-            "description": "Default texture asset path"
+            "type": "string"
           }
         },
+
         "required": [
           "Name",
-          "Type"
+          "Kind"
         ]
       }
     },
@@ -77,16 +87,18 @@
           "Shaders": {
             "type": "object",
             "properties": {
-              "VS": {
-                "type": "string",
-                "description": "Vertex shader path"
-              },
-              "FS": {
-                "type": "string",
-                "description": "Fragment shader path"
-              }
+              "VS": { "type": "string" },
+              "FS": { "type": "string" },
+              "CS": { "type": "string" }
             },
-            "required": [ "VS", "FS" ]
+            "oneOf": [
+              {
+                "required": [ "VS", "FS" ]
+              },
+              {
+                "required": [ "CS" ]
+              }
+            ]
           },
 
           "States": {
