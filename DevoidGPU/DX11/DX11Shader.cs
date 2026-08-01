@@ -132,27 +132,99 @@ namespace DevoidGPU.DX11
 
             for (int i = 0; i < desc.BoundResources; i++)
             {
-                var resc = reflection.GetResourceBindingDescription(i);
+                var res = reflection.GetResourceBindingDescription(i);
 
-                if (resc.Type == ShaderInputType.Texture)
+                switch (res.Type)
                 {
-                    ReflectionData.TextureBindings.Add(new TextureBindingInfo()
-                    {
-                        Name = resc.Name,
-                        BindSlot = resc.BindPoint,
-                        Stage = Stage,
-                        ArraySize = 1
-                    });
+                    case ShaderInputType.Texture:
+                        {
+                            ReflectionData.TextureBindings.Add(new TextureBindingInfo
+                            {
+                                Name = res.Name,
+                                BindSlot = res.BindPoint,
+                                Stage = Stage,
+                                ArraySize = res.BindCount
+                            });
+                            break;
+                        }
 
-                }
-                else if (resc.Type == ShaderInputType.Sampler)
-                {
-                    ReflectionData.SamplerBindings.Add(new SamplerBindingInfo()
-                    {
-                        Name = resc.Name,
-                        BindSlot = resc.BindPoint,
-                        Stage = Stage,
-                    });
+                    case ShaderInputType.Sampler:
+                        {
+                            ReflectionData.SamplerBindings.Add(new SamplerBindingInfo
+                            {
+                                Name = res.Name,
+                                BindSlot = res.BindPoint,
+                                Stage = Stage
+                            });
+                            break;
+                        }
+
+                    case ShaderInputType.Structured:
+                        {
+                            ReflectionData.StorageBufferBindings.Add(new StorageBufferBindingInfo
+                            {
+                                Name = res.Name,
+                                BindSlot = res.BindPoint,
+                                Stage = Stage,
+                                ReadWrite = false
+                            });
+                            break;
+                        }
+
+                    case ShaderInputType.ByteAddress:
+                        {
+                            ReflectionData.StorageBufferBindings.Add(new StorageBufferBindingInfo
+                            {
+                                Name = res.Name,
+                                BindSlot = res.BindPoint,
+                                Stage = Stage,
+                                ReadWrite = false
+                            });
+                            break;
+                        }
+
+                    case ShaderInputType.UnorderedAccessViewRWStructured:
+                        {
+                            ReflectionData.StorageBufferBindings.Add(new StorageBufferBindingInfo
+                            {
+                                Name = res.Name,
+                                BindSlot = res.BindPoint,
+                                Stage = Stage,
+                                ReadWrite = true
+                            });
+                            break;
+                        }
+
+                    case ShaderInputType.UnorderedAccessViewRWByteAddress:
+                        {
+                            ReflectionData.StorageBufferBindings.Add(new StorageBufferBindingInfo
+                            {
+                                Name = res.Name,
+                                BindSlot = res.BindPoint,
+                                Stage = Stage,
+                                ReadWrite = true
+                            });
+                            break;
+                        }
+
+                    case ShaderInputType.UnorderedAccessViewRWTyped:
+                        {
+                            ReflectionData.StorageTextureBindings.Add(new StorageTextureBindingInfo
+                            {
+                                Name = res.Name,
+                                BindSlot = res.BindPoint,
+                                Stage = Stage,
+                                ReadWrite = true
+                            });
+                            break;
+                        }
+
+                    default:
+                        {
+                            Console.WriteLine(
+                                $"Unhandled shader resource '{res.Name}' : {res.Type}");
+                            break;
+                        }
                 }
             }
             //PrintReflectionInfo(reflection);

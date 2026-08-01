@@ -16,7 +16,7 @@ struct PSInput
 
 #include "./Common/RenderConstants.hlsl"
 
-cbuffer MATERIAL : register(b3)
+cbuffer MATERIAL : register(b4)
 {
     float4 COLOR;
     float4 CORNER_RADIUS; // TL TR BR BL

@@ -5,6 +5,8 @@
         UniformBuffer,
         Texture,
         Sampler,
-        StorageBuffer
+        StorageBuffer,
+        RWStorageBuffer,
+        RWTexture
     }
 }

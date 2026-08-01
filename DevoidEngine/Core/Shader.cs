@@ -77,7 +77,6 @@ namespace DevoidEngine.Core
                 ShaderPass pass = new(vertex, fragment);
 
                 ShaderReflectionData reflection_data = ShaderReflectionData.Merge(pass.Vertex.ShaderReflectionData, pass.Fragment.ShaderReflectionData);
-                Console.WriteLine(descriptor.Name);
                 ShaderReflectionData.Print(reflection_data);
 
                 shader.MaterialLayout ??= BuildMaterialLayout(descriptor, reflection_data);

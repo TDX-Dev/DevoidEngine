@@ -44,6 +44,11 @@ cbuffer SceneData : register(b2)
     uint _padding;
 };
 
+cbuffer EnvironmentData : register(b3)
+{
+    float4 SkySH[9];
+};
+
 
 StructuredBuffer<GPUPointLight> PointLights : register(t10);
 StructuredBuffer<GPUSpotLight> SpotLights : register(t11);

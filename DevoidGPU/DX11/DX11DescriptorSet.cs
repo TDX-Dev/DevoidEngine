@@ -10,6 +10,9 @@
         internal readonly Dictionary<uint, ITexture> textures = [];
         internal readonly Dictionary<uint, ISampler> samplers = [];
 
+        internal readonly Dictionary<uint, IShaderStorageBuffer> rwStorageBuffers = [];
+        internal readonly Dictionary<uint, ITexture> rwTextures = [];
+
         public DX11DescriptorSet(IDescriptorLayout layout)
         {
             Layout = layout;
@@ -42,6 +45,20 @@
             ISampler sampler)
         {
             samplers[binding] = sampler;
+        }
+
+        public void SetRWShaderStorageBuffer(
+    uint binding,
+    IShaderStorageBuffer buffer)
+        {
+            rwStorageBuffers[binding] = buffer;
+        }
+
+        public void SetRWTexture(
+            uint binding,
+            ITexture texture)
+        {
+            rwTextures[binding] = texture;
         }
     }
 }

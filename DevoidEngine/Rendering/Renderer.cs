@@ -47,6 +47,7 @@ namespace DevoidEngine.Rendering
         public RenderTarget UIRenderTarget { get; private set; } = null!;
         public UniformBuffer CameraBuffer { get; private set; } = null!;
         public UniformBuffer SceneBuffer { get; private set; } = null!;
+        public UniformBuffer EnvironmentBuffer { get; private set; } = null!;
         public UniformBuffer PerObjectBuffer { get; private set; } = null!;
         public SkyRenderer SkyRenderer { get; private set; } = null!;
 
@@ -138,6 +139,11 @@ namespace DevoidEngine.Rendering
                     Type = DescriptorType.UniformBuffer
                 },
                 new() {
+                    Binding = 3,
+                    Stages = DevoidGPU.ShaderStage.Fragment,
+                    Type = DescriptorType.UniformBuffer
+                },
+                new() {
                     Binding = 10,
                     Stages = DevoidGPU.ShaderStage.Fragment,
                     Type = DescriptorType.StorageBuffer
@@ -169,8 +175,11 @@ namespace DevoidEngine.Rendering
             CameraBuffer = UniformBuffer.Create(ResourceUsage.Dynamic, (uint)Unsafe.SizeOf<CameraData>());
             PerObjectBuffer = UniformBuffer.Create(ResourceUsage.Dynamic, (uint)Unsafe.SizeOf<MeshRenderData>());
             SceneBuffer = UniformBuffer.Create(ResourceUsage.Dynamic, (uint)Unsafe.SizeOf<SceneData>());
+            EnvironmentBuffer = UniformBuffer.Create(ResourceUsage.Dynamic, (uint)Unsafe.SizeOf<EnvironmentData>());
 
+            PerCameraDescriptor.SetUniformBuffer(0, CameraBuffer.GPU);
             PerCameraDescriptor.SetUniformBuffer(2, SceneBuffer.GPU);
+            PerCameraDescriptor.SetUniformBuffer(3, EnvironmentBuffer.GPU);
             PerObjectDescriptor.SetUniformBuffer(1, PerObjectBuffer.GPU);
 
             API = new RenderAPI();
@@ -366,7 +375,6 @@ namespace DevoidEngine.Rendering
         public void UpdateCameraBuffer(CameraData cameraData)
         {
             CameraBuffer.Update(cameraData);
-            PerCameraDescriptor.SetUniformBuffer(0, CameraBuffer.GPU);
         }
 
         public void UpdatePerObjectData(Matrix4x4 model)
@@ -393,6 +401,10 @@ namespace DevoidEngine.Rendering
             });
         }
 
+        public void UpdateEnvironmentData(EnvironmentData envData)
+        {
+            EnvironmentBuffer.Update(envData);
+        }
         public void UpdateLights(RenderView view)
         {
             PointLightBuffer.Update(view.PointLights);

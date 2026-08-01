@@ -8,6 +8,10 @@
         public List<SamplerBindingInfo> SamplerBindings { get; } = [];
         public List<InputParameterInfo> InputParameters { get; } = [];
 
+        public List<StorageBufferBindingInfo> StorageBufferBindings { get; } = [];
+        public List<StorageTextureBindingInfo> StorageTextureBindings { get; } = [];
+
+
         public int GetUniformBufferSlot(string name)
         {
             var buffers = UniformBuffers;

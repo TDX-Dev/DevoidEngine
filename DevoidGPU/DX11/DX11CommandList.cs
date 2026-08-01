@@ -1,5 +1,6 @@
 ﻿using SharpDX.Direct3D11;
 using System.Numerics;
+using static System.Net.Mime.MediaTypeNames;
 using Buffer = SharpDX.Direct3D11.Buffer;
 
 
@@ -22,8 +23,16 @@ namespace DevoidGPU.DX11
         private readonly DX11Texture?[] boundVS_SRVs = new DX11Texture?[16];
         private readonly DX11Texture?[] boundCS_SRVs = new DX11Texture?[16];
 
+
         private readonly DX11Texture?[] boundRTVs = new DX11Texture?[8];
         private DX11Texture? boundDSV;
+
+        private readonly DX11ShaderStorageBuffer?[] boundPS_SSBOs = new DX11ShaderStorageBuffer?[16];
+        private readonly DX11ShaderStorageBuffer?[] boundVS_SSBOs = new DX11ShaderStorageBuffer?[16];
+        private readonly DX11ShaderStorageBuffer?[] boundCS_SSBOs = new DX11ShaderStorageBuffer?[16];
+
+        private readonly DX11Texture?[] boundCS_UAVTextures = new DX11Texture?[8];
+        private readonly DX11ShaderStorageBuffer?[] boundCS_UAVBuffers = new DX11ShaderStorageBuffer?[8];
 
         public DX11CommandList(DeviceContext context) { deviceContext = context; }
 
@@ -143,10 +152,20 @@ namespace DevoidGPU.DX11
 
             deviceContext.VertexShader.Set(p.VS);
             deviceContext.PixelShader.Set(p.PS);
+            deviceContext.ComputeShader.Set(null);
 
             deviceContext.Rasterizer.State = p.RasterizerState;
             deviceContext.OutputMerger.SetDepthStencilState(p.DepthStencilState);
             deviceContext.OutputMerger.SetBlendState(p.BlendState);
+        }
+        public void SetComputePipeline(IComputePipeline pipeline)
+        {
+            var dx = (DX11ComputePipeline)pipeline;
+
+            deviceContext.ComputeShader.Set(dx.Shader.CS);
+            deviceContext.VertexShader.Set(null);
+            deviceContext.PixelShader.Set(null);
+            deviceContext.GeometryShader.Set(null);
         }
         public void SetVertexBuffer(IVertexBuffer buffer)
         {
@@ -225,7 +244,35 @@ namespace DevoidGPU.DX11
 
                             var dxStorageBuffer = (DX11ShaderStorageBuffer)storageBuffer;
 
-                            BindShaderResourceView(binding.Binding, binding.Stages, dxStorageBuffer.SRV!);
+                            BindShaderResourceView(binding.Binding, binding.Stages, dxStorageBuffer);
+
+                            break;
+                        }
+                    case DescriptorType.RWStorageBuffer:
+                        {
+                            if (!dxSet.rwStorageBuffers.TryGetValue(binding.Binding, out var storageBuffer))
+                                continue;
+
+                            var dxStorageBuffer = (DX11ShaderStorageBuffer)storageBuffer;
+
+                            BindUnorderedAccessView(
+                                binding.Binding,
+                                binding.Stages,
+                                dxStorageBuffer);
+
+                            break;
+                        }
+                    case DescriptorType.RWTexture:
+                        {
+                            if (!dxSet.rwTextures.TryGetValue(binding.Binding, out var texture))
+                                continue;
+
+                            var dxTexture = (DX11Texture)texture;
+
+                            BindUnorderedAccessView(
+                                binding.Binding,
+                                binding.Stages,
+                                dxTexture);
 
                             break;
                         }
@@ -242,6 +289,18 @@ namespace DevoidGPU.DX11
             deviceContext.DrawIndexed(indexCount, startIndexLocation, baseVertexLocation);
         }
 
+        public void Dispatch(uint groupX, uint groupY, uint groupZ)
+        {
+            deviceContext.Dispatch(
+                (int)groupX,
+                (int)groupY,
+                (int)groupZ);
+        }
+
+        public void MemoryBarrier(MemoryBarrierFlags flags)
+        {
+            // No memory barriers in dx11 :)
+        }
 
         // InternalMethods
 
@@ -310,6 +369,60 @@ namespace DevoidGPU.DX11
             }
         }
 
+        internal void BindShaderResourceView(
+            uint slot,
+            ShaderStage stages,
+            DX11ShaderStorageBuffer buffer
+        )
+        {
+            ResolveForSRV(buffer);
+
+            if ((stages & ShaderStage.Vertex) != 0)
+            {
+                deviceContext.VertexShader.SetShaderResource((int)slot, buffer.SRV);
+                boundVS_SSBOs[slot] = buffer;
+            }
+
+            if ((stages & ShaderStage.Fragment) != 0)
+            {
+                deviceContext.PixelShader.SetShaderResource((int)slot, buffer.SRV);
+                boundPS_SSBOs[slot] = buffer;
+            }
+
+            if ((stages & ShaderStage.Compute) != 0)
+            {
+                deviceContext.ComputeShader.SetShaderResource((int)slot, buffer.SRV);
+                boundCS_SSBOs[slot] = buffer;
+            }
+        }
+
+        private void BindUnorderedAccessView(uint slot, ShaderStage stages, DX11Texture tex)
+        {
+            ResolveForUAV(tex);
+            if ((stages & ShaderStage.Compute) != 0)
+            {
+                deviceContext.ComputeShader.SetUnorderedAccessView(
+                        (int)slot,
+                        tex.UAV);
+
+                boundCS_UAVTextures[slot] = tex;
+            }
+
+        }
+
+        private void BindUnorderedAccessView(uint slot, ShaderStage stages, DX11ShaderStorageBuffer buffer)
+        {
+            ResolveForUAV(buffer);
+            if ((stages & ShaderStage.Compute) != 0)
+            {
+                deviceContext.ComputeShader.SetUnorderedAccessView(
+                        (int)slot,
+                        buffer.UAV);
+
+                boundCS_UAVBuffers[slot] = buffer;
+            }
+        }
+
         internal void BindSampler(uint slot, ShaderStage stages, SamplerState sampler)
         {
             if ((stages & ShaderStage.Vertex) != 0)
@@ -334,6 +447,14 @@ namespace DevoidGPU.DX11
                     dirty = true;
                 }
             }
+            for (int i = 0; i < boundCS_UAVTextures.Length; i++)
+            {
+                if (boundCS_UAVTextures[i] == tex)
+                {
+                    deviceContext.ComputeShader.SetUnorderedAccessView(i, null);
+                    boundCS_UAVTextures[i] = null;
+                }
+            }
 
             if (boundDSV == tex)
             {
@@ -348,7 +469,17 @@ namespace DevoidGPU.DX11
                     []);
             }
         }
-
+        private void ResolveForSRV(DX11ShaderStorageBuffer buffer)
+        {
+            for (int i = 0; i < boundCS_UAVBuffers.Length; i++)
+            {
+                if (boundCS_UAVBuffers[i] == buffer)
+                {
+                    deviceContext.ComputeShader.SetUnorderedAccessView(i, null);
+                    boundCS_UAVBuffers[i] = null;
+                }
+            }
+        }
         private void ResolveForRTV(DX11Texture tex)
         {
             for (int i = 0; i < 16; i++)
@@ -369,6 +500,110 @@ namespace DevoidGPU.DX11
                 {
                     deviceContext.ComputeShader.SetShaderResource(i, null);
                     boundCS_SRVs[i] = null;
+                }
+            }
+            for (int i = 0; i < boundCS_UAVTextures.Length; i++)
+            {
+                if (boundCS_UAVTextures[i] == tex)
+                {
+                    deviceContext.ComputeShader.SetUnorderedAccessView(i, null);
+                    boundCS_UAVTextures[i] = null;
+                }
+            }
+        }
+        private void ResolveForUAV(DX11Texture tex)
+        {
+            // Remove from all SRV bindings
+
+            for (int i = 0; i < boundVS_SRVs.Length; i++)
+            {
+                if (boundVS_SRVs[i] == tex)
+                {
+                    deviceContext.VertexShader.SetShaderResource(i, null);
+                    boundVS_SRVs[i] = null;
+                }
+            }
+
+            for (int i = 0; i < boundPS_SRVs.Length; i++)
+            {
+                if (boundPS_SRVs[i] == tex)
+                {
+                    deviceContext.PixelShader.SetShaderResource(i, null);
+                    boundPS_SRVs[i] = null;
+                }
+            }
+
+            for (int i = 0; i < boundCS_SRVs.Length; i++)
+            {
+                if (boundCS_SRVs[i] == tex)
+                {
+                    deviceContext.ComputeShader.SetShaderResource(i, null);
+                    boundCS_SRVs[i] = null;
+                }
+            }
+
+            // Remove from any RTV bindings
+
+            bool updateOM = false;
+
+            for (int i = 0; i < boundRTVs.Length; i++)
+            {
+                if (boundRTVs[i] == tex)
+                {
+                    boundRTVs[i] = null;
+
+                    if (currentFramebuffer != null)
+                        currentFramebuffer.RTVs[i] = null;
+
+                    updateOM = true;
+                }
+            }
+
+            // Remove from DSV
+
+            if (boundDSV == tex)
+            {
+                boundDSV = null;
+
+                if (currentFramebuffer != null)
+                    currentFramebuffer.DSV = null;
+
+                updateOM = true;
+            }
+
+            if (updateOM && currentFramebuffer != null)
+            {
+                deviceContext.OutputMerger.SetRenderTargets(
+                    currentFramebuffer.DSV,
+                    currentFramebuffer.RTVs);
+            }
+        }
+        private void ResolveForUAV(DX11ShaderStorageBuffer buffer)
+        {
+            for (int i = 0; i < boundVS_SSBOs.Length; i++)
+            {
+                if (boundVS_SSBOs[i] == buffer)
+                {
+                    deviceContext.VertexShader.SetShaderResource(i, null);
+                    boundVS_SSBOs[i] = null;
+                }
+            }
+
+            for (int i = 0; i < boundPS_SSBOs.Length; i++)
+            {
+                if (boundPS_SSBOs[i] == buffer)
+                {
+                    deviceContext.PixelShader.SetShaderResource(i, null);
+                    boundPS_SSBOs[i] = null;
+                }
+            }
+
+            for (int i = 0; i < boundCS_SSBOs.Length; i++)
+            {
+                if (boundCS_SSBOs[i] == buffer)
+                {
+                    deviceContext.ComputeShader.SetShaderResource(i, null);
+                    boundCS_SSBOs[i] = null;
                 }
             }
         }

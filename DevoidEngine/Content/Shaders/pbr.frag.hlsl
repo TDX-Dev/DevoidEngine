@@ -10,7 +10,7 @@
 #include "./Common/RenderConstants.hlsl"
 #include "./Common/LightConstructs.hlsl"
 
-cbuffer Material : register(b3)
+cbuffer Material : register(b4)
 {
     float4 Albedo; // base color multiplier
 

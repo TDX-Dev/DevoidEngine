@@ -7,7 +7,7 @@ struct PSInput
     float3 WorldspacePosition : TEXCOORD1;
 };
 
-cbuffer Material : register(b2)
+cbuffer Material : register(b4)
 {
     float4 Albedo;
 }

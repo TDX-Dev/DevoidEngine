@@ -20,10 +20,15 @@ namespace DevoidGPU
         void GenerateMipmaps(ITexture texture);
 
         void SetPipeline(IPipeline pipeline);
+        void SetComputePipeline(IComputePipeline pipeline);
         void SetVertexBuffer(IVertexBuffer vertexBuffer);
         void SetIndexBuffer(IIndexBuffer indexBuffer);
         void SetDescriptorSet(uint binding, IDescriptorSet set);
         void Draw(int vertexCount, int startVertexLocation);
         void DrawIndexed(int indexCount, int startIndexLocation, int baseVertexLocation);
+
+        void Dispatch(uint groupX, uint groupY, uint groupZ);
+
+        void MemoryBarrier(MemoryBarrierFlags flags);
     }
 }

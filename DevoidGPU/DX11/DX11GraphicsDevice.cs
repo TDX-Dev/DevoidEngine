@@ -142,6 +142,11 @@ namespace DevoidGPU.DX11
             return dxPipeline;
         }
 
+        public IComputePipeline CreateComputePipeline(ComputePipelineDescription desc)
+        {
+            return new DX11ComputePipeline(desc);
+        }
+
         public IVertexBuffer CreateVertexBuffer(VertexBufferDescription desc)
         {
             return new DX11VertexBuffer(device, deviceContext, desc);
