@@ -1,4 +1,5 @@
 ﻿using DevoidEngine.AssetPipeline;
+using DevoidEngine.AssetPipeline.Importers;
 using DevoidEngine.Assets;
 using DevoidEngine.Audio;
 using DevoidEngine.Components;
@@ -40,10 +41,23 @@ namespace Sandbox
 
             Console.WriteLine("Sandbox has launched.");
 
-            scene = Asset.Load<PackedScene>("models/turret_advanced.gltf")!.Instantiate();
-            scene.GameObjects[0].Transform.Position = new Vector3(0, 10, 0);
+            scene = new Scene();//Asset.Load<PackedScene>("models/turret_advanced.gltf")!.Instantiate();
+            //scene.GameObjects[0].Transform.Position = new Vector3(0, 10, 0);
             Engine.Instance.SceneTree.LoadScene(scene);
             scene.Play();
+
+
+            Engine.Instance.AssetDatabase.TryGetGuid("HDRIs/blender_conference.hdr", out Guid hdriGuid);
+            Engine.Instance.AssetDatabase.Reimport(hdriGuid, MessagePackSerializer.Serialize<TextureImportSettings>(new TextureImportSettings()
+            {
+                Format = TextureFormat.RGBA32_Float
+            }));
+
+            Engine.Renderer.SkyRenderer.Sky = new HDRISky()
+            {
+                PanoramaTexture = Asset.Load<Texture>("HDRIs/blender_conference.hdr")!
+            };
+
 
             PBRMaterial = new MaterialInstance(Engine.Renderer.DefaultMaterial);
             GroundPBRMaterial = new MaterialInstance(Engine.Renderer.DefaultMaterial);
@@ -450,6 +464,7 @@ namespace Sandbox
 
         public override void OnPostRender(ICommandList cmd)
         {
+
             cmd.SetFramebuffer(Application.MainWindow.Framebuffer);
             Engine.Renderer.API.RenderToScreen(cmd, Engine.Instance.SceneTree.RootViewport.OutputTexture!);
         }

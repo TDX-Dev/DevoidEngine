@@ -1,30 +1,28 @@
 {
   "$schema": "./dsdschema.json",
-  "Name": "UI SDF TEXT Shader",
+  "Name": "Sky Irradiance",
   "DefaultPass": "Forward",
-
   "MaterialParameters": {
     "BufferName": "Material"
   },
   "Textures": [
     {
-      "Name": "MAT_Texture",
+      "Name": "MAT_Skybox",
       "Type": "Texture2D"
     }
   ],
-
   "Passes": [
     {
       "Name": "Forward",
       "MaterialBuffer": "Material",
       "Shaders": {
-        "VS": "../Shaders/ui_textsdf.vert.hlsl",
-        "FS": "../Shaders/ui_textsdf.frag.hlsl"
+        "VS": "../Shaders/sky.vert.hlsl",
+        "FS": "../Shaders/cubemap_irradiance.frag.hlsl"
       },
       "States": {
-        "Blend": "Alpha",
-        "Cull": "Back",
-        "Depth": "LessEqual"
+        "Blend": "Off",
+        "Cull": "None",
+        "Depth": "Disabled"
       }
     }
   ]

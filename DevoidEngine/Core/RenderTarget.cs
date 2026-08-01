@@ -1,4 +1,5 @@
 ﻿using DevoidGPU;
+using OpenTK.Graphics.OpenGL;
 
 namespace DevoidEngine.Core
 {
@@ -72,10 +73,10 @@ namespace DevoidEngine.Core
             );
         }
 
-        public void SetColorAttachment(int slot, Texture texture)
+        public void SetColorAttachment(int slot, Texture texture, int mip = 0, int slice = 0)
         {
             colorTextures[slot] = texture;
-            GPU.SetColorAttachment(slot, texture.GPU);
+            GPU.SetColorAttachment(slot, texture.GPU, mip, slice);
         }
 
         public void SetDepthAttachment(Texture texture)

@@ -4,14 +4,14 @@
   "DefaultPass": "Forward",
 
   "MaterialParameters": {
-    "BufferName": "Material",
-    "Textures": [
-      {
-        "Name": "MAT_Texture",
-        "Type": "Texture2D"
-      }
-    ]
+    "BufferName": "Material"
   },
+  "Textures": [
+    {
+      "Name": "MAT_Texture",
+      "Type": "Texture2D"
+    }
+  ],
 
   "Passes": [
     {

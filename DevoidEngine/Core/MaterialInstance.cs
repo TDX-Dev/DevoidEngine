@@ -18,8 +18,8 @@ namespace DevoidEngine.Core
 
         private readonly Dictionary<string, Texture> textureOverrides;
 
-        private readonly byte[] cpuBuffer;
-        private readonly UniformBuffer gpuBuffer;
+        private readonly byte[]? cpuBuffer;
+        private readonly UniformBuffer? gpuBuffer;
 
         private readonly IDescriptorSet descriptorSet;
 
@@ -31,10 +31,26 @@ namespace DevoidEngine.Core
         {
             BaseMaterial = material;
 
-            cpuBuffer = new byte[BaseMaterial.MaterialBufferSize];
-            BaseMaterial.GetDefaultMaterialBuffer().CopyTo(cpuBuffer);
+            descriptorSet = Engine.GraphicsDevice.CreateDescriptorSet(BaseMaterial.DefaultPass.DescriptorLayout);
 
-            gpuBuffer = UniformBuffer.Create(ResourceUsage.Dynamic, (uint)Math.Max(1, BaseMaterial.MaterialBufferSize));
+            if (BaseMaterial.MaterialBufferSize > 0)
+            {
+                cpuBuffer = new byte[BaseMaterial.MaterialBufferSize];
+                BaseMaterial.GetDefaultMaterialBuffer().CopyTo(cpuBuffer);
+
+                gpuBuffer = UniformBuffer.Create(
+                    ResourceUsage.Dynamic,
+                    (uint)BaseMaterial.MaterialBufferSize);
+
+                descriptorSet.SetUniformBuffer(
+                    (uint)BaseMaterial.MaterialBufferBindSlot,
+                    gpuBuffer.GPU);
+            }
+
+            //cpuBuffer = new byte[BaseMaterial.MaterialBufferSize];
+            //BaseMaterial.GetDefaultMaterialBuffer().CopyTo(cpuBuffer);
+
+            //gpuBuffer = UniformBuffer.Create(ResourceUsage.Dynamic, (uint)Math.Max(1, BaseMaterial.MaterialBufferSize));
 
 
             //StringBuilder sb = new();
@@ -49,13 +65,11 @@ namespace DevoidEngine.Core
 
             //Console.WriteLine(sb.ToString());
 
-            descriptorSet =
-                Engine.GraphicsDevice.CreateDescriptorSet(BaseMaterial.Shader.GetPass("Forward").DescriptorLayout);
 
             textureOverrides = [];
             isDirty = true;
 
-            descriptorSet.SetUniformBuffer((uint)BaseMaterial.MaterialBufferBindSlot, gpuBuffer.GPU);
+            //descriptorSet.SetUniformBuffer((uint)BaseMaterial.MaterialBufferBindSlot, gpuBuffer.GPU);
 
             foreach (var kv in BaseMaterial.GetTextureBindings())
             {
@@ -91,7 +105,8 @@ namespace DevoidEngine.Core
 
         private void UpdateBuffer()
         {
-            if (!isDirty) return;
+            if (!isDirty || gpuBuffer == null || cpuBuffer == null)
+                return;
             gpuBuffer.Update(cpuBuffer);
             descriptorSet.SetUniformBuffer((uint)BaseMaterial.MaterialBufferBindSlot, gpuBuffer.GPU);
             isDirty = false;
@@ -117,6 +132,12 @@ namespace DevoidEngine.Core
 
         private void Write<T>(string name, T value) where T : struct
         {
+            if (cpuBuffer == null)
+            {
+                Console.WriteLine("Material has no uniform buffer.");
+                return;
+            }
+
             if (!BaseMaterial.TryGetVariable(name, out var varInfo))
             {
                 Console.WriteLine($"Variable '{name}' not found in material.");

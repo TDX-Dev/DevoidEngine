@@ -58,8 +58,7 @@ namespace DevoidEngine.AssetPipeline.Importers
 
                 case TextureFormat.RGBA32_Float:
                     {
-                        pixels = new byte[data.Length * sizeof(float)];
-                        Buffer.BlockCopy(data, 0, pixels, 0, pixels.Length);
+                        pixels = data;
                         break;
                     }
 

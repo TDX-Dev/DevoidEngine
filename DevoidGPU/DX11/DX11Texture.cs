@@ -31,7 +31,7 @@ namespace DevoidGPU.DX11
         private readonly Device device;
         private readonly DeviceContext deviceContext = null!;
         private readonly bool ownsResource;
-        private RenderTargetView[,]? rtvs;
+        private readonly RenderTargetView[,]? rtvs;
 
         internal DX11Texture(Device device, Texture2D existing)
         {

@@ -91,10 +91,19 @@ namespace DevoidGPU.DX11
         }
         internal static ResourceOptionFlags ResolveTextureOptionFlags(TextureDescription description)
         {
-            if (description.Dimension == TextureDimension.TextureCube)
-                return ResourceOptionFlags.TextureCube;
+            ResourceOptionFlags flags = ResourceOptionFlags.None;
 
-            return ResourceOptionFlags.None;
+            if (description.Dimension == TextureDimension.TextureCube)
+                flags |= ResourceOptionFlags.TextureCube;
+
+            if (description.MipLevels > 1 &&
+                description.Usage.HasFlag(TextureUsage.RenderTarget) &&
+                description.Usage.HasFlag(TextureUsage.ShaderResource))
+            {
+                flags |= ResourceOptionFlags.GenerateMipMaps;
+            }
+
+            return flags;
         }
         internal static ShaderResourceViewDimension ResolveSRVDimension(TextureDescription description)
         {

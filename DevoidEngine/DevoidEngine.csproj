@@ -54,7 +54,23 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<None Update="Content\DevoidShaderDescriptors\sky_panoramatocubemap.dsd">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  <Visible>true</Visible>
+		</None>
+		<None Update="Content\DevoidShaderDescriptors\sky_irradiance.dsd">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  <Visible>true</Visible>
+		</None>
 		<None Update="Content\DevoidShaderDescriptors\ui_textsdf_mat.dsd">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  <Visible>true</Visible>
+		</None>
+		<None Update="Content\Shaders\panorama_to_cubemap.frag.hlsl">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  <Visible>true</Visible>
+		</None>
+		<None Update="Content\Shaders\cubemap_irradiance.frag.hlsl">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		  <Visible>true</Visible>
 		</None>
@@ -93,7 +109,7 @@
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	    <Visible>true</Visible>
 	  </None>
-	  <None Update="Content\Shaders\sky_procedural.vert.hlsl">
+	  <None Update="Content\Shaders\sky.vert.hlsl">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	    <Visible>true</Visible>
 	  </None>

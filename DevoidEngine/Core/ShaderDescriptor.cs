@@ -5,6 +5,7 @@
         public string Name { get; set; } = string.Empty;
         public string DefaultPass { get; set; } = string.Empty;
         public MaterialParameterDescriptor? MaterialParameters { get; set; }
+        public List<MaterialTextureDescriptor> Textures { get; set; } = [];
         public List<PassDescriptor> Passes { get; set; } = [];
     }
 
@@ -20,8 +21,6 @@
     public class MaterialParameterDescriptor
     {
         public string BufferName { get; set; } = string.Empty;
-
-        public List<MaterialTextureDescriptor> Textures { get; set; } = [];
     }
 
     public class MaterialTextureDescriptor

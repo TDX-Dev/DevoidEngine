@@ -11,6 +11,7 @@ namespace DevoidEngine.Core
         public BlendMode BlendMode { get; set; } = BlendMode.Opaque;
         public int MaterialBufferSize => materialBufferSize;
         public int MaterialBufferBindSlot => materialBufferBindSlot;
+        public ShaderPass DefaultPass => Shader.DefaultPass;
 
 
         private readonly Dictionary<string, ShaderVariableInfo> variables;
@@ -47,6 +48,7 @@ namespace DevoidEngine.Core
             materialBufferBindSlot =
                 layout.BufferBindSlot;
 
+
             defaultBuffer =
                     new byte[layout.BufferSize];
 
@@ -62,6 +64,8 @@ namespace DevoidEngine.Core
                     texture.Value;
 
                 textures[texture.Key] = Texture.Default;
+
+                Console.WriteLine(texture.Key);
             }
 
             foreach (var sampler in layout.Samplers)

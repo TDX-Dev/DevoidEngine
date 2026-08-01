@@ -14,6 +14,8 @@ namespace DevoidGPU.DX11
 
         // binding cache;
         private DX11Framebuffer? currentFramebuffer;
+        private int currentMip;
+        private int currentSlice;
         private (int, int, int, int) currentViewport;
 
         private readonly DX11Texture?[] boundPS_SRVs = new DX11Texture?[16];
@@ -59,13 +61,19 @@ namespace DevoidGPU.DX11
             deviceContext.Rasterizer.SetScissorRectangle(x, y, width, height);
         }
 
-        public void SetFramebuffer(IFrameBuffer framebuffer)
+        public void SetFramebuffer(IFrameBuffer framebuffer, int mipLevel = 0, int arraySlice = 0)
         {
             DX11Framebuffer dx11Fb = (DX11Framebuffer)framebuffer;
-            if (ReferenceEquals(currentFramebuffer, dx11Fb))
+            if (ReferenceEquals(currentFramebuffer, dx11Fb) &&
+                currentMip == mipLevel &&
+                currentSlice == arraySlice)
+            {
                 return;
+            }
 
             currentFramebuffer = dx11Fb;
+            currentMip = mipLevel;
+            currentSlice = arraySlice;
 
             dx11Fb.ValidateFrameBuffer();
 
@@ -75,7 +83,13 @@ namespace DevoidGPU.DX11
                 {
                     ResolveForRTV(tex);
 
+                    dx11Fb.RTVs[i] = tex.GetRTV(mipLevel, arraySlice);
                     boundRTVs[i] = tex;
+                }
+                else
+                {
+                    dx11Fb.RTVs[i] = null;
+                    boundRTVs[i] = null;
                 }
             }
 
@@ -133,9 +147,6 @@ namespace DevoidGPU.DX11
             deviceContext.Rasterizer.State = p.RasterizerState;
             deviceContext.OutputMerger.SetDepthStencilState(p.DepthStencilState);
             deviceContext.OutputMerger.SetBlendState(p.BlendState);
-
-            deviceContext.OutputMerger.SetBlendState(p.BlendState);
-            deviceContext.OutputMerger.SetDepthStencilState(p.DepthStencilState);
         }
         public void SetVertexBuffer(IVertexBuffer buffer)
         {
@@ -360,11 +371,6 @@ namespace DevoidGPU.DX11
                     boundCS_SRVs[i] = null;
                 }
             }
-        }
-
-        public void SetFramebuffer(IFrameBuffer framebuffer, int mipLevel = 0, int arraySlice = 0)
-        {
-            throw new NotImplementedException();
         }
     }
 }

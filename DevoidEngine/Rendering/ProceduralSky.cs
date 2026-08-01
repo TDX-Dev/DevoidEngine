@@ -12,13 +12,13 @@ namespace DevoidEngine.Rendering
 
         public float Exposure;
 
-        public bool Dirty { get; private set; } = true;
+        public bool Dirty { get; set; } = true;
 
         public MaterialInstance Material { get; } = null!;
 
         public Mesh Mesh => PrimitiveMeshes.GetCube();
 
-        public void BuildEnvironment(RenderContext context)
+        public void BuildEnvironment(RenderContext context, EnvironmentLighting environment)
         {
 
         }

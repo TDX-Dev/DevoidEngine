@@ -289,7 +289,7 @@ namespace DevoidEngine.AssetPipeline
             return false;
         }
 
-        public void Reimport(Guid guid)
+        public void Reimport(Guid guid, byte[]? settings = null)
         {
             if (!guidToAsset.TryGetValue(guid, out var entry))
             {
@@ -331,7 +331,7 @@ namespace DevoidEngine.AssetPipeline
                 Guid = entry.Guid,
             };
 
-            importer.Import(context, meta.Settings);
+            importer.Import(context, settings ?? meta.Settings);
 
             Console.WriteLine($"[Asset] Reimported {assetPath}");
         }

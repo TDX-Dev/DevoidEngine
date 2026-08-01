@@ -1,20 +1,24 @@
 {
   "$schema": "./dsdschema.json",
-  "Name": "Vertex Lit",
-
+  "Name": "Sky Panorama To Cubemap",
   "DefaultPass": "Forward",
-
+  "Textures": [
+    {
+      "Name": "MAT_Panorama",
+      "Type": "Texture2D"
+    }
+  ],
   "Passes": [
     {
       "Name": "Forward",
       "MaterialBuffer": "Material",
       "Shaders": {
         "VS": "../Shaders/sky.vert.hlsl",
-        "FS": "../Shaders/sky_procedural.frag.hlsl"
+        "FS": "../Shaders/panorama_to_cubemap.frag.hlsl"
       },
       "States": {
         "Blend": "Off",
-        "Cull": "Front",
+        "Cull": "None",
         "Depth": "Disabled"
       }
     }

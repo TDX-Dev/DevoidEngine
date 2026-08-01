@@ -19,49 +19,49 @@
         "BufferName": {
           "type": "string",
           "description": "Material buffer name"
-        },
-
-        "Textures": {
-          "type": "array",
-          "description": "Textures exposed to materials",
-          "items": {
-            "type": "object",
-            "properties": {
-              "Name": {
-                "type": "string",
-                "description": "Shader texture name"
-              },
-
-              "DisplayName": {
-                "type": "string",
-                "description": "Editor display name"
-              },
-
-              "Type": {
-                "type": "string",
-                "enum": [
-                  "Texture2D",
-                  "TextureCube",
-                  "Texture2DArray"
-                ]
-              },
-
-              "Default": {
-                "type": "string",
-                "description": "Default texture asset path"
-              }
-            },
-            "required": [
-              "Name",
-              "Type"
-            ]
-          }
         }
       },
 
       "required": [
         "BufferName"
       ]
+    },
+
+    "Textures": {
+      "type": "array",
+      "description": "Textures exposed to materials",
+      "items": {
+        "type": "object",
+        "properties": {
+          "Name": {
+            "type": "string",
+            "description": "Shader texture name"
+          },
+
+          "DisplayName": {
+            "type": "string",
+            "description": "Editor display name"
+          },
+
+          "Type": {
+            "type": "string",
+            "enum": [
+              "Texture2D",
+              "TextureCube",
+              "Texture2DArray"
+            ]
+          },
+
+          "Default": {
+            "type": "string",
+            "description": "Default texture asset path"
+          }
+        },
+        "required": [
+          "Name",
+          "Type"
+        ]
+      }
     },
 
     "Passes": {

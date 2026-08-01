@@ -11,6 +11,10 @@ namespace DevoidEngine.Core
         public int Width => GPU.Description.Width;
         public int Height => GPU.Description.Height;
         public int Depth => GPU.Description.Depth;
+        public int MipLevels => GPU.MipLevels;
+        public int ArraySize => GPU.ArraySize;
+        public TextureUsage Usage => GPU.Description.Usage;
+        public TextureFormat Format => GPU.Format;
 
         public static Texture Default { get; }
 
@@ -69,6 +73,31 @@ namespace DevoidEngine.Core
             });
 
             return new Texture(gpu);
+        }
+
+        public static Texture CreateCube(
+            int size,
+            TextureFormat format,
+            TextureUsage usage,
+            int mipLevels = 1
+        )
+        {
+            return new Texture(new TextureDescription()
+            {
+                Width = size,
+                Height = size,
+                Depth = 1,
+                Format = format,
+                Usage = usage,
+                Dimension = TextureDimension.TextureCube,
+                ArraySize = 6,
+                MipLevels = mipLevels,
+                Samples = new TextureSampleDescription()
+                {
+                    Count = 1,
+                    Quality = 0
+                }
+            });
         }
 
         public static Texture CreateFromImage2D(ImageData data, TextureUsage usage)

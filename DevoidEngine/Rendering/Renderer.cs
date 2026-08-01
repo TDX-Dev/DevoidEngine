@@ -84,6 +84,8 @@ namespace DevoidEngine.Rendering
 
         public void PopViewport(ICommandList cmd)
         {
+            if (viewportStack.Count == 0)
+                return;
             currentViewport = viewportStack.Pop();
 
             cmd.SetViewport(
@@ -192,7 +194,14 @@ namespace DevoidEngine.Rendering
             if (viewport.Camera3D == null || ActiveTechnique == null)
                 return;
 
-            cmd.SetViewport(0, 0, (int)viewport.Width, (int)viewport.Height);
+            PopViewport(cmd);
+            PushViewport(cmd, new ViewportRect()
+            {
+                Width = viewport.Width,
+                Height = viewport.Height,
+                X = 0,
+                Y = 0,
+            });
 
             Camera camera = viewport.Camera3D.GetCamera();
 
@@ -215,7 +224,7 @@ namespace DevoidEngine.Rendering
             UpdateSceneData(renderView);
             UpdateLights(renderView);
 
-
+            SkyRenderer.Render(context);
             RenderTarget activeTechniqueTarget = ActiveTechnique.Render(context, renderView);
 
             RenderUI(cmd, viewport, viewportResources);
@@ -224,8 +233,6 @@ namespace DevoidEngine.Rendering
             cmd.SetFramebuffer(ViewportBlitTarget.GPU);
             API.RenderToScreen(cmd, activeTechniqueTarget.ColorTextures[0]!);
             API.RenderToScreen(cmd, UIRenderTarget.ColorTextures[0]!);
-
-
         }
 
         public void RenderUI(ICommandList cmd, Viewport viewport, RenderResourceCache resources)
@@ -406,7 +413,7 @@ namespace DevoidEngine.Rendering
         public void Execute(ICommandList cmd, RenderMeshData item)
         {
             MaterialInstance material = item.render_material ?? NullMaterialInstance;
-            ShaderPass pass = material.BaseMaterial.Shader.GetPass("Forward");
+            ShaderPass pass = material.BaseMaterial.DefaultPass;
             cmd.SetPipeline(pass.Pipeline);
             cmd.SetDescriptorSet(
                         0,
@@ -435,7 +442,7 @@ namespace DevoidEngine.Rendering
 
                 MaterialInstance material = item.render_material ?? NullMaterialInstance;
 
-                ShaderPass pass = material.BaseMaterial.Shader.GetPass("Forward");
+                ShaderPass pass = material.BaseMaterial.DefaultPass;
 
                 if (pass != currentPass)
                 {

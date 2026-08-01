@@ -77,8 +77,10 @@ namespace DevoidEngine.Core
                 ShaderPass pass = new(vertex, fragment);
 
                 ShaderReflectionData reflection_data = ShaderReflectionData.Merge(pass.Vertex.ShaderReflectionData, pass.Fragment.ShaderReflectionData);
+                Console.WriteLine(descriptor.Name);
+                ShaderReflectionData.Print(reflection_data);
 
-                shader.MaterialLayout ??= BuildMaterialLayout(pass, descriptor.MaterialParameters, reflection_data);
+                shader.MaterialLayout ??= BuildMaterialLayout(descriptor, reflection_data);
 
                 pass.DescriptorLayout = CreateDescriptorLayout(device, reflection_data);
 
@@ -125,46 +127,34 @@ namespace DevoidEngine.Core
         }
 
         private static MaterialLayout? BuildMaterialLayout(
-            ShaderPass pass,
-            MaterialParameterDescriptor? materialDesc,
+            //ShaderPass pass,
+            ShaderDescriptor descriptor,
             ShaderReflectionData reflectionData
         )
         {
-            if (materialDesc == null)
-                return null;
+            MaterialLayout layout = new();
 
-            UniformBufferInfo? materialBuffer = null;
-
-            foreach (var buffer in reflectionData.UniformBuffers)
+            if (descriptor.MaterialParameters != null)
             {
-                if (string.Equals(
-                        buffer.Name,
-                        materialDesc.BufferName,
-                        StringComparison.OrdinalIgnoreCase))
+                UniformBufferInfo? materialBuffer =
+                    reflectionData.UniformBuffers.FirstOrDefault(x =>
+                        string.Equals(
+                            x.Name,
+                            descriptor.MaterialParameters.BufferName,
+                            StringComparison.OrdinalIgnoreCase));
+
+                if (materialBuffer != null)
                 {
-                    materialBuffer = buffer;
-                    break;
+                    layout.BufferName = materialBuffer.Name;
+                    layout.BufferSize = materialBuffer.Size;
+                    layout.BufferBindSlot = materialBuffer.BindSlot;
+
+                    foreach (var variable in materialBuffer.Variables)
+                        layout.Variables[variable.Name] = variable;
                 }
             }
 
-            if (materialBuffer == null)
-            {
-                return null;
-            }
-
-            MaterialLayout layout = new()
-            {
-                BufferName = materialBuffer.Name,
-                BufferSize = materialBuffer.Size,
-                BufferBindSlot = materialBuffer.BindSlot
-            };
-
-            foreach (var variable in materialBuffer.Variables)
-            {
-                layout.Variables[variable.Name] = variable;
-            }
-
-            foreach (var textureDesc in materialDesc.Textures)
+            foreach (var textureDesc in descriptor.Textures)
             {
                 TextureBindingInfo? binding =
                     reflectionData.TextureBindings
@@ -183,6 +173,14 @@ namespace DevoidEngine.Core
             foreach (var samplerBinding in reflectionData.SamplerBindings)
             {
                 layout.Samplers[samplerBinding.Name] = samplerBinding;
+            }
+
+            if (layout.Variables.Count == 0 &&
+                layout.Textures.Count == 0 &&
+                layout.Samplers.Count == 0
+            )
+            {
+                return null;
             }
 
             return layout;

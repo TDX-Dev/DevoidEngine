@@ -12,8 +12,6 @@ namespace DevoidGPU
         void SetViewport(int x, int y, int width, int height);
         void SetScissor(int x, int y, int width, int height);
 
-        void SetFramebuffer(IFrameBuffer framebuffer);
-
         void SetFramebuffer(IFrameBuffer framebuffer, int mipLevel = 0, int arraySlice = 0);
 
         void ClearColor(int attachmentIndex, Vector4 color);

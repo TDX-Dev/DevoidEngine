@@ -1,5 +1,6 @@
 ﻿using DevoidGPU;
 using StbiSharp;
+using System.Runtime.InteropServices;
 
 namespace DevoidEngine.Util
 {
@@ -31,38 +32,55 @@ namespace DevoidEngine.Util
 
         public static ImageData LoadImage(string path)
         {
-            using var stream = File.OpenRead(path);
-            using var memory = new MemoryStream();
+            var data = File.ReadAllBytes(path);
+            using var memory = new MemoryStream(data, index: 0, count: data.Length, writable: false, publiclyVisible: true);
 
-            stream.CopyTo(memory);
+            if (Stbi.IsHdrFromMemory(memory))
+            {
+                using StbiImageF image = Stbi.LoadFFromMemory(memory, 4);
 
-            using StbiImage image = Stbi.LoadFromMemory(memory, 4);
+                return new ImageData(
+                    image.Width,
+                    image.Height,
+                    TextureFormat.RGBA32_Float,
+                    MemoryMarshal.AsBytes(image.Data).ToArray());
+            }
+            else
+            {
+                using StbiImage image = Stbi.LoadFromMemory(memory, 4);
 
-            return new ImageData(
-                image.Width,
-                image.Height,
-                TextureFormat.RGBA8_UNorm,
-                image.Data.ToArray() // byte[]
-            );
+                return new ImageData(
+                    image.Width,
+                    image.Height,
+                    TextureFormat.RGBA8_UNorm,
+                    image.Data.ToArray());
+            }
         }
 
         public static ImageData LoadImage(byte[] data)
         {
-            using var memory = new MemoryStream(
-                data,
-                index: 0,
-                count: data.Length,
-                writable: false,
-                publiclyVisible: true);
+            using var memory = new MemoryStream(data, index: 0, count: data.Length, writable: false, publiclyVisible: true);
 
-            using StbiImage image = Stbi.LoadFromMemory(memory, 4);
+            if (Stbi.IsHdrFromMemory(memory))
+            {
+                using StbiImageF image = Stbi.LoadFFromMemory(memory, 4);
 
-            return new ImageData(
-                image.Width,
-                image.Height,
-                TextureFormat.RGBA8_UNorm,
-                image.Data.ToArray()
-            );
+                return new ImageData(
+                    image.Width,
+                    image.Height,
+                    TextureFormat.RGBA32_Float,
+                    MemoryMarshal.AsBytes(image.Data).ToArray());
+            }
+            else
+            {
+                using StbiImage image = Stbi.LoadFromMemory(memory, 4);
+
+                return new ImageData(
+                    image.Width,
+                    image.Height,
+                    TextureFormat.RGBA8_UNorm,
+                    image.Data.ToArray());
+            }
         }
 
 
