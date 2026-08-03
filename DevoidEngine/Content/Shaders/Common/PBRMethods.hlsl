@@ -155,45 +155,62 @@ float3 FresnelSchlickRoughness(float cosTheta, float3 F0, float roughness)
 
 float2 IntegrateBRDF(float NoV, float roughness)
 {
-    float3 V = float3(
-        sqrt(1.0 - NoV * NoV),
-        0.0,
-        NoV);
+    // Perceptual roughness to alpha
+    float a = roughness * roughness;
+
+    float3 V;
+    V.x = sqrt(1.0 - NoV * NoV);
+    V.y = 0.0;
+    V.z = NoV;
 
     float3 N = float3(0.0, 0.0, 1.0);
 
-    const uint SAMPLE_COUNT = 1024;
+    const uint SAMPLE_COUNT = 1024u;
+    float A = 0.0;
+    float B = 0.0;
 
-    float2 result = 0.0;
-
-    for (uint i = 0; i < SAMPLE_COUNT; ++i)
+    for (uint i = 0u; i < SAMPLE_COUNT; ++i)
     {
         float2 Xi = Hammersley(i, SAMPLE_COUNT);
+        
+        // Importance sample GGX
+        // Xi.y = cos^2(theta) setup
+        float phi = 2.0 * PI * Xi.x;
+        float cosTheta = sqrt((1.0 - Xi.y) / (1.0 + (a * a - 1.0) * Xi.y));
+        float sinTheta = sqrt(1.0 - cosTheta * cosTheta);
 
-        float3 H = ImportanceSampleGGX(Xi, N, roughness);
+        float3 H;
+        H.x = cos(phi) * sinTheta;
+        H.y = sin(phi) * sinTheta;
+        H.z = cosTheta;
+
         float3 L = normalize(2.0 * dot(V, H) * H - V);
 
         float NoL = saturate(L.z);
-        float NoH = max(H.z, 1e-5);
+        float NoH = saturate(H.z);
         float VoH = saturate(dot(V, H));
 
         if (NoL > 0.0)
         {
-            float Gv =
-                V_SmithGGXCorrelated(NoV, NoL, roughness) *
-                VoH *
-                NoL /
-                NoH;
+            // Correlated Smith GGX Visibility Term
+            // V_SmithGGXCorrelated = G / (4 * NoV * NoL)
+            float a2 = a * a;
+            float GGXV = NoL * sqrt(NoV * NoV * (1.0 - a2) + a2);
+            float GGXL = NoV * sqrt(NoL * NoL * (1.0 - a2) + a2);
+            float Vis = 0.5 / (GGXV + GGXL);
+
+            // PDF = D * NoH / (4 * VoH)
+            // Weight = (BRDF * NoL) / PDF = Vis * 4 * VoH * NoL / NoH
+            float weight = Vis * 4.0 * VoH * NoL / NoH;
 
             float Fc = pow(1.0 - VoH, 5.0);
 
-            // Filament multiscattering DFG
-            result.x += Fc * Gv;
-            result.y += Gv;
+            A += (1.0 - Fc) * weight;
+            B += Fc * weight;
         }
     }
 
-    return result * (4.0 / SAMPLE_COUNT);
+    return float2(A, B) / float(SAMPLE_COUNT);
 }
 
 float3 EvaluateIrradianceSH(

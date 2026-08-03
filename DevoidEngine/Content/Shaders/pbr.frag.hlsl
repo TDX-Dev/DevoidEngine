@@ -85,16 +85,16 @@ float3 ComputeIBL(
     float3 R = reflect(-V, N);
     R.y = -R.y;
 
-    float3 prefiltered =
+    float3 prefiltered = 
         PrefilterMap.SampleLevel(
             EnvironmentSampler,
             R,
             roughness * 8.0).rgb;
 
-    float2 brdf =
-        BRDFLUT.Sample(
-            EnvironmentSampler,
-            float2(NoV, roughness)).rg;
+    float2 brdf = float2(1, 1);
+        //BRDFLUT.Sample(
+        //    EnvironmentSampler,
+        //    float2(NoV, roughness)).rg;
     
     float3 specularColor =
         lerp(brdf.xxx, brdf.yyy, F0);
