@@ -26,7 +26,7 @@ PSInput VSMain(VSInput input)
     output.UV = input.UV;
     
     float3x3 normalMatrix = transpose((float3x3) invModel);
-    float3 N = normalize(mul(normalMatrix, input.Normal));
+    float3 N = mul(normalMatrix, input.Normal);
     float3 T = normalize(mul(normalMatrix, input.Tangent.xyz));
     //float3 B = normalize(mul(normalMatrix, input.BiTangent));
     //float handedness = (dot(cross(N, T), B) < 0.0) ? -1.0 : 1.0;

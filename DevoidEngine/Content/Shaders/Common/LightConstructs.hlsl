@@ -149,41 +149,16 @@ float3 ComputeDiffuseBRDF(
     return kD * albedo / PI;
 }
 
-float3 ComputeClearcoatSpecular(
-    float3 N,
-    float3 V,
-    float3 L,
-    float roughness,
-    float3 F0
-)
-{
-    float3 H = normalize(V + L);
-
-    float NDF = DistributionGGX(N, H, roughness);
-    float G = GeometrySmith(N, V, L, roughness);
-    float3 F = FresnelSchlick(max(dot(H, V), 0.0), F0);
-
-    float3 numerator = NDF * G * F;
-
-    float denom =
-        4.0 *
-        max(dot(N, V), 0.0) *
-        max(dot(N, L), 0.0) +
-        0.0001;
-
-    return numerator / denom;
-}
-
 
 float3 ComputeSpecularBRDF(
     float3 N,
     float3 V,
+    float3 H,
     float3 L,
     float roughness,
     float3 F0
 )
 {
-    float3 H = normalize(V + L);
 
     float NDF = DistributionGGX(N, H, roughness);
     float G = GeometrySmith(N, V, L, roughness);
@@ -231,14 +206,16 @@ float3 ComputeBRDF(
         ComputeSpecularBRDF(
             N,
             V,
+            H,
             L,
             roughness,
             F0);
     
     float3 coat =
-        ComputeClearcoatSpecular(
+        ComputeSpecularBRDF(
             N,
             V,
+            H,
             L,
             clearcoatRoughness,
             float3(0.04, 0.04, 0.04)

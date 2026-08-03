@@ -167,7 +167,7 @@ float4 PSMain(PSInput input) : SV_Target0
     hdr = AgXLook(hdr); // Optional
     hdr = AgXEOTF(hdr);
     
-    //hdr = LinearToSRGB(hdr);
+    hdr = LinearToSRGB(hdr);
     
     //hdr = pow(hdr, 1.0 / 2.2);
     

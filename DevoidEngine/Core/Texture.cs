@@ -100,7 +100,7 @@ namespace DevoidEngine.Core
             });
         }
 
-        public static Texture CreateFromImage2D(ImageData data, TextureUsage usage)
+        public static Texture CreateFromImage2D(ImageData data, TextureUsage usage, TextureFormat? format = null)
         {
             IGraphicsDevice device = Engine.GraphicsDevice;
 
@@ -108,7 +108,7 @@ namespace DevoidEngine.Core
             {
                 Width = data.Width,
                 Height = data.Height,
-                Format = data.Format,
+                Format = format ?? data.Format,
                 Usage = usage,
                 ArraySize = 1,
                 Depth = 1,

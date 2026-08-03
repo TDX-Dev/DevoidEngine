@@ -24,7 +24,7 @@ namespace DevoidEngine.Rendering.PostProcessing
                         Engine.GraphicsDevice,
                         "Content/DevoidShaderDescriptors/tonemap_pass.dsd")));
 
-            material.SetFloat("exposure", 0.7f);
+            material.SetFloat("exposure", 1f);
 
             target = RenderTarget.Create(1);
         }

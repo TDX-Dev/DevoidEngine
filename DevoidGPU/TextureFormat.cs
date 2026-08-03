@@ -18,6 +18,9 @@
         R8_UNorm,
 
         Depth24_Stencil8,
-        Depth32_Float
+        Depth32_Float,
+
+        // Add Formats at the end due to serialization logic
+        RG8_UNorm,
     }
 }

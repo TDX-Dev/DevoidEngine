@@ -76,75 +76,66 @@ float3 ComputeIBL(
 )
 {
     float NoV = saturate(dot(N, V));
-    
+
     float3 F = FresnelSchlickRoughness(NoV, F0, roughness);
-    
-    float3 kS = F;
-    float3 kD = (1.0 - kS) * (1.0 - metallic);
-    
 
-    float3 irradiance = EvaluateIrradianceSH(EnvironmentSH, N) * PI;
+    float3 diffuse =
+        EvaluateIrradianceSH(EnvironmentSH, N) * (albedo * (1.0 - metallic) * (1.0 - F));
 
-    float3 diffuse = irradiance * albedo;
-    
-
-    float3 R = normalize(reflect(-V, N));
+    float3 R = reflect(-V, N);
     R.y = -R.y;
-    
-    float3 Rc = normalize(reflect(-V, Ng.xyz));
-    Rc.y = -Rc.y;
-
-    float mip = roughness * (7);
 
     float3 prefiltered =
         PrefilterMap.SampleLevel(
             EnvironmentSampler,
             R,
-            mip).rgb;
+            roughness * 8.0).rgb;
 
     float2 brdf =
         BRDFLUT.Sample(
             EnvironmentSampler,
             float2(NoV, roughness)).rg;
-
-    float3 specular = prefiltered * (F * brdf.x + brdf.y);
     
-    float NoVc = saturate(dot(Ng.xyz, V));
-
-    float3 Fc = FresnelSchlick(
-    NoVc,
-    float3(0.04, 0.04, 0.04));
-
-    float coatMip =
-    clearcoatRoughness * 7;
-
-    float3 coatPrefilter =
-    PrefilterMap.SampleLevel(
-        EnvironmentSampler,
-        Rc,
-        coatMip).rgb;
-
-    float2 coatBRDF =
-    BRDFLUT.Sample(
-        EnvironmentSampler,
-        float2(NoV, clearcoatRoughness)).rg;
-
-    float3 coatSpecular =
-    coatPrefilter *
-    (Fc * coatBRDF.x + coatBRDF.y);
-
-    //coatSpecular *= clearcoatTint;
+    float3 specularColor =
+        lerp(brdf.xxx, brdf.yyy, F0);
     
+    float3 energyCompensation = 1.0 + F0 * (1.0 / max(brdf.y, 1e-4) - 1.0);
 
-    float3 base =
-        kD * diffuse +
+    float3 specular =
+        prefiltered *
+        specularColor *
+        energyCompensation;
+    
+    float3 result =
+        diffuse +
         specular;
 
-    base *= (1.0 - clearcoat * Fc);
+    float NoVc = saturate(dot(Ng, V));
 
-    return
-        base +
-        coatSpecular * clearcoat;
+    float3 Fc = FresnelSchlick(
+        NoVc,
+        float3(0.04, 0.04, 0.04));
+
+    float3 Rc = reflect(-V, Ng);
+    Rc.y = -Rc.y;
+
+    float3 coatPrefilter =
+        PrefilterMap.SampleLevel(
+            EnvironmentSampler,
+            Rc,
+            clearcoatRoughness * 7.0).rgb;
+
+    float2 coatBRDF =
+        BRDFLUT.Sample(
+            EnvironmentSampler,
+            float2(NoVc, clearcoatRoughness)).rg;
+
+    result *= (1.0 - clearcoat * Fc);
+    result += coatPrefilter *
+              (Fc * coatBRDF.x + coatBRDF.y) *
+              clearcoat;
+
+    return specular;
 }
 
 float4 PSMain(PSInput input) : SV_TARGET
@@ -152,7 +143,6 @@ float4 PSMain(PSInput input) : SV_TARGET
     float2 uv = input.UV;
     
     float3 albedoTex = MAT_AlbedoMap.Sample(MAT_AlbedoSampler, uv).rgb;
-    //albedoTex = pow(albedoTex, 2.2); // sRGB → linear
     float metallicTex = MAT_MetallicMap.Sample(MAT_MetallicSampler, uv).b;
     float roughnessTex = MAT_RoughnessMap.Sample(MAT_RoughnessSampler, uv).g;
     float aoTex = MAT_AOMap.Sample(MAT_AOSampler, uv).r;
@@ -164,23 +154,22 @@ float4 PSMain(PSInput input) : SV_TARGET
     float ao = aoTex * AO;
     float3 emission = emissiveTex * EmissiveColor * EmissiveStrength;
     
-    roughness = max(roughness, 0.04); // avoid zero roughness
+    //roughness = max(roughness, 0.04);
     
     float3 N = GetNormalFromMap(input);
     float3 Ng = normalize(input.Normal);
-    // Position is camera position!
     float3 V = normalize(CameraPosition - input.WorldspacePosition);
     
     float3 F0 = lerp(float3(0.04, 0.04, 0.04), albedo, metallic);
     float3 Lo = 0;
     
-    for (uint i = 0; i < pointLightCount; i++)
+    for (uint iPoint = 0; iPoint < pointLightCount; iPoint++)
     {
-        if (PointLights[i].position.w == 0)
+        if (PointLights[iPoint].position.w == 0)
             continue;
 
         Lo += ComputePointLight(
-            PointLights[i],
+            PointLights[iPoint],
             input.WorldspacePosition,
             N,
             V,
@@ -193,13 +182,13 @@ float4 PSMain(PSInput input) : SV_TARGET
         );
     }
 
-    for (uint i = 0; i < spotLightCount; i++)
+    for (uint iSpot = 0; iSpot < spotLightCount; iSpot++)
     {
-        if (SpotLights[i].position.w == 0)
+        if (SpotLights[iSpot].position.w == 0)
             continue;
 
         float3 lightContribution = ComputeSpotLight(
-            SpotLights[i],
+            SpotLights[iSpot],
             input.WorldspacePosition,
             N,
             V,
@@ -213,21 +202,14 @@ float4 PSMain(PSInput input) : SV_TARGET
         
         float shadow = 0;
 
-        if (SpotLights[i].shadowIndex != -1)
+        if (SpotLights[iSpot].shadowIndex != -1)
         {
             
-            float3 toLight = SpotLights[i].position.xyz - input.WorldspacePosition;
+            float3 toLight = SpotLights[iSpot].position.xyz - input.WorldspacePosition;
             float3 L = normalize(toLight);
-
-            //shadow = ComputeShadow(
-            //    SpotLights[i].shadowIndex,
-            //    input.WorldspacePosition,
-            //    N,
-            //    L
-            //);
             
             shadow = ComputeShadow(
-                SpotLights[i].shadowIndex,
+                SpotLights[iSpot].shadowIndex,
                 input.WorldspacePosition
             );
         }
@@ -235,13 +217,13 @@ float4 PSMain(PSInput input) : SV_TARGET
         Lo += (1 - shadow) * lightContribution;
     }
 
-    for (uint i = 0; i < directionalLightCount; i++)
+    for (uint iDir = 0; iDir < directionalLightCount; iDir++)
     {
-        if (DirectionalLights[i].Direction.w == 0)
+        if (DirectionalLights[iDir].Direction.w == 0)
             continue;
 
         Lo += ComputeDirectionalLight(
-            DirectionalLights[i],
+            DirectionalLights[iDir],
             N,
             V,
             albedo,
@@ -266,10 +248,7 @@ float4 PSMain(PSInput input) : SV_TARGET
         ClearcoatRoughness
     );
 
-    float3 color =
-            ambient +
-            Lo +
-            emission;
+    float3 color = ambient + Lo + emission;
     
     return float4(color, 1.0);
 }

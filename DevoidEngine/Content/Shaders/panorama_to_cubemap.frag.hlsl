@@ -53,6 +53,7 @@ float4 PSMain(PSInput input) : SV_Target
     uv.x = atan2(dir.z, dir.x) / (2 * PI) + 0.5;
     uv.y = asin(dir.y) / PI + 0.5;
 
-    float3 color = MAT_Panorama.Sample(MAT_Panorama_Sampler, uv).rgb;
+    //float3 color = MAT_Panorama.Sample(MAT_Panorama_Sampler, uv).rgb;
+    float3 color = float3(1, 1, 1);
     return float4(color, 1);
 }

@@ -21,6 +21,8 @@ namespace DevoidGPU.DX11
 
                 TextureFormat.RG16_Float => Format.R16G16_Float,
 
+                TextureFormat.RG8_UNorm => Format.R8G8_UNorm,
+
                 TextureFormat.R16_Float => Format.R16_Float,
                 TextureFormat.R32_Float => Format.R32_Float,
 
@@ -155,7 +157,10 @@ namespace DevoidGPU.DX11
                 TextureFormat.R16_Float => 2,
                 TextureFormat.R32_Float => 4,
 
+
                 TextureFormat.RG16_Float => 4,
+
+                TextureFormat.RG8_UNorm => 2,
 
                 TextureFormat.RGBA8_UNorm => 4,
                 TextureFormat.RGBA8_UNorm_SRGB => 4,

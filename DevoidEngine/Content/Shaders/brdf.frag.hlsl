@@ -16,7 +16,7 @@ float2 PSMain(PSInput input) : SV_Target
 
     float NdotV = max(uv.x, 1e-4);
     float roughness = uv.y;
-    roughness = max(roughness, 0.045);
+    //roughness = max(roughness, 0.04);
     
     float2 brdf = IntegrateBRDF(NdotV, roughness);
 

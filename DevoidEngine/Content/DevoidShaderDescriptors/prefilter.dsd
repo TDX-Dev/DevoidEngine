@@ -8,6 +8,11 @@
       "Name": "MAT_Skybox",
       "Type": "TextureCube",
       "Kind": "SampledTexture"
+    },
+    {
+      "Name": "BlueNoise",
+      "Type": "Texture2D",
+      "Kind": "SampledTexture"
     }
   ],
   "Passes": [

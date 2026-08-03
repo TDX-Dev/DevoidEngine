@@ -153,42 +153,47 @@ float3 FresnelSchlickRoughness(float cosTheta, float3 F0, float roughness)
     return F0 + (F90 - F0) * pow(1.0 - cosTheta, 5.0);
 }
 
-float2 IntegrateBRDF(float NdotV, float roughness)
+float2 IntegrateBRDF(float NoV, float roughness)
 {
-    float3 V;
-    V.x = sqrt(1.0 - NdotV * NdotV);
-    V.y = 0.0;
-    V.z = NdotV;
+    float3 V = float3(
+        sqrt(1.0 - NoV * NoV),
+        0.0,
+        NoV);
 
     float3 N = float3(0.0, 0.0, 1.0);
 
-    const uint SAMPLE_COUNT = 1024u;
+    const uint SAMPLE_COUNT = 1024;
 
-    float A = 0.0;
-    float B = 0.0;
+    float2 result = 0.0;
 
-    for (uint i = 0u; i < SAMPLE_COUNT; ++i)
+    for (uint i = 0; i < SAMPLE_COUNT; ++i)
     {
         float2 Xi = Hammersley(i, SAMPLE_COUNT);
+
         float3 H = ImportanceSampleGGX(Xi, N, roughness);
-        float3 L = 2.0 * dot(V, H) * H - V;
-        
-        float NoL = saturate(dot(N, L));
-        float NoH = max(dot(N, H), 1e-5);
+        float3 L = normalize(2.0 * dot(V, H) * H - V);
+
+        float NoL = saturate(L.z);
+        float NoH = max(H.z, 1e-5);
         float VoH = saturate(dot(V, H));
 
         if (NoL > 0.0)
         {
-            float V_pdf = V_SmithGGXCorrelated(NdotV, NoL, roughness) * VoH * NoL / NoH;
+            float Gv =
+                V_SmithGGXCorrelated(NoV, NoL, roughness) *
+                VoH *
+                NoL /
+                NoH;
 
             float Fc = pow(1.0 - VoH, 5.0);
 
-            A += (1.0 - Fc) * V_pdf;
-            B += Fc * V_pdf;
+            // Filament multiscattering DFG
+            result.x += Fc * Gv;
+            result.y += Gv;
         }
     }
 
-    return 4.0 * float2(A, B) / SAMPLE_COUNT;
+    return result * (4.0 / SAMPLE_COUNT);
 }
 
 float3 EvaluateIrradianceSH(

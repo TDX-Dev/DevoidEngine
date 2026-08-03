@@ -21,10 +21,10 @@ namespace DevoidEngine.Rendering
     {
         public int SkyResolution = 1024;
         public int IrradianceResolution = 64;
-        public int PrefilterResolution = 256;
+        public int PrefilterResolution = 512;
         public int BRDFLutResolution = 512;
 
-        public int PrefilterMipLevels = 8;
+        public int PrefilterMipLevels = 9;
 
         public ISky Sky = null!;
 
@@ -59,8 +59,6 @@ namespace DevoidEngine.Rendering
 
         private readonly IComputePipeline ReduceSHPipeline;
 
-        private readonly Texture DebugCube;
-
         private readonly ShaderStorageBuffer<SH9> EnvironmentSH;
 
         private readonly ShaderStorageBuffer<SH9> PartialSH;
@@ -70,6 +68,8 @@ namespace DevoidEngine.Rendering
         private readonly UniformBuffer ReduceInputBuffer;
 
         private readonly uint partialCount;
+
+        private readonly Texture BlueNoisePrefilter;
 
         // End of ze clutter
 
@@ -96,6 +96,8 @@ namespace DevoidEngine.Rendering
                 render_mesh = CubeMesh,
                 //render_material = Sky.Material,
             };
+
+            BlueNoisePrefilter = Texture.CreateFromImage2D(TextureUtil.LoadImage("Content/Noise/LDR_RG01_0.png"), TextureUsage.ShaderResource, TextureFormat.RG8_UNorm);
 
             SkyboxTexture = Texture.CreateCube(SkyResolution, TextureFormat.RGBA16_Float, TextureUsage.RenderTarget | TextureUsage.ShaderResource, (int)(Math.Log2(SkyResolution) + 1));
 
@@ -147,13 +149,6 @@ namespace DevoidEngine.Rendering
 
             ReduceInputBuffer = UniformBuffer.Create(ResourceUsage.Dynamic, (uint)Unsafe.SizeOf<ReduceData>());
 
-            DebugCube =
-    Texture.CreateCube(
-        32,
-        TextureFormat.RGBA16_Float,
-        TextureUsage.UnorderedAccess |
-        TextureUsage.ShaderResource);
-
             CubemapCaptureViews =
             [
                 Matrix4x4.CreateLookAt(Vector3.Zero,  Vector3.UnitX,  -Vector3.UnitY),
@@ -182,6 +177,8 @@ namespace DevoidEngine.Rendering
                 render_mesh = CubeMesh,
                 render_transform = Matrix4x4.Identity
             };
+
+            PrefilterMaterial.SetTexture("BlueNoise", BlueNoisePrefilter);
         }
         public void Render(RenderContext ctx)
         {

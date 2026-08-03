@@ -41,7 +41,7 @@ namespace Sandbox
 
             Console.WriteLine("Sandbox has launched.");
 
-            scene = Asset.Load<PackedScene>("models/env_test.gltf")!.Instantiate();
+            scene = Asset.Load<PackedScene>("models/spheres_pbr_test.gltf")!.Instantiate();
             //scene.GameObjects[0].Transform.Position = new Vector3(0, 5, 0);
 
             Engine.Instance.SceneTree.LoadScene(scene);
@@ -49,14 +49,14 @@ namespace Sandbox
 
             Engine.Renderer.SkyRenderer.Sky = new HDRISky()
             {
-                PanoramaTexture = Asset.Load<Texture>("HDRIs/aperture.hdr")!
+                PanoramaTexture = Asset.Load<Texture>("HDRIs/ferndale_studio.hdr")!
             };
 
-            Engine.Instance.AssetDatabase.TryGetGuid("HDRIs/ferndale_studio.hdr", out Guid fernDale);
+            //Engine.Instance.AssetDatabase.TryGetGuid("models/Tiles133A_2K-JPG_Color.jpg", out Guid fernDale);
 
             //Engine.Instance.AssetDatabase.Reimport(fernDale, MessagePackSerializer.Serialize<TextureImportSettings>(new TextureImportSettings()
             //{
-            //    Format = TextureFormat.RGBA16_Float
+            //    Format = TextureFormat.RGBA8_UNorm
             //}));
 
 
@@ -339,8 +339,8 @@ namespace Sandbox
         }
 
         GameObject go = null!;
-        GameObject meshGo = null!;
-        GameObject meshGo1 = null!;
+        readonly GameObject meshGo = null!;
+        readonly GameObject meshGo1 = null!;
         GameObject lightGo = null!;
 
         Camera3D cam = null!;

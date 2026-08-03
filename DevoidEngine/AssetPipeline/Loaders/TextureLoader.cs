@@ -88,10 +88,7 @@ namespace DevoidEngine.AssetPipeline.Loaders
 
             if (asset.GenerateMipmaps)
             {
-                Engine.Renderer.EnqueueGPUCommand((ICommandList cmd) =>
-                {
-                    cmd.GenerateMipmaps(texture.GPU);
-                });
+                Engine.Renderer.EnqueueGPUCommand(cmd => cmd.GenerateMipmaps(texture.GPU));
             }
 
             return texture;
