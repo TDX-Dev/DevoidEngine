@@ -41,22 +41,23 @@ namespace Sandbox
 
             Console.WriteLine("Sandbox has launched.");
 
-            scene = new Scene();//Asset.Load<PackedScene>("models/turret_advanced.gltf")!.Instantiate();
-            //scene.GameObjects[0].Transform.Position = new Vector3(0, 10, 0);
+            scene = Asset.Load<PackedScene>("models/env_test.gltf")!.Instantiate();
+            //scene.GameObjects[0].Transform.Position = new Vector3(0, 5, 0);
+
             Engine.Instance.SceneTree.LoadScene(scene);
             scene.Play();
 
-
-            Engine.Instance.AssetDatabase.TryGetGuid("HDRIs/blender_conference.hdr", out Guid hdriGuid);
-            Engine.Instance.AssetDatabase.Reimport(hdriGuid, MessagePackSerializer.Serialize<TextureImportSettings>(new TextureImportSettings()
-            {
-                Format = TextureFormat.RGBA32_Float
-            }));
-
             Engine.Renderer.SkyRenderer.Sky = new HDRISky()
             {
-                PanoramaTexture = Asset.Load<Texture>("HDRIs/blender_conference.hdr")!
+                PanoramaTexture = Asset.Load<Texture>("HDRIs/aperture.hdr")!
             };
+
+            Engine.Instance.AssetDatabase.TryGetGuid("HDRIs/ferndale_studio.hdr", out Guid fernDale);
+
+            //Engine.Instance.AssetDatabase.Reimport(fernDale, MessagePackSerializer.Serialize<TextureImportSettings>(new TextureImportSettings()
+            //{
+            //    Format = TextureFormat.RGBA16_Float
+            //}));
 
 
             PBRMaterial = new MaterialInstance(Engine.Renderer.DefaultMaterial);
@@ -68,55 +69,56 @@ namespace Sandbox
             //Texture dvsTex = Texture.CreateFromImage2D(TextureUtil.LoadImage("Assets/mesh_tex.png"), TextureUsage.ShaderResource);
             Texture terrTex = Asset.Load<Texture>("ground_tex.png")!;
 
-            GroundPBRMaterial.SetTexture("MAT_AlbedoMap", terrTex);
-            GroundPBRMaterial.SetFloat("Roughness", 0.2f);
+            //GroundPBRMaterial.SetTexture("MAT_AlbedoMap", terrTex);
+            GroundPBRMaterial.SetFloat("Roughness", 1f);
+            GroundPBRMaterial.SetFloat("Metallic", 0f);
 
 
             PBRMaterial.SetTexture("MAT_AlbedoMap", dvsTex);
-            PBRMaterial.SetFloat("Roughness", 0.2f);
+            PBRMaterial.SetFloat("Roughness", 0f);
 
             go = scene.AddGameObject("Hello World");
 
             cam = go.AddComponent<Camera3D>();
 
-            meshGo = scene.AddGameObject("Hello Mesh Object");
-            MeshRenderer meshRenderer = meshGo.AddComponent<MeshRenderer>();
-            meshRenderer.Mesh = PrimitiveMeshes.GetCube();
-            meshRenderer.Material = GroundPBRMaterial;
-            meshGo.Transform.Scale = new Vector3(20, 1f, 20);
-            StaticColliderComponent sb = meshGo.AddComponent<StaticColliderComponent>();
-            sb.Shape = new DevoidEngine.Physics.PhysicsShapeDescription()
-            {
-                Type = DevoidEngine.Physics.PhysicsShapeType.Box,
-                Size = new Vector3(20, 1f, 20),
+            //meshGo = scene.AddGameObject("Hello Mesh Object");
+            //MeshRenderer meshRenderer = meshGo.AddComponent<MeshRenderer>();
+            //meshRenderer.Mesh = PrimitiveMeshes.GetCube();
+            //meshRenderer.Material = GroundPBRMaterial;
+            //meshGo.Transform.Scale = new Vector3(20, 1f, 20);
+            //StaticColliderComponent sb = meshGo.AddComponent<StaticColliderComponent>();
+            //sb.Shape = new DevoidEngine.Physics.PhysicsShapeDescription()
+            //{
+            //    Type = DevoidEngine.Physics.PhysicsShapeType.Box,
+            //    Size = new Vector3(20, 1f, 20),
 
-            };
+            //};
 
-            meshGo1 = scene.AddGameObject("Hello Mesh 2 Object");
-            MeshRenderer meshRenderer1 = meshGo1.AddComponent<MeshRenderer>();
-            meshRenderer1.Mesh = PrimitiveMeshes.GetCube();
-            meshRenderer1.Material = PBRMaterial;
-            meshGo1.Transform.Position = new Vector3(0, 10, 0);
-            RigidBodyComponent rb = meshGo1.AddComponent<RigidBodyComponent>();
+            //meshGo1 = scene.AddGameObject("Hello Mesh 2 Object");
+            //MeshRenderer meshRenderer1 = meshGo1.AddComponent<MeshRenderer>();
+            //meshRenderer1.Mesh = PrimitiveMeshes.GetCube();
+            //meshRenderer1.Material = PBRMaterial;
+            //meshGo1.Transform.Position = new Vector3(0, 10, 0);
+            //RigidBodyComponent rb = meshGo1.AddComponent<RigidBodyComponent>();
 
-            GameObject childObject = scene.AddGameObject("PhyChildObj");
-            MeshRenderer meshRenderer2 = childObject.AddComponent<MeshRenderer>();
-            meshRenderer2.Mesh = PrimitiveMeshes.GetCube();
-            meshRenderer2.Material = PBRMaterial;
-            childObject.SetParent(meshGo1);
-            childObject.Transform.LocalPosition = new Vector3(0, 2, -2);
+            //GameObject childObject = scene.AddGameObject("PhyChildObj");
+            //MeshRenderer meshRenderer2 = childObject.AddComponent<MeshRenderer>();
+            //meshRenderer2.Mesh = PrimitiveMeshes.GetUVSphere();
+            //meshRenderer2.Material = GroundPBRMaterial;
+            //childObject.SetParent(meshGo1);
+            //childObject.Transform.LocalPosition = new Vector3(0, 2, -2);
 
-            rb.Shape = new DevoidEngine.Physics.PhysicsShapeDescription()
-            {
-                Radius = 1,
-                Type = DevoidEngine.Physics.PhysicsShapeType.Sphere
-            };
+            //rb.Shape = new DevoidEngine.Physics.PhysicsShapeDescription()
+            //{
+            //    Radius = 1,
+            //    Type = DevoidEngine.Physics.PhysicsShapeType.Sphere
+            //};
 
 
             lightGo = scene.AddGameObject("Light Object");
             LightComponent light = lightGo.AddComponent<LightComponent>();
             light.LightType = LightType.DirectionalLight;
-            light.Intensity = 5;
+            light.Intensity = 0;
             light.Radius = 100;
             light.InnerCutoff = 30;
             light.OuterCutoff = 35;
@@ -179,13 +181,13 @@ namespace Sandbox
                 Control = (ushort)Keys.L
             });
 
-            Engine.InputSystem.Map.Bind("Impulse", new InputBinding()
-            {
-                DeviceType = InputDeviceType.Keyboard,
-                Control = (ushort)Keys.P
-            });
+            //Engine.InputSystem.Map.Bind("Impulse", new InputBinding()
+            //{
+            //    DeviceType = InputDeviceType.Keyboard,
+            //    Control = (ushort)Keys.P
+            //});
 
-            SetupUI();
+            //SetupUI();
         }
 
         void SetupUI()

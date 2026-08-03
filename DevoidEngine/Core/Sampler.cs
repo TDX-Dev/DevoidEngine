@@ -9,12 +9,15 @@ namespace DevoidEngine.Core
         public ISampler GPU => gpuSampler;
         public static Sampler Default => Create(new SamplerDescription()
         {
-            AddressU = WrapMode.ClampToEdge,
-            AddressV = WrapMode.ClampToEdge,
-            AddressW = WrapMode.ClampToEdge,
+            AddressU = WrapMode.MirrorRepeat,
+            AddressV = WrapMode.MirrorRepeat,
+            AddressW = WrapMode.MirrorRepeat,
             MagFilter = FilterMode.Linear,
             MinFilter = FilterMode.Linear,
             MipFilter = FilterMode.Linear,
+            MinLOD = 0f,
+            MaxLOD = float.MaxValue,
+            MaxAnisotropy = 1,
         });
 
         public SamplerDescription Description { get; }

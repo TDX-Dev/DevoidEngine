@@ -4,12 +4,7 @@
     {
         public List<UniformBufferInfo> UniformBuffers { get; } = [];
         public List<ShaderResourceInfo> Resources { get; } = [];
-        public List<TextureBindingInfo> TextureBindings { get; } = [];
-        public List<SamplerBindingInfo> SamplerBindings { get; } = [];
         public List<InputParameterInfo> InputParameters { get; } = [];
-
-        public List<StorageBufferBindingInfo> StorageBufferBindings { get; } = [];
-        public List<StorageTextureBindingInfo> StorageTextureBindings { get; } = [];
 
 
         public int GetUniformBufferSlot(string name)
@@ -50,14 +45,9 @@
                     }
                 }
 
-                foreach (TextureBindingInfo texture in reflection.TextureBindings)
+                foreach (ShaderResourceInfo resource in reflection.Resources)
                 {
-                    AddTexture(result, texture);
-                }
-
-                foreach (SamplerBindingInfo sampler in reflection.SamplerBindings)
-                {
-                    AddSampler(result, sampler);
+                    AddResource(result, resource);
                 }
 
                 foreach (InputParameterInfo input in reflection.InputParameters)
@@ -105,56 +95,28 @@
             existing.Stages |= buffer.Stages;
         }
 
-        private static void AddTexture(
+        private static void AddResource(
             ShaderReflectionData result,
-            TextureBindingInfo texture)
+            ShaderResourceInfo resource)
         {
-            TextureBindingInfo? existing =
-                result.TextureBindings.FirstOrDefault(x =>
-                    string.Equals(
-                        x.Name,
-                        texture.Name,
+            ShaderResourceInfo? existing =
+                result.Resources.FirstOrDefault(x =>
+                    string.Equals(x.Name, resource.Name,
                         StringComparison.OrdinalIgnoreCase));
 
             if (existing == null)
             {
-                result.TextureBindings.Add(texture);
+                result.Resources.Add(resource);
                 return;
             }
 
-            if (existing.BindSlot != texture.BindSlot)
-            {
-                throw new Exception(
-                    $"Texture '{texture.Name}' uses different slots.");
-            }
+            if (existing.BindSlot != resource.BindSlot)
+                throw new Exception($"Resource '{resource.Name}' uses different slots.");
 
-            existing.Stage |= texture.Stage;
-        }
+            if (existing.Type != resource.Type)
+                throw new Exception($"Resource '{resource.Name}' uses different types.");
 
-        private static void AddSampler(
-            ShaderReflectionData result,
-            SamplerBindingInfo sampler)
-        {
-            SamplerBindingInfo? existing =
-                result.SamplerBindings.FirstOrDefault(x =>
-                    string.Equals(
-                        x.Name,
-                        sampler.Name,
-                        StringComparison.OrdinalIgnoreCase));
-
-            if (existing == null)
-            {
-                result.SamplerBindings.Add(sampler);
-                return;
-            }
-
-            if (existing.BindSlot != sampler.BindSlot)
-            {
-                throw new Exception(
-                    $"Sampler '{sampler.Name}' uses different slots.");
-            }
-
-            existing.Stage |= sampler.Stage;
+            existing.Stage |= resource.Stage;
         }
 
 
@@ -166,8 +128,6 @@
             Console.WriteLine("======================================================");
 
             Console.WriteLine($"Uniform Buffers : {reflection.UniformBuffers.Count}");
-            Console.WriteLine($"Textures        : {reflection.TextureBindings.Count}");
-            Console.WriteLine($"Samplers        : {reflection.SamplerBindings.Count}");
             Console.WriteLine($"Resources       : {reflection.Resources.Count}");
             Console.WriteLine($"Input Params    : {reflection.InputParameters.Count}");
             Console.WriteLine();
@@ -195,38 +155,16 @@
                 Console.WriteLine();
             }
 
-            Console.WriteLine("Textures");
-            Console.WriteLine("--------");
-
-            foreach (var texture in reflection.TextureBindings)
-            {
-                Console.WriteLine(
-                    $"{texture.Name,-24} " +
-                    $"Slot={texture.BindSlot}  " +
-                    $"Stages={texture.Stage}");
-            }
-
-            Console.WriteLine();
-
-            Console.WriteLine("Samplers");
-            Console.WriteLine("--------");
-
-            foreach (var sampler in reflection.SamplerBindings)
-            {
-                Console.WriteLine(
-                    $"{sampler.Name,-24} " +
-                    $"Slot={sampler.BindSlot}  " +
-                    $"Stages={sampler.Stage}");
-            }
-
-            Console.WriteLine();
-
             Console.WriteLine("Resources");
             Console.WriteLine("---------");
 
             foreach (var resource in reflection.Resources)
             {
-                Console.WriteLine(resource.Name);
+                Console.WriteLine(
+                    $"{resource.Name,-24} " +
+                    $"Type={resource.Type,-20} " +
+                    $"Slot={resource.BindSlot} " +
+                    $"Stages={resource.Stage}");
             }
 
             Console.WriteLine();

@@ -20,10 +20,28 @@ struct PSInput
 PSInput VSMain(VSInput input)
 {
     PSInput output;
-    float4 worldPos = mul(Model, float4(input.Position, 1.0));
-    output.Position = mul(Projection, mul(View, worldPos));
-    output.WorldspacePosition = worldPos.xyz;
+
+    float3 localPos = input.Position;
+
+    // Remove camera translation
+    float4x4 view = View;
+    view._14 = 0.0;
+    view._24 = 0.0;
+    view._34 = 0.0;
+
+    float4 clip = mul(Projection,
+                 mul(view,
+                 float4(localPos, 1.0)));
+
+    // Force the skybox to the far plane
+    clip.z = clip.w;
+
+    output.Position = clip;
+
+    // Cubemap lookup direction
+    output.WorldspacePosition = localPos;
+
     output.UV = input.UV;
-    
+
     return output;
 }

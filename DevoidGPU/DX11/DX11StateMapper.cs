@@ -376,5 +376,43 @@ namespace DevoidGPU.DX11
         {
             return (size + 15ul) & ~15ul;
         }
+
+        public static Filter ToDXFilter(
+            FilterMode min,
+            FilterMode mag,
+            FilterMode mip,
+            int anisotropy
+        )
+        {
+            if (anisotropy > 1)
+                return Filter.Anisotropic;
+
+            bool minLinear = min == FilterMode.Linear;
+            bool magLinear = mag == FilterMode.Linear;
+            bool mipLinear = mip == FilterMode.Linear;
+
+            if (!minLinear && !magLinear && !mipLinear)
+                return Filter.MinMagMipPoint;
+
+            if (!minLinear && !magLinear && mipLinear)
+                return Filter.MinMagPointMipLinear;
+
+            if (!minLinear && magLinear && !mipLinear)
+                return Filter.MinPointMagLinearMipPoint;
+
+            if (!minLinear && magLinear && mipLinear)
+                return Filter.MinPointMagMipLinear;
+
+            if (minLinear && !magLinear && !mipLinear)
+                return Filter.MinLinearMagMipPoint;
+
+            if (minLinear && !magLinear && mipLinear)
+                return Filter.MinLinearMagPointMipLinear;
+
+            if (minLinear && magLinear && !mipLinear)
+                return Filter.MinMagLinearMipPoint;
+
+            return Filter.MinMagMipLinear;
+        }
     }
 }

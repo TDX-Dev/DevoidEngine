@@ -15,8 +15,8 @@ namespace DevoidEngine.Core
 
 
         private readonly Dictionary<string, ShaderVariableInfo> variables;
-        private readonly Dictionary<string, TextureBindingInfo> textureBindings;
-        private readonly Dictionary<string, SamplerBindingInfo> samplerBindings;
+        private readonly Dictionary<string, ShaderResourceInfo> textureBindings;
+        private readonly Dictionary<string, ShaderResourceInfo> samplerBindings;
 
         private readonly Dictionary<string, Texture> textures;
         private readonly Dictionary<string, Sampler> samplers;
@@ -60,12 +60,8 @@ namespace DevoidEngine.Core
 
             foreach (var texture in layout.Textures)
             {
-                textureBindings[texture.Key] =
-                    texture.Value;
-
+                textureBindings[texture.Key] = texture.Value;
                 textures[texture.Key] = Texture.Default;
-
-                Console.WriteLine(texture.Key);
             }
 
             foreach (var sampler in layout.Samplers)
@@ -81,8 +77,9 @@ namespace DevoidEngine.Core
         public bool HasTextureBinding(string name)
             => textureBindings.ContainsKey(name);
 
-        public TextureBindingInfo GetTextureBinding(string name)
+        public ShaderResourceInfo GetTextureBinding(string name)
             => textureBindings[name];
+
 
         public Texture GetDefaultTexture(string name)
             => textures[name];
@@ -93,10 +90,10 @@ namespace DevoidEngine.Core
         public ReadOnlySpan<byte> GetDefaultMaterialBuffer()
             => defaultBuffer;
 
-        public Dictionary<string, TextureBindingInfo> GetTextureBindings()
+        public Dictionary<string, ShaderResourceInfo> GetTextureBindings()
             => textureBindings;
 
-        public Dictionary<string, SamplerBindingInfo> GetSamplerBindings()
+        public Dictionary<string, ShaderResourceInfo> GetSamplerBindings()
             => samplerBindings;
 
         public void SetTexture(string name, Texture texture)

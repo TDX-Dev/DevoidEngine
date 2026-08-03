@@ -13,7 +13,7 @@ namespace DevoidEngine.AssetPipeline.Loaders
     internal class MeshLoader : IAssetLoader<Mesh>
     {
         public string RuntimeExtension => "mesh";
-        public Mesh Load(ReadOnlySpan<byte> data)
+        public Mesh Load(byte[] data)
         {
             MeshAsset asset;
 

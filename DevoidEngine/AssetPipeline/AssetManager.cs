@@ -70,7 +70,7 @@ namespace DevoidEngine.AssetPipeline
                 if (loaded is AssetType assetType)
                     assetType.Guid = guid;
 
-                AssetCache<T>.Cache[guid] = loaded;
+                //AssetCache<T>.Cache[guid] = loaded;
 
                 return loaded;
             }

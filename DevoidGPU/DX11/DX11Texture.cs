@@ -369,8 +369,6 @@ namespace DevoidGPU.DX11
                         GetRowPitch(),
                         GetSlicePitch());
 
-                    var bytes = data.ToArray();
-
                     //Console.WriteLine(
                     //    string.Join(" ",
                     //        bytes.Select(x => x.ToString("X2"))));

@@ -1,4 +1,5 @@
 ﻿using DevoidEngine.Core;
+using DevoidEngine.Rendering.PostProcessing;
 using DevoidEngine.UI;
 using DevoidEngine.Util;
 using DevoidGPU;
@@ -47,9 +48,10 @@ namespace DevoidEngine.Rendering
         public RenderTarget UIRenderTarget { get; private set; } = null!;
         public UniformBuffer CameraBuffer { get; private set; } = null!;
         public UniformBuffer SceneBuffer { get; private set; } = null!;
-        public UniformBuffer EnvironmentBuffer { get; private set; } = null!;
         public UniformBuffer PerObjectBuffer { get; private set; } = null!;
         public SkyRenderer SkyRenderer { get; private set; } = null!;
+
+        public PostProcessor PostProcessor { get; private set; } = null!;
 
         public EnvironmentLighting Environment => SkyRenderer.Environment;
 
@@ -70,6 +72,8 @@ namespace DevoidEngine.Rendering
 
         private Pool<RenderMeshData> uiRenderPool = null!;
         private readonly List<RenderMeshData> uiRenderCache = [];
+
+        private readonly Queue<Action<ICommandList>> pendingGpuCommands = [];
 
         public void PushViewport(ICommandList cmd, ViewportRect viewport)
         {
@@ -139,11 +143,6 @@ namespace DevoidEngine.Rendering
                     Type = DescriptorType.UniformBuffer
                 },
                 new() {
-                    Binding = 3,
-                    Stages = DevoidGPU.ShaderStage.Fragment,
-                    Type = DescriptorType.UniformBuffer
-                },
-                new() {
                     Binding = 10,
                     Stages = DevoidGPU.ShaderStage.Fragment,
                     Type = DescriptorType.StorageBuffer
@@ -157,6 +156,26 @@ namespace DevoidEngine.Rendering
                     Binding = 12,
                     Stages = DevoidGPU.ShaderStage.Fragment,
                     Type = DescriptorType.StorageBuffer
+                },
+                new() {
+                    Binding = 15,
+                    Stages = DevoidGPU.ShaderStage.Fragment,
+                    Type = DescriptorType.Texture
+                },
+                new() {
+                    Binding = 16,
+                    Stages = DevoidGPU.ShaderStage.Fragment,
+                    Type = DescriptorType.Texture
+                },
+                new() {
+                    Binding = 17,
+                    Stages = DevoidGPU.ShaderStage.Fragment,
+                    Type = DescriptorType.StorageBuffer
+                },
+                new() {
+                    Binding = 18,
+                    Stages = DevoidGPU.ShaderStage.Fragment,
+                    Type = DescriptorType.Texture
                 }
             ]);
 
@@ -175,11 +194,9 @@ namespace DevoidEngine.Rendering
             CameraBuffer = UniformBuffer.Create(ResourceUsage.Dynamic, (uint)Unsafe.SizeOf<CameraData>());
             PerObjectBuffer = UniformBuffer.Create(ResourceUsage.Dynamic, (uint)Unsafe.SizeOf<MeshRenderData>());
             SceneBuffer = UniformBuffer.Create(ResourceUsage.Dynamic, (uint)Unsafe.SizeOf<SceneData>());
-            EnvironmentBuffer = UniformBuffer.Create(ResourceUsage.Dynamic, (uint)Unsafe.SizeOf<EnvironmentData>());
 
             PerCameraDescriptor.SetUniformBuffer(0, CameraBuffer.GPU);
             PerCameraDescriptor.SetUniformBuffer(2, SceneBuffer.GPU);
-            PerCameraDescriptor.SetUniformBuffer(3, EnvironmentBuffer.GPU);
             PerObjectDescriptor.SetUniformBuffer(1, PerObjectBuffer.GPU);
 
             API = new RenderAPI();
@@ -195,6 +212,10 @@ namespace DevoidEngine.Rendering
 
             SkyRenderer = new SkyRenderer();
 
+            PostProcessor = new PostProcessor();
+
+            PostProcessor.AddPass(new TonemapPass());
+
             ActiveTechnique.Initialize();
         }
 
@@ -202,6 +223,8 @@ namespace DevoidEngine.Rendering
         {
             if (viewport.Camera3D == null || ActiveTechnique == null)
                 return;
+
+            ExecutePendingGPUCommands(cmd);
 
             PopViewport(cmd);
             PushViewport(cmd, new ViewportRect()
@@ -225,6 +248,8 @@ namespace DevoidEngine.Rendering
                 Resources = viewportResources
             };
 
+            SkyRenderer.Render(context);
+
             renderView.Clear();
             World.BuildView(camera, ref renderView);
 
@@ -233,14 +258,19 @@ namespace DevoidEngine.Rendering
             UpdateSceneData(renderView);
             UpdateLights(renderView);
 
-            SkyRenderer.Render(context);
             RenderTarget activeTechniqueTarget = ActiveTechnique.Render(context, renderView);
+
+            Texture finalColor = PostProcessor.Run(
+                this,
+                context,
+                activeTechniqueTarget.ColorTextures[0]!
+            );
 
             RenderUI(cmd, viewport, viewportResources);
 
             ViewportBlitTarget.SetColorAttachment(0, viewport.OutputTexture!);
             cmd.SetFramebuffer(ViewportBlitTarget.GPU);
-            API.RenderToScreen(cmd, activeTechniqueTarget.ColorTextures[0]!);
+            API.RenderToScreen(cmd, finalColor);
             API.RenderToScreen(cmd, UIRenderTarget.ColorTextures[0]!);
         }
 
@@ -401,9 +431,13 @@ namespace DevoidEngine.Rendering
             });
         }
 
-        public void UpdateEnvironmentData(EnvironmentData envData)
+        public void UpdateEnvironment(EnvironmentLighting env)
         {
-            EnvironmentBuffer.Update(envData);
+            PerCameraDescriptor.SetTexture(15, env.Skybox.GPU);
+            PerCameraDescriptor.SetTexture(16, env.Prefilter.GPU);
+            PerCameraDescriptor.SetTexture(18, env.BrdfLut.GPU);
+
+            PerCameraDescriptor.SetShaderStorageBuffer(17, env.SH9.GPU);
         }
         public void UpdateLights(RenderView view)
         {
@@ -481,6 +515,26 @@ namespace DevoidEngine.Rendering
 
 
                 item.render_mesh.Draw(cmd);
+            }
+        }
+
+        public void EnqueueGPUCommand(Action<ICommandList> action)
+        {
+            lock (pendingGpuCommands)
+            {
+                pendingGpuCommands.Enqueue(action);
+            }
+        }
+        private void ExecutePendingGPUCommands(ICommandList cmd)
+        {
+            lock (pendingGpuCommands)
+            {
+                foreach (var action in pendingGpuCommands)
+                {
+                    action(cmd);
+                }
+
+                pendingGpuCommands.Clear();
             }
         }
 

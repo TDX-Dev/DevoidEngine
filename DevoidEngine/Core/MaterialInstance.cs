@@ -74,7 +74,7 @@ namespace DevoidEngine.Core
             foreach (var kv in BaseMaterial.GetTextureBindings())
             {
                 string name = kv.Key;
-                TextureBindingInfo binding = kv.Value;
+                ShaderResourceInfo binding = kv.Value;
 
                 Texture texture =
                     BaseMaterial.GetDefaultTexture(name);
@@ -88,7 +88,7 @@ namespace DevoidEngine.Core
             {
                 string name = kv.Key;
 
-                SamplerBindingInfo binding = kv.Value;
+                ShaderResourceInfo binding = kv.Value;
 
                 Sampler sampler = BaseMaterial.GetDefaultSampler(name);
 
@@ -160,7 +160,7 @@ namespace DevoidEngine.Core
 
             textureOverrides[name] = texture ?? Texture.Default;
 
-            TextureBindingInfo binding = BaseMaterial.GetTextureBinding(name);
+            ShaderResourceInfo binding = BaseMaterial.GetTextureBinding(name);
 
             descriptorSet.SetTexture((uint)binding.BindSlot, texture?.GPU ?? Texture.Default.GPU);
         }
@@ -169,7 +169,7 @@ namespace DevoidEngine.Core
         {
             textureOverrides.Remove(name);
 
-            TextureBindingInfo binding =
+            ShaderResourceInfo binding =
                 BaseMaterial.GetTextureBinding(name);
 
             descriptorSet.SetTexture(

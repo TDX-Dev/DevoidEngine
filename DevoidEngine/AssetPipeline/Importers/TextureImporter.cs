@@ -2,6 +2,8 @@
 using DevoidEngine.Util;
 using DevoidGPU;
 using MessagePack;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace DevoidEngine.AssetPipeline.Importers
 {
@@ -22,6 +24,13 @@ namespace DevoidEngine.AssetPipeline.Importers
 
         public override void Import(ImportContext context, TextureImportSettings settings)
         {
+            TextureFormat outputFormat = settings.Format;
+
+            if (settings.SRGB && settings.Format == TextureFormat.RGBA8_UNorm)
+            {
+                outputFormat = TextureFormat.RGBA8_UNorm_SRGB;
+            }
+
             byte[] fileBytes = File.ReadAllBytes(context.AssetPath);
 
             ImageData image = TextureUtil.LoadImage(fileBytes);
@@ -32,25 +41,54 @@ namespace DevoidEngine.AssetPipeline.Importers
 
             byte[] pixels;
 
-            switch (settings.Format)
+            switch (outputFormat)
             {
                 case TextureFormat.RGBA8_UNorm:
+                case TextureFormat.RGBA8_UNorm_SRGB:
                     {
                         pixels = data;
-
                         break;
                     }
 
                 case TextureFormat.RGBA16_Float:
                     {
-                        pixels = new byte[width * height * 4 * sizeof(ushort)];
-
-                        for (int i = 0; i < data.Length; i++)
+                        if (image.Format == TextureFormat.RGBA8_UNorm)
                         {
-                            ushort bits = (ushort)BitConverter.HalfToUInt16Bits((Half)data[i]);
+                            pixels = new byte[width * height * 4 * Unsafe.SizeOf<Half>()];
 
-                            pixels[i * 2 + 0] = (byte)(bits & 0xFF);
-                            pixels[i * 2 + 1] = (byte)(bits >> 8);
+                            for (int i = 0; i < data.Length; i++)
+                            {
+                                float value = data[i] / 255.0f;
+
+                                if (settings.SRGB)
+                                    value = TextureUtil.SRGBToLinear(value);
+
+                                Half h = (Half)value;
+                                ushort bits = (ushort)BitConverter.HalfToUInt16Bits(h);
+
+                                pixels[i * 2 + 0] = (byte)(bits & 0xFF);
+                                pixels[i * 2 + 1] = (byte)(bits >> 8);
+                            }
+                        }
+                        else if (image.Format == TextureFormat.RGBA32_Float)
+                        {
+                            ReadOnlySpan<float> floats =
+                                MemoryMarshal.Cast<byte, float>(data);
+
+                            pixels = new byte[floats.Length * Unsafe.SizeOf<Half>()];
+
+                            for (int i = 0; i < floats.Length; i++)
+                            {
+                                Half h = (Half)floats[i];
+                                ushort bits = (ushort)BitConverter.HalfToUInt16Bits(h);
+
+                                pixels[i * 2 + 0] = (byte)(bits & 0xFF);
+                                pixels[i * 2 + 1] = (byte)(bits >> 8);
+                            }
+                        }
+                        else
+                        {
+                            throw new NotSupportedException();
                         }
 
                         break;
@@ -70,7 +108,7 @@ namespace DevoidEngine.AssetPipeline.Importers
             {
                 Width = width,
                 Height = height,
-                Format = settings.Format,
+                Format = outputFormat,
                 Filter = settings.Filter,
                 Wrap = settings.Wrap,
                 Anisotropy = settings.Anisotropy,

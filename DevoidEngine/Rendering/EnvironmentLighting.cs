@@ -1,4 +1,5 @@
 ﻿using DevoidEngine.Core;
+using DevoidEngine.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,25 +8,13 @@ using System.Threading.Tasks;
 
 namespace DevoidEngine.Rendering
 {
-    public sealed class EnvironmentLighting : IDisposable
+    public sealed class EnvironmentLighting
     {
-        // Background
-        public Texture SkyCubemap = null!;
+        public Texture Skybox = null!;
+        public Texture Irradiance = null!;
+        public Texture Prefilter = null!;
+        public Texture BrdfLut = null!;
 
-        // Diffuse IBL
-        public Texture IrradianceMap = null!;
-
-        // Specular IBL
-        public Texture PrefilterMap = null!;
-
-        // BRDF Integration
-        public Texture BRDFLUT = null!;
-
-        public void Dispose()
-        {
-            SkyCubemap?.Dispose();
-            IrradianceMap?.Dispose();
-            PrefilterMap?.Dispose();
-        }
+        public ShaderStorageBuffer<SH9> SH9 = null!;
     }
 }

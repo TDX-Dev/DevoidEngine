@@ -8,6 +8,9 @@ namespace DevoidGPU.DX11
 {
     internal sealed class DX11CommandList : ICommandList
     {
+        private const int MaxSRVs = 24;
+
+
         public CommandListType Type { get; }
 
 
@@ -15,21 +18,19 @@ namespace DevoidGPU.DX11
 
         // binding cache;
         private DX11Framebuffer? currentFramebuffer;
-        private int currentMip;
-        private int currentSlice;
         private (int, int, int, int) currentViewport;
 
-        private readonly DX11Texture?[] boundPS_SRVs = new DX11Texture?[16];
-        private readonly DX11Texture?[] boundVS_SRVs = new DX11Texture?[16];
-        private readonly DX11Texture?[] boundCS_SRVs = new DX11Texture?[16];
+        private readonly DX11Texture?[] boundPS_SRVs = new DX11Texture?[MaxSRVs];
+        private readonly DX11Texture?[] boundVS_SRVs = new DX11Texture?[MaxSRVs];
+        private readonly DX11Texture?[] boundCS_SRVs = new DX11Texture?[MaxSRVs];
 
 
         private readonly DX11Texture?[] boundRTVs = new DX11Texture?[8];
         private DX11Texture? boundDSV;
 
-        private readonly DX11ShaderStorageBuffer?[] boundPS_SSBOs = new DX11ShaderStorageBuffer?[16];
-        private readonly DX11ShaderStorageBuffer?[] boundVS_SSBOs = new DX11ShaderStorageBuffer?[16];
-        private readonly DX11ShaderStorageBuffer?[] boundCS_SSBOs = new DX11ShaderStorageBuffer?[16];
+        private readonly DX11ShaderStorageBuffer?[] boundPS_SSBOs = new DX11ShaderStorageBuffer?[MaxSRVs];
+        private readonly DX11ShaderStorageBuffer?[] boundVS_SSBOs = new DX11ShaderStorageBuffer?[MaxSRVs];
+        private readonly DX11ShaderStorageBuffer?[] boundCS_SSBOs = new DX11ShaderStorageBuffer?[MaxSRVs];
 
         private readonly DX11Texture?[] boundCS_UAVTextures = new DX11Texture?[8];
         private readonly DX11ShaderStorageBuffer?[] boundCS_UAVBuffers = new DX11ShaderStorageBuffer?[8];
@@ -70,19 +71,15 @@ namespace DevoidGPU.DX11
             deviceContext.Rasterizer.SetScissorRectangle(x, y, width, height);
         }
 
-        public void SetFramebuffer(IFrameBuffer framebuffer, int mipLevel = 0, int arraySlice = 0)
+        public void SetFramebuffer(IFrameBuffer framebuffer)
         {
             DX11Framebuffer dx11Fb = (DX11Framebuffer)framebuffer;
-            if (ReferenceEquals(currentFramebuffer, dx11Fb) &&
-                currentMip == mipLevel &&
-                currentSlice == arraySlice)
-            {
+
+            if (ReferenceEquals(currentFramebuffer, dx11Fb) && !dx11Fb.Dirty)
                 return;
-            }
 
             currentFramebuffer = dx11Fb;
-            currentMip = mipLevel;
-            currentSlice = arraySlice;
+            dx11Fb.Dirty = false;
 
             dx11Fb.ValidateFrameBuffer();
 
@@ -91,13 +88,10 @@ namespace DevoidGPU.DX11
                 if (dx11Fb.ColorAttachments[i] is DX11Texture tex)
                 {
                     ResolveForRTV(tex);
-
-                    dx11Fb.RTVs[i] = tex.GetRTV(mipLevel, arraySlice);
                     boundRTVs[i] = tex;
                 }
                 else
                 {
-                    dx11Fb.RTVs[i] = null;
                     boundRTVs[i] = null;
                 }
             }
@@ -105,13 +99,17 @@ namespace DevoidGPU.DX11
             if (dx11Fb.DepthAttachment is DX11Texture depth)
             {
                 ResolveForRTV(depth);
-
                 boundDSV = depth;
             }
+            else
+            {
+                boundDSV = null;
+            }
 
-            deviceContext.OutputMerger.SetRenderTargets(dx11Fb.DSV, dx11Fb.RTVs);
+            deviceContext.OutputMerger.SetRenderTargets(
+                dx11Fb.DSV,
+                dx11Fb.RTVs);
         }
-
         public void ClearColor(int attachmentIndex, Vector4 color)
         {
             if (currentFramebuffer == null)
@@ -259,6 +257,7 @@ namespace DevoidGPU.DX11
                                 binding.Binding,
                                 binding.Stages,
                                 dxStorageBuffer);
+
 
                             break;
                         }
@@ -482,7 +481,7 @@ namespace DevoidGPU.DX11
         }
         private void ResolveForRTV(DX11Texture tex)
         {
-            for (int i = 0; i < 16; i++)
+            for (int i = 0; i < boundPS_SRVs.Length; i++)
             {
                 if (boundPS_SRVs[i] == tex)
                 {

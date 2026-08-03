@@ -54,11 +54,31 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<None Update="Content\DevoidShaderDescriptors\tonemap_pass.dsd">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  <Visible>true</Visible>
+		</None>
+		<None Update="Content\DevoidShaderDescriptors\brdfLUT.dsd">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  <Visible>true</Visible>
+		</None>
+		<None Update="Content\DevoidShaderDescriptors\sh9_reduce.dsd">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  <Visible>true</Visible>
+		</None>
+		<None Update="Content\DevoidShaderDescriptors\prefilter.dsd">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  <Visible>true</Visible>
+		</None>
 		<None Update="Content\DevoidShaderDescriptors\sky_panoramatocubemap.dsd">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		  <Visible>true</Visible>
 		</None>
-		<None Update="Content\DevoidShaderDescriptors\sky_irradiance.dsd">
+		<None Update="Content\DevoidShaderDescriptors\sh9_project.dsd">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  <Visible>true</Visible>
+		</None>
+		<None Update="Content\DevoidShaderDescriptors\sky_cubemap.dsd">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		  <Visible>true</Visible>
 		</None>
@@ -66,11 +86,27 @@
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		  <Visible>true</Visible>
 		</None>
+		<None Update="Content\Shaders\tonemap.frag.hlsl">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  <Visible>true</Visible>
+		</None>
+		<None Update="Content\Shaders\brdf.frag.hlsl">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  <Visible>true</Visible>
+		</None>
+		<None Update="Content\Shaders\sky_cubemap.frag.hlsl">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  <Visible>true</Visible>
+		</None>
+		<None Update="Content\Shaders\prefilter.frag.hlsl">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  <Visible>true</Visible>
+		</None>
 		<None Update="Content\Shaders\panorama_to_cubemap.frag.hlsl">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		  <Visible>true</Visible>
 		</None>
-		<None Update="Content\Shaders\cubemap_irradiance.frag.hlsl">
+		<None Update="Content\Shaders\sh9_reduce.comp.hlsl">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		  <Visible>true</Visible>
 		</None>
@@ -118,7 +154,6 @@
 
 	<ItemGroup>
 	  <Folder Include="Lib\" />
-	  <Folder Include="Rendering\PostProcessing\" />
 	</ItemGroup>
 
 </Project>

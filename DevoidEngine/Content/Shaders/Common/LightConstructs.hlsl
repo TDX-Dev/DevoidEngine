@@ -1,4 +1,7 @@
-﻿struct GPUPointLight
+﻿#ifndef LIGHT_CONSTRUCTS
+#define LIGHT_CONSTRUCTS
+
+struct GPUPointLight
 {
     float4 position; // xyz position, w = enabled
     float4 color; // rgb color, w = intensity
@@ -31,9 +34,10 @@ struct ShadowData
     float Padding;
 };
 
+
 #include "./MathConstants.hlsl"
 #include "./PBRMethods.hlsl"
-
+#include "./Constants.hlsl"
 
 
 cbuffer SceneData : register(b2)
@@ -44,20 +48,21 @@ cbuffer SceneData : register(b2)
     uint _padding;
 };
 
-cbuffer EnvironmentData : register(b3)
-{
-    float4 SkySH[9];
-};
-
-
 StructuredBuffer<GPUPointLight> PointLights : register(t10);
 StructuredBuffer<GPUSpotLight> SpotLights : register(t11);
 StructuredBuffer<GPUDirectionalLight> DirectionalLights : register(t12);
 
 StructuredBuffer<ShadowData> ShadowBuffer : register(t13);
+StructuredBuffer<SH9> EnvironmentSH : register(t17);
 
 Texture2D ShadowAtlas : register(t9);
 SamplerState ShadowSampler : register(s9);
+
+TextureCube EnvironmentSkybox : register(t15);
+TextureCube PrefilterMap : register(t16);
+Texture2D BRDFLUT : register(t18);
+
+SamplerState EnvironmentSampler : register(s10);
 
 float ComputeShadow(int shadowIndex, float3 worldPos)
 {
@@ -100,15 +105,56 @@ float ComputeShadow(int shadowIndex, float3 worldPos)
 //}
 
 
-float3 ComputeBRDF(
+//float3 ComputeBRDF(
+//    float3 N,
+//    float3 V,
+//    float3 L,
+//    float3 albedo,
+//    float metallic,
+//    float roughness,
+//    float3 F0,
+//    float3 radiance
+//)
+//{
+//    float3 H = normalize(V + L);
+
+//    float NDF = DistributionGGX(N, H, roughness);
+//    float G = GeometrySmith(N, V, L, roughness);
+//    float3 F = FresnelSchlick(max(dot(H, V), 0.0), F0);
+
+//    float3 numerator = NDF * G * F;
+
+//    float denom =
+//        4.0 * max(dot(N, V), 0.0) *
+//        max(dot(N, L), 0.0) + 0.0001;
+
+//    float3 specular = numerator / denom;
+
+//    float3 kS = F;
+//    float3 kD = (1.0 - kS) * (1.0 - metallic);
+
+//    float NdotL = max(dot(N, L), 0.0);
+
+//    return (kD * albedo / PI + specular) * radiance * NdotL;
+//}
+
+float3 ComputeDiffuseBRDF(
+    float3 albedo,
+    float metallic,
+    float3 F)
+{
+    float3 kS = F;
+    float3 kD = (1.0 - kS) * (1.0 - metallic);
+
+    return kD * albedo / PI;
+}
+
+float3 ComputeClearcoatSpecular(
     float3 N,
     float3 V,
     float3 L,
-    float3 albedo,
-    float metallic,
     float roughness,
-    float3 F0,
-    float3 radiance
+    float3 F0
 )
 {
     float3 H = normalize(V + L);
@@ -120,19 +166,96 @@ float3 ComputeBRDF(
     float3 numerator = NDF * G * F;
 
     float denom =
-        4.0 * max(dot(N, V), 0.0) *
-        max(dot(N, L), 0.0) + 0.0001;
+        4.0 *
+        max(dot(N, V), 0.0) *
+        max(dot(N, L), 0.0) +
+        0.0001;
 
-    float3 specular = numerator / denom;
+    return numerator / denom;
+}
 
-    float3 kS = F;
-    float3 kD = (1.0 - kS) * (1.0 - metallic);
+
+float3 ComputeSpecularBRDF(
+    float3 N,
+    float3 V,
+    float3 L,
+    float roughness,
+    float3 F0
+)
+{
+    float3 H = normalize(V + L);
+
+    float NDF = DistributionGGX(N, H, roughness);
+    float G = GeometrySmith(N, V, L, roughness);
+    float3 F = FresnelSchlick(max(dot(H, V), 0.0), F0);
+
+    float3 numerator = NDF * G * F;
+
+    float denom =
+        4.0 *
+        max(dot(N, V), 0.0) *
+        max(dot(N, L), 0.0) +
+        0.0001;
+
+    return numerator / denom;
+}
+
+
+float3 ComputeBRDF(
+    float3 N,
+    float3 V,
+    float3 L,
+    float3 albedo,
+    float metallic,
+    float roughness,
+    float3 F0,
+    float3 radiance,
+    float clearcoat,
+    float clearcoatRoughness
+)
+{
+    float3 H = normalize(V + L);
+
+    float3 F =
+        FresnelSchlick(
+            max(dot(H, V), 0.0),
+            F0);
+
+    float3 diffuse =
+        ComputeDiffuseBRDF(
+            albedo,
+            metallic,
+            F);
+
+    float3 specular =
+        ComputeSpecularBRDF(
+            N,
+            V,
+            L,
+            roughness,
+            F0);
+    
+    float3 coat =
+        ComputeClearcoatSpecular(
+            N,
+            V,
+            L,
+            clearcoatRoughness,
+            float3(0.04, 0.04, 0.04)
+        );
+    
+    float Fc = FresnelSchlick(
+        saturate(dot(N, V)),
+        float3(0.04, 0.04, 0.04)
+    ).r;
+    
+    float3 base = diffuse + specular;
+    base *= (1.0 - clearcoat * Fc);
 
     float NdotL = max(dot(N, L), 0.0);
 
-    return (kD * albedo / PI + specular) * radiance * NdotL;
+    return (base + coat * clearcoat)  * radiance * NdotL;
 }
-
 
 float ComputeAttenuation(GPUPointLight light, float distance)
 {
@@ -169,7 +292,9 @@ float3 ComputeDirectionalLight(
     float3 albedo,
     float metallic,
     float roughness,
-    float3 F0
+    float3 F0,
+    float clearcoat,
+    float clearcoatRoughness
 )
 {
     float3 L = normalize(-light.Direction.xyz);
@@ -184,7 +309,9 @@ float3 ComputeDirectionalLight(
         metallic,
         roughness,
         F0,
-        radiance
+        radiance,
+        clearcoat,
+        clearcoatRoughness
     );
 }
 
@@ -197,7 +324,9 @@ float3 ComputePointLight(
     float3 albedo,
     float metallic,
     float roughness,
-    float3 F0
+    float3 F0,
+    float clearcoat,
+    float clearcoatRoughness
 )
 {
     float3 toLight = light.position.xyz - worldPos;
@@ -221,7 +350,9 @@ float3 ComputePointLight(
         metallic,
         roughness,
         F0,
-        radiance
+        radiance,
+        clearcoat,
+        clearcoatRoughness
     );
 }
 
@@ -233,7 +364,9 @@ float3 ComputeSpotLight(
     float3 albedo,
     float metallic,
     float roughness,
-    float3 F0
+    float3 F0,
+    float clearcoat,
+    float clearcoatRoughness
 )
 {
     float3 toLight = light.position.xyz - worldPos;
@@ -277,6 +410,10 @@ float3 ComputeSpotLight(
         metallic,
         roughness,
         F0,
-        radiance
+        radiance,
+        clearcoat,
+        clearcoatRoughness
     );
 }
+
+#endif

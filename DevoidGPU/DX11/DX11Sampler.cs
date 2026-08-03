@@ -22,7 +22,8 @@ namespace DevoidGPU.DX11
                 MaximumLod = description.MaxLOD,
                 MinimumLod = description.MinLOD,
                 ComparisonFunction = DX11StateMapper.ToDXDepthComparison(description.CompareFunc),
-                MaximumAnisotropy = description.MaxAnisotropy
+                MaximumAnisotropy = description.MaxAnisotropy,
+                Filter = DX11StateMapper.ToDXFilter(description.MinFilter, description.MagFilter, description.MipFilter, description.MaxAnisotropy)
             };
 
             Sampler = new SamplerState(device, dxDescription);

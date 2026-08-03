@@ -1,0 +1,30 @@
+{
+  "$schema": "./dsdschema.json",
+  "Name": "Sky Cubemap",
+
+  "DefaultPass": "Forward",
+
+  "Resources": [
+    {
+      "Name": "MAT_Skybox",
+      "Type": "TextureCube",
+      "Kind": "SampledTexture"
+    }
+  ],
+
+  "Passes": [
+    {
+      "Name": "Forward",
+      "MaterialBuffer": "Material",
+      "Shaders": {
+        "VS": "../Shaders/sky.vert.hlsl",
+        "FS": "../Shaders/sky_cubemap.frag.hlsl"
+      },
+      "States": {
+        "Blend": "Off",
+        "Cull": "Front",
+        "Depth": "Disabled"
+      }
+    }
+  ]
+}

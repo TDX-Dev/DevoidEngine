@@ -138,95 +138,98 @@ namespace DevoidGPU.DX11
                 {
                     case ShaderInputType.Texture:
                         {
-                            ReflectionData.TextureBindings.Add(new TextureBindingInfo
+                            ShaderResourceType type = res.Dimension switch
+                            {
+                                ShaderResourceViewDimension.Texture2D => ShaderResourceType.Texture2D,
+                                ShaderResourceViewDimension.TextureCube => ShaderResourceType.TextureCube,
+                                ShaderResourceViewDimension.Texture2DArray => ShaderResourceType.Texture2DArray,
+                                ShaderResourceViewDimension.Texture3D => ShaderResourceType.Texture3D,
+
+                                _ => throw new NotSupportedException(
+                                    $"Unsupported texture dimension {res.Dimension}")
+                            };
+
+                            ReflectionData.Resources.Add(new ShaderResourceInfo
                             {
                                 Name = res.Name,
                                 BindSlot = res.BindPoint,
                                 Stage = Stage,
-                                ArraySize = res.BindCount
+                                Type = type
                             });
+
                             break;
                         }
 
                     case ShaderInputType.Sampler:
                         {
-                            ReflectionData.SamplerBindings.Add(new SamplerBindingInfo
+                            ReflectionData.Resources.Add(new ShaderResourceInfo
                             {
                                 Name = res.Name,
                                 BindSlot = res.BindPoint,
-                                Stage = Stage
+                                Stage = Stage,
+                                Type = ShaderResourceType.Sampler
                             });
                             break;
                         }
 
                     case ShaderInputType.Structured:
-                        {
-                            ReflectionData.StorageBufferBindings.Add(new StorageBufferBindingInfo
-                            {
-                                Name = res.Name,
-                                BindSlot = res.BindPoint,
-                                Stage = Stage,
-                                ReadWrite = false
-                            });
-                            break;
-                        }
-
                     case ShaderInputType.ByteAddress:
                         {
-                            ReflectionData.StorageBufferBindings.Add(new StorageBufferBindingInfo
+                            ReflectionData.Resources.Add(new ShaderResourceInfo
                             {
                                 Name = res.Name,
                                 BindSlot = res.BindPoint,
                                 Stage = Stage,
-                                ReadWrite = false
+                                Type = ShaderResourceType.StructuredBuffer
                             });
                             break;
                         }
 
                     case ShaderInputType.UnorderedAccessViewRWStructured:
-                        {
-                            ReflectionData.StorageBufferBindings.Add(new StorageBufferBindingInfo
-                            {
-                                Name = res.Name,
-                                BindSlot = res.BindPoint,
-                                Stage = Stage,
-                                ReadWrite = true
-                            });
-                            break;
-                        }
-
                     case ShaderInputType.UnorderedAccessViewRWByteAddress:
                         {
-                            ReflectionData.StorageBufferBindings.Add(new StorageBufferBindingInfo
+                            ReflectionData.Resources.Add(new ShaderResourceInfo
                             {
                                 Name = res.Name,
                                 BindSlot = res.BindPoint,
                                 Stage = Stage,
-                                ReadWrite = true
+                                Type = ShaderResourceType.RWStructuredBuffer
                             });
                             break;
                         }
 
                     case ShaderInputType.UnorderedAccessViewRWTyped:
                         {
-                            ReflectionData.StorageTextureBindings.Add(new StorageTextureBindingInfo
+                            ShaderResourceType type = res.Dimension switch
+                            {
+                                ShaderResourceViewDimension.Texture2D => ShaderResourceType.RWTexture2D,
+                                ShaderResourceViewDimension.Texture2DArray => ShaderResourceType.RWTexture2DArray,
+                                ShaderResourceViewDimension.Texture3D => ShaderResourceType.RWTexture3D,
+
+                                _ => throw new NotSupportedException(
+                                    $"Unsupported UAV texture dimension {res.Dimension}")
+                            };
+
+                            ReflectionData.Resources.Add(new ShaderResourceInfo
                             {
                                 Name = res.Name,
                                 BindSlot = res.BindPoint,
                                 Stage = Stage,
-                                ReadWrite = true
+                                Type = type
                             });
+
                             break;
                         }
 
                     default:
                         {
-                            Console.WriteLine(
-                                $"Unhandled shader resource '{res.Name}' : {res.Type}");
+                            if (res.Type != ShaderInputType.ConstantBuffer)
+                                Console.WriteLine($"Unhandled shader resource '{res.Name}' : {res.Type}");
                             break;
                         }
                 }
             }
+            //PrintReflectionInfo(reflection);
         }
 
         private static int GetBindSlot(ShaderReflection reflection, string cbName)

@@ -219,9 +219,16 @@ namespace DevoidEngine.AssetPipeline.Importers
 
             MaterialProperty roughnessProperty = mat.GetProperty("$mat.roughnessFactor,0,0");
             MaterialProperty metallicProperty = mat.GetProperty("$mat.metallicFactor,0,0");
+            MaterialProperty clearCoatFactorProperty = mat.GetProperty("$mat.clearcoat.factor,0,0");
+            MaterialProperty clearcoatRoughnessProperty = mat.GetProperty("$mat.clearcoat.roughnessFactor,0,0");
             //MaterialProperty transmissionProperty = mat.GetProperty("$mat.transmission.factor,0,0");
 
+            
+
             asset.Floats["AO"] = 1f;
+
+            asset.Floats["Clearcoat"] = clearCoatFactorProperty?.GetFloatValue() ?? 0;
+            asset.Floats["ClearcoatRoughness"] = clearcoatRoughnessProperty?.GetFloatValue() ?? 1;
 
             if (mat.HasColorDiffuse)
             {
@@ -320,11 +327,11 @@ namespace DevoidEngine.AssetPipeline.Importers
             //    Console.WriteLine(slot.TextureType);
             //}
 
-            //MaterialProperty[] mps = mat.GetAllProperties();
-            //foreach (MaterialProperty mp in mps)
-            //{
-            //    Console.WriteLine(mp.FullyQualifiedName + " : " + mp.GetFloatValue());
-            //}
+            MaterialProperty[] mps = mat.GetAllProperties();
+            foreach (MaterialProperty mp in mps)
+            {
+                Console.WriteLine(mp.FullyQualifiedName + " : " + mp.GetFloatValue());
+            }
 
             //Console.WriteLine(mat.Opacity);
 

@@ -12,12 +12,12 @@ namespace DevoidEngine.AssetPipeline.Loaders
     public class PackedSceneLoader : IAssetLoader<PackedScene>
     {
         public string RuntimeExtension => "packedscene";
-        public PackedScene Load(ReadOnlySpan<byte> data)
+        public PackedScene Load(byte[] data)
         {
             PackedScene asset;
             try
             {
-                asset = MessagePackSerializer.Deserialize<PackedScene>(data.ToArray());
+                asset = MessagePackSerializer.Deserialize<PackedScene>(data);
             }
             catch (Exception e)
             {

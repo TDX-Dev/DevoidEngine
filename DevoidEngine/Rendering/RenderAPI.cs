@@ -37,5 +37,15 @@ namespace DevoidEngine.Rendering
             cmd.SetDescriptorSet(0, FullscreenDescriptor);
             FullscreenMesh.Draw(cmd);
         }
+
+        public void RenderToScreen(ICommandList cmd, MaterialInstance material)
+        {
+            if (material == null) return;
+
+            cmd.SetPipeline(material.BaseMaterial.DefaultPass.Pipeline);
+
+            cmd.SetDescriptorSet(0, material.DescriptorSet);
+            FullscreenMesh.Draw(cmd);
+        }
     }
 }

@@ -16,6 +16,8 @@ namespace DevoidGPU.DX11
 
         internal readonly RenderTargetView?[] RTVs;
         internal DepthStencilView? DSV;
+        internal bool Dirty = true;
+
 
         public DX11Framebuffer(
             DX11Texture?[] colorAttachments,
@@ -74,6 +76,7 @@ namespace DevoidGPU.DX11
 
             colorAttachments[index] = dxTex;
             RTVs[index] = dxTex.GetRTV(mip, slice);
+            Dirty = true;
 
         }
 

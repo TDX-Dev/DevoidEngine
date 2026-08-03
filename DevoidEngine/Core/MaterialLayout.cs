@@ -12,12 +12,7 @@ namespace DevoidEngine.Core
 
         public Dictionary<string, ShaderVariableInfo> Variables = [];
 
-        public Dictionary<string, TextureBindingInfo> Textures = [];
-        public Dictionary<string, SamplerBindingInfo> Samplers = [];
-
-
-        public Dictionary<string, StorageTextureBindingInfo> StorageTextures { get; } = [];
-
-        public Dictionary<string, StorageBufferBindingInfo> StorageBuffers { get; } = [];
+        public Dictionary<string, ShaderResourceInfo> Textures = [];
+        public Dictionary<string, ShaderResourceInfo> Samplers = [];
     }
 }

@@ -1,0 +1,28 @@
+{
+  "$schema": "./dsdschema.json",
+  "Name": "Prefilter",
+  "DefaultPass": "Forward",
+  "MaterialParameters": {"BufferName": "Material"},
+  "Resources": [
+    {
+      "Name": "MAT_Skybox",
+      "Type": "TextureCube",
+      "Kind": "SampledTexture"
+    }
+  ],
+  "Passes": [
+    {
+      "Name": "Forward",
+      "MaterialBuffer": "Material",
+      "Shaders": {
+        "VS": "../Shaders/sky.vert.hlsl",
+        "FS": "../Shaders/prefilter.frag.hlsl"
+      },
+      "States": {
+        "Blend": "Off",
+        "Cull": "None",
+        "Depth": "Disabled"
+      }
+    }
+  ]
+}

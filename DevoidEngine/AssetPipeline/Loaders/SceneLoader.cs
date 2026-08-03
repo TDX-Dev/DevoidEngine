@@ -13,7 +13,7 @@ namespace DevoidEngine.AssetPipeline.Loaders
     {
         public string RuntimeExtension => "scene";
 
-        public Scene Load(ReadOnlySpan<byte> data)
+        public Scene Load(byte[] data)
         {
             Scene scene;
             try

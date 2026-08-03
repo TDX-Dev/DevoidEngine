@@ -333,6 +333,12 @@ namespace DevoidEngine.AssetPipeline
 
             importer.Import(context, settings ?? meta.Settings);
 
+            if (settings != null)
+            {
+                meta.Settings = settings;
+                SaveMeta(Path.Combine(project.AssetPath, entry.MetaPath), meta);
+            }
+
             Console.WriteLine($"[Asset] Reimported {assetPath}");
         }
 
@@ -395,6 +401,19 @@ namespace DevoidEngine.AssetPipeline
             File.WriteAllText(temp, json);
 
             File.Move(temp, metaPath, true);
+        }
+
+        public void UpdateMeta(Guid guid, AssetMeta meta)
+        {
+            if (!guidToAsset.TryGetValue(guid, out var entry))
+                throw new Exception("Asset entry not found");
+
+            string metaPath = Path.Combine(
+                Engine.Instance.ProjectSystem.AssetPath,
+                entry.MetaPath
+            );
+
+            SaveMeta(metaPath, meta);
         }
 
         private bool ValidateMeta(AssetMeta meta)

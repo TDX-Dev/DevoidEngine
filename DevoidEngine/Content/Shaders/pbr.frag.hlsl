@@ -23,7 +23,10 @@ cbuffer Material : register(b4)
     int useNormalMap; // toggle normal map
 
     float NormalStrength; // normal intensity
-    float3 _padding1; // padding for 16-byte alignment
+    float Clearcoat;
+    float ClearcoatRoughness;
+    float3 ClearcoatTint;
+    float _padding1;
 };
 
 Texture2D MAT_AlbedoMap : register(t0);
@@ -60,6 +63,90 @@ float3 GetNormalFromMap(PSInput input)
     return normalize(mul(normalTex, TBN));
 }
 
+float3 ComputeIBL(
+    float3 N,
+    float3 Ng,
+    float3 V,
+    float3 albedo,
+    float metallic,
+    float roughness,
+    float3 F0,
+    float clearcoat,
+    float clearcoatRoughness
+)
+{
+    float NoV = saturate(dot(N, V));
+    
+    float3 F = FresnelSchlickRoughness(NoV, F0, roughness);
+    
+    float3 kS = F;
+    float3 kD = (1.0 - kS) * (1.0 - metallic);
+    
+
+    float3 irradiance = EvaluateIrradianceSH(EnvironmentSH, N) * PI;
+
+    float3 diffuse = irradiance * albedo;
+    
+
+    float3 R = normalize(reflect(-V, N));
+    R.y = -R.y;
+    
+    float3 Rc = normalize(reflect(-V, Ng.xyz));
+    Rc.y = -Rc.y;
+
+    float mip = roughness * (7);
+
+    float3 prefiltered =
+        PrefilterMap.SampleLevel(
+            EnvironmentSampler,
+            R,
+            mip).rgb;
+
+    float2 brdf =
+        BRDFLUT.Sample(
+            EnvironmentSampler,
+            float2(NoV, roughness)).rg;
+
+    float3 specular = prefiltered * (F * brdf.x + brdf.y);
+    
+    float NoVc = saturate(dot(Ng.xyz, V));
+
+    float3 Fc = FresnelSchlick(
+    NoVc,
+    float3(0.04, 0.04, 0.04));
+
+    float coatMip =
+    clearcoatRoughness * 7;
+
+    float3 coatPrefilter =
+    PrefilterMap.SampleLevel(
+        EnvironmentSampler,
+        Rc,
+        coatMip).rgb;
+
+    float2 coatBRDF =
+    BRDFLUT.Sample(
+        EnvironmentSampler,
+        float2(NoV, clearcoatRoughness)).rg;
+
+    float3 coatSpecular =
+    coatPrefilter *
+    (Fc * coatBRDF.x + coatBRDF.y);
+
+    //coatSpecular *= clearcoatTint;
+    
+
+    float3 base =
+        kD * diffuse +
+        specular;
+
+    base *= (1.0 - clearcoat * Fc);
+
+    return
+        base +
+        coatSpecular * clearcoat;
+}
+
 float4 PSMain(PSInput input) : SV_TARGET
 {
     float2 uv = input.UV;
@@ -80,6 +167,7 @@ float4 PSMain(PSInput input) : SV_TARGET
     roughness = max(roughness, 0.04); // avoid zero roughness
     
     float3 N = GetNormalFromMap(input);
+    float3 Ng = normalize(input.Normal);
     // Position is camera position!
     float3 V = normalize(CameraPosition - input.WorldspacePosition);
     
@@ -99,7 +187,9 @@ float4 PSMain(PSInput input) : SV_TARGET
             albedo,
             metallic,
             roughness,
-            F0
+            F0,
+            Clearcoat,
+            ClearcoatRoughness
         );
     }
 
@@ -116,7 +206,9 @@ float4 PSMain(PSInput input) : SV_TARGET
             albedo,
             metallic,
             roughness,
-            F0
+            F0,
+            Clearcoat,
+            ClearcoatRoughness
         );
         
         float shadow = 0;
@@ -155,24 +247,29 @@ float4 PSMain(PSInput input) : SV_TARGET
             albedo,
             metallic,
             roughness,
-            F0
+            F0,
+            Clearcoat,
+            ClearcoatRoughness
         );
     }
     
-    //float3 ambient = ComputeIBL(
-    //    N,
-    //    V,
-    //    albedo,
-    //    metallic,
-    //    roughness,
-    //    ao,
-    //    F0
-    //);
     
-    float3 ambient = 0.05 * albedo;// * ao;
-    float3 color = ambient + Lo;// + emission;
+    float3 ambient = ComputeIBL(
+        N,
+        Ng,
+        V,
+        albedo,
+        metallic,
+        roughness,
+        F0,
+        Clearcoat,
+        ClearcoatRoughness
+    );
+
+    float3 color =
+            ambient +
+            Lo +
+            emission;
     
-    //return float4(N * 0.5 + 0.5 + (color * 0.00001), 1.0);
-    return float4(color, 1);
-    //return float4(color, 1.0);
+    return float4(color, 1.0);
 }

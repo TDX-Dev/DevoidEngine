@@ -17,7 +17,6 @@ namespace DevoidEngine.AssetPipeline
 
         public static T? Load<T>(Guid guid, bool fromCache = true) where T : class
         {
-            Console.WriteLine(guid.ToString());
             if (!Engine.Instance.AssetDatabase.TryGetPath(guid, out var path))
             {
                 Console.WriteLine($"Asset not found: {path}");

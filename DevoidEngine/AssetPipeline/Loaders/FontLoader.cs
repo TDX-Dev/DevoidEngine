@@ -8,13 +8,13 @@ namespace DevoidEngine.AssetPipeline.Loaders
     internal class FontLoader : IAssetLoader<Font>
     {
         public string RuntimeExtension => "font";
-        public Font Load(ReadOnlySpan<byte> data)
+        public Font Load(byte[] data)
         {
             FontAsset asset;
 
             try
             {
-                asset = MessagePackSerializer.Deserialize<FontAsset>(data.ToArray());
+                asset = MessagePackSerializer.Deserialize<FontAsset>(data);
             }
             catch (Exception e)
             {

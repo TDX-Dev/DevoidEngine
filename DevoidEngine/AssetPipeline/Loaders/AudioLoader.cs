@@ -7,7 +7,7 @@ namespace DevoidEngine.AssetPipeline.Loaders
     {
         public string RuntimeExtension => "audio";
 
-        public AudioClip Load(ReadOnlySpan<byte> data)
+        public AudioClip Load(byte[] data)
         {
             AudioClip audio = new()
             {

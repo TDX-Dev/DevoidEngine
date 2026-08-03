@@ -1,0 +1,16 @@
+{
+  "$schema": "./dsdschema.json",
+  "Name": "SH9 Reduction Compute",
+  "DefaultPass": "Forward",
+  "MaterialParameters": {
+    "BufferName": "Material"
+  },
+  "Passes": [
+    {
+      "Name": "Forward",
+      "Shaders": {
+        "CS": "../Shaders/sh9_reduce.comp.hlsl"
+      }
+    }
+  ]
+}

@@ -1,11 +1,16 @@
 {
   "$schema": "./dsdschema.json",
-  "Name": "Sky Irradiance Compute",
+  "Name": "SH9 Projection Compute",
   "DefaultPass": "Forward",
   "MaterialParameters": {
     "BufferName": "Material"
   },
   "Resources": [
+    {
+      "Name": "MAT_Skybox",
+      "Type": "TextureCube",
+      "Kind": "SampledTexture"
+    },
     {
       "Name": "DebugOutput",
       "Type": "TextureCube",
@@ -16,7 +21,7 @@
     {
       "Name": "Forward",
       "Shaders": {
-        "CS": "../Shaders/irradiance_spherical_convolve.comp.hlsl"
+        "CS": "../Shaders/sh9_project.comp.hlsl"
       }
     }
   ]

@@ -1,14 +1,26 @@
 ﻿using DevoidEngine.Core;
 using DevoidEngine.Util;
 using DevoidGPU;
+using System.Drawing;
 using System.Numerics;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace DevoidEngine.Rendering
 {
+    [StructLayout(LayoutKind.Sequential)]
+    struct ReduceData
+    {
+        public uint InputCount;
+        public uint FinalPass;
+        public uint Padding1;
+        public uint Padding2;
+    }
+
     public class SkyRenderer
     {
         public int SkyResolution = 1024;
-        public int IrradianceResolution = 32;
+        public int IrradianceResolution = 64;
         public int PrefilterResolution = 256;
         public int BRDFLutResolution = 512;
 
@@ -26,6 +38,10 @@ namespace DevoidEngine.Rendering
 
         private readonly Texture IrradianceCubeTexture;
 
+        private readonly Texture PrefilterTexture;
+
+        private readonly Texture BRDFLutTexture;
+
         private readonly RenderTarget PanoramaRenderTarget;
 
         private readonly MaterialInstance PanoramaToCubemapMaterial;
@@ -33,10 +49,27 @@ namespace DevoidEngine.Rendering
         private readonly Texture SkyboxTexture;
 
         private readonly MaterialInstance ProjectToSHMaterial;
+        private readonly MaterialInstance ReduceSHMaterial;
+        private readonly MaterialInstance PrefilterMaterial;
+        private readonly MaterialInstance BRDFLutMaterial;
+
+        private readonly MaterialInstance SkyCubemapMaterial;
 
         private readonly IComputePipeline ProjectToSHPipeline;
 
+        private readonly IComputePipeline ReduceSHPipeline;
+
         private readonly Texture DebugCube;
+
+        private readonly ShaderStorageBuffer<SH9> EnvironmentSH;
+
+        private readonly ShaderStorageBuffer<SH9> PartialSH;
+
+        private readonly ShaderStorageBuffer<SH9> PartialSH2;
+
+        private readonly UniformBuffer ReduceInputBuffer;
+
+        private readonly uint partialCount;
 
         // End of ze clutter
 
@@ -44,6 +77,7 @@ namespace DevoidEngine.Rendering
         private readonly Matrix4x4[] CubemapCaptureViews;
 
         private readonly Mesh CubeMesh;
+        private readonly Mesh PlaneMesh;
 
         private readonly RenderMeshData ConversionRenderData;
 
@@ -52,6 +86,7 @@ namespace DevoidEngine.Rendering
         public SkyRenderer()
         {
             CubeMesh = PrimitiveMeshes.GetCube();
+            PlaneMesh = PrimitiveMeshes.GetFullscreenPlane();
 
             Environment = new();
             Sky = new HDRISky();
@@ -68,13 +103,49 @@ namespace DevoidEngine.Rendering
 
             IrradianceRenderTarget = RenderTarget.Create(1);
 
-            ProjectToSHMaterial = new MaterialInstance(new Material(Shader.FromDescriptorFile(Engine.GraphicsDevice, "Content/DevoidShaderDescriptors/sky_irradiance.dsd")));
+            ProjectToSHMaterial = new MaterialInstance(new Material(Shader.FromDescriptorFile(Engine.GraphicsDevice, "Content/DevoidShaderDescriptors/sh9_project.dsd")));
+            ReduceSHMaterial = new MaterialInstance(new Material(Shader.FromDescriptorFile(Engine.GraphicsDevice, "Content/DevoidShaderDescriptors/sh9_reduce.dsd")));
+
+            PrefilterMaterial = new MaterialInstance(new Material(Shader.FromDescriptorFile(Engine.GraphicsDevice, "Content/DevoidShaderDescriptors/prefilter.dsd")));
+
+            BRDFLutMaterial = new MaterialInstance(new Material(Shader.FromDescriptorFile(Engine.GraphicsDevice, "Content/DevoidShaderDescriptors/brdfLUT.dsd")));
+
+            SkyCubemapMaterial = new MaterialInstance(new Material(Shader.FromDescriptorFile(Engine.GraphicsDevice, "Content/DevoidShaderDescriptors/sky_cubemap.dsd")));
+
+            SkyCubemapMaterial.SetTexture("MAT_Skybox", SkyboxTexture);
+
+            PrefilterTexture = Texture.CreateCube(
+                PrefilterResolution,
+                TextureFormat.RGBA16_Float,
+                TextureUsage.RenderTarget | TextureUsage.ShaderResource,
+                PrefilterMipLevels);
+
+            BRDFLutTexture = Texture.Create2D(BRDFLutResolution, BRDFLutResolution, TextureFormat.RG16_Float, TextureUsage.RenderTarget | TextureUsage.ShaderResource);
 
             PanoramaRenderTarget = RenderTarget.Create(1);
 
             PanoramaToCubemapMaterial = new MaterialInstance(new Material(Shader.FromDescriptorFile(Engine.GraphicsDevice, "Content/DevoidShaderDescriptors/sky_panoramatocubemap.dsd")));
 
             ProjectToSHPipeline = ProjectToSHMaterial.BaseMaterial.DefaultPass.ComputePipeline!;
+            ReduceSHPipeline = ReduceSHMaterial.BaseMaterial.DefaultPass.ComputePipeline!;
+
+            uint groupsX = (uint)IrradianceResolution / 8;
+            uint groupsY = (uint)IrradianceResolution / 8;
+            partialCount = groupsX * groupsY * 6;
+
+            PartialSH = ShaderStorageBuffer<SH9>.Create(
+                ResourceUsage.Default,
+                partialCount, BufferBind.StorageWritable);
+
+            EnvironmentSH = ShaderStorageBuffer<SH9>.Create(
+                ResourceUsage.Default,
+                1, BufferBind.StorageWritable);
+
+            PartialSH2 = ShaderStorageBuffer<SH9>.Create(
+                ResourceUsage.Default,
+                partialCount, BufferBind.StorageWritable);
+
+            ReduceInputBuffer = UniformBuffer.Create(ResourceUsage.Dynamic, (uint)Unsafe.SizeOf<ReduceData>());
 
             DebugCube =
     Texture.CreateCube(
@@ -125,12 +196,18 @@ namespace DevoidEngine.Rendering
 
                 Sky.Dirty = false;
             }
-            
+
         }
 
         public void RenderSkybox(RenderContext ctx)
         {
 
+
+            ConversionRenderData.render_material = SkyCubemapMaterial;
+            ConversionRenderData.render_mesh = CubeMesh;
+            //ConversionRenderData.render_transform = Matrix4x4.CreateTranslation(ctx.Camera.Position);
+
+            Engine.Renderer.Execute(ctx.CommandList, ConversionRenderData);
         }
 
 
@@ -138,17 +215,24 @@ namespace DevoidEngine.Rendering
         {
             cmd.GenerateMipmaps(SkyboxTexture.GPU);
 
-            Engine.Renderer.PushViewport(cmd, new ViewportRect()
-            {
-                Height = IrradianceResolution,
-                Width = IrradianceResolution,
-                X = 0,
-                Y = 0
-            });
+            ConversionRenderData.render_mesh = CubeMesh;
+
             ProjectToSH(cmd);
-            Engine.Renderer.PopViewport(cmd);
+            ReduceSH(cmd);
 
+            GeneratePrefilter(cmd);
 
+            ConversionRenderData.render_mesh = PlaneMesh;
+
+            GenerateBRDFLUT(cmd);
+
+            Environment.Skybox = SkyboxTexture;
+            Environment.Irradiance = IrradianceCubeTexture;
+            Environment.Prefilter = PrefilterTexture;
+            Environment.BrdfLut = BRDFLutTexture;
+            Environment.SH9 = EnvironmentSH;
+
+            Engine.Renderer.UpdateEnvironment(Environment);
         }
 
         public void ConvertPanoramaToCubemap(ICommandList cmd, Texture panoramicTexture)
@@ -171,11 +255,13 @@ namespace DevoidEngine.Rendering
                 Engine.Renderer.UpdateCameraBuffer(ConversionCameraData);
 
                 PanoramaRenderTarget.SetColorAttachment(0, SkyboxTexture, 0, face);
-                cmd.SetFramebuffer(PanoramaRenderTarget.GPU, 0, face);
+                cmd.SetFramebuffer(PanoramaRenderTarget.GPU);
 
                 Engine.Renderer.Execute(cmd, ConversionRenderData);
 
             }
+
+            //cmd.ClearColor(0, new Vector4(0, 0, 0, 1));
 
             Engine.Renderer.PopViewport(cmd);
         }
@@ -186,7 +272,7 @@ namespace DevoidEngine.Rendering
 
             cmd.SetComputePipeline(ProjectToSHPipeline);
 
-            ProjectToSHMaterial.DescriptorSet.SetTexture(0, DebugCube.GPU);
+            ProjectToSHMaterial.DescriptorSet.SetRWShaderStorageBuffer(0, PartialSH.GPU);
 
             cmd.SetDescriptorSet(0, ProjectToSHMaterial.DescriptorSet);
 
@@ -196,14 +282,138 @@ namespace DevoidEngine.Rendering
                 6);
         }
 
-        //public void Render(RenderContext ctx)
-        //{
-        //    if (Sky == null)
-        //        return;
+        void ReduceSH(ICommandList cmd)
+        {
+            uint count = partialCount;
 
-        //    skyMeshData.render_transform = Matrix4x4.CreateScale(2) * Matrix4x4.CreateTranslation(ctx.Camera.Position);
+            ShaderStorageBuffer<SH9> input = PartialSH;
+            ShaderStorageBuffer<SH9> output = PartialSH2;
 
-        //    ctx.Renderer.Execute(ctx.CommandList, skyMeshData);
-        //}
+            while (count > 1)
+            {
+                uint outputCount = (count + 1) / 2;
+
+                ReduceSHMaterial.DescriptorSet.SetShaderStorageBuffer(
+                    0,
+                    input.GPU);
+
+                bool finalPass = outputCount == 1;
+
+                ShaderStorageBuffer<SH9> destination =
+                    finalPass ? EnvironmentSH : output;
+
+                ReduceSHMaterial.DescriptorSet.SetRWShaderStorageBuffer(
+                    0,
+                    destination.GPU);
+
+                // TODO upload InputCount here
+
+                ReduceInputBuffer.Update(new ReduceData
+                {
+                    InputCount = count,
+                    FinalPass = finalPass ? 1u : 0u
+                });
+                ReduceSHMaterial.DescriptorSet.SetUniformBuffer(
+                    0,
+                ReduceInputBuffer.GPU);
+
+                cmd.SetComputePipeline(ReduceSHPipeline);
+                cmd.SetDescriptorSet(0, ReduceSHMaterial.DescriptorSet);
+
+                uint groups = (outputCount + 63) / 64;
+
+                cmd.Dispatch(groups, 1, 1);
+
+                if (!finalPass)
+                {
+                    (input, output) = (output, input);
+                }
+
+                count = outputCount;
+            }
+        }
+
+        void GeneratePrefilter(ICommandList cmd)
+        {
+            PrefilterMaterial.SetTexture("MAT_Skybox", SkyboxTexture);
+            PrefilterMaterial.SetFloat("MaxPrefilterMipLevel", PrefilterMipLevels - 1);
+            PrefilterMaterial.SetFloat("EnvironmentMapResolution", SkyResolution);
+
+            for (int mip = 0; mip < PrefilterMipLevels; mip++)
+            {
+                int size = PrefilterResolution >> mip;
+
+                Engine.Renderer.PushViewport(cmd, new ViewportRect()
+                {
+                    Width = size,
+                    Height = size,
+                    X = 0,
+                    Y = 0,
+                });
+
+                float roughness = (float)mip / (PrefilterMipLevels - 1);
+
+                PrefilterMaterial.SetFloat("Roughness", roughness);
+                ConversionRenderData.render_material = PrefilterMaterial;
+
+                for (int face = 0; face < 6; face++)
+                {
+                    ConversionCameraData.View = CubemapCaptureViews[face];
+
+                    Engine.Renderer.UpdateCameraBuffer(ConversionCameraData);
+
+                    PanoramaRenderTarget.SetColorAttachment(
+                        0,
+                        PrefilterTexture,
+                        mip,
+                        face);
+
+                    cmd.SetFramebuffer(PanoramaRenderTarget.GPU);
+
+                    Engine.Renderer.Execute(cmd, ConversionRenderData);
+
+                }
+
+                Engine.Renderer.PopViewport(cmd);
+
+            }
+        }
+
+        void GenerateBRDFLUT(ICommandList cmd)
+        {
+            Engine.Renderer.PushViewport(cmd, new ViewportRect()
+            {
+                Width = BRDFLutResolution,
+                Height = BRDFLutResolution,
+                X = 0,
+                Y = 0,
+            });
+
+            CameraData lutCamera = new()
+            {
+                View = Matrix4x4.Identity,
+                Projection = Matrix4x4.CreateOrthographic(
+                    2.0f,
+                    2.0f,
+                    -1.0f,
+                    1.0f),
+                CameraPosition = Vector3.Zero,
+                ScreenSize = new Vector2(BRDFLutResolution)
+            };
+
+            Matrix4x4.Invert(lutCamera.View, out lutCamera.InverseView);
+            Matrix4x4.Invert(lutCamera.Projection, out lutCamera.InverseProjection);
+
+            Engine.Renderer.UpdateCameraBuffer(lutCamera);
+
+            ConversionRenderData.render_material = BRDFLutMaterial;
+
+            PanoramaRenderTarget.SetColorAttachment(0, BRDFLutTexture);
+            cmd.SetFramebuffer(PanoramaRenderTarget.GPU);
+            Engine.Renderer.Execute(cmd, ConversionRenderData);
+
+            Engine.Renderer.PopViewport(cmd);
+        }
+
     }
 }

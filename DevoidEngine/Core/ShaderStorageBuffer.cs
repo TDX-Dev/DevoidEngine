@@ -16,14 +16,17 @@ namespace DevoidEngine.Core
         public ShaderStorageBuffer(
             IGraphicsDevice device,
             ResourceUsage usage,
+            BufferBind bind,
             uint capacity)
         {
             gpuBuffer = device.CreateShaderStorageBuffer(
                 new BufferDescription
                 {
                     Usage = usage,
-                    Bind = BufferBind.Storage,
-                    CpuAccess = CpuAccess.Write,
+                    Bind = bind,
+                    CpuAccess = usage.HasFlag(ResourceUsage.Dynamic)
+                        ? CpuAccess.Write
+                        : CpuAccess.None,
                     InitialData = IntPtr.Zero,
                     Size = capacity * (uint)Unsafe.SizeOf<T>(),
                     Stride = Unsafe.SizeOf<T>()
@@ -32,11 +35,13 @@ namespace DevoidEngine.Core
 
         public static ShaderStorageBuffer<T> Create(
             ResourceUsage usage,
-            uint capacity)
+            uint capacity,
+            BufferBind bind = BufferBind.Storage)
         {
             return new(
                 Engine.GraphicsDevice,
                 usage,
+                bind,
                 capacity);
         }
 

@@ -250,8 +250,6 @@ namespace DevoidEngine.UI.UINodes
                 Font.FontAtlasTexture);
 
             _meshDirty = false;
-
-            Console.WriteLine("Rebuilt Mesh");
         }
     }
 }

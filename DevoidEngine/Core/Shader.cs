@@ -112,7 +112,7 @@ namespace DevoidEngine.Core
                 ShaderReflectionData reflection_data =
                     ShaderReflectionData.Merge([.. reflections]);
 
-                ShaderReflectionData.Print(reflection_data);
+                //ShaderReflectionData.Print(reflection_data);
 
                 shader.MaterialLayout ??= BuildMaterialLayout(descriptor, reflection_data);
 
@@ -202,66 +202,37 @@ namespace DevoidEngine.Core
 
             foreach (var resource in descriptor.Resources)
             {
-                switch (resource.Kind)
+                ShaderResourceInfo? binding =
+                    reflectionData.Resources.FirstOrDefault(x => x.Name == resource.Name);
+
+                if (binding == null)
+                    continue;
+
+                switch (binding.Type)
                 {
-                    case ShaderResourceKind.SampledTexture:
-                        {
-                            TextureBindingInfo? binding =
-                                reflectionData.TextureBindings
-                                    .FirstOrDefault(x => x.Name == resource.Name);
+                    case ShaderResourceType.Texture2D:
+                    case ShaderResourceType.TextureCube:
+                    case ShaderResourceType.Texture2DArray:
+                    case ShaderResourceType.Texture3D:
+                    case ShaderResourceType.RWTexture2D:
+                    case ShaderResourceType.RWTexture2DArray:
+                    case ShaderResourceType.RWTexture3D:
 
-                            if (binding == null)
-                            {
-                                Console.WriteLine(
-                                    $"Material texture '{resource.Name}' not found.");
-                                continue;
-                            }
-
-                            layout.Textures[binding.Name] = binding;
-                            break;
-                        }
-
-                    case ShaderResourceKind.StorageTexture:
-                        {
-                            StorageTextureBindingInfo? binding =
-                                reflectionData.StorageTextureBindings
-                                    .FirstOrDefault(x => x.Name == resource.Name);
-
-                            if (binding == null)
-                            {
-                                Console.WriteLine(
-                                    $"Storage texture '{resource.Name}' not found.");
-                                continue;
-                            }
-
-                            layout.StorageTextures[binding.Name] = binding;
-                            break;
-                        }
-
-                    case ShaderResourceKind.StorageBuffer:
-                        {
-                            StorageBufferBindingInfo? binding =
-                                reflectionData.StorageBufferBindings
-                                    .FirstOrDefault(x => x.Name == resource.Name);
-
-                            if (binding == null)
-                                continue;
-
-                            layout.StorageBuffers[binding.Name] = binding;
-                            break;
-                        }
+                        layout.Textures[binding.Name] = binding;
+                        break;
                 }
             }
 
-            foreach (var samplerBinding in reflectionData.SamplerBindings)
+            foreach (var resource in reflectionData.Resources)
             {
-                layout.Samplers[samplerBinding.Name] = samplerBinding;
+                if (resource.Type == ShaderResourceType.Sampler)
+                {
+                    layout.Samplers[resource.Name] = resource;
+                }
             }
 
             if (layout.Variables.Count == 0 &&
-                layout.Textures.Count == 0 &&
-                layout.Samplers.Count == 0
-            )
+                (layout.Textures.Count == 0 && layout.Samplers.Count == 0))
             {
                 return null;
             }
@@ -285,52 +256,44 @@ namespace DevoidEngine.Core
                     Type = DescriptorType.UniformBuffer,
                     Stages = buffer.Stages
                 });
-
-                if (buffer.BindSlot == 3)
-                {
-                    Console.WriteLine(buffer.Stages);
-                }
             }
 
-            foreach (var texture in reflection.TextureBindings)
+            foreach (var resource in reflection.Resources)
             {
+                DescriptorType type = resource.Type switch
+                {
+                    ShaderResourceType.Texture2D or
+                    ShaderResourceType.TextureCube or
+                    ShaderResourceType.Texture2DArray or
+                    ShaderResourceType.Texture3D
+                        => DescriptorType.Texture,
+
+                    ShaderResourceType.Sampler
+                        => DescriptorType.Sampler,
+
+                    ShaderResourceType.StructuredBuffer
+                        => DescriptorType.StorageBuffer,
+
+                    ShaderResourceType.RWStructuredBuffer
+                        => DescriptorType.RWStorageBuffer,
+
+                    ShaderResourceType.RWTexture2D or
+                    ShaderResourceType.RWTexture2DArray or
+                    ShaderResourceType.RWTexture3D
+                        => DescriptorType.RWTexture,
+
+                    _ => throw new InvalidOperationException()
+                };
+
                 bindings.Add(new DescriptorBinding
                 {
-                    Binding = (uint)texture.BindSlot,
-                    Type = DescriptorType.Texture,
-                    Stages = texture.Stage
+                    Binding = (uint)resource.BindSlot,
+                    Type = type,
+                    Stages = resource.Stage
                 });
             }
 
-            foreach (var texture in reflection.StorageTextureBindings)
-            {
-                bindings.Add(new DescriptorBinding
-                {
-                    Binding = (uint)texture.BindSlot,
-                    Type = DescriptorType.RWTexture,
-                    Stages = texture.Stage
-                });
-            }
 
-            foreach (var buffer in reflection.StorageBufferBindings)
-            {
-                bindings.Add(new DescriptorBinding
-                {
-                    Binding = (uint)buffer.BindSlot,
-                    Type = DescriptorType.RWStorageBuffer,
-                    Stages = buffer.Stage
-                });
-            }
-
-            foreach (var sampler in reflection.SamplerBindings)
-            {
-                bindings.Add(new DescriptorBinding
-                {
-                    Binding = (uint)sampler.BindSlot,
-                    Type = DescriptorType.Sampler,
-                    Stages = sampler.Stage
-                });
-            }
 
             return device.CreateDescriptorLayout(
                 [.. bindings]);

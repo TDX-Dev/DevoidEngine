@@ -1,0 +1,20 @@
+{
+  "$schema": "./dsdschema.json",
+  "Name": "BRDF LUT",
+  "DefaultPass": "Forward",
+  "Passes": [
+    {
+      "Name": "Forward",
+      "MaterialBuffer": "Material",
+      "Shaders": {
+        "VS": "../Shaders/sky.vert.hlsl",
+        "FS": "../Shaders/brdf.frag.hlsl"
+      },
+      "States": {
+        "Blend": "Off",
+        "Cull": "None",
+        "Depth": "Disabled"
+      }
+    }
+  ]
+}

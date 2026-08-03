@@ -3,10 +3,17 @@
     public enum ShaderResourceType
     {
         Texture2D,
-        Texture3D,
         TextureCube,
+        Texture2DArray,
+        Texture3D,
+
         Sampler,
+
         StructuredBuffer,
-        RWStructuredBuffer
+        RWStructuredBuffer,
+
+        RWTexture2D,
+        RWTexture2DArray,
+        RWTexture3D
     }
 }

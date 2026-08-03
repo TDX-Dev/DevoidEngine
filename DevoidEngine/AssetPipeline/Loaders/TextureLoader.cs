@@ -1,4 +1,5 @@
-﻿using DevoidEngine.Assets;
+﻿using Assimp;
+using DevoidEngine.Assets;
 using DevoidEngine.Core;
 using DevoidGPU;
 using MessagePack;
@@ -9,14 +10,14 @@ namespace DevoidEngine.AssetPipeline.Loaders
     internal class TextureLoader : IAssetLoader<Texture>
     {
         public string RuntimeExtension => "texture";
-        public Texture Load(ReadOnlySpan<byte> data)
+        public Texture Load(byte[] data)
         {
 
             TextureAsset asset;
 
             try
             {
-                asset = MessagePackSerializer.Deserialize<TextureAsset>(data.ToArray());
+                asset = MessagePackSerializer.Deserialize<TextureAsset>(data);
             }
             catch (Exception e)
             {
@@ -32,10 +33,13 @@ namespace DevoidEngine.AssetPipeline.Loaders
                 Height = asset.Height,
                 Dimension = TextureDimension.Texture2D,
                 Format = asset.Format,
-                MipLevels = 1,
+                MipLevels = asset.GenerateMipmaps ? (int)(Math.Log2(asset.Width) + 1) : 1,
                 Samples = new TextureSampleDescription(1, 0),
                 Usage = TextureUsage.ShaderResource
             };
+
+            if (asset.GenerateMipmaps)
+                description.Usage |= TextureUsage.RenderTarget;
 
             Texture texture = new(description);
 
@@ -58,6 +62,7 @@ namespace DevoidEngine.AssetPipeline.Loaders
             switch (asset.Format)
             {
                 case TextureFormat.RGBA8_UNorm:
+                case TextureFormat.RGBA8_UNorm_SRGB:
                     {
                         texture.GPU.Update(asset.PixelData);
                         break;
@@ -81,11 +86,13 @@ namespace DevoidEngine.AssetPipeline.Loaders
                     throw new NotSupportedException($"Unsupported texture format {asset.Format}");
             }
 
-            //if (asset.GenerateMipmaps)
-            //{
-            //    texture.GenerateMipmaps();
-            //    Console.WriteLine("Generated Mips!");
-            //}
+            if (asset.GenerateMipmaps)
+            {
+                Engine.Renderer.EnqueueGPUCommand((ICommandList cmd) =>
+                {
+                    cmd.GenerateMipmaps(texture.GPU);
+                });
+            }
 
             return texture;
         }

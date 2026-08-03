@@ -13,7 +13,7 @@ namespace DevoidEngine.AssetPipeline.Loaders
     {
         public string RuntimeExtension => "material";
 
-        public Material Load(ReadOnlySpan<byte> data)
+        public Material Load(byte[] data)
         {
             MaterialAsset asset;
 
@@ -34,7 +34,9 @@ namespace DevoidEngine.AssetPipeline.Loaders
             {
                 Texture? tex = Asset.Load<Texture>(guid);
                 if (tex != null)
+                {
                     material.SetTexture(name, tex);
+                }
             }
             foreach (var (name, value) in asset.Ints)
                 material.SetInt(name, value);
@@ -42,10 +44,6 @@ namespace DevoidEngine.AssetPipeline.Loaders
             foreach (var (name, value) in asset.Floats)
             {
                 material.SetFloat(name, value);
-                if (name == "NormalStrength")
-                {
-                    Console.WriteLine("Loaded Normal Strength: " + value);
-                }
             }
 
             foreach (var (name, value) in asset.Vector2s)
