@@ -22,7 +22,7 @@
       },
       "States": {
         "Blend": "Off",
-        "Cull": "Front",
+        "Cull": "Back",
         "Depth": "Disabled"
       }
     }

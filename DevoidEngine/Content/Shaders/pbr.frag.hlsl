@@ -79,7 +79,7 @@ float3 ComputeIBL(
 
     // Keep coordinate system Y-flip
     float3 R = reflect(-V, N);
-    R.y = -R.y;
+    //R.y = -R.y;
     
     // Base Layer (Specular & Diffuse)
     // Always use SampleLevel in IBL shaders to avoid gradient calculation errors
@@ -90,22 +90,25 @@ float3 ComputeIBL(
     // dfg.y = B (Scale for F0)
     
     // Single scattering directional albedo (Fss)
-    float3 Fss = dfg.x + dfg.y * F0;
+    //float3 Fss = dfg.x + dfg.y * F0;
+    float3 Fss = lerp(dfg.x.xxx, dfg.y.xxx, F0);
     
     // Total directional albedo (E) - what a perfectly white material would reflect
-    float E = dfg.x + dfg.y;
+    float E_white = dfg.x + dfg.y;
     
     // Multiscattering energy compensation
-    float3 energyCompensation = 1.0 + F0 * (1.0 / max(E, 1e-4) - 1.0);
+    float3 energyCompensation = 1.0 + F0 * (1.0 / max(E_white, 1e-5) - 1.0);
+    
+    float3 totalSpecularEnergy = Fss * energyCompensation;
     
     // Evaluate Specular IBL
     float3 prefiltered = PrefilterMap.SampleLevel(EnvironmentSampler, R, roughness * 8.0).rgb;
-    float3 specular = 0;//prefiltered * Fss * energyCompensation;
+    float3 specular = prefiltered * totalSpecularEnergy;
 
     // Evaluate Diffuse IBL
     // Energy Conservation: Light that didn't reflect as specular (E) enters the material.
     // Metals have 0 diffuse. This is much more accurate than the old FresnelSchlick hack.
-    float3 kD = (1.0 - E) * (1.0 - metallic);
+    float3 kD = (1.0 - saturate(totalSpecularEnergy)) * (1.0 - metallic);
     float3 diffuse = EvaluateIrradianceSH(EnvironmentSH, N) * albedo * kD;
     
     float3 result = diffuse + specular;
@@ -114,7 +117,6 @@ float3 ComputeIBL(
     float NoVc = saturate(dot(Ng, V));
     
     float3 Rc = reflect(-V, Ng);
-    Rc.y = -Rc.y;
 
     float3 coatPrefilter = PrefilterMap.SampleLevel(
         EnvironmentSampler,
@@ -137,8 +139,9 @@ float3 ComputeIBL(
     // The clearcoat absorbs energy from the base layer before reflecting its own light
     result *= (1.0 - clearcoat * Fc);
     result += coatPrefilter * coatFss * clearcoat;
-
-    return prefiltered;
+    
+    //return result;
+    return result;
 
 }
 
@@ -250,7 +253,7 @@ float4 PSMain(PSInput input) : SV_TARGET
         ClearcoatRoughness
     );
 
-    float3 color = ambient + Lo + emission;
+    float3 color = ambient + (Lo + emission);
     //float3 color = Lo;
     return float4(color, 1.0);
 }

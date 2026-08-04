@@ -12,13 +12,13 @@ struct PSInput
 float2 PSMain(PSInput input) : SV_Target
 {
 
-    float2 uv = float2(input.UV.x, 1.0 - input.UV.y);
+    float2 uv = float2(input.UV.x, input.UV.y);
 
-    float NdotV = max(uv.x, 1e-4);
+    float NdotV = uv.x;
     float roughness = uv.y;
-    //roughness = max(roughness, 0.04);
+    float linearRoughness = roughness * roughness;
     
-    float2 brdf = IntegrateBRDF(NdotV, roughness);
+    float2 brdf = IntegrateBRDF_Multiscatter(NdotV, linearRoughness, 1024u);
 
     return brdf;
 }

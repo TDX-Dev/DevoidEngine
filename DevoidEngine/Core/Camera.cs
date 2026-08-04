@@ -52,7 +52,7 @@ namespace DevoidEngine.Core
 
         public void UpdateProjectionMatrix(float aspectRatio)
         {
-            Projection = Matrix4x4.CreatePerspectiveFieldOfView(
+            Projection = Matrix4x4.CreatePerspectiveFieldOfViewLeftHanded(
                 fov_radians,
                 aspectRatio,
                 Near,
@@ -71,9 +71,9 @@ namespace DevoidEngine.Core
             Position = position;
             Front = Vector3.Normalize(front);
             Up = Vector3.Normalize(up);
-            Right = Vector3.Normalize(Vector3.Cross(Up, Front));
+            Right = Vector3.Normalize(Vector3.Cross(Front, Up));
 
-            View = Matrix4x4.CreateLookAt(
+            View = Matrix4x4.CreateLookAtLeftHanded(
                 Position,
                 Position + Front,
                 Up);

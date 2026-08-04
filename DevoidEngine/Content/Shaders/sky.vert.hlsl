@@ -29,9 +29,8 @@ PSInput VSMain(VSInput input)
     view._24 = 0.0;
     view._34 = 0.0;
 
-    float4 clip = mul(Projection,
-                 mul(view,
-                 float4(localPos, 1.0)));
+    float3 viewPos = mul((float3x3) View, localPos);
+    float4 clip = mul(Projection, float4(viewPos, 1.0));
 
     // Force the skybox to the far plane
     clip.z = clip.w;

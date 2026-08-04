@@ -183,6 +183,33 @@ float3 ProcessAgX(float3 color)
     return saturate(color);
 }
 
+// Evaluates the filmic S-curve for a given color vector
+float3 FilmicCurve(float3 x)
+{
+    float A = 0.15; // Shoulder Strength
+    float B = 0.50; // Linear Strength
+    float C = 0.10; // Linear Angle
+    float D = 0.20; // Toe Strength
+    float E = 0.02; // Toe Numerator
+    float F = 0.30; // Toe Denominator
+
+    return ((x * (A * x + C * B) + D * E) / (x * (A * x + B) + D * F)) - (E / F);
+}
+
+float3 TonemapFilmic(float3 color, float exposure = 2.0, float whitePoint = 11.2)
+{
+    // Apply exposure bias
+    color *= exposure;
+
+    // Apply filmic curve
+    float3 curr = FilmicCurve(color);
+
+    // Normalize against the white point so bright whites map to 1.0
+    float3 whiteScale = 1.0 / FilmicCurve(float3(whitePoint, whitePoint, whitePoint));
+    
+    return saturate(curr * whiteScale);
+}
+
 // Accurate Linear to sRGB conversion
 float3 LinearToSRGB(float3 linearColor)
 {
@@ -203,7 +230,8 @@ float4 PSMain(PSInput input) : SV_Target0
     
     hdr *= exposure;
     
-    float3 ldr = ProcessAgX(hdr);
+    //float3 ldr = ProcessAgX(hdr);
+    float3 ldr = TonemapFilmic(hdr);
     ldr = LinearToSRGB(ldr);
     
     return float4(ldr, 1.0);

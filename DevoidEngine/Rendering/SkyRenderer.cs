@@ -1,7 +1,6 @@
 ﻿using DevoidEngine.Core;
 using DevoidEngine.Util;
 using DevoidGPU;
-using System.Drawing;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -87,7 +86,7 @@ namespace DevoidEngine.Rendering
 
         public SkyRenderer()
         {
-            CubeMesh = PrimitiveMeshes.GetCube();
+            CubeMesh = PrimitiveMeshes.GetInvertedUVCube();
             PlaneMesh = PrimitiveMeshes.GetFullscreenPlane();
 
             Environment = new();
@@ -140,8 +139,8 @@ namespace DevoidEngine.Rendering
             ProjectToSHPipeline = ProjectToSHMaterial.BaseMaterial.DefaultPass.ComputePipeline!;
             ReduceSHPipeline = ReduceSHMaterial.BaseMaterial.DefaultPass.ComputePipeline!;
 
-            uint groupsX = (uint)IrradianceResolution / 8;
-            uint groupsY = (uint)IrradianceResolution / 8;
+            uint groupsX = (uint)SkyResolution / 8;
+            uint groupsY = (uint)SkyResolution / 8;
             partialCount = groupsX * groupsY * 6;
 
             PartialSH = ShaderStorageBuffer<SH9>.Create(
@@ -157,19 +156,21 @@ namespace DevoidEngine.Rendering
                 partialCount, BufferBind.StorageWritable);
 
             ReduceInputBuffer = UniformBuffer.Create(ResourceUsage.Dynamic, (uint)Unsafe.SizeOf<ReduceData>());
+            CubemapCaptureViews = [
+                Matrix4x4.CreateLookAtLeftHanded(Vector3.Zero, Vector3.UnitX,  Vector3.UnitY),   // +X
+                Matrix4x4.CreateLookAtLeftHanded(Vector3.Zero, -Vector3.UnitX, Vector3.UnitY),   // -X
 
-            CubemapCaptureViews =
-            [
-                Matrix4x4.CreateLookAt(Vector3.Zero,  Vector3.UnitX,  -Vector3.UnitY),
-                Matrix4x4.CreateLookAt(Vector3.Zero, -Vector3.UnitX,  -Vector3.UnitY),
-                Matrix4x4.CreateLookAt(Vector3.Zero, -Vector3.UnitY,   -Vector3.UnitZ),
-                Matrix4x4.CreateLookAt(Vector3.Zero, Vector3.UnitY,  Vector3.UnitZ),
-                Matrix4x4.CreateLookAt(Vector3.Zero,  Vector3.UnitZ,  -Vector3.UnitY),
-                Matrix4x4.CreateLookAt(Vector3.Zero, -Vector3.UnitZ,  -Vector3.UnitY)
+                Matrix4x4.CreateLookAtLeftHanded(Vector3.Zero, Vector3.UnitY,  -Vector3.UnitZ),  // +Y
+                Matrix4x4.CreateLookAtLeftHanded(Vector3.Zero, -Vector3.UnitY,  Vector3.UnitZ),  // -Y
+
+                Matrix4x4.CreateLookAtLeftHanded(Vector3.Zero, Vector3.UnitZ,  Vector3.UnitY),   // +Z
+                Matrix4x4.CreateLookAtLeftHanded(Vector3.Zero, -Vector3.UnitZ, Vector3.UnitY),   // -Z
+
             ];
 
-            Matrix4x4 captureProjection = Matrix4x4.CreatePerspectiveFieldOfView(
+            Matrix4x4 captureProjection = Matrix4x4.CreatePerspectiveFieldOfViewLeftHanded(
                 MathF.PI * 0.5f, 1f, 0.1f, 1000f);
+
 
             ConversionCameraData = new CameraData()
             {
@@ -219,9 +220,11 @@ namespace DevoidEngine.Rendering
 
         void ProcessCubemap(ICommandList cmd, ISky sky)
         {
+
             cmd.GenerateMipmaps(SkyboxTexture.GPU);
 
             ConversionRenderData.render_mesh = CubeMesh;
+            ConversionRenderData.render_material = PrefilterMaterial;
 
             ProjectToSH(cmd);
             ReduceSH(cmd);
@@ -281,12 +284,19 @@ namespace DevoidEngine.Rendering
             ProjectToSHMaterial.DescriptorSet.SetRWTexture(1, DebugCube.GPU);
             ProjectToSHMaterial.DescriptorSet.SetRWShaderStorageBuffer(0, PartialSH.GPU);
 
+            ProjectToSHMaterial.SetFloat("EnvironmentMapResolution", SkyResolution);
+
             cmd.SetDescriptorSet(0, ProjectToSHMaterial.DescriptorSet);
 
+            //cmd.Dispatch(
+            //    (uint)IrradianceResolution / 8,
+            //    (uint)IrradianceResolution / 8,
+            //    6);
+
             cmd.Dispatch(
-                (uint)IrradianceResolution / 8,
-                (uint)IrradianceResolution / 8,
-                6);
+                (uint)SkyResolution / 8,
+                (uint)SkyResolution / 8,
+            6);
         }
 
         void ReduceSH(ICommandList cmd)
@@ -346,6 +356,7 @@ namespace DevoidEngine.Rendering
             PrefilterMaterial.SetFloat("MaxPrefilterMipLevel", PrefilterMipLevels - 1);
             PrefilterMaterial.SetFloat("EnvironmentMapResolution", SkyResolution);
 
+            ConversionRenderData.render_material = PrefilterMaterial;
             for (int mip = 0; mip < PrefilterMipLevels; mip++)
             {
                 int size = PrefilterResolution >> mip;
@@ -361,7 +372,6 @@ namespace DevoidEngine.Rendering
                 float roughness = (float)mip / (PrefilterMipLevels - 1);
 
                 PrefilterMaterial.SetFloat("Roughness", roughness);
-                ConversionRenderData.render_material = PrefilterMaterial;
 
                 for (int face = 0; face < 6; face++)
                 {

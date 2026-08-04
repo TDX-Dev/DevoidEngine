@@ -10,6 +10,12 @@ RWTexture2DArray<float4> DebugCube : register(u1);
 RWStructuredBuffer<SH9> PartialSH : register(u0);
 groupshared float4 SharedSH[9][64];
 
+cbuffer Material : register(b4)
+{
+    float EnvironmentMapResolution;
+    float3 padding;
+}
+
 float3 CubeDirection(uint face, float2 uv)
 {
     uv = uv * 2.0 - 1.0;
@@ -83,23 +89,23 @@ void CSMain(
     uint3 GTid : SV_GroupThreadID,
     uint3 Gid : SV_GroupID)
 {
-    const uint Resolution = 32;
+    //const uint Resolution = 32;
 
     
-    float2 uv = (float2(DTid.xy) + 0.5) / float(Resolution);
+    float2 uv = (float2(DTid.xy) + 0.5) / float(EnvironmentMapResolution);
 
     float3 dir = CubeDirection(DTid.z, uv);
 
 // Write the direction mapped from [-1, 1] to [0, 1] into the texture array
 // DTid.xy is the pixel coordinate, DTid.z is the slice/face index (0 through 5)
-    DebugCube[uint3(DTid.xy, DTid.z)] = float4(dir * 0.5 + 0.5, 1.0);
+    //DebugCube[uint3(DTid.xy, DTid.z)] = float4(dir * 0.5 + 0.5, 1.0);
     
     float sh[9];
     EvaluateSHBasis(dir, sh);
 
     float3 color = MAT_Skybox.SampleLevel(MAT_SkyboxSampler, dir, 0).rgb;
     
-    float omega = TexelSolidAngle(DTid.xy, Resolution);
+    float omega = TexelSolidAngle(DTid.xy, EnvironmentMapResolution);
 
     float4 coeff[9];
 
@@ -136,8 +142,8 @@ void CSMain(
     
     if (localIndex == 0)
     {
-        uint groupsX = Resolution / 8;
-        uint groupsY = Resolution / 8;
+        uint groupsX = EnvironmentMapResolution / 8;
+        uint groupsY = EnvironmentMapResolution / 8;
 
         uint groupIndex =
             Gid.z * groupsX * groupsY +

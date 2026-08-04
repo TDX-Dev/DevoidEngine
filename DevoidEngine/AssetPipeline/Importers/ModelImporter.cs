@@ -41,8 +41,8 @@ namespace DevoidEngine.AssetPipeline.Importers
                 //PostProcessSteps.GenerateSmoothNormals |
                 PostProcessSteps.CalculateTangentSpace |
                 PostProcessSteps.GenerateUVCoords |
-                PostProcessSteps.FlipUVs |
-                PostProcessSteps.FlipWindingOrder
+                PostProcessSteps.FlipUVs// |
+                //PostProcessSteps.FlipWindingOrder
             );
 
             Matrix4x4 axis = AxisHelper.BuildAxisMatrix(

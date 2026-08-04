@@ -30,12 +30,34 @@ float RadicalInverse_VdC(uint bits)
     bits = ((bits & 0x33333333u) << 2u) | ((bits & 0xCCCCCCCCu) >> 2u);
     bits = ((bits & 0x0F0F0F0Fu) << 4u) | ((bits & 0xF0F0F0F0u) >> 4u);
     bits = ((bits & 0x00FF00FFu) << 8u) | ((bits & 0xFF00FF00u) >> 8u);
-    return float(bits) * 2.3283064365386963e-10;
+    return float(bits) * 2.3283064365386963e-10; // / 0x100000000
 }
 
 float2 Hammersley(uint i, uint N)
 {
     return float2(float(i) / float(N), RadicalInverse_VdC(i));
+}
+
+float3 HemisphereImportanceSampleDGGX(float2 u, float linearRoughness)
+{
+    float a = linearRoughness;
+    float phi = 2.0 * PI * u.x;
+    
+    // Optimized (a+1)*(a-1) -> float accuracy optimization from Filament
+    float cosTheta2 = (1.0 - u.y) / (1.0 + (a + 1.0) * ((a - 1.0) * u.y));
+    float cosTheta = sqrt(cosTheta2);
+    float sinTheta = sqrt(max(0.0, 1.0 - cosTheta2));
+
+    return float3(sinTheta * cos(phi), sinTheta * sin(phi), cosTheta);
+}
+
+// Height-correlated Smith GGX Visibility
+float Visibility(float NoV, float NoL, float a)
+{
+    float a2 = a * a;
+    float GGXL = NoV * sqrt((NoL - NoL * a2) * NoL + a2);
+    float GGXV = NoL * sqrt((NoV - NoV * a2) * NoV + a2);
+    return 0.5 / (GGXV + GGXL);
 }
 
 float3 ImportanceSampleGGX(float2 Xi, float3 N, float perceptualRoughness)
@@ -124,50 +146,36 @@ float3 FresnelSchlickRoughness(float cosTheta, float3 F0, float roughness)
     return F0 + (F90 - F0) * pow(1.0 - cosTheta, 5.0);
 }
 
-float2 IntegrateBRDF(float NoV, float roughness)
+float2 IntegrateBRDF_Multiscatter(float NoV, float linearRoughness, uint numSamples)
 {
-    float3 V;
-    V.x = sqrt(1.0 - NoV * NoV);
-    V.y = 0.0;
-    V.z = NoV;
+    float2 r = float2(0.0, 0.0);
+    float3 V = float3(sqrt(1.0 - NoV * NoV), 0.0, NoV);
 
-    float3 N = float3(0.0, 0.0, 1.0);
-
-    const uint SAMPLE_COUNT = 1024u;
-    float A = 0.0;
-    float B = 0.0;
-
-    for (uint i = 0u; i < SAMPLE_COUNT; ++i)
+    for (uint i = 0u; i < numSamples; ++i)
     {
-        float2 Xi = Hammersley(i, SAMPLE_COUNT);
+        float2 u = Hammersley(i, numSamples);
+        float3 H = HemisphereImportanceSampleDGGX(u, linearRoughness);
+        float3 L = 2.0 * dot(V, H) * H - V;
 
-        // 1. Importance Sample GGX microfacet normal H
-        float3 H = ImportanceSampleGGX(Xi, N, roughness);
-
-        // 2. Compute reflected light direction L
-        float3 L = normalize(2.0 * dot(V, H) * H - V);
-
+        float VoH = saturate(dot(V, H));
         float NoL = saturate(L.z);
         float NoH = saturate(H.z);
-        float VoH = saturate(dot(V, H));
 
         if (NoL > 0.0)
         {
-            // 3. Correlated Smith GGX Visibility Term
-            float Vis = V_SmithGGXCorrelated(NoV, NoL, roughness);
-
-            // PDF = D * NoH / (4 * VoH)
-            // Weight = (BRDF * NoL) / PDF = Vis * 4 * VoH * NoL / NoH
-            float weight = Vis * 4.0 * VoH * NoL / NoH;
-
+            // Visibility term includes (VoH / NoH) and NoL factors
+            float v = Visibility(NoV, NoL, linearRoughness) * NoL * (VoH / NoH);
             float Fc = pow(1.0 - VoH, 5.0);
 
-            A += (1.0 - Fc) * weight;
-            B += Fc * weight;
+            // Multi-scattering channel accumulation
+            r.x += v * Fc;
+            r.y += v;
+            //r.x += v * (1.0 - Fc);
+            //r.y += v * Fc;
         }
     }
 
-    return float2(A, B) / float(SAMPLE_COUNT);
+    return r * (4.0 / float(numSamples));
 }
 
 float3 EvaluateIrradianceSH(

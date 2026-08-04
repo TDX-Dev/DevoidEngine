@@ -41,7 +41,8 @@ namespace Sandbox
 
             Console.WriteLine("Sandbox has launched.");
 
-            scene = Asset.Load<PackedScene>("models/balloon.gltf")!.Instantiate();
+            //scene = Asset.Load<PackedScene>("models/spheres_pbr_test.gltf")!.Instantiate();
+            scene = Asset.Load<PackedScene>("models/chess_set_2k.gltf")!.Instantiate();
             //scene.GameObjects[0].Transform.Position = new Vector3(0, 5, 0);
 
             Engine.Instance.SceneTree.LoadScene(scene);
@@ -118,7 +119,7 @@ namespace Sandbox
             lightGo = scene.AddGameObject("Light Object");
             LightComponent light = lightGo.AddComponent<LightComponent>();
             light.LightType = LightType.DirectionalLight;
-            light.Intensity = 2;
+            light.Intensity = 0;
             light.Radius = 100;
             light.InnerCutoff = 30;
             light.OuterCutoff = 35;
@@ -363,6 +364,16 @@ namespace Sandbox
 
         public override void OnUpdate(float deltaTime)
         {
+            Vector3 f = go.Transform.Forward;
+
+            //Console.WriteLine(
+            //    MathF.Abs(f.X) > MathF.Abs(f.Y) && MathF.Abs(f.X) > MathF.Abs(f.Z)
+            //        ? (f.X > 0 ? "+X" : "-X")
+            //        : MathF.Abs(f.Y) > MathF.Abs(f.Z)
+            //            ? (f.Y > 0 ? "+Y" : "-Y")
+            //            : (f.Z > 0 ? "+Z" : "-Z"));
+
+
             if (Engine.InputSystem.GetActionDown("Impulse"))
             {
                 Console.WriteLine("Impulse Added");
@@ -407,13 +418,21 @@ namespace Sandbox
                 Engine.InputSystem.GetAction("Backward");
 
             float right =
-                Engine.InputSystem.GetAction("Left") -
-                Engine.InputSystem.GetAction("Right");
+                Engine.InputSystem.GetAction("Right") -
+                Engine.InputSystem.GetAction("Left");
 
             Vector3 moveDirection = Vector3.Zero;
 
             moveDirection += transform.Forward * forward;
             moveDirection += transform.Right * right;
+            //Console.WriteLine(cam.GetCamera().Front);
+            //Console.WriteLine(transform.Right);
+
+            //Quaternion q = Quaternion.CreateFromYawPitchRoll(MathF.PI / 2, 0, 0);
+
+            //Vector3 f1 = Vector3.Transform(Vector3.UnitZ, q);
+
+            //Console.WriteLine(f1);
 
             if (moveDirection.LengthSquared() > 0.0f)
             {
@@ -433,7 +452,7 @@ namespace Sandbox
 
             const float sensitivity = 0.0025f;
 
-            yaw -= lookX * sensitivity;
+            yaw += lookX * sensitivity;
             pitch += lookY * sensitivity;
 
             pitch = Math.Clamp(
@@ -449,7 +468,12 @@ namespace Sandbox
 
             go.Transform.Rotation = rotation;
 
+            //Console.WriteLine($"Forward : {transform.Forward}");
+            //Console.WriteLine($"Right   : {transform.Right}");
+            //Console.WriteLine($"Up      : {transform.Up}");
 
+            //Console.WriteLine($"Cross(U,F): {Vector3.Cross(transform.Up, transform.Forward)}");
+            //Console.WriteLine($"Cross(F,U): {Vector3.Cross(transform.Forward, transform.Up)}");
         }
 
         private float yaw;
