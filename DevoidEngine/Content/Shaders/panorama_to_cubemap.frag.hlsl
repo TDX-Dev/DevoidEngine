@@ -15,7 +15,6 @@ SamplerState MAT_Panorama_Sampler : register(s0);
 float3 GetDirection(int face, float2 uv)
 {
     float2 xy = uv * 2.0f - 1.0f;
-
     float3 dir;
 
     if (face == 0)
@@ -23,25 +22,15 @@ float3 GetDirection(int face, float2 uv)
     else if (face == 1)
         dir = float3(-1.0, -xy.y, xy.x); // -X
     else if (face == 2)
-        dir = float3(xy.x, 1.0, xy.y); // +Y
+        dir = float3(xy.x, -1.0, -xy.y); // +Y (flipped)
     else if (face == 3)
-        dir = float3(xy.x, -1.0, -xy.y); // -Y
+        dir = float3(xy.x, 1.0, xy.y); // -Y (flipped)
     else if (face == 4)
-        dir = float3(xy.x, -xy.y, 1.0); // +Z
+        dir = float3(-xy.x, -xy.y, -1.0); // +Z (flipped)
     else
-        dir = float3(-xy.x, -xy.y, -1.0); // -Z
+        dir = float3(xy.x, -xy.y, 1.0); // -Z (flipped)
 
     return normalize(dir);
-}
-
-float2 DirToEquirectUV(float3 dir)
-{
-    float2 uv;
-
-    uv.x = atan2(dir.z, dir.x) / (2.0 * PI) + 0.5;
-    uv.y = asin(dir.y) / PI + 0.5;
-
-    return uv;
 }
 
 float4 PSMain(PSInput input) : SV_Target
@@ -53,7 +42,7 @@ float4 PSMain(PSInput input) : SV_Target
     uv.x = atan2(dir.z, dir.x) / (2 * PI) + 0.5;
     uv.y = asin(dir.y) / PI + 0.5;
 
-    //float3 color = MAT_Panorama.Sample(MAT_Panorama_Sampler, uv).rgb;
-    float3 color = float3(1, 1, 1);
+    float3 color = MAT_Panorama.Sample(MAT_Panorama_Sampler, uv).rgb;
+    //float3 color = float3(1, 1, 1);
     return float4(color, 1);
 }

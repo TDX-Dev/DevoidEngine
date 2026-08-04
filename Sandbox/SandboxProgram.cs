@@ -41,7 +41,7 @@ namespace Sandbox
 
             Console.WriteLine("Sandbox has launched.");
 
-            scene = Asset.Load<PackedScene>("models/spheres_pbr_test.gltf")!.Instantiate();
+            scene = Asset.Load<PackedScene>("models/balloon.gltf")!.Instantiate();
             //scene.GameObjects[0].Transform.Position = new Vector3(0, 5, 0);
 
             Engine.Instance.SceneTree.LoadScene(scene);
@@ -118,7 +118,7 @@ namespace Sandbox
             lightGo = scene.AddGameObject("Light Object");
             LightComponent light = lightGo.AddComponent<LightComponent>();
             light.LightType = LightType.DirectionalLight;
-            light.Intensity = 0;
+            light.Intensity = 2;
             light.Radius = 100;
             light.InnerCutoff = 30;
             light.OuterCutoff = 35;

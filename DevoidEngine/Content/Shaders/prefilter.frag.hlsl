@@ -55,7 +55,7 @@ float4 PSMain(PSInput input) : SV_Target
             float NdotH = saturate(dot(N, H));
             float HdotV = max(dot(H, V), 0.001);
 
-            float D = DistributionGGX(N, H, Roughness);
+            float D = DistributionGGX(NdotH, Roughness);
             float pdf = max(D * NdotH / (4.0 * HdotV), 1e-6);
 
             float saTexel = 4.0 * PI / (6.0 * EnvironmentMapResolution * EnvironmentMapResolution);

@@ -5,6 +5,8 @@ struct SH9
     float4 C[9];
 };
 
+RWTexture2DArray<float4> DebugCube : register(u1);
+
 RWStructuredBuffer<SH9> PartialSH : register(u0);
 groupshared float4 SharedSH[9][64];
 
@@ -19,13 +21,13 @@ float3 CubeDirection(uint face, float2 uv)
         case 1:
             return normalize(float3(-1, -uv.y, uv.x)); // -X
         case 2:
-            return normalize(float3(uv.x, 1, uv.y)); // +Y
+            return normalize(float3(uv.x, -1, -uv.y)); // +Y (flipped)
         case 3:
-            return normalize(float3(uv.x, -1, -uv.y)); // -Y
+            return normalize(float3(uv.x, 1, uv.y));  // -Y (flipped)
         case 4:
-            return normalize(float3(uv.x, -uv.y, 1)); // +Z
+            return normalize(float3(-uv.x, -uv.y, -1)); // +Z (flipped)
         default:
-            return normalize(float3(-uv.x, -uv.y, -1)); // -Z
+            return normalize(float3(uv.x, -uv.y, 1));  // -Z (flipped)
     }
 }
 
@@ -87,6 +89,10 @@ void CSMain(
     float2 uv = (float2(DTid.xy) + 0.5) / float(Resolution);
 
     float3 dir = CubeDirection(DTid.z, uv);
+
+// Write the direction mapped from [-1, 1] to [0, 1] into the texture array
+// DTid.xy is the pixel coordinate, DTid.z is the slice/face index (0 through 5)
+    DebugCube[uint3(DTid.xy, DTid.z)] = float4(dir * 0.5 + 0.5, 1.0);
     
     float sh[9];
     EvaluateSHBasis(dir, sh);

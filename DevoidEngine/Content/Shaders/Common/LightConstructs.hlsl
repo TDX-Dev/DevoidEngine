@@ -138,44 +138,6 @@ float ComputeShadow(int shadowIndex, float3 worldPos)
 //    return (kD * albedo / PI + specular) * radiance * NdotL;
 //}
 
-float3 ComputeDiffuseBRDF(
-    float3 albedo,
-    float metallic,
-    float3 F)
-{
-    float3 kS = F;
-    float3 kD = (1.0 - kS) * (1.0 - metallic);
-
-    return kD * albedo / PI;
-}
-
-
-float3 ComputeSpecularBRDF(
-    float3 N,
-    float3 V,
-    float3 H,
-    float3 L,
-    float roughness,
-    float3 F0
-)
-{
-
-    float NDF = DistributionGGX(N, H, roughness);
-    float G = GeometrySmith(N, V, L, roughness);
-    float3 F = FresnelSchlick(max(dot(H, V), 0.0), F0);
-
-    float3 numerator = NDF * G * F;
-
-    float denom =
-        4.0 *
-        max(dot(N, V), 0.0) *
-        max(dot(N, L), 0.0) +
-        0.0001;
-
-    return numerator / denom;
-}
-
-
 float3 ComputeBRDF(
     float3 N,
     float3 V,
@@ -186,52 +148,56 @@ float3 ComputeBRDF(
     float3 F0,
     float3 radiance,
     float clearcoat,
-    float clearcoatRoughness
-)
+    float clearcoatRoughness)
 {
+    float NoV = saturate(dot(N, V));
+    float NoL = saturate(dot(N, L));
+    
+    // Early exit if light is behind the surface
+    if (NoL <= 0.0) 
+        return float3(0.0, 0.0, 0.0);
+
+    // Calculate Half-vector and shared dot products
     float3 H = normalize(V + L);
+    float NoH = saturate(dot(N, H));
+    float VoH = saturate(dot(V, H));
 
-    float3 F =
-        FresnelSchlick(
-            max(dot(H, V), 0.0),
-            F0);
+    // ------------------------------------------------------------------------
+    // 1. Base Specular Lobe (GGX)
+    // ------------------------------------------------------------------------
+    float D = DistributionGGX(NoH, roughness);
+    float Vis = V_SmithGGXCorrelated(NoV, NoL, roughness);
+    float3 F = FresnelSchlick(VoH, F0);
 
-    float3 diffuse =
-        ComputeDiffuseBRDF(
-            albedo,
-            metallic,
-            F);
+    // Notice: No division! V_SmithGGXCorrelated handles the denominator.
+    float3 specular = D * Vis * F;
 
-    float3 specular =
-        ComputeSpecularBRDF(
-            N,
-            V,
-            H,
-            L,
-            roughness,
-            F0);
+    // ------------------------------------------------------------------------
+    // 2. Base Diffuse Lobe (Lambert)
+    // ------------------------------------------------------------------------
+    // Energy conservation: diffuse light is what didn't reflect as specular
+    float3 kD = (1.0 - F) * (1.0 - metallic);
+    float3 diffuse = (kD * albedo) / PI;
+
+    // ------------------------------------------------------------------------
+    // 3. Clearcoat Lobe (GGX)
+    // ------------------------------------------------------------------------
+    // Polyurethane typically has an IOR yielding F0 = 0.04
+    float coatD = DistributionGGX(NoH, clearcoatRoughness);
+    float coatVis = V_SmithGGXCorrelated(NoV, NoL, clearcoatRoughness);
     
-    float3 coat =
-        ComputeSpecularBRDF(
-            N,
-            V,
-            H,
-            L,
-            clearcoatRoughness,
-            float3(0.04, 0.04, 0.04)
-        );
+    // Evaluate Clearcoat Fresnel at VoH, multiplied by clearcoat weight
+    float coatF = FresnelSchlick(VoH, float3(0.04, 0.04, 0.04)).r * clearcoat;
     
-    float Fc = FresnelSchlick(
-        saturate(dot(N, V)),
-        float3(0.04, 0.04, 0.04)
-    ).r;
-    
-    float3 base = diffuse + specular;
-    base *= (1.0 - clearcoat * Fc);
+    float3 coatSpecular = coatD * coatVis * coatF;
 
-    float NdotL = max(dot(N, L), 0.0);
+    // ------------------------------------------------------------------------
+    // 4. Final Energy Conservation & Assembly
+    // ------------------------------------------------------------------------
+    // The clearcoat layer absorbs light before it hits the base layer
+    float3 baseLayer = (diffuse + specular) * (1.0 - coatF);
 
-    return (base + coat * clearcoat)  * radiance * NdotL;
+    return (baseLayer + coatSpecular) * radiance * NoL;
 }
 
 float ComputeAttenuation(GPUPointLight light, float distance)

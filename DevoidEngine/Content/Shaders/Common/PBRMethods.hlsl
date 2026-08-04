@@ -5,17 +5,15 @@
 #include "./Constants.hlsl"
 
 
-float DistributionGGX(float3 N, float3 H, float roughness)
+float DistributionGGX(float NoH, float perceptualRoughness)
 {
-    float a = roughness * roughness;
-    float a2 = a * a;
-    float NdotH = max(dot(N, H), 0.0);
-    float NdotH2 = NdotH * NdotH;
-
-    float denom = (NdotH2 * (a2 - 1.0) + 1.0);
-    denom = PI * denom * denom;
-
-    return a2 / max(denom, 0.000001);
+    float a = perceptualRoughness * perceptualRoughness; // alpha = r^2
+    float a2 = a * a; // alpha^2 = r^4
+    
+    float NoH2 = NoH * NoH;
+    float denom = (NoH2 * (a2 - 1.0) + 1.0);
+    
+    return a2 / max(PI * denom * denom, 1e-6);
 }
 
 static const float MEDIUMP_FLT_MAX = 65504.0;
@@ -40,29 +38,28 @@ float2 Hammersley(uint i, uint N)
     return float2(float(i) / float(N), RadicalInverse_VdC(i));
 }
 
-float3 ImportanceSampleGGX(float2 Xi, float3 N, float roughness)
+float3 ImportanceSampleGGX(float2 Xi, float3 N, float perceptualRoughness)
 {
-    float a = roughness * roughness;
+    float a = perceptualRoughness * perceptualRoughness; // alpha = r^2
+    float a2 = a * a; // alpha^2 = r^4
 
     float phi = 2.0 * PI * Xi.x;
-    float cosTheta = sqrt((1.0 - Xi.y) / (1.0 + (a * a - 1.0) * Xi.y));
-    float sinTheta = sqrt(1.0 - cosTheta * cosTheta);
+    float cosTheta = sqrt((1.0 - Xi.y) / (1.0 + (a2 - 1.0) * Xi.y));
+    float sinTheta = sqrt(max(0.0, 1.0 - cosTheta * cosTheta));
 
+    // Polar to Cartesian in tangent space
     float3 H;
     H.x = cos(phi) * sinTheta;
     H.y = sin(phi) * sinTheta;
     H.z = cosTheta;
 
-    // build tangent basis
-    float3 up = abs(N.z) < 0.999 ? float3(0, 0, 1) : float3(0, 1, 0);
+    // Build orthonormal tangent basis from Normal
+    float3 up = abs(N.z) < 0.999 ? float3(0.0, 0.0, 1.0) : float3(0.0, 1.0, 0.0);
     float3 tangent = normalize(cross(up, N));
     float3 bitangent = cross(N, tangent);
 
-    float3 sampleVec =
-        tangent * H.x +
-        bitangent * H.y +
-        N * H.z;
-
+    // Transform sample to world space
+    float3 sampleVec = tangent * H.x + bitangent * H.y + N * H.z;
     return normalize(sampleVec);
 }
 
@@ -85,24 +82,10 @@ float GeometrySmith(float3 N, float3 V, float3 L, float roughness)
     return ggx1 * ggx2;
 }
 
-float V_SmithGGXCorrelated(float N, float V, float L, float roughness)
+float V_SmithGGXCorrelated(float NoV, float NoL, float perceptualRoughness)
 {
-    float NdotV = max(dot(N, V), 0.0);
-    float NdotL = max(dot(N, L), 0.0);
-    
-    float a = roughness;
-    float a2 = a * a;
-
-    float GGXV = NdotL * sqrt((-NdotV * a2 + NdotV) * NdotV + a2);
-    float GGXL = NdotV * sqrt((-NdotL * a2 + NdotL) * NdotL + a2);
-
-    return 0.5 / max(GGXV + GGXL, 0.00001);
-}
-
-float V_SmithGGXCorrelated(float NoV, float NoL, float roughness)
-{
-    float a = roughness * roughness;
-    float a2 = a * a;
+    float a = perceptualRoughness * perceptualRoughness; // alpha = r^2
+    float a2 = a * a; // alpha^2 = r^4
 
     float GGXV = NoL * sqrt(NoV * NoV * (1.0 - a2) + a2);
     float GGXL = NoV * sqrt(NoL * NoL * (1.0 - a2) + a2);
@@ -110,26 +93,14 @@ float V_SmithGGXCorrelated(float NoV, float NoL, float roughness)
     return 0.5 / max(GGXV + GGXL, 1e-5);
 }
 
-float V_SmithGGXCorrelatedFast(float NoV, float NoL, float roughness)
+float V_SmithGGXCorrelatedFast(float NoV, float NoL, float perceptualRoughness)
 {
-    float a2 = roughness * roughness;
-    a2 *= a2;
+    float a = perceptualRoughness * perceptualRoughness; // alpha = r^2
 
-    float GGXV = NoL * sqrt(NoV * NoV * (1.0 - a2) + a2);
-    float GGXL = NoV * sqrt(NoL * NoL * (1.0 - a2) + a2);
+    float GGXV = NoL * (NoV * (1.0 - a) + a);
+    float GGXL = NoV * (NoL * (1.0 - a) + a);
 
-    return 0.5 / (GGXV + GGXL);
-}
-
-float V_SmithGGXCorrelatedFast(float N, float V, float L, float roughness)
-{
-    float NdotV = max(dot(N, V), 0.0);
-    float NdotL = max(dot(N, L), 0.0);
-    
-    float a = roughness;
-    float GGXV = NdotL * (NdotV * (1.0 - a) + a);
-    float GGXL = NdotV * (NdotL * (1.0 - a) + a);
-    return 0.5 / (GGXV + GGXL);
+    return 0.5 / max(GGXV + GGXL, 1e-5);
 }
 
 float3 FresnelSchlick(float cosTheta, float3 F0)
@@ -155,9 +126,6 @@ float3 FresnelSchlickRoughness(float cosTheta, float3 F0, float roughness)
 
 float2 IntegrateBRDF(float NoV, float roughness)
 {
-    // Perceptual roughness to alpha
-    float a = roughness * roughness;
-
     float3 V;
     V.x = sqrt(1.0 - NoV * NoV);
     V.y = 0.0;
@@ -172,18 +140,11 @@ float2 IntegrateBRDF(float NoV, float roughness)
     for (uint i = 0u; i < SAMPLE_COUNT; ++i)
     {
         float2 Xi = Hammersley(i, SAMPLE_COUNT);
-        
-        // Importance sample GGX
-        // Xi.y = cos^2(theta) setup
-        float phi = 2.0 * PI * Xi.x;
-        float cosTheta = sqrt((1.0 - Xi.y) / (1.0 + (a * a - 1.0) * Xi.y));
-        float sinTheta = sqrt(1.0 - cosTheta * cosTheta);
 
-        float3 H;
-        H.x = cos(phi) * sinTheta;
-        H.y = sin(phi) * sinTheta;
-        H.z = cosTheta;
+        // 1. Importance Sample GGX microfacet normal H
+        float3 H = ImportanceSampleGGX(Xi, N, roughness);
 
+        // 2. Compute reflected light direction L
         float3 L = normalize(2.0 * dot(V, H) * H - V);
 
         float NoL = saturate(L.z);
@@ -192,12 +153,8 @@ float2 IntegrateBRDF(float NoV, float roughness)
 
         if (NoL > 0.0)
         {
-            // Correlated Smith GGX Visibility Term
-            // V_SmithGGXCorrelated = G / (4 * NoV * NoL)
-            float a2 = a * a;
-            float GGXV = NoL * sqrt(NoV * NoV * (1.0 - a2) + a2);
-            float GGXL = NoV * sqrt(NoL * NoL * (1.0 - a2) + a2);
-            float Vis = 0.5 / (GGXV + GGXL);
+            // 3. Correlated Smith GGX Visibility Term
+            float Vis = V_SmithGGXCorrelated(NoV, NoL, roughness);
 
             // PDF = D * NoH / (4 * VoH)
             // Weight = (BRDF * NoL) / PDF = Vis * 4 * VoH * NoL / NoH

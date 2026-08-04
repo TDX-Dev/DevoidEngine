@@ -71,6 +71,8 @@ namespace DevoidEngine.Rendering
 
         private readonly Texture BlueNoisePrefilter;
 
+        private readonly Texture DebugCube;
+
         // End of ze clutter
 
 
@@ -127,6 +129,13 @@ namespace DevoidEngine.Rendering
             PanoramaRenderTarget = RenderTarget.Create(1);
 
             PanoramaToCubemapMaterial = new MaterialInstance(new Material(Shader.FromDescriptorFile(Engine.GraphicsDevice, "Content/DevoidShaderDescriptors/sky_panoramatocubemap.dsd")));
+
+            DebugCube =
+                Texture.CreateCube(
+                32,
+                TextureFormat.RGBA16_Float,
+                TextureUsage.UnorderedAccess |
+                TextureUsage.ShaderResource);
 
             ProjectToSHPipeline = ProjectToSHMaterial.BaseMaterial.DefaultPass.ComputePipeline!;
             ReduceSHPipeline = ReduceSHMaterial.BaseMaterial.DefaultPass.ComputePipeline!;
@@ -269,6 +278,7 @@ namespace DevoidEngine.Rendering
 
             cmd.SetComputePipeline(ProjectToSHPipeline);
 
+            ProjectToSHMaterial.DescriptorSet.SetRWTexture(1, DebugCube.GPU);
             ProjectToSHMaterial.DescriptorSet.SetRWShaderStorageBuffer(0, PartialSH.GPU);
 
             cmd.SetDescriptorSet(0, ProjectToSHMaterial.DescriptorSet);

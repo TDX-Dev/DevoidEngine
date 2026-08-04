@@ -77,65 +77,69 @@ float3 ComputeIBL(
 {
     float NoV = saturate(dot(N, V));
 
-    float3 F = FresnelSchlickRoughness(NoV, F0, roughness);
-
-    float3 diffuse =
-        EvaluateIrradianceSH(EnvironmentSH, N) * (albedo * (1.0 - metallic) * (1.0 - F));
-
+    // Keep coordinate system Y-flip
     float3 R = reflect(-V, N);
     R.y = -R.y;
-
-    float3 prefiltered = 
-        PrefilterMap.SampleLevel(
-            EnvironmentSampler,
-            R,
-            roughness * 8.0).rgb;
-
-    float2 brdf = float2(1, 1);
-        //BRDFLUT.Sample(
-        //    EnvironmentSampler,
-        //    float2(NoV, roughness)).rg;
     
-    float3 specularColor =
-        lerp(brdf.xxx, brdf.yyy, F0);
+    // Base Layer (Specular & Diffuse)
+    // Always use SampleLevel in IBL shaders to avoid gradient calculation errors
+    float2 dfg = BRDFLUT.SampleLevel(EnvironmentSampler, float2(NoV, roughness), 0.0).rg;
     
-    float3 energyCompensation = 1.0 + F0 * (1.0 / max(brdf.y, 1e-4) - 1.0);
-
-    float3 specular =
-        prefiltered *
-        specularColor *
-        energyCompensation;
+    // Filament Multi-Scattering Math
+    // dfg.x = A (Scale for 1 - F0)
+    // dfg.y = B (Scale for F0)
     
-    float3 result =
-        diffuse +
-        specular;
+    // Single scattering directional albedo (Fss)
+    float3 Fss = dfg.x + dfg.y * F0;
+    
+    // Total directional albedo (E) - what a perfectly white material would reflect
+    float E = dfg.x + dfg.y;
+    
+    // Multiscattering energy compensation
+    float3 energyCompensation = 1.0 + F0 * (1.0 / max(E, 1e-4) - 1.0);
+    
+    // Evaluate Specular IBL
+    float3 prefiltered = PrefilterMap.SampleLevel(EnvironmentSampler, R, roughness * 8.0).rgb;
+    float3 specular = 0;//prefiltered * Fss * energyCompensation;
 
+    // Evaluate Diffuse IBL
+    // Energy Conservation: Light that didn't reflect as specular (E) enters the material.
+    // Metals have 0 diffuse. This is much more accurate than the old FresnelSchlick hack.
+    float3 kD = (1.0 - E) * (1.0 - metallic);
+    float3 diffuse = EvaluateIrradianceSH(EnvironmentSH, N) * albedo * kD;
+    
+    float3 result = diffuse + specular;
+    
+    // Clearcoat Layer
     float NoVc = saturate(dot(Ng, V));
-
-    float3 Fc = FresnelSchlick(
-        NoVc,
-        float3(0.04, 0.04, 0.04));
-
+    
     float3 Rc = reflect(-V, Ng);
     Rc.y = -Rc.y;
 
-    float3 coatPrefilter =
-        PrefilterMap.SampleLevel(
-            EnvironmentSampler,
-            Rc,
-            clearcoatRoughness * 7.0).rgb;
+    float3 coatPrefilter = PrefilterMap.SampleLevel(
+        EnvironmentSampler,
+        Rc,
+        clearcoatRoughness * 8.0
+    ).rgb;
 
-    float2 coatBRDF =
-        BRDFLUT.Sample(
-            EnvironmentSampler,
-            float2(NoVc, clearcoatRoughness)).rg;
+    float2 coatDFG = BRDFLUT.SampleLevel(
+        EnvironmentSampler,
+        float2(NoVc, clearcoatRoughness),
+        0.0
+    ).rg;
 
+    // Clearcoat IOR is typically 1.5, which gives an F0 of 0.04
+    float coatFss = coatDFG.x + coatDFG.y * 0.04;
+
+    // Fresnel for the clearcoat layer's absorption mask
+    float Fc = FresnelSchlick(NoVc, float3(0.04, 0.04, 0.04)).r;
+
+    // The clearcoat absorbs energy from the base layer before reflecting its own light
     result *= (1.0 - clearcoat * Fc);
-    result += coatPrefilter *
-              (Fc * coatBRDF.x + coatBRDF.y) *
-              clearcoat;
+    result += coatPrefilter * coatFss * clearcoat;
 
-    return specular;
+    return prefiltered;
+
 }
 
 float4 PSMain(PSInput input) : SV_TARGET
@@ -153,8 +157,6 @@ float4 PSMain(PSInput input) : SV_TARGET
     float roughness = saturate(roughnessTex * Roughness);
     float ao = aoTex * AO;
     float3 emission = emissiveTex * EmissiveColor * EmissiveStrength;
-    
-    //roughness = max(roughness, 0.04);
     
     float3 N = GetNormalFromMap(input);
     float3 Ng = normalize(input.Normal);
@@ -249,6 +251,6 @@ float4 PSMain(PSInput input) : SV_TARGET
     );
 
     float3 color = ambient + Lo + emission;
-    
+    //float3 color = Lo;
     return float4(color, 1.0);
 }
