@@ -148,5 +148,10 @@ namespace DevoidEngine.Core
             MemoryMarshal.Write(span, in value);
         }
 
+        public override void Dispose()
+        {
+            
+        }
+
     }
 }

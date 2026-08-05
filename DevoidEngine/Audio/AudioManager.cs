@@ -43,6 +43,11 @@ namespace DevoidEngine.Audio
             _backend.SetListener(position, forward, up);
         }
 
+        public void QueueDelete(AudioClipHandle handle)
+        {
+
+        }
+
         public void Update()
         {
             _backend.Update();

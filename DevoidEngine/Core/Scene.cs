@@ -176,7 +176,7 @@ namespace DevoidEngine.Core
             OnComponentRemoved?.Invoke(component);
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             for (int i = 0; i < GameObjects.Count; i++)
             {

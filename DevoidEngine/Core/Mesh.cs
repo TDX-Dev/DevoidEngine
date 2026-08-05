@@ -94,6 +94,12 @@ namespace DevoidEngine.Core
                     IB.Update(indices);
                 }
             }
+
+            Positions = null;
+            Normals = null;
+            Tangents = null;
+            UVs = null;
+            Indices = null;
         }
 
         private void ComputeLocalBounds()
@@ -133,6 +139,11 @@ namespace DevoidEngine.Core
                 cmd.Draw(VB.Count, 0);
             }
 
+        }
+
+        public override void Dispose()
+        {
+            
         }
     }
 }

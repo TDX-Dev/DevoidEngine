@@ -67,5 +67,18 @@ namespace DevoidEngine.Components
             Engine.Renderer.World.InstanceSetTransform(instance_id, worldMatrixInterpolated);
             has_moved_current_frame = false;
         }
+
+        public override void OnDestroy()
+        {
+            if (mesh != null && instance_id.IsValid)
+            {
+                Engine.Renderer.World.FreeMeshInstance(instance_id);
+                Engine.Instance.AssetManager.Unload(mesh);
+            }
+            if (material != null)
+            {
+                Engine.Instance.AssetManager.Unload(material.BaseMaterial);
+            }
+        }
     }
 }

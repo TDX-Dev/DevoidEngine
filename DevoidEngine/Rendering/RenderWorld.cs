@@ -53,6 +53,11 @@ namespace DevoidEngine.Rendering
             return meshIdAllocator.Get(rid);
         }
 
+        public void FreeMeshInstance(RID rid)
+        {
+            meshIdAllocator.Free(rid);
+        }
+
         public RID CreatePointLight()
         {
             return pointLights.MakeRID(new GPUPointLight());
