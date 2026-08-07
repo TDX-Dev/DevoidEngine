@@ -145,23 +145,23 @@ namespace Sandbox
             });
 
             //SetupUI();
-            GameObject sketchModel = scene.GetGameObject("Sketchfab_model")!;
-            AudioSource3D audio = sketchModel.AddComponent<AudioSource3D>();
-            audio.Audio = Asset.Load<AudioClip>("Sounds/PortalRadio.wav");
-            audio.PlayOnStart = true;
-            audio.Volume = 0.5f;
-            audio.MaxDistance = 20;
-            audio.SetLooping(true);
-            audio.Play();
+            //GameObject sketchModel = scene.GetGameObject("Sketchfab_model")!;
+            //AudioSource3D audio = sketchModel.AddComponent<AudioSource3D>();
+            //audio.Audio = Asset.Load<AudioClip>("Sounds/PortalRadio.wav");
+            //audio.PlayOnStart = true;
+            //audio.Volume = 0.5f;
+            //audio.MaxDistance = 20;
+            //audio.SetLooping(true);
+            //audio.Play();
 
-            GameObject sublimModel = scene.GetGameObject("Sublim")!;
-            AudioSource3D audio1 = sublimModel.AddComponent<AudioSource3D>();
-            audio1.Audio = Asset.Load<AudioClip>("Sounds/SBH.wav");
-            audio1.PlayOnStart = true;
-            audio1.Volume = 0.5f;
-            audio1.MaxDistance = 20;
-            audio1.SetLooping(true);
-            audio1.Play();
+            //GameObject sublimModel = scene.GetGameObject("Sublim")!;
+            //AudioSource3D audio1 = sublimModel.AddComponent<AudioSource3D>();
+            //audio1.Audio = Asset.Load<AudioClip>("Sounds/SBH.wav");
+            //audio1.PlayOnStart = true;
+            //audio1.Volume = 0.5f;
+            //audio1.MaxDistance = 20;
+            //audio1.SetLooping(true);
+            //audio1.Play();
 
             GameObject ballDyn = scene.GetGameObject("Ball:Dynamic")!;
             ballDyn.RemoveComponent(ballDyn.GetComponent<StaticColliderComponent>()!);

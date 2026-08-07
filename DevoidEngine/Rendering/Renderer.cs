@@ -87,17 +87,20 @@ namespace DevoidEngine.Rendering
                 viewport.Height);
         }
 
-        public void PopViewport(ICommandList cmd)
+        public void PopViewport(ICommandList cmd, bool setPrevious = true)
         {
             if (viewportStack.Count == 0)
                 return;
             currentViewport = viewportStack.Pop();
 
-            cmd.SetViewport(
+            if (setPrevious)
+            {
+                cmd.SetViewport(
                 currentViewport.X,
                 currentViewport.Y,
                 currentViewport.Width,
                 currentViewport.Height);
+            }
         }
 
         //private readonly IDescriptorLayout PerObjectDescriptorLayout = null!;

@@ -29,7 +29,7 @@ namespace DevoidEngine.Components
             rb = gameObject.GetComponent<RigidBodyComponent>()!;
         }
 
-        public float MaxSpeed = 5f;
+        public float MaxSpeed = 2f;
         public float Steering = 25f;
 
         public override void OnFixedUpdate(float dt)
