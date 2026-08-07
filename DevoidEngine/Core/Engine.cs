@@ -37,6 +37,11 @@ namespace DevoidEngine.Core
         public static PhysicsSystem PhysicsSystem => Instance.physicsSystem;
         public static AudioManager AudioSystem => Instance.audioSystem;
         public static UISystem UISystem => Instance.uiSystem;
+#if DEBUG
+        public static string BasePath => BuildInfo.EngineRoot;
+#else
+        public static string BasePath => AppContext.BaseDirectory;
+#endif
 
         public float InterpolationAlpha { get; set; } = 0;
         public float TargetFramerate { get; } = 60f;

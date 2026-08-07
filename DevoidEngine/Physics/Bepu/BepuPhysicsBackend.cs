@@ -349,10 +349,15 @@ namespace DevoidEngine.Physics.Bepu
 
                         for (int i = 0; i < triangleCount; i++)
                         {
+                            //triangles[i] = new Triangle(
+                            //    vertices[indices[i * 3 + 0]],
+                            //    vertices[indices[i * 3 + 1]],
+                            //    vertices[indices[i * 3 + 2]]
+                            //);
                             triangles[i] = new Triangle(
                                 vertices[indices[i * 3 + 0]],
-                                vertices[indices[i * 3 + 1]],
-                                vertices[indices[i * 3 + 2]]
+                                vertices[indices[i * 3 + 2]],
+                                vertices[indices[i * 3 + 1]]
                             );
                         }
 
@@ -389,6 +394,8 @@ namespace DevoidEngine.Physics.Bepu
         {
             if (s is BepuPhysicsStatic b)
             {
+                simulation.Statics.Remove(b.Handle);
+
                 staticWrappers.Remove(b.Handle);
                 staticToGameObject.Remove(b.Handle);
                 staticMaterials.Remove(b.Handle);

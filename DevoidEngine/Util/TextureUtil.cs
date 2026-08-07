@@ -4,12 +4,12 @@ using System.Runtime.InteropServices;
 
 namespace DevoidEngine.Util
 {
-    public readonly struct ImageData
+    public struct ImageData
     {
-        public readonly int Width;
-        public readonly int Height;
-        public readonly TextureFormat Format;
-        public readonly byte[] Data;
+        public int Width;
+        public int Height;
+        public TextureFormat Format;
+        public byte[] Data;
 
         public ImageData(int width, int height, TextureFormat format, byte[] data)
         {

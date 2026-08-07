@@ -401,8 +401,8 @@ namespace DevoidEngine.Util
                 ],
                 Indices =
                 [
-                    0, 2, 1,
-                    2, 0, 3
+                    0, 1, 2,
+                    2, 3, 0
                 ]
             };
 
@@ -463,6 +463,161 @@ namespace DevoidEngine.Util
                     indices.Add(b);
                     indices.Add(d);
                 }
+            }
+
+            mesh.Positions = [.. positions];
+            mesh.Normals = [.. normals];
+            mesh.UVs = [.. uvs];
+            mesh.Indices = [.. indices];
+
+            mesh.Upload();
+
+            return mesh;
+        }
+
+        public static Mesh CreateCapsule(
+            float radius = 0.5f,
+            float height = 2.0f,
+            int slices = 32,
+            int hemisphereStacks = 8,
+            int cylinderStacks = 1)
+        {
+            Mesh mesh = new();
+
+            List<Vector3> positions = [];
+            List<Vector3> normals = [];
+            List<Vector2> uvs = [];
+            List<uint> indices = [];
+
+            float cylinderHeight = MathF.Max(0.0f, height - radius * 2.0f);
+
+            void AddRing(float y, float ringRadius, Vector3 sphereCenter, float v, bool cylinder)
+            {
+                for (int slice = 0; slice <= slices; slice++)
+                {
+                    float u = (float)slice / slices;
+                    float theta = u * MathF.PI * 2.0f;
+
+                    float x = MathF.Cos(theta) * ringRadius;
+                    float z = MathF.Sin(theta) * ringRadius;
+
+                    positions.Add(new Vector3(x, y, z));
+
+                    Vector3 normal;
+
+                    if (cylinder)
+                        normal = Vector3.Normalize(new Vector3(x, 0, z));
+                    else
+                        normal = Vector3.Normalize(new Vector3(x, y, z) - sphereCenter);
+
+                    normals.Add(normal);
+                    uvs.Add(new Vector2(u, v));
+                }
+            }
+
+            // Top hemisphere (excluding pole and equator)
+            for (int stack = 1; stack < hemisphereStacks; stack++)
+            {
+                float t = (float)stack / hemisphereStacks;
+                float phi = t * MathF.PI * 0.5f;
+
+                float ringRadius = MathF.Sin(phi) * radius;
+                float y = cylinderHeight * 0.5f + MathF.Cos(phi) * radius;
+
+                AddRing(
+                    y,
+                    ringRadius,
+                    new Vector3(0, cylinderHeight * 0.5f, 0),
+                    t * 0.25f,
+                    false);
+            }
+
+            // Cylinder
+            for (int i = 0; i <= cylinderStacks; i++)
+            {
+                float t = (float)i / cylinderStacks;
+
+                float y = cylinderHeight * 0.5f - t * cylinderHeight;
+
+                AddRing(
+                    y,
+                    radius,
+                    Vector3.Zero,
+                    0.25f + t * 0.5f,
+                    true);
+            }
+
+            // Bottom hemisphere (excluding equator and pole)
+            for (int stack = 1; stack < hemisphereStacks; stack++)
+            {
+                float t = (float)stack / hemisphereStacks;
+                float phi = t * MathF.PI * 0.5f;
+
+                float ringRadius = MathF.Cos(phi) * radius;
+                float y = -cylinderHeight * 0.5f - MathF.Sin(phi) * radius;
+
+                AddRing(
+                    y,
+                    ringRadius,
+                    new Vector3(0, -cylinderHeight * 0.5f, 0),
+                    0.75f + t * 0.25f,
+                    false);
+            }
+
+            int vertsPerRing = slices + 1;
+            int ringCount = (hemisphereStacks - 1) + (cylinderStacks + 1) + (hemisphereStacks - 1);
+
+            // Top pole
+            int topPole = positions.Count;
+            positions.Add(new Vector3(0, cylinderHeight * 0.5f + radius, 0));
+            normals.Add(Vector3.UnitY);
+            uvs.Add(new Vector2(0.5f, 0));
+
+            // Bottom pole
+            int bottomPole = positions.Count;
+            positions.Add(new Vector3(0, -cylinderHeight * 0.5f - radius, 0));
+            normals.Add(-Vector3.UnitY);
+            uvs.Add(new Vector2(0.5f, 1));
+
+            // Top fan (flipped winding)
+            for (int i = 0; i < slices; i++)
+            {
+                indices.Add((uint)topPole);
+                indices.Add((uint)i);
+                indices.Add((uint)(i + 1));
+            }
+
+            // Rings (flipped winding)
+            for (int ring = 0; ring < ringCount - 1; ring++)
+            {
+                int row0 = ring * vertsPerRing;
+                int row1 = row0 + vertsPerRing;
+
+                for (int i = 0; i < slices; i++)
+                {
+                    uint a = (uint)(row0 + i);
+                    uint b = (uint)(row0 + i + 1);
+                    uint c = (uint)(row1 + i);
+                    uint d = (uint)(row1 + i + 1);
+
+                    indices.Add(a);
+                    indices.Add(b);
+                    indices.Add(c);
+
+                    indices.Add(b);
+                    indices.Add(d);
+                    indices.Add(c);
+                }
+            }
+
+            // Bottom fan (flipped winding)
+            int lastRing = (ringCount - 1) * vertsPerRing;
+
+            for (int i = 0; i < slices; i++)
+            {
+                indices.Add((uint)(lastRing + i));
+                indices.Add((uint)bottomPole);
+                indices.Add((uint)(lastRing + i + 1));
             }
 
             mesh.Positions = [.. positions];

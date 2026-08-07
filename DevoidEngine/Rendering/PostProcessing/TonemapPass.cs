@@ -22,9 +22,10 @@ namespace DevoidEngine.Rendering.PostProcessing
                 new Material(
                     Shader.FromDescriptorFile(
                         Engine.GraphicsDevice,
-                        "Content/DevoidShaderDescriptors/tonemap_pass.dsd")));
+                        Path.Combine(Engine.BasePath, "Content/DevoidShaderDescriptors/tonemap_pass.dsd"))));
 
-            material.SetFloat("exposure", 1f);
+            material.SetFloat("exposure", 0.6f);
+            material.SetFloat("bloomIntensity", 1f);
 
             target = RenderTarget.Create(1);
         }
@@ -32,7 +33,7 @@ namespace DevoidEngine.Rendering.PostProcessing
         public override void Setup()
         {
             Read("SceneColor");
-            //Read("Bloom");
+            Read("Bloom");
 
             Write("ToneMapped");
         }
@@ -40,7 +41,7 @@ namespace DevoidEngine.Rendering.PostProcessing
         public override void Execute(PostProcessContext ctx)
         {
             Texture scene = ctx.GetTexture("SceneColor");
-            //Texture bloom = ctx.GetTexture("Bloom");
+            Texture bloom = ctx.GetTexture("Bloom");
 
             TextureDescription desc = scene.GPU.Description;
 
@@ -51,7 +52,7 @@ namespace DevoidEngine.Rendering.PostProcessing
             target.SetColorAttachment(0, output);
 
             material.SetTexture("MAT_SceneColor", scene);
-            //material.SetTexture("MAT_Bloom", bloom);
+            material.SetTexture("MAT_BloomColor", bloom);
             ctx.CommandList.SetFramebuffer(target.GPU);
 
             ctx.CommandList.ClearColor(0, new Vector4(0, 0, 0, 1));

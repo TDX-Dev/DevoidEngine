@@ -2,7 +2,7 @@
 
 namespace DevoidEngine.Core
 {
-    public sealed class VertexBuffer<T> where T : unmanaged
+    public sealed class VertexBuffer<T> : IDisposable where T : unmanaged
     {
         public int Count { get; private set; }
         public int Capacity { get; private set; }
@@ -70,6 +70,11 @@ namespace DevoidEngine.Core
             });
 
             Capacity = newCapacity;
+        }
+
+        public void Dispose()
+        {
+            GPU.Dispose();
         }
     }
 }

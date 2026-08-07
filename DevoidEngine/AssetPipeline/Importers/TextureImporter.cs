@@ -31,9 +31,13 @@ namespace DevoidEngine.AssetPipeline.Importers
                 outputFormat = TextureFormat.RGBA8_UNorm_SRGB;
             }
 
+            // OPTIMIZATION 1: If TextureUtil supports streams, use File.OpenRead(context.AssetPath) instead.
+            // For now, we read the bytes but immediately drop the reference so the GC can clean it up.
             byte[] fileBytes = File.ReadAllBytes(context.AssetPath);
-
             ImageData image = TextureUtil.LoadImage(fileBytes);
+
+            // Free the raw file bytes from memory early
+            //fileBytes = [];
 
             int width = image.Width;
             int height = image.Height;
@@ -69,12 +73,11 @@ namespace DevoidEngine.AssetPipeline.Importers
                                 pixels[i * 2 + 0] = (byte)(bits & 0xFF);
                                 pixels[i * 2 + 1] = (byte)(bits >> 8);
                             }
+
                         }
                         else if (image.Format == TextureFormat.RGBA32_Float)
                         {
-                            ReadOnlySpan<float> floats =
-                                MemoryMarshal.Cast<byte, float>(data);
-
+                            ReadOnlySpan<float> floats = MemoryMarshal.Cast<byte, float>(data);
                             pixels = new byte[floats.Length * Unsafe.SizeOf<Half>()];
 
                             for (int i = 0; i < floats.Length; i++)
@@ -116,10 +119,9 @@ namespace DevoidEngine.AssetPipeline.Importers
                 GenerateMipmaps = settings.GenerateMipmaps,
             };
 
-            File.WriteAllBytes(
-                context.GetRootOutputPath(context.OutputExtension),
-                MessagePackSerializer.Serialize(asset)
-            );
+            string outputPath = context.GetRootOutputPath(context.OutputExtension);
+            using FileStream fileStream = new(outputPath, FileMode.Create, FileAccess.Write);
+            MessagePackSerializer.Serialize(fileStream, asset);
         }
 
         public override bool Exists(ImportContext context)

@@ -31,9 +31,9 @@ namespace DevoidGPU.DX11
 
             device = new Device(
                 DriverType.Hardware,
-                DeviceCreationFlags.BgraSupport |
+                DeviceCreationFlags.BgraSupport
 #if DEBUG
-                DeviceCreationFlags.Debug
+                | DeviceCreationFlags.Debug
 #endif
                 , levels
             );

@@ -28,6 +28,11 @@ namespace DevoidEngine.Audio
             return _backend.Play(desc);
         }
 
+        public void PlayOneShot(in AudioPlayDescription desc)
+        {
+            _backend.PlayOneShot(desc);
+        }
+
         public void Stop(AudioPlayObject playObject)
         {
             _backend.Stop(playObject);

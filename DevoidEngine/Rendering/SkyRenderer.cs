@@ -106,14 +106,14 @@ namespace DevoidEngine.Rendering
 
             IrradianceRenderTarget = RenderTarget.Create(1);
 
-            ProjectToSHMaterial = new MaterialInstance(new Material(Shader.FromDescriptorFile(Engine.GraphicsDevice, "Content/DevoidShaderDescriptors/sh9_project.dsd")));
-            ReduceSHMaterial = new MaterialInstance(new Material(Shader.FromDescriptorFile(Engine.GraphicsDevice, "Content/DevoidShaderDescriptors/sh9_reduce.dsd")));
+            ProjectToSHMaterial = new MaterialInstance(new Material(Shader.FromDescriptorFile(Engine.GraphicsDevice, Path.Combine(Engine.BasePath, "Content/DevoidShaderDescriptors/sh9_project.dsd"))));
+            ReduceSHMaterial = new MaterialInstance(new Material(Shader.FromDescriptorFile(Engine.GraphicsDevice, Path.Combine(Engine.BasePath, "Content/DevoidShaderDescriptors/sh9_reduce.dsd"))));
 
-            PrefilterMaterial = new MaterialInstance(new Material(Shader.FromDescriptorFile(Engine.GraphicsDevice, "Content/DevoidShaderDescriptors/prefilter.dsd")));
+            PrefilterMaterial = new MaterialInstance(new Material(Shader.FromDescriptorFile(Engine.GraphicsDevice, Path.Combine(Engine.BasePath, "Content/DevoidShaderDescriptors/prefilter.dsd"))));
 
-            BRDFLutMaterial = new MaterialInstance(new Material(Shader.FromDescriptorFile(Engine.GraphicsDevice, "Content/DevoidShaderDescriptors/brdfLUT.dsd")));
+            BRDFLutMaterial = new MaterialInstance(new Material(Shader.FromDescriptorFile(Engine.GraphicsDevice, Path.Combine(Engine.BasePath, "Content/DevoidShaderDescriptors/brdfLUT.dsd"))));
 
-            SkyCubemapMaterial = new MaterialInstance(new Material(Shader.FromDescriptorFile(Engine.GraphicsDevice, "Content/DevoidShaderDescriptors/sky_cubemap.dsd")));
+            SkyCubemapMaterial = new MaterialInstance(new Material(Shader.FromDescriptorFile(Engine.GraphicsDevice, Path.Combine(Engine.BasePath, "Content/DevoidShaderDescriptors/sky_cubemap.dsd"))));
 
             SkyCubemapMaterial.SetTexture("MAT_Skybox", SkyboxTexture);
 
@@ -127,7 +127,7 @@ namespace DevoidEngine.Rendering
 
             PanoramaRenderTarget = RenderTarget.Create(1);
 
-            PanoramaToCubemapMaterial = new MaterialInstance(new Material(Shader.FromDescriptorFile(Engine.GraphicsDevice, "Content/DevoidShaderDescriptors/sky_panoramatocubemap.dsd")));
+            PanoramaToCubemapMaterial = new MaterialInstance(new Material(Shader.FromDescriptorFile(Engine.GraphicsDevice, Path.Combine(Engine.BasePath, "Content/DevoidShaderDescriptors/sky_panoramatocubemap.dsd"))));
 
             DebugCube =
                 Texture.CreateCube(

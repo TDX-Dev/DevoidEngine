@@ -13,7 +13,7 @@ namespace DevoidEngine.Rendering
 
         public RenderAPI()
         {
-            FullscreenShader = Shader.FromDescriptorFile(Engine.GraphicsDevice, "Content/DevoidShaderDescriptors/blit_mat.dsd");
+            FullscreenShader = Shader.FromDescriptorFile(Engine.GraphicsDevice, Path.Combine(Engine.BasePath, "Content/DevoidShaderDescriptors/blit_mat.dsd"));
             FullscreenMesh = PrimitiveMeshes.GetFullscreenPlane();
             FullscreenDescriptor = Engine.GraphicsDevice.CreateDescriptorSet(FullscreenShader.DefaultPass.DescriptorLayout);
 

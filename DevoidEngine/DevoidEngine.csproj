@@ -25,7 +25,29 @@
 		<CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
 	</PropertyGroup>
 
-  <ItemGroup>
+	<Target Name="GenerateEnginePaths" BeforeTargets="BeforeCompile" Condition="'$(Configuration)' == 'Debug'">
+		<PropertyGroup>
+			<GeneratedCodeLines>
+				namespace DevoidEngine.Core%3b
+				internal static class BuildInfo
+				{
+				public const string EngineRoot = @"$(MSBuildProjectDirectory)"%3b
+				}
+			</GeneratedCodeLines>
+		</PropertyGroup>
+
+		<WriteLinesToFile
+			File="$(IntermediateOutputPath)EnginePaths.g.cs"
+			Overwrite="true"
+			Lines="$(GeneratedCodeLines)"/>
+
+		<ItemGroup>
+			<Compile Include="$(IntermediateOutputPath)EnginePaths.g.cs" />
+		</ItemGroup>
+	</Target>
+
+
+	<ItemGroup>
     <PackageReference Include="AssimpNetter" Version="6.0.5" />
     <PackageReference Include="BepuPhysics" Version="2.4.0" />
     <PackageReference Include="MessagePack" Version="3.1.8" />
@@ -54,6 +76,18 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<None Update="Content\DevoidShaderDescriptors\bloom_process_pass.dsd">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  <Visible>true</Visible>
+		</None>
+		<None Update="Content\DevoidShaderDescriptors\bloom_upsample_pass.dsd">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  <Visible>true</Visible>
+		</None>
+		<None Update="Content\DevoidShaderDescriptors\bloom_downsample_pass.dsd">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  <Visible>true</Visible>
+		</None>
 		<None Update="Content\DevoidShaderDescriptors\tonemap_pass.dsd">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		  <Visible>true</Visible>
@@ -83,6 +117,10 @@
 		  <Visible>true</Visible>
 		</None>
 		<None Update="Content\DevoidShaderDescriptors\ui_textsdf_mat.dsd">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  <Visible>true</Visible>
+		</None>
+		<None Update="Content\Shaders\bloom_process.frag.hlsl">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		  <Visible>true</Visible>
 		</None>

@@ -1,9 +1,10 @@
-﻿using DevoidEngine.Util;
+﻿using DevoidEngine.Assets;
+using DevoidEngine.Util;
 using DevoidGPU;
 
 namespace DevoidEngine.Core
 {
-    public sealed class Texture : IDisposable
+    public sealed class Texture : AssetType
     {
         public ITexture GPU { get; }
 
@@ -126,7 +127,7 @@ namespace DevoidEngine.Core
             return new Texture(gpu);
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             GPU.Dispose();
         }

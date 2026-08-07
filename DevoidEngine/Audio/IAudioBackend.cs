@@ -10,6 +10,7 @@ namespace DevoidEngine.Audio
         AudioClipHandle Load(string path, bool stream = false);
         AudioClipHandle Load(ReadOnlySpan<byte> data);
         AudioPlayObject? Play(in AudioPlayDescription desc);
+        void PlayOneShot(in AudioPlayDescription desc);
         void Stop(AudioPlayObject playObject);
         void Pause(AudioPlayObject playObject, bool value = true);
     }

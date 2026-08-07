@@ -124,10 +124,10 @@ namespace DevoidEngine.Rendering
             ShaderLibrary = new ShaderLibrary();
             World = new RenderWorld();
 
-            DefaultShader = Shader.FromDescriptorFile(Engine.GraphicsDevice, "Content/DevoidShaderDescriptors/pbr_mat.dsd");
+            DefaultShader = Shader.FromDescriptorFile(Engine.GraphicsDevice, Path.Combine(Engine.BasePath, "Content/DevoidShaderDescriptors/pbr_mat.dsd"));
             DefaultMaterial = new Material(DefaultShader);
 
-            Shader NullShader = Shader.FromDescriptorFile(Engine.GraphicsDevice, "Content/DevoidShaderDescriptors/null_mat.dsd");
+            Shader NullShader = Shader.FromDescriptorFile(Engine.GraphicsDevice, Path.Combine(Engine.BasePath, "Content/DevoidShaderDescriptors/null_mat.dsd"));
             NullMaterial = new Material(NullShader);
             NullMaterialInstance = new MaterialInstance(NullMaterial);
 
@@ -215,6 +215,7 @@ namespace DevoidEngine.Rendering
             PostProcessor = new PostProcessor();
 
             PostProcessor.AddPass(new TonemapPass());
+            PostProcessor.AddPass(new BloomPass());
 
             ActiveTechnique.Initialize();
         }
@@ -284,7 +285,7 @@ namespace DevoidEngine.Rendering
                 Width = viewport.Width,
                 Height = viewport.Height,
                 Depth = 1,
-                Format = TextureFormat.RGBA16_Float,
+                Format = TextureFormat.RGBA8_UNorm,
                 Dimension = TextureDimension.Texture2D,
                 ArraySize = 1,
                 Samples = new TextureSampleDescription(1, 0),

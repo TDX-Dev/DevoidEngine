@@ -19,7 +19,9 @@ namespace DevoidEngine.Components
             set
             {
                 internalShape = value;
-                CreateStatic();
+                if (IsInitialized)
+                    CreateStatic();
+                // Otherwise it'll initialize on start anyway
             }
         }
 

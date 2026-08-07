@@ -20,7 +20,7 @@ namespace DevoidEngine.Util
             Vector3 forward = AxisToVector(sourceForward);
 
             // Right-handed coordinate system
-            Vector3 right = Vector3.Cross(up, forward);
+            Vector3 right = Vector3.Cross(forward, up);
 
             // Build source basis (vectors must be columns)
             Matrix4x4 sourceBasis = new(
@@ -32,6 +32,8 @@ namespace DevoidEngine.Util
 
             // Convert from source space → engine space
             Matrix4x4.Invert(sourceBasis, out Matrix4x4 conversion);
+
+            Console.WriteLine(sourceBasis.GetDeterminant());
 
             return conversion;
         }

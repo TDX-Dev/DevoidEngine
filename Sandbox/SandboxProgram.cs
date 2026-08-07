@@ -42,23 +42,25 @@ namespace Sandbox
             Console.WriteLine("Sandbox has launched.");
 
             //scene = Asset.Load<PackedScene>("models/spheres_pbr_test.gltf")!.Instantiate();
-            scene = Asset.Load<PackedScene>("models/chess_set_2k.gltf")!.Instantiate();
+            scene = Asset.Load<PackedScene>("models/sh.gltf")!.Instantiate();
+            //scene = new Scene();
+            GC.Collect();
             //scene.GameObjects[0].Transform.Position = new Vector3(0, 5, 0);
 
             Engine.Instance.SceneTree.LoadScene(scene);
             scene.Play();
 
+            //Engine.Instance.AssetDatabase.TryGetGuid("HDRIs/puresky.hdr", out Guid puresky);
+            //Engine.Instance.AssetDatabase.Reimport(puresky, MessagePackSerializer.Serialize<TextureImportSettings>(new TextureImportSettings()
+            //{
+            //    Format = TextureFormat.RGBA16_Float,
+            //    GenerateMipmaps = false
+            //}));
+
             Engine.Renderer.SkyRenderer.Sky = new HDRISky()
             {
                 PanoramaTexture = Asset.Load<Texture>("HDRIs/ferndale_studio.hdr")!
             };
-
-            //Engine.Instance.AssetDatabase.TryGetGuid("models/Tiles133A_2K-JPG_Color.jpg", out Guid fernDale);
-
-            //Engine.Instance.AssetDatabase.Reimport(fernDale, MessagePackSerializer.Serialize<TextureImportSettings>(new TextureImportSettings()
-            //{
-            //    Format = TextureFormat.RGBA8_UNorm
-            //}));
 
 
             PBRMaterial = new MaterialInstance(Engine.Renderer.DefaultMaterial);
@@ -78,60 +80,10 @@ namespace Sandbox
             PBRMaterial.SetTexture("MAT_AlbedoMap", dvsTex);
             PBRMaterial.SetFloat("Roughness", 0f);
 
-            go = scene.AddGameObject("Hello World");
+            GameObject go1 = scene.AddGameObject("Player");
+            go1.AddComponent<FirstPersonController>();
 
-            cam = go.AddComponent<Camera3D>();
-
-            //meshGo = scene.AddGameObject("Hello Mesh Object");
-            //MeshRenderer meshRenderer = meshGo.AddComponent<MeshRenderer>();
-            //meshRenderer.Mesh = PrimitiveMeshes.GetCube();
-            //meshRenderer.Material = GroundPBRMaterial;
-            //meshGo.Transform.Scale = new Vector3(20, 1f, 20);
-            //StaticColliderComponent sb = meshGo.AddComponent<StaticColliderComponent>();
-            //sb.Shape = new DevoidEngine.Physics.PhysicsShapeDescription()
-            //{
-            //    Type = DevoidEngine.Physics.PhysicsShapeType.Box,
-            //    Size = new Vector3(20, 1f, 20),
-
-            //};
-
-            //meshGo1 = scene.AddGameObject("Hello Mesh 2 Object");
-            //MeshRenderer meshRenderer1 = meshGo1.AddComponent<MeshRenderer>();
-            //meshRenderer1.Mesh = PrimitiveMeshes.GetCube();
-            //meshRenderer1.Material = PBRMaterial;
-            //meshGo1.Transform.Position = new Vector3(0, 10, 0);
-            //RigidBodyComponent rb = meshGo1.AddComponent<RigidBodyComponent>();
-
-            //GameObject childObject = scene.AddGameObject("PhyChildObj");
-            //MeshRenderer meshRenderer2 = childObject.AddComponent<MeshRenderer>();
-            //meshRenderer2.Mesh = PrimitiveMeshes.GetUVSphere();
-            //meshRenderer2.Material = GroundPBRMaterial;
-            //childObject.SetParent(meshGo1);
-            //childObject.Transform.LocalPosition = new Vector3(0, 2, -2);
-
-            //rb.Shape = new DevoidEngine.Physics.PhysicsShapeDescription()
-            //{
-            //    Radius = 1,
-            //    Type = DevoidEngine.Physics.PhysicsShapeType.Sphere
-            //};
-
-
-            lightGo = scene.AddGameObject("Light Object");
-            LightComponent light = lightGo.AddComponent<LightComponent>();
-            light.LightType = LightType.DirectionalLight;
-            light.Intensity = 0;
-            light.Radius = 100;
-            light.InnerCutoff = 30;
-            light.OuterCutoff = 35;
-            light.Color = new Vector4(1, 1, 1, 1);
-            lightGo.Transform.EulerAngles = new Vector3(45, 10, 0);
-            lightGo.Transform.Position = new Vector3(5, 10, -7);
-            AudioSource3D audio = lightGo.AddComponent<AudioSource3D>();
-
-            //AudioClip clip = Asset.Load<AudioClip>("tone.mp3")!;
-            //audio.Audio = clip;
-            //audio.Play();
-
+            // Movement
             Engine.InputSystem.Map.Bind("Forward", new InputBinding()
             {
                 DeviceType = InputDeviceType.Keyboard,
@@ -156,6 +108,7 @@ namespace Sandbox
                 Control = (ushort)Keys.D
             });
 
+            // Mouse Look
             Engine.InputSystem.Map.Bind("LookX", new InputBinding()
             {
                 DeviceType = InputDeviceType.Mouse,
@@ -170,25 +123,63 @@ namespace Sandbox
                 IsClamped = false
             });
 
+            // Jump
+            Engine.InputSystem.Map.Bind("Jump", new InputBinding()
+            {
+                DeviceType = InputDeviceType.Keyboard,
+                Control = (ushort)Keys.Space
+            });
+
+            // Sprint
+            Engine.InputSystem.Map.Bind("Sprint", new InputBinding()
+            {
+                DeviceType = InputDeviceType.Keyboard,
+                Control = (ushort)Keys.LeftShift
+            });
+
+            // Toggle Cursor
             Engine.InputSystem.Map.Bind("Grab", new InputBinding()
             {
                 DeviceType = InputDeviceType.Keyboard,
                 Control = (ushort)Keys.G
             });
 
-            Engine.InputSystem.Map.Bind("SpawnLight", new InputBinding()
-            {
-                DeviceType = InputDeviceType.Keyboard,
-                Control = (ushort)Keys.L
-            });
-
-            //Engine.InputSystem.Map.Bind("Impulse", new InputBinding()
-            //{
-            //    DeviceType = InputDeviceType.Keyboard,
-            //    Control = (ushort)Keys.P
-            //});
-
             //SetupUI();
+            GameObject sketchModel = scene.GetGameObject("Sketchfab_model")!;
+            AudioSource3D audio = sketchModel.AddComponent<AudioSource3D>();
+            audio.Audio = Asset.Load<AudioClip>("Sounds/PortalRadio.wav");
+            audio.PlayOnStart = true;
+            audio.Volume = 0.5f;
+            audio.MaxDistance = 20;
+            audio.SetLooping(true);
+            audio.Play();
+
+            GameObject sublimModel = scene.GetGameObject("Sublim")!;
+            AudioSource3D audio1 = sublimModel.AddComponent<AudioSource3D>();
+            audio1.Audio = Asset.Load<AudioClip>("Sounds/SBH.wav");
+            audio1.PlayOnStart = true;
+            audio1.Volume = 0.5f;
+            audio1.MaxDistance = 20;
+            audio1.SetLooping(true);
+            audio1.Play();
+
+            GameObject ballDyn = scene.GetGameObject("Ball:Dynamic")!;
+            ballDyn.RemoveComponent(ballDyn.GetComponent<StaticColliderComponent>()!);
+            RigidBodyComponent rbS = ballDyn.AddComponent<RigidBodyComponent>();
+            rbS.Shape = new DevoidEngine.Physics.PhysicsShapeDescription()
+            {
+                Type = DevoidEngine.Physics.PhysicsShapeType.Sphere,
+                Radius = ballDyn.Transform.Scale.X
+            };
+
+            FollowImpulseComponent fic = ballDyn.AddComponent<FollowImpulseComponent>();
+            fic.FollowTarget = go1;
+
+            //GameObject go = gameObject.Scene.AddGameObject("Debug");
+            //MeshRenderer mr = sketchModel.AddComponent<MeshRenderer>();
+            //mr.Mesh = PrimitiveMeshes.GetCube();
+            //go.SetParent(gameObject);
+            //go.Transform.LocalPosition = new Vector3(0, -1, 0);
         }
 
         void SetupUI()
@@ -339,12 +330,6 @@ namespace Sandbox
             return container;
         }
 
-        GameObject go = null!;
-        readonly GameObject meshGo = null!;
-        readonly GameObject meshGo1 = null!;
-        GameObject lightGo = null!;
-
-        Camera3D cam = null!;
 
         private void SceneTree_OnSceneChanged(Scene obj)
         {
@@ -364,38 +349,6 @@ namespace Sandbox
 
         public override void OnUpdate(float deltaTime)
         {
-            Vector3 f = go.Transform.Forward;
-
-            //Console.WriteLine(
-            //    MathF.Abs(f.X) > MathF.Abs(f.Y) && MathF.Abs(f.X) > MathF.Abs(f.Z)
-            //        ? (f.X > 0 ? "+X" : "-X")
-            //        : MathF.Abs(f.Y) > MathF.Abs(f.Z)
-            //            ? (f.Y > 0 ? "+Y" : "-Y")
-            //            : (f.Z > 0 ? "+Z" : "-Z"));
-
-
-            if (Engine.InputSystem.GetActionDown("Impulse"))
-            {
-                Console.WriteLine("Impulse Added");
-                meshGo1.GetComponent<RigidBodyComponent>()!.AddForce(new Vector3(0, 750, 0));
-            }
-
-            if (Engine.InputSystem.GetActionDown("SpawnLight"))
-            {
-                GameObject lightGo = scene.AddGameObject("Light Object");
-                LightComponent light = lightGo.AddComponent<LightComponent>();
-                light.LightType = LightType.PointLight;
-                light.Intensity = 10;
-                light.Radius = 100;
-                light.Color = new Vector4(1, 1, 1, 1);
-                lightGo.Transform.EulerAngles = new Vector3(45, 0, 0);
-
-                float posX = (float)rand.NextDouble() * 20;
-                float posY = (float)rand.NextDouble() * 20;
-
-                lightGo.Transform.Position = new Vector3(posX, 10, posY);
-            }
-
             if (Engine.InputSystem.GetActionDown("Grab"))
             {
                 if (Engine.Cursor.GetCursorState() == CursorState.Grabbed)
@@ -407,77 +360,7 @@ namespace Sandbox
                     Engine.Cursor.SetCursorState(CursorState.Grabbed);
                 }
             }
-
-            if (Engine.Cursor.GetCursorState() != CursorState.Grabbed)
-                return;
-
-            var transform = go.Transform;
-
-            float forward =
-                Engine.InputSystem.GetAction("Forward") -
-                Engine.InputSystem.GetAction("Backward");
-
-            float right =
-                Engine.InputSystem.GetAction("Right") -
-                Engine.InputSystem.GetAction("Left");
-
-            Vector3 moveDirection = Vector3.Zero;
-
-            moveDirection += transform.Forward * forward;
-            moveDirection += transform.Right * right;
-            //Console.WriteLine(cam.GetCamera().Front);
-            //Console.WriteLine(transform.Right);
-
-            //Quaternion q = Quaternion.CreateFromYawPitchRoll(MathF.PI / 2, 0, 0);
-
-            //Vector3 f1 = Vector3.Transform(Vector3.UnitZ, q);
-
-            //Console.WriteLine(f1);
-
-            if (moveDirection.LengthSquared() > 0.0f)
-            {
-                moveDirection = Vector3.Normalize(moveDirection);
-            }
-
-
-            const float moveSpeed = 5.0f;
-
-            transform.Position +=
-                moveDirection *
-                moveSpeed *
-                deltaTime;
-
-            float lookX = Engine.InputSystem.GetAction("LookX");
-            float lookY = Engine.InputSystem.GetAction("LookY");
-
-            const float sensitivity = 0.0025f;
-
-            yaw += lookX * sensitivity;
-            pitch += lookY * sensitivity;
-
-            pitch = Math.Clamp(
-                pitch,
-                -MathF.PI * 0.49f,
-                 MathF.PI * 0.49f);
-
-            Quaternion rotation =
-                Quaternion.CreateFromYawPitchRoll(
-                    yaw,
-                    pitch,
-                    0.0f);
-
-            go.Transform.Rotation = rotation;
-
-            //Console.WriteLine($"Forward : {transform.Forward}");
-            //Console.WriteLine($"Right   : {transform.Right}");
-            //Console.WriteLine($"Up      : {transform.Up}");
-
-            //Console.WriteLine($"Cross(U,F): {Vector3.Cross(transform.Up, transform.Forward)}");
-            //Console.WriteLine($"Cross(F,U): {Vector3.Cross(transform.Forward, transform.Up)}");
         }
-
-        private float yaw;
-        private float pitch;
 
         public override void OnRender(ICommandList cmd)
         {

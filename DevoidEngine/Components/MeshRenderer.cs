@@ -53,7 +53,7 @@ namespace DevoidEngine.Components
 
         public override void OnRender()
         {
-            if (!has_moved_current_frame || mesh == null)
+            if (!has_moved_current_frame || mesh == null || !IsInitialized)
                 return;
             Matrix4x4 worldMatrixInterpolated;
             if (Engine.Instance.UseInterpolation)

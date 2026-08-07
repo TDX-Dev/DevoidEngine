@@ -28,10 +28,10 @@ namespace DevoidEngine.UI
         {
             Engine.InputSystem.Router.Push(new UIInputLayer());
 
-            Shader boxShader = Shader.FromDescriptorFile(Engine.GraphicsDevice, "Content/DevoidShaderDescriptors/ui_mat.dsd");
+            Shader boxShader = Shader.FromDescriptorFile(Engine.GraphicsDevice, Path.Combine(Engine.BasePath, "Content/DevoidShaderDescriptors/ui_mat.dsd"));
             boxMaterial = new Material(boxShader);
 
-            Shader textSdfShader = Shader.FromDescriptorFile(Engine.GraphicsDevice, "Content/DevoidShaderDescriptors/ui_textsdf_mat.dsd");
+            Shader textSdfShader = Shader.FromDescriptorFile(Engine.GraphicsDevice, Path.Combine(Engine.BasePath, "Content/DevoidShaderDescriptors/ui_textsdf_mat.dsd"));
             textSdfMaterial = new Material(textSdfShader);
 
             DefaultTheme = UIThemeDefaults.InitializeDefaultTheme();

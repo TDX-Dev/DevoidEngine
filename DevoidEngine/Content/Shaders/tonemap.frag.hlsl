@@ -222,13 +222,21 @@ float3 LinearToSRGB(float3 linearColor)
 }
 
 Texture2D MAT_SceneColor : register(t0);
+Texture2D MAT_BloomColor : register(t1);
+
 SamplerState MAT_SceneColorSampler : register(s0);
+SamplerState MAT_BloomColorSampler : register(s1);
 
 float4 PSMain(PSInput input) : SV_Target0
 {
     float3 hdr = MAT_SceneColor.Sample(MAT_SceneColorSampler, input.UV).rgb;
     
+    float3 bloom = MAT_BloomColor.Sample(MAT_BloomColorSampler, input.UV).rgb;
+    
     hdr *= exposure;
+    
+    float bloomStrength = 0.175;
+    hdr += (bloom) * bloomStrength * bloomIntensity;
     
     //float3 ldr = ProcessAgX(hdr);
     float3 ldr = TonemapFilmic(hdr);

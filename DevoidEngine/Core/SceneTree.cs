@@ -57,5 +57,11 @@ namespace DevoidEngine.Core
         {
             CurrentScene?.Render();
         }
+
+        public void QueueFree(Scene scene)
+        {
+            scene.Dispose();
+            GC.Collect();
+        }
     }
 }

@@ -5,7 +5,7 @@ using System.Numerics;
 
 namespace DevoidEngine.Core
 {
-    public class Mesh : AssetType
+    public sealed class Mesh : AssetType
     {
         public ResourceUsage Usage { get; }
 
@@ -95,11 +95,11 @@ namespace DevoidEngine.Core
                 }
             }
 
-            Positions = null;
+            //Positions = null;
             Normals = null;
             Tangents = null;
             UVs = null;
-            Indices = null;
+            //Indices = null;
         }
 
         private void ComputeLocalBounds()
@@ -143,7 +143,13 @@ namespace DevoidEngine.Core
 
         public override void Dispose()
         {
-            
+            VB?.Dispose();
+            IB?.Dispose();
+            Positions = [];
+            Normals = [];
+            UVs = [];
+            Tangents = [];
+            Indices = [];
         }
     }
 }

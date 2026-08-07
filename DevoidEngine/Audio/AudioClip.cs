@@ -2,7 +2,7 @@
 
 namespace DevoidEngine.Audio
 {
-    public class AudioClip : AssetType
+    public sealed class AudioClip : AssetType
     {
         internal AudioClipHandle _handle;
 

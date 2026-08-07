@@ -2,7 +2,7 @@
 
 namespace DevoidEngine.Core
 {
-    public sealed class IndexBuffer
+    public sealed class IndexBuffer : IDisposable
     {
         public int Count { get; private set; }
         public int Capacity { get; private set; }
@@ -66,6 +66,11 @@ namespace DevoidEngine.Core
             });
 
             Capacity = newCapacity;
+        }
+
+        public void Dispose()
+        {
+            GPU.Dispose();
         }
     }
 }

@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace DevoidEngine.Core
 {
-    public class Material : AssetType
+    public sealed class Material : AssetType
     {
         public Shader Shader { get; }
         public BlendMode BlendMode { get; set; } = BlendMode.Opaque;
@@ -150,7 +150,15 @@ namespace DevoidEngine.Core
 
         public override void Dispose()
         {
-            
+            foreach (var texture in textures)
+            {
+                texture.Value.Dispose();
+            }
+
+            foreach (var sampler in samplers)
+            {
+                sampler.Value.Dispose();
+            }
         }
 
     }

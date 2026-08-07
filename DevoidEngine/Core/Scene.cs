@@ -125,6 +125,8 @@ namespace DevoidEngine.Core
             };
             GameObjects.Add(gameObject);
             transforms.Add(gameObject.Transform);
+            if (isStarted)
+                gameObject.OnStart();
             return gameObject;
         }
 
@@ -133,6 +135,8 @@ namespace DevoidEngine.Core
             gameObject.Scene = this;
             GameObjects.Add(gameObject);
             transforms.Add(gameObject.Transform);
+            if (isStarted)
+                gameObject.OnStart();
             return gameObject;
         }
 
@@ -162,7 +166,7 @@ namespace DevoidEngine.Core
                 renderables.Add(renderComponent);
 
             if (isPlaying)
-                component.OnStart();
+                component.InternalStart();
 
             OnComponentAdded?.Invoke(component);
         }

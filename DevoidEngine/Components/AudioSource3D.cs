@@ -109,6 +109,27 @@ namespace DevoidEngine.Components
             player = gameObject.Scene.Audio.Play(desc);
         }
 
+        public void PlayOneShot(AudioClip clip, float volumeScale = 1.0f)
+        {
+            if (clip == null)
+                return;
+
+            gameObject.Scene.Audio.PlayOneShot(new AudioPlayDescription
+            {
+                Clip = clip._handle,
+                Position = gameObject.Transform.Position,
+
+                Volume = Volume * volumeScale,
+                Loop = false,
+
+                MinDistance = MinDistance,
+                MaxDistance = MaxDistance,
+                Attenuation = Attenuation,
+
+                Is3D = true
+            });
+        }
+
         public void Stop()
         {
             if (player == null) return;
@@ -151,8 +172,8 @@ namespace DevoidEngine.Components
 
             if (player != null)
             {
-                player.minDistance = min;
-                player.maxDistance = max;
+                player.MinDistance = min;
+                player.MaxDistance = max;
             }
         }
 
@@ -162,9 +183,9 @@ namespace DevoidEngine.Components
 
             player.Volume = Volume;
             player.Loop = Looping;
-            player.minDistance = minDistance;
-            player.maxDistance = maxDistance;
-            player.attenuationFunc = attenuation;
+            player.MinDistance = minDistance;
+            player.MaxDistance = maxDistance;
+            player.Attenuation = attenuation;
         }
     }
 }

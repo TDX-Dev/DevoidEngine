@@ -49,21 +49,32 @@ namespace DevoidEngine.Audio.SoLoud
                     continue;
                 }
 
-                // Apply volume
-                Soloud.setLooping(obj.Handle.Id, obj.Loop ? 1 : 0);
-                Soloud.setVolume(obj.Handle.Id, obj.Volume);
-                Soloud.set3dSourceMinMaxDistance(obj.Handle.Id, obj.minDistance, obj.maxDistance);
-                Soloud.set3dSourceAttenuation(obj.Handle.Id, (uint)obj.attenuationFunc, 1.0f);
-
-                // Apply position
-                if (obj.Is3D)
+                if (obj.IsDirty)
                 {
-                    Soloud.set3dSourcePosition(
-                        obj.Handle.Id,
-                        obj.Position.X,
-                        obj.Position.Y,
-                        obj.Position.Z
-                    );
+                    Soloud.setLooping(obj.Handle.Id, obj.Loop ? 1 : 0);
+                    Soloud.setVolume(obj.Handle.Id, obj.Volume);
+
+                    if (obj.Is3D)
+                    {
+                        var p = ToSoLoud(obj.Position);
+
+                        Soloud.set3dSourcePosition(
+                            obj.Handle.Id,
+                            p.X,
+                            p.Y,
+                            p.Z);
+                        Soloud.set3dSourceMinMaxDistance(
+                            obj.Handle.Id,
+                            obj.MinDistance,
+                            obj.MaxDistance);
+
+                        Soloud.set3dSourceAttenuation(
+                            obj.Handle.Id,
+                            (uint)obj.Attenuation,
+                            1.0f);
+                    }
+
+                    obj.IsDirty = false;
                 }
             }
 
@@ -72,11 +83,20 @@ namespace DevoidEngine.Audio.SoLoud
 
         public void SetListener(Vector3 position, Vector3 forward, Vector3 up)
         {
+            position = ToSoLoud(position);
+            forward = ToSoLoud(forward);
+            up = ToSoLoud(up);
+
             Soloud.set3dListenerParameters(
                 position.X, position.Y, position.Z,
                 forward.X, forward.Y, forward.Z,
                 up.X, up.Y, up.Z
             );
+        }
+
+        private static Vector3 ToSoLoud(Vector3 v)
+        {
+            return new Vector3(v.X, v.Y, -v.Z);
         }
 
         public AudioClipHandle Load(string path, bool stream)
@@ -117,34 +137,10 @@ namespace DevoidEngine.Audio.SoLoud
 
         public AudioPlayObject? Play(in AudioPlayDescription desc)
         {
-            if (!_audioObjectMapping.TryGetValue(desc.Clip.Id, out var wav))
+            uint voice = PlayVoice(desc);
+
+            if (voice == 0)
                 return null;
-
-            uint voice;
-
-            wav.setVolume(0);
-
-            if (desc.Is3D)
-            {
-                voice = Soloud.play3d(
-                    wav,
-                    desc.Position.X,
-                    desc.Position.Y,
-                    desc.Position.Z
-                );
-
-                Soloud.set3dSourceMinMaxDistance(voice, desc.MinDistance, desc.MaxDistance);
-                Soloud.set3dSourceAttenuation(voice, (uint)desc.Attenuation, 1.0f);
-
-                wav.setVolume(desc.Volume);
-            }
-            else
-            {
-                voice = Soloud.play(wav);
-            }
-
-            Soloud.setVolume(voice, desc.Volume);
-            Soloud.setLooping(voice, desc.Loop ? 1 : 0);
 
             var playObject = new AudioPlayObject
             {
@@ -155,9 +151,9 @@ namespace DevoidEngine.Audio.SoLoud
                 Volume = desc.Volume,
                 Loop = desc.Loop,
 
-                minDistance = desc.MinDistance,
-                maxDistance = desc.MaxDistance,
-                attenuationFunc = desc.Attenuation,
+                MinDistance = desc.MinDistance,
+                MaxDistance = desc.MaxDistance,
+                Attenuation = desc.Attenuation,
 
                 Is3D = desc.Is3D
             };
@@ -165,6 +161,49 @@ namespace DevoidEngine.Audio.SoLoud
             _audioPlayObjects.Add(playObject);
 
             return playObject;
+        }
+
+        public void PlayOneShot(in AudioPlayDescription desc)
+        {
+            PlayVoice(desc);
+        }
+
+        private uint PlayVoice(in AudioPlayDescription desc)
+        {
+            if (!_audioObjectMapping.TryGetValue(desc.Clip.Id, out var wav))
+                return 0;
+
+            uint voice;
+
+            if (desc.Is3D)
+            {
+                var p = ToSoLoud(desc.Position);
+
+                voice = Soloud.play3d(
+                    wav,
+                    p.X,
+                    p.Y,
+                    p.Z);
+
+                Soloud.set3dSourceMinMaxDistance(
+                    voice,
+                    desc.MinDistance,
+                    desc.MaxDistance);
+
+                Soloud.set3dSourceAttenuation(
+                    voice,
+                    (uint)desc.Attenuation,
+                    1.0f);
+            }
+            else
+            {
+                voice = Soloud.play(wav);
+            }
+
+            Soloud.setVolume(voice, desc.Volume);
+            Soloud.setLooping(voice, desc.Loop ? 1 : 0);
+
+            return voice;
         }
 
         public void Stop(AudioPlayObject playObject)

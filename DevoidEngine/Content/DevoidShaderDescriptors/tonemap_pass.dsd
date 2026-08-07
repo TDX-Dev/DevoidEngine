@@ -10,6 +10,11 @@
       "Name": "MAT_SceneColor",
       "Type": "Texture2D",
       "Kind": "SampledTexture"
+    },
+    {
+      "Name": "MAT_BloomColor",
+      "Type": "Texture2D",
+      "Kind": "SampledTexture"
     }
   ],
 

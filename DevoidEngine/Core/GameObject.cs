@@ -160,8 +160,8 @@ namespace DevoidEngine.Core
                 gameObject = this
             };
             Components.Add(_component);
-            scene?.ComponentAdded(_component);
             _component.OnAttach();
+            scene?.ComponentAdded(_component);
             return _component;
         }
 
@@ -170,8 +170,8 @@ namespace DevoidEngine.Core
             Component _component = component;
             _component.gameObject = this;
             Components.Add(_component);
-            scene?.ComponentAdded(_component);
             _component.OnAttach();
+            scene?.ComponentAdded(_component);
             return _component;
         }
 

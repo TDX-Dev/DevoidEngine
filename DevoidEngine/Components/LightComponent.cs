@@ -255,40 +255,5 @@ namespace DevoidEngine.Components
 
             dirty = false;
         }
-        //public void Collect(CameraComponent3D camera, CameraRenderContext ctx)
-        //{
-        //    if (!enabled)
-        //        return;
-
-        //    Vector3 pos = gameObject.transform.Position;
-
-        //    // Fake influence radius for testing
-        //    float radius = 5.0f;
-
-        //    Vector3 min = pos - new Vector3(radius);
-        //    Vector3 max = pos + new Vector3(radius);
-
-        //    if (!camera.Camera.IntersectsAABB(min, max))
-        //        return;
-
-        //    if (dirty)
-        //        RebuildGPUData();
-
-        //    switch (lightType)
-        //    {
-        //        case LightType.PointLight:
-        //            ctx.pointLights.Add(gpuPoint);
-        //            break;
-
-        //        case LightType.SpotLight:
-        //            ctx.spotLights.Add(gpuSpot);
-        //            break;
-
-        //        case LightType.DirectionalLight:
-        //            // usually never culled
-        //            ctx.directionalLights.Add(gpuDirectional);
-        //            break;
-        //    }
-        //}
     }
 }

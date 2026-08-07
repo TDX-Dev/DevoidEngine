@@ -1,7 +1,9 @@
 ﻿using DevoidEngine.AssetPipeline;
 using DevoidEngine.Components;
 using DevoidEngine.Core;
+using DevoidEngine.Util;
 using MessagePack;
+using System.Numerics;
 
 namespace DevoidEngine.Assets
 {
@@ -16,8 +18,6 @@ namespace DevoidEngine.Assets
         public Guid[] MaterialGuids = [];
         [Key(3)]
         public PackedCamera[] Cameras = [];
-        [Key(4)]
-        public PackedLight[] Lights = [];
 
         public Scene Instantiate()
         {
@@ -63,8 +63,54 @@ namespace DevoidEngine.Assets
                     MeshRenderer renderer =
                         objects[i].AddComponent<MeshRenderer>();
 
+                    StaticColliderComponent staticColliderComponent = objects[i].AddComponent<StaticColliderComponent>();
+                    staticColliderComponent.Shape = new Physics.PhysicsShapeDescription()
+                    {
+                        Type = Physics.PhysicsShapeType.Mesh,
+                        Vertices = mesh.Positions!,
+                        Indices = Array.ConvertAll(mesh.Indices!, x => (int)x)
+                    };
+
                     renderer.Mesh = mesh;
                     renderer.Material = material == null ? null : new MaterialInstance(material);
+                }
+            }
+
+            // Pass 4 - Lights
+            for (int i = 0; i < Nodes.Length; i++)
+            {
+                PackedLight? packed = Nodes[i].Light;
+
+                if (packed == null)
+                    continue;
+
+                Console.WriteLine("Added Lights");
+
+                LightComponent light = objects[i].AddComponent<LightComponent>();
+
+                switch (packed.Type)
+                {
+                    case Rendering.LightType.DirectionalLight:
+                        light.LightType = Rendering.LightType.DirectionalLight;
+                        break;
+
+                    case Rendering.LightType.PointLight:
+                        light.LightType = Rendering.LightType.PointLight;
+                        break;
+
+                    case Rendering.LightType.SpotLight:
+                        light.LightType = Rendering.LightType.SpotLight;
+                        break;
+                }
+
+                light.Color = new Vector4(packed.Color, 1.0f);
+                light.Intensity = packed.Intensity;
+                light.Radius = packed.Range;
+
+                if (packed.Type == Rendering.LightType.SpotLight)
+                {
+                    light.InnerCutoff = MathHelper.RadToDeg(packed.InnerCone);
+                    light.OuterCutoff = MathHelper.RadToDeg(packed.OuterCone);
                 }
             }
 

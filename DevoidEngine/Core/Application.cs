@@ -236,6 +236,7 @@ namespace DevoidEngine.Core
             // Application loop terminated.
             layerManager.DetachLayers();
             Engine.Instance.ProjectSystem.Unload();
+            Engine.AudioSystem.Dispose();
             Engine.Renderer.Dispose();
         }
 

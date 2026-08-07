@@ -25,6 +25,11 @@
       "Name": "MAT_RoughnessMap",
       "Type": "Texture2D",
       "Kind": "SampledTexture"
+    },
+    {
+      "Name": "MAT_EmissiveMap",
+      "Type": "Texture2D",
+      "Kind": "SampledTexture"
     }
   ],
   "Passes": [
