@@ -47,6 +47,7 @@ namespace DevoidEngine.AssetPipeline.Importers
                 PostProcessSteps.GenerateUVCoords |
                 PostProcessSteps.FlipUVs | 
                 PostProcessSteps.MakeLeftHanded |
+                PostProcessSteps.OptimizeMeshes |
                 PostProcessSteps.FlipWindingOrder
             );
 
@@ -396,7 +397,7 @@ namespace DevoidEngine.AssetPipeline.Importers
                 asset.Floats["Roughness"] = 0.5f;
             }
 
-            if (roughnessProperty != null)
+            if (metallicProperty != null)
             {
                 float metallic = metallicProperty.GetFloatValue();
                 asset.Floats["Metallic"] = metallic;

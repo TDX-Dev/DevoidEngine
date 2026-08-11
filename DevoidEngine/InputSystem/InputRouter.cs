@@ -48,8 +48,13 @@
                     }
                 }
 
-                if (!consumed)
-                    state.Apply(e);
+                if (consumed)
+                {
+                    state.Reset(e);
+                    continue;
+                }
+
+                state.Apply(e);
             }
         }
     }

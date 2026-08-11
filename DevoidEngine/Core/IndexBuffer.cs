@@ -11,33 +11,43 @@ namespace DevoidEngine.Core
         private IIndexBuffer gpuBuffer;
         public IIndexBuffer GPU => gpuBuffer;
 
+        private int IndexSize =>
+            Format switch
+            {
+                IndexFormat.UInt16 => sizeof(ushort),
+                IndexFormat.UInt32 => sizeof(uint),
+                _ => throw new NotSupportedException()
+            };
+
         private readonly ResourceUsage usage;
+
+        public IndexBuffer(
+            IGraphicsDevice device,
+            int capacity,
+            ResourceUsage usage = ResourceUsage.Default,
+            IndexFormat format = IndexFormat.UInt32)
+        {
+            Count = 0;
+            Capacity = capacity;
+            Format = format;
+            this.usage = usage;
+
+            gpuBuffer = device.CreateIndexBuffer(new IndexBufferDescription
+            {
+                Size = (ulong)(capacity * sizeof(uint)),
+                Format = format,
+                Usage = usage
+            });
+        }
 
         public IndexBuffer(
             IGraphicsDevice device,
             ReadOnlySpan<uint> data,
             ResourceUsage usage = ResourceUsage.Default,
-            IndexFormat format = IndexFormat.UInt32
-        )
+            IndexFormat format = IndexFormat.UInt32)
+            : this(device, data.Length, usage, format)
         {
-            Count = data.Length;
-            Capacity = data.Length;
-            Format = IndexFormat.UInt32;
-            this.usage = usage;
-
-            unsafe
-            {
-                fixed (uint* ptr = data)
-                {
-                    gpuBuffer = device.CreateIndexBuffer(new IndexBufferDescription
-                    {
-                        Size = (ulong)(Capacity * sizeof(uint)),
-                        Format = Format,
-                        Usage = usage,
-                        InitialData = data.Length > 0 ? (IntPtr)ptr : IntPtr.Zero
-                    });
-                }
-            }
+            Update(data);
         }
 
         public void Update(ReadOnlySpan<uint> data)
@@ -47,6 +57,15 @@ namespace DevoidEngine.Core
             Count = data.Length;
 
             gpuBuffer.Update(data);
+        }
+
+        public void Update(nint data, int len)
+        {
+            EnsureCapacity(len);
+
+            Count = len;
+
+            gpuBuffer.Update(data, len * IndexSize);
         }
 
         private void EnsureCapacity(int required)

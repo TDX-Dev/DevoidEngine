@@ -115,6 +115,10 @@
               "Cull": {
                 "type": "string",
                 "enum": [ "Back", "Front", "None" ]
+              },
+              "Scissor": {
+                "type": "string",
+                "enum": [ "false", "true" ]
               }
             }
           }

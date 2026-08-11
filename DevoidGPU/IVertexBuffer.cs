@@ -7,6 +7,7 @@
         int Slot { get; }
         int Stride { get; }
         ResourceUsage Usage { get; }
+        void Update(nint data, int sizeInBytes);
 
         void Update<T>(ReadOnlySpan<T> data) where T : unmanaged;
     }

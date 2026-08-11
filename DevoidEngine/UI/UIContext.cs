@@ -9,6 +9,7 @@ namespace DevoidEngine.UI
         public Viewport Viewport = null!;
 
         public List<CanvasNode> Canvases = [];
+        internal readonly HashSet<UINode> DirtyLayoutRoots = [];
 
         public UINode? Hovered;
         public UINode? Focused;

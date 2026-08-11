@@ -36,6 +36,9 @@
         public bool GetDown(InputDeviceType type, ushort control)
             => _pressed.Contains((type, control));
 
+        public bool GetUp(InputDeviceType type, ushort control)
+            => _released.Contains((type, control));
+
         public void EndFrame()
         {
             _pressed.Clear();
@@ -47,6 +50,16 @@
             _values.Clear();
             _pressed.Clear();
             _released.Clear();
+        }
+
+        public void Reset(InputEvent e)
+        {
+            var key = (e.DeviceType, e.Control);
+
+            _values[key] = 0f;
+
+            _pressed.Remove(key);
+            _released.Remove(key);
         }
     }
 }

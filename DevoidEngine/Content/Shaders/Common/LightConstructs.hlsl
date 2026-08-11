@@ -61,8 +61,16 @@ SamplerState ShadowSampler : register(s9);
 TextureCube EnvironmentSkybox : register(t15);
 TextureCube PrefilterMap : register(t16);
 Texture2D BRDFLUT : register(t18);
+Texture2D ScreenAO : register(t19);
 
 SamplerState EnvironmentSampler : register(s10);
+
+SamplerState ScreenAOSampler
+{
+    Filter = MIN_MAG_MIP_LINEAR;
+    AddressU = Clamp;
+    AddressV = Clamp;
+};
 
 float ComputeShadow(int shadowIndex, float3 worldPos)
 {

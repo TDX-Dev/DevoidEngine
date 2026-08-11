@@ -47,6 +47,7 @@ namespace DevoidEngine.Core
                 NearClip = Near,
                 FarClip = Far,
                 ScreenSize = screenSize,
+                FrameIndex = (int)Engine.Instance.FrameCount
             };
         }
 

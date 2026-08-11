@@ -147,6 +147,20 @@ namespace DevoidEngine.Physics
             return backend.Raycast(ray, maxDistance, out hit);
         }
 
+        public bool Raycast<TFilter>(
+            Ray ray,
+            float maxDistance,
+            out RaycastHit hit,
+            TFilter filter)
+            where TFilter : struct, IRaycastFilter
+        {
+            return backend.Raycast(
+                ray,
+                maxDistance,
+                out hit,
+                filter);
+        }
+
         public IPhysicsBody CreateBody(PhysicsBodyDescription desc, GameObject owner)
         {
             var body = backend.CreateBody(desc, owner);

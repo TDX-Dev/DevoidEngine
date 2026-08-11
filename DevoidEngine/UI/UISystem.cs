@@ -52,7 +52,7 @@ namespace DevoidEngine.UI
                         Vector2 scaledScreen = new Vector2(viewport.Width, viewport.Height) / context.UIScale;
 
                         canvas.Measure(scaledScreen);
-                        canvas.Arrange(new Rect(viewport.Bounds.Position, scaledScreen));
+                        canvas.Arrange(new Rect(Vector2.Zero, scaledScreen));
                     }
 
                     canvas.Update(deltaTime);

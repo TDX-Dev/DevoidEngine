@@ -1,9 +1,12 @@
 ﻿using SharpDX.Direct3D;
+using SharpDX.Direct3D11;
 using SharpDX.DXGI;
+using System.Diagnostics;
 using Device = SharpDX.Direct3D11.Device;
 using DeviceContext = SharpDX.Direct3D11.DeviceContext;
 using DeviceCreationFlags = SharpDX.Direct3D11.DeviceCreationFlags;
 using DriverType = SharpDX.Direct3D.DriverType;
+using DXGIDevice = SharpDX.DXGI.Device;
 
 namespace DevoidGPU.DX11
 {
@@ -18,6 +21,9 @@ namespace DevoidGPU.DX11
         private readonly ICommandQueue copyQueue;
 
         private readonly DX11CommandList cachedCommandList;
+        private readonly Adapter3 adapter;
+
+        public GraphicsDeviceInfo Info { get; private set; }
 
         public DX11GraphicsDevice()
         {
@@ -37,6 +43,25 @@ namespace DevoidGPU.DX11
 #endif
                 , levels
             );
+
+            using var dxgiDevice = device.QueryInterface<SharpDX.DXGI.Device>();
+            adapter = dxgiDevice.Adapter.QueryInterface<Adapter3>();
+
+            AdapterDescription adapterDescription = adapter.Description;
+
+            Info = new GraphicsDeviceInfo
+            {
+                Name = adapterDescription.Description,
+
+                DedicatedVideoMemory = (ulong)(long)adapterDescription.DedicatedVideoMemory,
+                DedicatedSystemMemory = (ulong)(long)adapterDescription.DedicatedSystemMemory,
+                SharedSystemMemory = (ulong)(long)adapterDescription.SharedSystemMemory,
+
+                VendorId = adapterDescription.VendorId,
+                DeviceId = adapterDescription.DeviceId,
+                FeatureLevel = (int)device.FeatureLevel
+            };
+
 
             deviceContext = device.ImmediateContext;
 
@@ -203,10 +228,38 @@ namespace DevoidGPU.DX11
                 _ => throw new ArgumentOutOfRangeException(nameof(type))
             };
         }
+        public void UpdateMemoryInfo()
+        {
+            var local = adapter.QueryVideoMemoryInfo(
+                0,
+                MemorySegmentGroup.Local
+            );
 
+            var nonLocal = adapter.QueryVideoMemoryInfo(
+                0,
+                MemorySegmentGroup.NonLocal
+            );
+
+            Info.VideoMemoryUsage = (ulong)local.CurrentUsage;
+            Info.VideoMemoryBudget = (ulong)local.Budget;
+
+            Info.SystemMemoryUsage = (ulong)nonLocal.CurrentUsage;
+            Info.SystemMemoryBudget = (ulong)nonLocal.Budget;
+        }
         public void Submit(ICommandList cmd)
         {
 
+        }
+    
+        public void Dispose()
+        {
+            var debug = device.QueryInterface<DeviceDebug>();
+
+            debug.ReportLiveDeviceObjects(
+                ReportingLevel.Detail);
+
+            deviceContext.Dispose();
+            device.Dispose();
         }
     }
 }

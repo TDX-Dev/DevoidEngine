@@ -3,6 +3,7 @@
 #define PROFILING
 #define DISPLAY_DEBUG_INFO
 
+using DevoidEngine.Imgui;
 using DevoidEngine.Rendering;
 using DevoidEngine.Util;
 using DevoidGPU;
@@ -34,12 +35,13 @@ namespace DevoidEngine.Core
         private readonly WindowSurface mainSurface;
         private readonly List<WindowSurface> surfaces;
         private readonly FrameTimer frameTimer;
+        private readonly ImGuiRenderer imguiRenderer;
 
         private readonly LayerManager layerManager;
-
         private float deltaTimeAccumulator = 0f;
         private uint numFrames = 0;
         private bool isRunning = true;
+        private float systemInfoTimer;
 
         public Application(ApplicationSpecification specification)
         {
@@ -91,6 +93,10 @@ namespace DevoidEngine.Core
             surfaces.Add(mainSurface);
 
             Engine.InputSystem.UpdateInputProviderWindow(window);
+
+            imguiRenderer = new ImGuiRenderer();
+            imguiRenderer.Initialize();
+            imguiRenderer.OnGUI += () => { layerManager.OnGUILayers(); };
 
             //for (int i = 0; i < 10; i++)
             //{
@@ -153,6 +159,7 @@ namespace DevoidEngine.Core
                 float timescale = Engine.Instance.TimeScale;
                 float targetDeltaTime = 1 / Engine.Instance.TargetFramerate;
                 float deltaTime = (float)frameTimer.GetElapsedSeconds();
+                systemInfoTimer += deltaTime;
                 Engine.Instance.FrameCount = numFrames;
 
                 foreach (var surface in surfaces)
@@ -176,6 +183,7 @@ namespace DevoidEngine.Core
                 Engine.Instance.InterpolationAlpha = alpha;
 
                 Update(deltaTime * timescale);
+                
 
                 ICommandList cmd = Engine.GraphicsDevice.GetCommandList();
                 cmd.Begin();
@@ -185,13 +193,13 @@ namespace DevoidEngine.Core
                     if (surface.SkipRefresh)
                         continue;
                     surface.UpdateSurface(deltaTime);
-
                     cmd.SetFramebuffer(surface.Framebuffer);
                     cmd.ClearColor(0, Colors.White);
                     if (surface == mainSurface)
                     {
+                        imguiRenderer.BeginFrame(surface, deltaTime);
                         UpdateCursor();
-                        Render(cmd);
+                        Render(cmd, surface);
                         Engine.InputSystem.EndFrame();
                     }
 
@@ -229,15 +237,23 @@ namespace DevoidEngine.Core
 
                 numFrames++;
 
+                if (systemInfoTimer >= 1.0f)
+                {
+                    systemInfoTimer = 0.0f;
+
+                    Engine.GraphicsDevice.UpdateMemoryInfo();
+                }
 
                 Engine.Profiler.CPU.EndScope();
             }
 
             // Application loop terminated.
             layerManager.DetachLayers();
+            Engine.Instance.SceneTree.Dispose();
             Engine.Instance.ProjectSystem.Unload();
             Engine.AudioSystem.Dispose();
             Engine.Renderer.Dispose();
+            Engine.GraphicsDevice.Dispose();
         }
 
         void FixedUpdate(float deltaTime)
@@ -256,7 +272,7 @@ namespace DevoidEngine.Core
             Engine.Instance.SceneTree.UpdateScenes(deltaTime);
         }
 
-        void Render(ICommandList cmd)
+        void Render(ICommandList cmd, WindowSurface surface)
         {
             layerManager.RenderLayers(cmd);
             Engine.Instance.SceneTree.RenderScenes();
@@ -268,6 +284,7 @@ namespace DevoidEngine.Core
                 Engine.Renderer.Render(cmd, viewport);
             }
             layerManager.PostRenderLayers(cmd);
+            imguiRenderer.EndFrame(cmd, surface);
         }
 
         public void AddLayer(Layer layer)
@@ -285,8 +302,7 @@ namespace DevoidEngine.Core
         {
             if (Cursor.stateDirty)
             {
-                MainWindow.Window!.CursorState =
-                    (OpenTK.Windowing.Common.CursorState)Cursor.cursorState;
+                MainWindow.Window!.CursorState = Cursor.cursorState;
 
                 Cursor.stateDirty = false;
             }

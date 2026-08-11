@@ -12,5 +12,9 @@ namespace DevoidEngine.Rendering
         public RenderResourceCache Resources;
 
         public ICommandList CommandList;
+
+        public Texture SceneDepth;
+        public Texture SceneNormal;
+        public Texture SceneAO;
     }
 }

@@ -2,7 +2,7 @@
 
 namespace DevoidEngine.Core
 {
-    public class ShaderPass
+    public sealed class ShaderPass : IDisposable
     {
         // Graphics stages
         public ShaderStage? Vertex { get; }
@@ -78,6 +78,18 @@ namespace DevoidEngine.Core
                 });
 
             return ComputePipeline;
+        }
+
+        public void Dispose()
+        {
+            foreach (var pipeline in graphicsPipelines.Values)
+            {
+                pipeline.Dispose();
+            }
+
+            graphicsPipelines.Clear();
+
+            ComputePipeline?.Dispose();
         }
     }
 }

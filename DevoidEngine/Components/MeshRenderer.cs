@@ -18,6 +18,7 @@ namespace DevoidEngine.Components
 
                 mesh = value;
                 instance_id = Engine.Renderer.World.CreateMeshInstance(mesh);
+                Engine.Renderer.World.InstanceSetTransform(instance_id, gameObject.Transform.WorldMatrix);
             }
         }
 
@@ -53,7 +54,9 @@ namespace DevoidEngine.Components
 
         public override void OnRender()
         {
-            if (!has_moved_current_frame || mesh == null || !IsInitialized)
+            if (Engine.Instance.FrameCount == 0)
+                return;
+            if ((!has_moved_current_frame || mesh == null || !IsInitialized))
                 return;
             Matrix4x4 worldMatrixInterpolated;
             if (Engine.Instance.UseInterpolation)

@@ -408,9 +408,20 @@ namespace DevoidEngine.Physics.Bepu
 
         public bool Raycast(Ray ray, float maxDistance, out RaycastHit hit)
         {
+            return Raycast(
+                ray,
+                maxDistance,
+                out hit,
+                new AllowAllRaycastFilter());
+        }
+
+        public bool Raycast<TFilter>( Ray ray, float maxDistance, out RaycastHit hit, TFilter filter) where TFilter : struct, IRaycastFilter
+        {
             hit = default;
 
-            var handler = new BepuRayHitHandler(this);
+            var handler = new BepuRayHitHandler<TFilter>(
+                this,
+                filter);
 
             simulation.RayCast(
                 ray.Origin,
@@ -425,24 +436,31 @@ namespace DevoidEngine.Physics.Bepu
             hit.Point = ray.GetPoint(handler.Distance);
             hit.Normal = handler.Normal;
 
-            if (handler.Collidable.Mobility == CollidableMobility.Dynamic ||
-                handler.Collidable.Mobility == CollidableMobility.Kinematic)
+            if (!TryGetGameObject(
+                    handler.Collidable,
+                    out var gameObject))
             {
-                var bodyHandle = handler.Collidable.BodyHandle;
-
-                if (bodyToGameObject.TryGetValue(bodyHandle, out var go))
-                    hit.HitObject = go;
-            }
-            else if (handler.Collidable.Mobility == CollidableMobility.Static)
-            {
-                var staticHandle = handler.Collidable.StaticHandle;
-
-                if (staticToGameObject.TryGetValue(staticHandle, out var go))
-                    hit.HitObject = go;
+                return false;
             }
 
+            hit.HitObject = gameObject;
 
             return true;
+        }
+
+        public bool TryGetGameObject(CollidableReference collidable, out GameObject gameObject)
+        {
+            if (collidable.Mobility == CollidableMobility.Dynamic ||
+                collidable.Mobility == CollidableMobility.Kinematic)
+            {
+                return bodyToGameObject.TryGetValue(
+                    collidable.BodyHandle,
+                    out gameObject!);
+            }
+
+            return staticToGameObject.TryGetValue(
+                collidable.StaticHandle,
+                out gameObject!);
         }
 
     }

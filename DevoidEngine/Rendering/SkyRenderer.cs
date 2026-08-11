@@ -16,7 +16,7 @@ namespace DevoidEngine.Rendering
         public uint Padding2;
     }
 
-    public class SkyRenderer
+    public sealed class SkyRenderer : IDisposable
     {
         public int SkyResolution = 1024;
         public int IrradianceResolution = 64;
@@ -68,8 +68,6 @@ namespace DevoidEngine.Rendering
 
         private readonly uint partialCount;
 
-        private readonly Texture BlueNoisePrefilter;
-
         private readonly Texture DebugCube;
 
         // End of ze clutter
@@ -97,8 +95,6 @@ namespace DevoidEngine.Rendering
                 render_mesh = CubeMesh,
                 //render_material = Sky.Material,
             };
-
-            BlueNoisePrefilter = Texture.CreateFromImage2D(TextureUtil.LoadImage("Content/Noise/LDR_RG01_0.png"), TextureUsage.ShaderResource, TextureFormat.RG8_UNorm);
 
             SkyboxTexture = Texture.CreateCube(SkyResolution, TextureFormat.RGBA16_Float, TextureUsage.RenderTarget | TextureUsage.ShaderResource, (int)(Math.Log2(SkyResolution) + 1));
 
@@ -188,7 +184,7 @@ namespace DevoidEngine.Rendering
                 render_transform = Matrix4x4.Identity
             };
 
-            PrefilterMaterial.SetTexture("BlueNoise", BlueNoisePrefilter);
+            PrefilterMaterial.SetTexture("BlueNoise", Engine.Renderer.BlueNoiseTexture);
         }
         public void Render(RenderContext ctx)
         {
@@ -430,6 +426,20 @@ namespace DevoidEngine.Rendering
             Engine.Renderer.Execute(cmd, ConversionRenderData);
 
             Engine.Renderer.PopViewport(cmd);
+        }
+
+        public void Dispose()
+        {
+            IrradianceCubeTexture.Dispose();
+            PrefilterTexture.Dispose();
+            BRDFLutTexture.Dispose();
+            SkyboxTexture.Dispose();
+
+            ProjectToSHMaterial.Dispose();
+            ReduceSHMaterial.Dispose();
+            PrefilterMaterial.Dispose();
+            BRDFLutMaterial.Dispose();
+            SkyCubemapMaterial.Dispose();
         }
 
     }

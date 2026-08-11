@@ -4,7 +4,7 @@ using System.Text.Json;
 
 namespace DevoidEngine.Core
 {
-    public class Shader
+    public sealed class Shader : IDisposable
     {
         private readonly Dictionary<string, ShaderPass> passes = [];
 
@@ -21,6 +21,15 @@ namespace DevoidEngine.Core
         public bool HasPass(string name)
         {
             return passes.ContainsKey(name);
+        }
+
+        public void Dispose()
+        {
+            foreach (var value in passes)
+                value.Value.Dispose();
+
+
+            passes.Clear();
         }
 
         public static Shader FromDescriptorFile(
@@ -127,29 +136,35 @@ namespace DevoidEngine.Core
                         ParseDepth(passDesc.States.Depth);
 
                     pass.Rasterizer =
-                        ParseRasterizer(passDesc.States.Cull);
+                        ParseRasterizer(passDesc.States.Cull, passDesc.States.Scissor);
                 }
 
-                if (pass.Vertex != null && pass.Fragment != null)
-                {
-                    pass.Pipeline =
-                        device.CreateGraphicsPipeline(
-                            new GraphicsPipelineDescription
-                            {
-                                VertexShader = pass.Vertex!.GPU,
-                                PixelShader = pass.Fragment!.GPU,
+                //if (pass.Vertex != null && pass.Fragment != null)
+                //{
+                //    try
+                //    {
+                //        pass.Pipeline =
+                //            device.CreateGraphicsPipeline(
+                //                new GraphicsPipelineDescription
+                //                {
+                //                    VertexShader = pass.Vertex!.GPU,
+                //                    PixelShader = pass.Fragment!.GPU,
 
-                                PipelineLayout = pass.PipelineLayout,
+                //                    PipelineLayout = pass.PipelineLayout,
 
-                                Topology = PrimitiveType.Triangles,
+                //                    Topology = PrimitiveType.Triangles,
 
-                                VertexLayout = Vertex.VertexInfo, // HARDCODED FOR THE TIME BEING, ISSUE THO
+                //                    VertexLayout = Vertex.VertexInfo, // HARDCODED FOR THE TIME BEING, ISSUE THO
 
-                                Rasterizer = pass.Rasterizer,
-                                DepthStencil = pass.Depth,
-                                Blend = pass.Blend
-                            });
-                }
+                //                    Rasterizer = pass.Rasterizer,
+                //                    DepthStencil = pass.Depth,
+                //                    Blend = pass.Blend
+                //                });
+                //    } catch
+                //    {
+                //        Console.WriteLine("Shader pipeline fast path creation failed.");
+                //    }
+                //}
 
                 if (pass.Compute != null)
                 {
@@ -394,29 +409,30 @@ namespace DevoidEngine.Core
             };
         }
 
-        private static RasterizerState ParseRasterizer(string? cull)
+        private static RasterizerState ParseRasterizer(string? cull, string? scissor)
         {
             cull ??= "Back";
 
-            return cull switch
+            RasterizerState rs = new()
             {
-                "Back" => new RasterizerState
+                CullMode = cull switch
                 {
-                    CullMode = CullMode.Back
+                    "Back" => CullMode.Back,
+                    "Front" => CullMode.Front,
+                    "None" => CullMode.None,
+                    _ => throw new Exception($"Unknown cull mode '{cull}'")
                 },
 
-                "Front" => new RasterizerState
+                EnableScissor = scissor switch
                 {
-                    CullMode = CullMode.Front
-                },
-
-                "None" => new RasterizerState
-                {
-                    CullMode = CullMode.None
-                },
-
-                _ => throw new Exception($"Unknown cull mode '{cull}'")
+                    "true" => true,
+                    "false" => false,
+                    null => false,
+                    _ => throw new Exception($"Unknown scissor value '{scissor}'")
+                }
             };
+
+            return rs;
         }
     }
 }

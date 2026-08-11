@@ -2,8 +2,9 @@
 
 namespace DevoidGPU
 {
-    public interface IGraphicsDevice
+    public interface IGraphicsDevice : IDisposable
     {
+        GraphicsDeviceInfo Info { get; }
         ISwapchain CreateSwapchain(SwapchainDescription desc);
         IShader CreateShader(ShaderDescription desc);
         IPipeline CreateGraphicsPipeline(GraphicsPipelineDescription desc);
@@ -20,6 +21,7 @@ namespace DevoidGPU
         IDescriptorSet CreateDescriptorSet(IDescriptorLayout layout);
         ICommandList GetCommandList();
         ICommandQueue GetCommandQueue(CommandListType type);
+        void UpdateMemoryInfo();
         void Submit(ICommandList cmd);
     }
 }

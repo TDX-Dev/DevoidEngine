@@ -1,4 +1,5 @@
-﻿using SharpDX.Direct3D11;
+﻿using SharpDX;
+using SharpDX.Direct3D11;
 using System.Runtime.CompilerServices;
 using Buffer = SharpDX.Direct3D11.Buffer;
 using Device = SharpDX.Direct3D11.Device;
@@ -49,45 +50,43 @@ namespace DevoidGPU.DX11
             }
         }
 
-        public void Update<T>(ReadOnlySpan<T> data) where T : unmanaged
+        public unsafe void Update(nint data, int sizeInBytes)
         {
-
-
-            int elementSize = Unsafe.SizeOf<T>();
-            int totalSize = elementSize * data.Length;
-
-            if ((ulong)totalSize > Size)
-                throw new InvalidOperationException("Update exceeds buffer size");
+            if ((ulong)sizeInBytes > Size)
+                throw new InvalidOperationException("Update exceeds buffer size.");
 
             if ((Usage & ResourceUsage.Dynamic) != 0)
             {
-                var box = deviceContext.MapSubresource(Buffer, 0, MapMode.WriteDiscard, MapFlags.None);
+                var box = deviceContext.MapSubresource(
+                    Buffer,
+                    0,
+                    MapMode.WriteDiscard,
+                    MapFlags.None);
 
-                unsafe
-                {
-                    fixed (T* src = data)
-                    {
-                        System.Buffer.MemoryCopy(
-                            src,
-                            (void*)box.DataPointer,
-                            (long)Size,
-                            totalSize
-                        );
-                    }
-                }
+                System.Buffer.MemoryCopy(
+                    (void*)data,
+                    (void*)box.DataPointer,
+                    sizeInBytes,
+                    sizeInBytes);
 
                 deviceContext.UnmapSubresource(Buffer, 0);
             }
             else
             {
-                unsafe
-                {
-                    fixed (T* src = data)
-                    {
-                        IntPtr ptr = (IntPtr)src;
-                        deviceContext.UpdateSubresource(ref ptr, Buffer, 0);
-                    }
-                }
+                deviceContext.UpdateSubresource(
+                    new DataBox(data, 0, 0),
+                    Buffer,
+                    0);
+            }
+        }
+
+        public unsafe void Update<T>(ReadOnlySpan<T> data) where T : unmanaged
+        {
+            int sizeInBytes = Unsafe.SizeOf<T>() * data.Length;
+
+            fixed (T* ptr = data)
+            {
+                Update((nint)ptr, sizeInBytes);
             }
         }
 

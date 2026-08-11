@@ -9,6 +9,7 @@ namespace DevoidEngine.Rendering
 
         private TextureDescription lightingColorTextureDescription;
         private TextureDescription lightingDepthTextureDescription;
+        private TextureDescription lightingColorResolveTextureDescription;
 
         private RenderTarget colorOutput = null!;
         private List<RenderMeshData> visibleItems = null!;
@@ -33,7 +34,7 @@ namespace DevoidEngine.Rendering
                 Format = TextureFormat.RGBA16_Float,
                 Dimension = TextureDimension.Texture2D,
                 ArraySize = 1,
-                Samples = new TextureSampleDescription(1, 0),
+                Samples = new TextureSampleDescription(4, 0),
                 MipLevels = 1,
                 Usage = TextureUsage.RenderTarget | TextureUsage.ShaderResource
             };
@@ -45,13 +46,28 @@ namespace DevoidEngine.Rendering
                 Format = TextureFormat.Depth24_Stencil8,
                 Dimension = TextureDimension.Texture2D,
                 ArraySize = 1,
-                Samples = new TextureSampleDescription(1, 0),
+                Samples = new TextureSampleDescription(4, 0),
                 MipLevels = 1,
                 Usage = TextureUsage.DepthStencil
             };
 
+            lightingColorResolveTextureDescription = new TextureDescription()
+            {
+                Width = viewport.Width,
+                Height = viewport.Height,
+                Depth = 1,
+                Format = TextureFormat.RGBA16_Float,
+                Dimension = TextureDimension.Texture2D,
+                ArraySize = 1,
+                Samples = new TextureSampleDescription(1, 0),
+                MipLevels = 1,
+                Usage = TextureUsage.RenderTarget | TextureUsage.ShaderResource
+            };
+
             Texture lightingColorTex = ctx.Resources.GetOrCreateTexture("ForwardLightingColor", lightingColorTextureDescription);
             Texture lightingDepthTex = ctx.Resources.GetOrCreateTexture("ForwardLightingDepth", lightingDepthTextureDescription);
+
+            Texture lightingResolvedColorTex = ctx.Resources.GetOrCreateTexture("ForwardLightingColorResolved", lightingColorResolveTextureDescription);
 
             colorOutput.SetColorAttachment(0, lightingColorTex);
             colorOutput.SetDepthAttachment(lightingDepthTex);
@@ -63,6 +79,10 @@ namespace DevoidEngine.Rendering
 
             ctx.Renderer.SkyRenderer.RenderSkybox(ctx);
             ctx.Renderer.Execute(ctx.CommandList, view.Objects);
+
+            ctx.CommandList.ResolveSubresource(lightingColorTex.GPU, lightingResolvedColorTex.GPU);
+
+            colorOutput.SetColorAttachment(0, lightingResolvedColorTex);
 
             return colorOutput;
         }

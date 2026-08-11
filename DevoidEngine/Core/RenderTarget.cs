@@ -32,6 +32,7 @@ namespace DevoidEngine.Core
         }
 
         private readonly Texture?[] colorTextures;
+
         internal RenderTarget(
             IFrameBuffer gpu,
             Texture?[] colorTextures,

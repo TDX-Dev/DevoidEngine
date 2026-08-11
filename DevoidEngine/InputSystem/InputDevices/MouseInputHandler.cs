@@ -118,27 +118,21 @@ namespace DevoidEngine.InputSystem.InputDevices
             Vector2 scroll = state.Scroll;
             Vector2 scrollDelta = state.ScrollDelta;
 
-            if (scrollDelta.X != 0f)
+            backend.Emit(new InputEvent
             {
-                backend.Emit(new InputEvent
-                {
-                    DeviceId = deviceId,
-                    DeviceType = InputDeviceType.Mouse,
-                    Control = (ushort)MouseAxis.ScrollX,
-                    Value = scrollDelta.X
-                });
-            }
+                DeviceId = deviceId,
+                DeviceType = InputDeviceType.Mouse,
+                Control = (ushort)MouseAxis.ScrollX,
+                Value = scrollDelta.X
+            });
 
-            if (scrollDelta.Y != 0f)
+            backend.Emit(new InputEvent
             {
-                backend.Emit(new InputEvent
-                {
-                    DeviceId = deviceId,
-                    DeviceType = InputDeviceType.Mouse,
-                    Control = (ushort)MouseAxis.ScrollY,
-                    Value = scrollDelta.Y
-                });
-            }
+                DeviceId = deviceId,
+                DeviceType = InputDeviceType.Mouse,
+                Control = (ushort)MouseAxis.ScrollY,
+                Value = scrollDelta.Y
+            });
 
             previousScroll = scroll;
         }

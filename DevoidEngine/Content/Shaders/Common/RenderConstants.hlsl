@@ -11,7 +11,7 @@ cbuffer CameraData : register(b0)
     float NearClip;
     float FarClip;
     float2 ScreenSize;
-    float _padding0;
+    int FrameIndex;
 };
 
 cbuffer PerObject : register(b1)

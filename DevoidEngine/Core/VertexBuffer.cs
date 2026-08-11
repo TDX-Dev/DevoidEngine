@@ -17,30 +17,33 @@ namespace DevoidEngine.Core
 
         public VertexBuffer(
             IGraphicsDevice device,
-            ReadOnlySpan<T> data,
+            int capacity,
             VertexInfo layout,
             ResourceUsage usage)
         {
             Layout = layout;
             Stride = layout.SizeInBytes;
-            Count = data.Length;
-            Capacity = data.Length;
+            Count = 0;
+            Capacity = capacity;
             this.usage = usage;
 
-            unsafe
+            gpuBuffer = device.CreateVertexBuffer(new VertexBufferDescription
             {
-                fixed (T* ptr = data)
-                {
-                    gpuBuffer = device.CreateVertexBuffer(new VertexBufferDescription
-                    {
-                        Size = (ulong)(data.Length * sizeof(T)),
-                        Layout = layout,
-                        Slot = 0,
-                        Usage = usage,
-                        InitialData = data.Length > 0 ? (IntPtr)ptr : IntPtr.Zero
-                    });
-                }
-            }
+                Size = (ulong)(capacity * Stride),
+                Layout = layout,
+                Slot = 0,
+                Usage = usage
+            });
+        }
+
+        public VertexBuffer(
+            IGraphicsDevice device,
+            ReadOnlySpan<T> data,
+            VertexInfo layout,
+            ResourceUsage usage)
+            : this(device, data.Length, layout, usage)
+        {
+            Update(data);
         }
 
         public void Update(ReadOnlySpan<T> data)
@@ -50,6 +53,15 @@ namespace DevoidEngine.Core
             Count = data.Length;
 
             gpuBuffer.Update(data);
+        }
+
+        public void Update(nint data, int len)
+        {
+            EnsureCapacity(len);
+
+            Count = len;
+
+            gpuBuffer.Update(data, len * Stride);
         }
 
         private void EnsureCapacity(int required)

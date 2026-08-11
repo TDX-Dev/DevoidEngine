@@ -71,28 +71,30 @@ namespace DevoidEngine.Components
                 viewport.SetCamera3D(this);
         }
 
-        //public override void OnUpdate(float dt)
-        //{
-        //    var transform = gameObject.Transform;
-        //    //if (!transform.hasMoved && IsInitialized && !dirty)
-        //    //    return;
 
+        public override void OnStart()
+        {
+            Matrix4x4 world = gameObject.Transform.WorldMatrix;
 
-        //    Vector3 position = transform.Position;
+            Vector3 position = world.Translation;
 
-        //    Vector3 forward = Vector3.Normalize(
-        //        Vector3.Transform(Vector3.UnitZ, transform.Rotation)
-        //    );
+            Vector3 forward = Vector3.Normalize(new Vector3(
+                world.M31,
+                world.M32,
+                world.M33));
 
-        //    Vector3 up = Vector3.Normalize(
-        //        Vector3.Transform(Vector3.UnitY, transform.Rotation)
-        //    );
+            Vector3 up = Vector3.Normalize(new Vector3(
+                world.M21,
+                world.M22,
+                world.M23));
 
-        //    camera.UpdateView(position, forward, up);
-        //}
+            camera.UpdateView(position, forward, up);
+        }
 
         public override void OnRender()
         {
+            if (Engine.Instance.FrameCount == 0)
+                return;
             Transform3D transform = gameObject.Transform;
 
             Matrix4x4 world =

@@ -11,6 +11,7 @@ namespace DevoidEngine.UI
 
         public bool Handle(ref InputEvent e)
         {
+
             if (e.DeviceType == InputDeviceType.Mouse)
             {
                 if (e.ControlType == ControlType.Float)
@@ -29,11 +30,11 @@ namespace DevoidEngine.UI
 
                         case MouseAxis.ScrollY:
                             Engine.UISystem.MouseScroll(new Vector2(0, e.Value));
-                            return true;
+                            return false;
 
                         case MouseAxis.ScrollX:
                             Engine.UISystem.MouseScroll(new Vector2(e.Value, 0));
-                            return true;
+                            return false;
                     }
                 }
 

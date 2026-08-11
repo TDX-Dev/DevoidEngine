@@ -3,11 +3,12 @@ using DevoidEngine.Core;
 using DevoidEngine.UI;
 using DevoidEngine.Util;
 using DevoidGPU;
+using Microsoft.VisualBasic;
 using System.Numerics;
 
 namespace DevoidEngine.Rendering
 {
-    public class Viewport
+    public class Viewport : IDisposable
     {
         public Rect Bounds => bounds;
         public int Width { get; private set; }
@@ -63,9 +64,11 @@ namespace DevoidEngine.Rendering
             Engine.Renderer.ResizeViewport(this);
         }
 
-        ~Viewport()
+        public void Dispose()
         {
             Engine.Renderer.RemoveViewport(this);
+            OutputTexture?.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }

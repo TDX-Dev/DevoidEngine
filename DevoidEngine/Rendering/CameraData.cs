@@ -15,6 +15,6 @@ namespace DevoidEngine.Rendering
         public float NearClip;
         public float FarClip;
         public Vector2 ScreenSize;
-        private readonly float _padding0;
+        public int FrameIndex;
     }
 }

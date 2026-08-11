@@ -5,6 +5,7 @@ using DevoidEngine.Util;
 using DevoidGPU;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 
 namespace DevoidEngine.Rendering
 {
@@ -39,13 +40,22 @@ namespace DevoidEngine.Rendering
         public RenderWorld World { get; private set; } = null!;
         public RenderAPI API { get; private set; } = null!;
 
+        public Texture BlueNoiseTexture { get; private set; } = null!;
+
         public Material DefaultMaterial { get; private set; } = null!;
         public Material NullMaterial { get; private set; } = null!;
         public MaterialInstance NullMaterialInstance { get; private set; } = null!;
         public Shader DefaultShader { get; private set; } = null!;
+        public Shader InformationShader { get; private set; } = null!;
+        public MaterialInstance InformationMaterialInstance { get; private set; } = null!;
+
+        public Shader VBAOShader {  get; private set; } = null!;
+        public MaterialInstance VBAOMaterialInstance { get; private set; } = null!;
 
         public RenderTarget ViewportBlitTarget { get; private set; } = null!;
         public RenderTarget UIRenderTarget { get; private set; } = null!;
+        public RenderTarget InfoRenderTarget { get; private set; } = null!;
+        public RenderTarget VBAORenderTarget { get; private set; } = null!;
         public UniformBuffer CameraBuffer { get; private set; } = null!;
         public UniformBuffer SceneBuffer { get; private set; } = null!;
         public UniformBuffer PerObjectBuffer { get; private set; } = null!;
@@ -134,6 +144,15 @@ namespace DevoidEngine.Rendering
             NullMaterial = new Material(NullShader);
             NullMaterialInstance = new MaterialInstance(NullMaterial);
 
+            InformationShader = Shader.FromDescriptorFile(Engine.GraphicsDevice, Path.Combine(Engine.BasePath, "Content/DevoidShaderDescriptors/information_pass.dsd"));
+            InformationMaterialInstance = new MaterialInstance(new Material(InformationShader));
+
+            VBAOShader = Shader.FromDescriptorFile(Engine.GraphicsDevice, Path.Combine(Engine.BasePath, "Content/DevoidShaderDescriptors/gtvbao.dsd"));
+
+            BlueNoiseTexture = Texture.CreateFromImage2D(TextureUtil.LoadImage("Content/Noise/LDR_RG01_0.png"), TextureUsage.ShaderResource, TextureFormat.RG8_UNorm);
+
+            VBAOMaterialInstance = new MaterialInstance(new Material(VBAOShader));
+
             PerCameraDescriptorLayout = Engine.GraphicsDevice.CreateDescriptorLayout([
                 new() {
                     Binding = 0,
@@ -179,6 +198,11 @@ namespace DevoidEngine.Rendering
                     Binding = 18,
                     Stages = DevoidGPU.ShaderStage.Fragment,
                     Type = DescriptorType.Texture
+                },
+                new() {
+                    Binding = 19,
+                    Stages = DevoidGPU.ShaderStage.Fragment,
+                    Type = DescriptorType.Texture
                 }
             ]);
 
@@ -206,6 +230,8 @@ namespace DevoidEngine.Rendering
 
             ViewportBlitTarget = RenderTarget.Create(1);
             UIRenderTarget = RenderTarget.Create(1);
+            InfoRenderTarget = RenderTarget.Create(1);
+            VBAORenderTarget = RenderTarget.Create(1);
 
             renderView = new RenderView();
 
@@ -225,6 +251,10 @@ namespace DevoidEngine.Rendering
 
         public void Render(ICommandList cmd, Viewport viewport)
         {
+            ViewportBlitTarget.SetColorAttachment(0, viewport.OutputTexture!);
+            cmd.SetFramebuffer(ViewportBlitTarget.GPU);
+            cmd.ClearColor(0, Colors.Transparent);
+
             if (viewport.Camera3D == null || ActiveTechnique == null)
                 return;
 
@@ -261,6 +291,10 @@ namespace DevoidEngine.Rendering
             UpdateCameraBuffer(camera.GetCameraData(new Vector2(viewport.Width, viewport.Height)));
             UpdateSceneData(renderView);
             UpdateLights(renderView);
+
+            RenderInformationPass(ref context, renderView);
+
+            RenderVBAOPass(ref context);
 
             RenderTarget activeTechniqueTarget = ActiveTechnique.Render(context, renderView);
 
@@ -406,6 +440,95 @@ namespace DevoidEngine.Rendering
             uiRenderCache.Clear();
         }
 
+        public void RenderInformationPass(ref RenderContext context, RenderView view)
+        {
+            TextureDescription textureNormalDescription = new()
+            {
+                Width = context.Viewport.Width,
+                Height = context.Viewport.Height,
+                Depth = 1,
+                Format = TextureFormat.RGBA16_Float,
+                Dimension = TextureDimension.Texture2D,
+                ArraySize = 1,
+                Samples = new TextureSampleDescription(1, 0),
+                MipLevels = 1,
+                Usage = TextureUsage.RenderTarget | TextureUsage.ShaderResource
+            };
+
+            TextureDescription textureDepthDescription = new()
+            {
+                Width = context.Viewport.Width,
+                Height = context.Viewport.Height,
+                Depth = 1,
+                Format = TextureFormat.Depth32_Float,
+                Dimension = TextureDimension.Texture2D,
+                ArraySize = 1,
+                Samples = new TextureSampleDescription(1, 0),
+                MipLevels = 1,
+                Usage = TextureUsage.DepthStencil | TextureUsage.ShaderResource
+            };
+
+            Texture normalTexture = context.Resources.GetOrCreateTexture("RENDERPASSINFO_NORMALS", textureNormalDescription);
+            Texture depthTexture = context.Resources.GetOrCreateTexture("RENDERPASSINFO_DEPTH", textureDepthDescription);
+
+            InfoRenderTarget.SetColorAttachment(0, normalTexture);
+            InfoRenderTarget.SetDepthAttachment(depthTexture);
+
+            context.CommandList.SetFramebuffer(InfoRenderTarget.GPU);
+
+            context.CommandList.ClearColor(0, new Vector4(0, 0, 0, 1));
+            context.CommandList.ClearDepthStencil(1, 0);
+
+
+
+            Execute(context.CommandList, view.Objects, InformationMaterialInstance);
+
+            context.SceneDepth = depthTexture;
+            context.SceneNormal = normalTexture;
+        }
+        public void RenderVBAOPass(ref RenderContext context)
+        {
+            TextureDescription textureAODescription = new()
+            {
+                Width = context.Viewport.Width / 2,
+                Height = context.Viewport.Height / 2,
+                Depth = 1,
+                Format = TextureFormat.R8_UNorm,
+                Dimension = TextureDimension.Texture2D,
+                ArraySize = 1,
+                Samples = new TextureSampleDescription(1, 0),
+                MipLevels = 1,
+                Usage = TextureUsage.RenderTarget | TextureUsage.ShaderResource
+            };
+
+            Texture AOTexture = context.Resources.GetOrCreateTexture("RENDERPASS_VBAO", textureAODescription);
+
+            VBAOMaterialInstance.SetTexture("NormalTexture", context.SceneNormal);
+            VBAOMaterialInstance.SetTexture("DepthTexture", context.SceneDepth);
+            VBAOMaterialInstance.SetTexture("BlueNoiseTexture", BlueNoiseTexture);
+
+            VBAORenderTarget.SetColorAttachment(0, AOTexture);
+
+            PushViewport(context.CommandList, new ViewportRect()
+            {
+                X = 0,
+                Y = 0,
+                Width = context.Viewport.Width / 2,
+                Height = context.Viewport.Height / 2
+            });
+
+            context.CommandList.SetFramebuffer(VBAORenderTarget.GPU);
+
+            context.CommandList.ClearColor(0, Colors.Black);
+
+            API.RenderToScreen(context.CommandList, VBAOMaterialInstance);
+
+            PopViewport(context.CommandList);
+
+            context.SceneAO = AOTexture;
+
+            PerCameraDescriptor.SetTexture(19, AOTexture.GPU);
+        }
         public void UpdateCameraBuffer(CameraData cameraData)
         {
             CameraBuffer.Update(cameraData);
@@ -464,7 +587,7 @@ namespace DevoidEngine.Rendering
         {
             MaterialInstance material = item.render_material ?? NullMaterialInstance;
             ShaderPass pass = material.BaseMaterial.DefaultPass;
-            cmd.SetPipeline(pass.Pipeline);
+            cmd.SetPipeline(pass.GetPipeline(Engine.GraphicsDevice, item.render_mesh.VertexInfo));
             cmd.SetDescriptorSet(
                         0,
                         PerCameraDescriptor);
@@ -479,18 +602,19 @@ namespace DevoidEngine.Rendering
             item.render_mesh.Draw(cmd);
         }
 
-        public void Execute(ICommandList cmd, List<RenderMeshData> objects)
+        public void Execute(ICommandList cmd, List<RenderMeshData> objects, MaterialInstance? overrideMaterial = null)
         {
             ShaderPass? currentPass = null;
             MaterialInstance? currentMaterial = null;
             //Mesh? currentMesh = null;
 
-
+            cmd.SetDescriptorSet(2, PerObjectDescriptor);
 
             foreach (var item in objects)
             {
 
-                MaterialInstance material = item.render_material ?? NullMaterialInstance;
+                MaterialInstance material = overrideMaterial ?? item.render_material ?? NullMaterialInstance;
+
 
                 ShaderPass pass = material.BaseMaterial.DefaultPass;
 
@@ -498,16 +622,16 @@ namespace DevoidEngine.Rendering
                 {
                     currentPass = pass;
 
-                    cmd.SetPipeline(pass.Pipeline);
+                    cmd.SetPipeline(pass.GetPipeline(Engine.GraphicsDevice, item.render_mesh.VertexInfo));
 
                     cmd.SetDescriptorSet(
                         0,
                         PerCameraDescriptor);
                 }
 
-                if (item.render_material != currentMaterial)
+                if (material != currentMaterial)
                 {
-                    currentMaterial = item.render_material;
+                    currentMaterial = material;
 
                     cmd.SetDescriptorSet(
                         1,
@@ -515,7 +639,6 @@ namespace DevoidEngine.Rendering
                 }
 
                 UpdatePerObjectData(item.render_transform);
-                cmd.SetDescriptorSet(2, PerObjectDescriptor);
 
 
                 item.render_mesh.Draw(cmd);
@@ -576,6 +699,10 @@ namespace DevoidEngine.Rendering
         public void Dispose()
         {
             ActiveTechnique?.Dispose();
+            SkyRenderer.Dispose();
+
+            DefaultMaterial.Dispose();
+            NullMaterial.Dispose();
         }
 
 

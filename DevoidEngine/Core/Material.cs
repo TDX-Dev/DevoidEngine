@@ -159,6 +159,8 @@ namespace DevoidEngine.Core
             {
                 sampler.Value.Dispose();
             }
+
+            Shader.Dispose();
         }
 
     }

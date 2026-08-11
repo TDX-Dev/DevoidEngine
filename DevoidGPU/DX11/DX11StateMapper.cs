@@ -34,6 +34,9 @@ namespace DevoidGPU.DX11
                 _ => Format.Unknown
             };
         }
+
+
+
         internal static TextureFormat ToTextureFormat(Format format)
         {
             return format switch
@@ -118,6 +121,16 @@ namespace DevoidGPU.DX11
                     return ShaderResourceViewDimension.TextureCube;
 
                 default:
+                    // MSAA 2D textures
+                    if (description.Samples.Count > 1)
+                    {
+                        if (description.ArraySize > 1)
+                            return ShaderResourceViewDimension.Texture2DMultisampledArray;
+
+                        return ShaderResourceViewDimension.Texture2DMultisampled;
+                    }
+
+                    // Normal 2D textures
                     if (description.ArraySize > 1)
                         return ShaderResourceViewDimension.Texture2DArray;
 

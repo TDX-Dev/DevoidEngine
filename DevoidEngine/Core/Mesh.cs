@@ -9,6 +9,10 @@ namespace DevoidEngine.Core
     {
         public ResourceUsage Usage { get; }
 
+        public bool HasBones => false;
+
+        public VertexInfo VertexInfo => HasBones ? Vertex.VertexInfo : Vertex.VertexInfo;
+
         public Vector3[]? Positions { get => positions; set => positions = value; }
         public Vector2[]? UVs { get => uvs; set => uvs = value; }
         public Vector3[]? Normals { get => normals; set => normals = value; }

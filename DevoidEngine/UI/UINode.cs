@@ -13,7 +13,7 @@ namespace DevoidEngine.UI
 
         public UIContext Context = null!;
 
-        public bool AnimateLayout = true;
+        public bool AnimateLayout = false;
         public bool BlockInput = false;
         public bool Visible = true;
         public bool Interactable = true;
@@ -21,6 +21,10 @@ namespace DevoidEngine.UI
 
         public Rect Rect;
         public Rect VisualRect;
+
+        public SizeMode WidthMode = SizeMode.Stretch;
+        public SizeMode HeightMode = SizeMode.Stretch;
+
 
         public Vector2 DesiredSize { get; private set; }
         public Vector2 Offset = Vector2.Zero;
@@ -59,6 +63,11 @@ namespace DevoidEngine.UI
         internal UINode? _parent;
         internal readonly List<UINode> _children = [];
         internal readonly List<UINode> _layoutChildren = [];
+
+        internal LayoutDirtyFlags LayoutDirty =
+            LayoutDirtyFlags.Measure |
+            LayoutDirtyFlags.Arrange |
+            LayoutDirtyFlags.Children;
 
         public void Initialize()
         {
@@ -103,6 +112,22 @@ namespace DevoidEngine.UI
                 Vector2 desired = Measure(new(float.PositiveInfinity));
                 finalRect = new Rect(finalRect.Position, desired);
             }
+
+            Vector2 size = finalRect.Size;
+
+            if (!Size.HasValue)
+            {
+                if (WidthMode == SizeMode.FitContent)
+                    size.X = DesiredSize.X;
+
+                if (HeightMode == SizeMode.FitContent)
+                    size.Y = DesiredSize.Y;
+            }
+
+            size.X = Math.Clamp(size.X, MinSize.X, MaxSize.X);
+            size.Y = Math.Clamp(size.Y, MinSize.Y, MaxSize.Y);
+
+            finalRect = new Rect(finalRect.Position, size);
 
             bool firstLayout = Rect.Size == Vector2.Zero && Rect.Position == Vector2.Zero;
 

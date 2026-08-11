@@ -1,0 +1,38 @@
+{
+  "$schema": "./dsdschema.json",
+  "Name": "BlitShader",
+  "DefaultPass": "Forward",
+  "MaterialParameters": { "BufferName": "Material" },
+  "Resources": [
+    {
+      "Name": "NormalTexture",
+      "Kind": "SampledTexture",
+      "Type": "Texture2D"
+    },
+    {
+      "Name": "DepthTexture",
+      "Kind": "SampledTexture",
+      "Type": "Texture2D"
+    },
+    {
+      "Name": "BlueNoiseTexture",
+      "Kind": "SampledTexture",
+      "Type": "Texture2D"
+    }
+  ],
+  "Passes": [
+    {
+      "Name": "Forward",
+      "MaterialBuffer": "Material",
+      "Shaders": {
+        "VS": "../Shaders/fullscreen.vert.hlsl",
+        "FS": "../Shaders/gtvbao.frag.hlsl"
+      },
+      "States": {
+        "Blend": "Off",
+        "Cull": "None",
+        "Depth": "LessEqual"
+      }
+    }
+  ]
+}

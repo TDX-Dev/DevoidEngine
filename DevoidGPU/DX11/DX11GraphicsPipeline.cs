@@ -16,5 +16,12 @@ namespace DevoidGPU.DX11
         public SharpDX.Direct3D11.BlendState BlendState = null!;
 
         public DX11PipelineLayout Layout = null!;
+
+        public void Dispose()
+        {
+            RasterizerState?.Dispose();
+            DepthStencilState?.Dispose();
+            BlendState?.Dispose();
+        }
     }
 }

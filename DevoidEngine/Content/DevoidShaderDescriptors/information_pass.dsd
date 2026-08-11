@@ -1,0 +1,25 @@
+{
+  "$schema": "./dsdschema.json",
+  "Name": "Vertex Lit",
+
+  "DefaultPass": "Forward",
+
+  "MaterialParameters": {
+    "BufferName": "Material"
+  },
+  "Passes": [
+    {
+      "Name": "Forward",
+      "MaterialBuffer": "Material",
+      "Shaders": {
+        "VS": "../Shaders/vertex_lit.vert.hlsl",
+        "FS": "../Shaders/information.frag.hlsl"
+      },
+      "States": {
+        "Blend": "Off",
+        "Cull": "Back",
+        "Depth": "LessEqual"
+      }
+    }
+  ]
+}

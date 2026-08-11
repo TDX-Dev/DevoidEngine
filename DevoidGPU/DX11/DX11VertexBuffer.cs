@@ -58,17 +58,24 @@ namespace DevoidGPU.DX11
 
         }
 
-        public void Update<T>(ReadOnlySpan<T> data) where T : unmanaged
+        public unsafe void Update<T>(ReadOnlySpan<T> data) where T : unmanaged
         {
-            int elementSize = Unsafe.SizeOf<T>();
-            int totalSize = elementSize * data.Length;
+            int stride = Unsafe.SizeOf<T>();
 
-            if ((ulong)totalSize > Size)
-                throw new InvalidOperationException("Update data exceeds buffer size.");
-
-            if (elementSize != Stride)
+            if (stride != Stride)
                 throw new InvalidOperationException(
-                    $"Stride mismatch. Expected {Stride}, got {elementSize}");
+                    $"Stride mismatch. Expected {Stride}, got {stride}");
+
+            fixed (T* ptr = data)
+            {
+                Update((nint)ptr, stride * data.Length);
+            }
+        }
+
+        public unsafe void Update(nint data, int sizeInBytes)
+        {
+            if ((ulong)sizeInBytes > Size)
+                throw new InvalidOperationException("Update data exceeds buffer size.");
 
             if ((Usage & ResourceUsage.Dynamic) != 0)
             {
@@ -78,32 +85,20 @@ namespace DevoidGPU.DX11
                     MapMode.WriteDiscard,
                     MapFlags.None);
 
-                unsafe
-                {
-                    fixed (T* src = data)
-                    {
-                        System.Buffer.MemoryCopy(
-                            src,
-                            (void*)box.DataPointer,
-                            totalSize,
-                            totalSize);
-                    }
-                }
+                System.Buffer.MemoryCopy(
+                    (void*)data,
+                    (void*)box.DataPointer,
+                    sizeInBytes,
+                    sizeInBytes);
 
                 deviceContext.UnmapSubresource(Buffer, 0);
             }
             else
             {
-                unsafe
-                {
-                    fixed (T* src = data)
-                    {
-                        deviceContext.UpdateSubresource(
-                            new DataBox((IntPtr)src, 0, 0),
-                            Buffer,
-                            0);
-                    }
-                }
+                deviceContext.UpdateSubresource(
+                    new DataBox(data, 0, 0),
+                    Buffer,
+                    0);
             }
         }
 

@@ -49,12 +49,15 @@ namespace DevoidEngine.Core
         public float TimeScale { get; set; } = 1f;
         public bool SimulatePhysics { get; set; } = true;
         public bool UseInterpolation { get; set; } = true;
+        public TextureManager TextureManager { get; internal set; } = null!;
         public SceneTree SceneTree { get; set; } = null!;
         public VirtualFileSystem VirtualFileSystem { get; set; } = null!;
         public Version EngineVersion { get; set; } = null!;
         public Project ProjectSystem { get; set; } = null!;
         public AssetDatabase AssetDatabase { get; set; } = null!;
         public AssetManager AssetManager { get; set; } = null!;
+
+        public GraphicsDeviceInfo GraphicsDeviceInfo { get; set; }
 
         private readonly Profiler profiler;
         private readonly IGraphicsDevice graphicsDevice;
@@ -78,12 +81,15 @@ namespace DevoidEngine.Core
                 _ => throw new ArgumentException("Invalid Graphics API type."),
             };
 
+            GraphicsDeviceInfo = graphicsDevice.Info;
+
             renderer = new Renderer();
             cursor = new Cursor();
 
             ProjectSystem = new Project();
             AssetDatabase = new AssetDatabase();
             AssetManager = new AssetManager();
+            TextureManager = new TextureManager();
         }
 
         public static void Initialize(EngineConfig config)

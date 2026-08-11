@@ -1,4 +1,5 @@
 ﻿using SharpDX.Direct3D11;
+using System.Diagnostics;
 
 namespace DevoidGPU.DX11
 {

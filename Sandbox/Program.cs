@@ -16,7 +16,8 @@ namespace Sandbox
                 VSync = true
             });
 
-            application.AddLayer(new SandboxProgram());
+            application.AddLayer(new SandboxGlassTest());
+            //application.AddLayer(new SandboxProgram());
 
             Engine.Instance.ProjectSystem.Load(
                 "D:/Devoid Engine/DevoidProject/new_project.devoid"

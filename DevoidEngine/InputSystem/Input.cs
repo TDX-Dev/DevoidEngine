@@ -73,6 +73,9 @@ namespace DevoidEngine.InputSystem
         public bool GetActionDown(string action)
             => Map.EvaluateDown(action, State);
 
+        public bool GetActionUp(string action)
+            => Map.EvaluateUp(action, State);
+
         public bool GetKey(Keys w)
         {
             return false;

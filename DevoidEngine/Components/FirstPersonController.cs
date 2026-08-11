@@ -36,6 +36,7 @@ namespace DevoidEngine.Components
         // --------------------------------------------------------
 
         private RigidBodyComponent rb = null!;
+        private PickupComponent pickup = null!;
 
         private GameObject cameraPivot = null!;
         private GameObject cameraObject = null!;
@@ -154,12 +155,16 @@ namespace DevoidEngine.Components
             cameraObject.SetParent(cameraPivot);
 
             camera = cameraObject.AddComponent<Camera3D>();
+
+            pickup = gameObject.AddComponent<PickupComponent>();
         }
 
         public override void OnUpdate(float dt)
         {
             if (Engine.Cursor.GetCursorState() != CursorState.Grabbed)
                 return;
+
+            pickup?.SetCamera( camera);
 
             UpdateGrounded();
 
@@ -244,6 +249,11 @@ namespace DevoidEngine.Components
                 velocity = rb.LinearVelocity;
                 velocity.Y = JumpVelocity;
                 rb.LinearVelocity = velocity;
+            }
+
+            if (Engine.InputSystem.GetActionDown("Pickup"))
+            {
+                pickup?.TryPickup();
             }
         }
         private void UpdateFootsteps(float dt)

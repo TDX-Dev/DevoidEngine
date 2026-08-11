@@ -17,6 +17,8 @@ namespace DevoidEngine.Core
         public TextureUsage Usage => GPU.Description.Usage;
         public TextureFormat Format => GPU.Format;
 
+        public ulong ID { get; } = 0;
+
         public static Texture Default { get; }
 
         static Texture()
@@ -41,6 +43,7 @@ namespace DevoidEngine.Core
         internal Texture(ITexture gpu)
         {
             GPU = gpu;
+            ID = Engine.Instance.TextureManager.Register(this);
         }
 
         public Texture(TextureDescription description)
@@ -129,6 +132,7 @@ namespace DevoidEngine.Core
 
         public override void Dispose()
         {
+            Engine.Instance.TextureManager.Unregister(this);
             GPU.Dispose();
         }
     }

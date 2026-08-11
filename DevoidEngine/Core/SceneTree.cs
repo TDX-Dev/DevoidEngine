@@ -2,7 +2,7 @@
 
 namespace DevoidEngine.Core
 {
-    public class SceneTree
+    public sealed class SceneTree : IDisposable
     {
         public Viewport RootViewport { get; set; }
         public Scene? CurrentScene { get; private set; }
@@ -62,6 +62,12 @@ namespace DevoidEngine.Core
         {
             scene.Dispose();
             GC.Collect();
+        }
+
+        public void Dispose()
+        {
+            CurrentScene?.Dispose();
+            RootViewport.Dispose();
         }
     }
 }

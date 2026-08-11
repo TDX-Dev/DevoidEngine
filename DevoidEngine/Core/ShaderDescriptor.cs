@@ -54,6 +54,7 @@ namespace DevoidEngine.Core
         public string? Depth { get; set; }
 
         public string? Cull { get; set; }
+        public string? Scissor { get; set; }
     }
 
 

@@ -1,0 +1,32 @@
+{
+  "$schema": "./dsdschema.json",
+  "Name": "Vertex Lit",
+
+  "DefaultPass": "Forward",
+
+  "MaterialParameters": {
+    "BufferName": "Material"
+  },
+  "Resources": [
+    {
+      "Name": "in_fontTexture",
+      "Kind": "SampledTexture"
+    }
+  ],
+  "Passes": [
+    {
+      "Name": "Forward",
+      "MaterialBuffer": "Material",
+      "Shaders": {
+        "VS": "../Shaders/imgui.vert.hlsl",
+        "FS": "../Shaders/imgui.frag.hlsl"
+      },
+      "States": {
+        "Blend": "Alpha",
+        "Cull": "None",
+        "Depth": "Disabled",
+        "Scissor": "true"
+      }
+    }
+  ]
+}

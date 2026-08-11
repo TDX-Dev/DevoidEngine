@@ -141,9 +141,11 @@ namespace DevoidEngine.UI.UINodes
             {
                 var child = children[i];
 
-                float basis = child.Layout.FlexBasis > 0f
-                    ? child.Layout.FlexBasis
-                    : FlexboxTools.Main(child.DesiredSize, Direction);
+                float basis = FlexboxTools.IsFitContent(Direction, child, true)
+                    ? FlexboxTools.Main(child.DesiredSize, Direction)
+                    : child.Layout.FlexBasis > 0f
+                        ? child.Layout.FlexBasis
+                        : FlexboxTools.Main(child.DesiredSize, Direction);
 
                 resolvedMainSizes[i] = Math.Clamp(
                     basis,
@@ -220,14 +222,24 @@ namespace DevoidEngine.UI.UINodes
                         FlexboxTools.Main(child.MaxSize, Direction)
                     );
 
-                    float crossSize =
-                        Align == AlignItems.Stretch
-                            ? line.crossSize
-                            : Math.Clamp(
-                                resolvedCrossSizes[line.startIndex + i],
-                                FlexboxTools.Cross(child.MinSize, Direction),
-                                line.crossSize
-                            );
+                    float crossSize;
+
+                    if (FlexboxTools.IsFitContent(Direction, child, false))
+                    {
+                        crossSize = resolvedCrossSizes[line.startIndex + i];
+                    }
+                    else if (Align == AlignItems.Stretch)
+                    {
+                        crossSize = line.crossSize;
+                    }
+                    else
+                    {
+                        crossSize = Math.Clamp(
+                            resolvedCrossSizes[line.startIndex + i],
+                            FlexboxTools.Cross(child.MinSize, Direction),
+                            line.crossSize
+                        );
+                    }
 
                     float crossOffset = FlexboxTools.ComputeCrossOffset(Align, line.crossSize, crossSize);
 
@@ -273,9 +285,15 @@ namespace DevoidEngine.UI.UINodes
             {
                 var child = children[i];
 
-                float basis = child.Layout.FlexBasis > 0f
-                    ? child.Layout.FlexBasis
-                    : FlexboxTools.Main(child.DesiredSize, Direction);
+                //float basis = child.Layout.FlexBasis > 0f
+                //    ? child.Layout.FlexBasis
+                //    : FlexboxTools.Main(child.DesiredSize, Direction);
+
+                float basis = FlexboxTools.IsFitContent(Direction, child, true)
+                    ? FlexboxTools.Main(child.DesiredSize, Direction)
+                    : child.Layout.FlexBasis > 0f
+                        ? child.Layout.FlexBasis
+                        : FlexboxTools.Main(child.DesiredSize, Direction);
 
                 //float minSize = FlexboxTools.Main(child.MinSize, Direction);
                 //float maxSize = Math.Min(FlexboxTools.Main(child.MaxSize, Direction), containerMain);
@@ -292,8 +310,11 @@ namespace DevoidEngine.UI.UINodes
                 resolvedMainSizes[i] = intrinsic;
                 remainingSpace -= intrinsic;
 
-                if (child.Layout.FlexGrowMain <= 0f)
+                if (FlexboxTools.IsFitContent(Direction, child, true) ||
+                    child.Layout.FlexGrowMain <= 0f)
+                {
                     frozenItems[i] = true;
+                }
             }
 
             while (remainingSpace > 0f)
@@ -367,8 +388,11 @@ namespace DevoidEngine.UI.UINodes
 
                     for (int i = 0; i < count; i++)
                     {
-                        if (!shrinkFrozenItems[i])
+                        if (!shrinkFrozenItems[i] &&
+                            !FlexboxTools.IsFitContent(Direction, children[i], true))
+                        {
                             totalShrinkWeight += resolvedMainSizes[i];
+                        }
                     }
 
                     if (totalShrinkWeight <= 0f)
@@ -378,8 +402,11 @@ namespace DevoidEngine.UI.UINodes
 
                     for (int i = 0; i < count; i++)
                     {
-                        if (shrinkFrozenItems[i])
+                        if (!shrinkFrozenItems[i] ||
+                            !FlexboxTools.IsFitContent(Direction, children[i], true))
+                        {
                             continue;
+                        }
 
                         var child = children[i];
                         float minSize = FlexboxTools.Main(child.MinSize, Direction);
@@ -446,7 +473,12 @@ namespace DevoidEngine.UI.UINodes
                 float mainSize = resolvedMainSizes[i];
 
                 float crossSize;
-                if (Align == AlignItems.Stretch || child.Layout.FlexGrowCross > 0f)
+
+                if (FlexboxTools.IsFitContent(Direction, child, false))
+                {
+                    crossSize = FlexboxTools.Cross(child.DesiredSize, Direction);
+                }
+                else if (Align == AlignItems.Stretch || child.Layout.FlexGrowCross > 0f)
                 {
                     crossSize = containerCross;
                 }

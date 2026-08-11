@@ -155,10 +155,18 @@ float4 PSMain(PSInput input) : SV_TARGET
     float aoTex = MAT_AOMap.Sample(MAT_AOSampler, uv).r;
     float3 emissiveTex = MAT_EmissiveMap.Sample(MAT_EmissiveSampler, uv).rgb;
     
+    float2 screenUV = input.Position.xy * (1 / ScreenSize);
+    float screenAO = ScreenAO.SampleLevel(
+        ScreenAOSampler,
+        screenUV,
+        0
+    ).r;
+    
+    
     float3 albedo = albedoTex * Albedo.rgb;
     float metallic = saturate(metallicTex * Metallic);
     float roughness = saturate(roughnessTex * Roughness);
-    float ao = aoTex * AO;
+    float ao = screenAO; // * AO;
     float3 emission = emissiveTex * EmissiveColor * EmissiveStrength;
     
     float3 N = GetNormalFromMap(input);
@@ -253,7 +261,7 @@ float4 PSMain(PSInput input) : SV_TARGET
         ClearcoatRoughness
     );
 
-    float3 color = ambient + (Lo + emission);
+    float3 color = ambient * (ao) + (Lo + emission);
     //float3 color = Lo;
     return float4(color, 1.0);
 }

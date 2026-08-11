@@ -57,5 +57,19 @@
 
             return false;
         }
+
+        public bool EvaluateUp(string action, InputState state)
+        {
+            if (!_bindings.TryGetValue(action, out var list))
+                return false;
+
+            foreach (var b in list)
+            {
+                if (state.GetUp(b.DeviceType, b.Control))
+                    return true;
+            }
+
+            return false;
+        }
     }
 }

@@ -31,7 +31,7 @@ namespace DevoidEngine.Rendering
         {
             if (texture == null) return;
 
-            cmd.SetPipeline(FullscreenShader.DefaultPass.Pipeline);
+            cmd.SetPipeline(FullscreenShader.DefaultPass.GetPipeline(Engine.GraphicsDevice, FullscreenMesh.VertexInfo));
             FullscreenDescriptor.SetTexture(0, texture.GPU);
 
             cmd.SetDescriptorSet(0, FullscreenDescriptor);
@@ -42,7 +42,7 @@ namespace DevoidEngine.Rendering
         {
             if (material == null) return;
 
-            cmd.SetPipeline(material.BaseMaterial.DefaultPass.Pipeline);
+            cmd.SetPipeline(material.BaseMaterial.DefaultPass.GetPipeline(Engine.GraphicsDevice, FullscreenMesh.VertexInfo));
 
             cmd.SetDescriptorSet(0, material.DescriptorSet);
             FullscreenMesh.Draw(cmd);

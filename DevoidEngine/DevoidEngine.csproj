@@ -36,10 +36,7 @@
 			</GeneratedCodeLines>
 		</PropertyGroup>
 
-		<WriteLinesToFile
-			File="$(IntermediateOutputPath)EnginePaths.g.cs"
-			Overwrite="true"
-			Lines="$(GeneratedCodeLines)"/>
+		<WriteLinesToFile File="$(IntermediateOutputPath)EnginePaths.g.cs" Overwrite="true" Lines="$(GeneratedCodeLines)" />
 
 		<ItemGroup>
 			<Compile Include="$(IntermediateOutputPath)EnginePaths.g.cs" />
@@ -50,6 +47,7 @@
 	<ItemGroup>
     <PackageReference Include="AssimpNetter" Version="6.0.5" />
     <PackageReference Include="BepuPhysics" Version="2.4.0" />
+    <PackageReference Include="ImGui.NET" Version="1.91.6.1" />
     <PackageReference Include="MessagePack" Version="3.1.8" />
     <PackageReference Include="OpenTK" Version="4.9.4" />
     <PackageReference Include="Sharploud" Version="2020.2.7" />
@@ -76,6 +74,14 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<None Update="Content\DevoidShaderDescriptors\gtvbao.dsd">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  <Visible>true</Visible>
+		</None>
+		<None Update="Content\DevoidShaderDescriptors\imgui_shader.dsd">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  <Visible>true</Visible>
+		</None>
 		<None Update="Content\DevoidShaderDescriptors\bloom_process_pass.dsd">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		  <Visible>true</Visible>
@@ -117,6 +123,18 @@
 		  <Visible>true</Visible>
 		</None>
 		<None Update="Content\DevoidShaderDescriptors\ui_textsdf_mat.dsd">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  <Visible>true</Visible>
+		</None>
+		<None Update="Content\Shaders\gtvbao.frag.hlsl">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  <Visible>true</Visible>
+		</None>
+		<None Update="Content\Shaders\imgui.vert.hlsl">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  <Visible>true</Visible>
+		</None>
+		<None Update="Content\Shaders\imgui.frag.hlsl">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		  <Visible>true</Visible>
 		</None>

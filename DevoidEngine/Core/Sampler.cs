@@ -7,7 +7,7 @@ namespace DevoidEngine.Core
         private readonly ISampler gpuSampler;
 
         public ISampler GPU => gpuSampler;
-        public static Sampler Default => Create(new SamplerDescription()
+        private static Sampler @default = Create(new SamplerDescription()
         {
             AddressU = WrapMode.MirrorRepeat,
             AddressV = WrapMode.MirrorRepeat,
@@ -21,6 +21,7 @@ namespace DevoidEngine.Core
         });
 
         public SamplerDescription Description { get; }
+        public static Sampler Default { get => @default; set => @default = value; }
 
         public Sampler(
             IGraphicsDevice device,

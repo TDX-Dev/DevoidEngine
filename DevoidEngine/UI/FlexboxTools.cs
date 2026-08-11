@@ -91,6 +91,18 @@ namespace DevoidEngine.UI
                 ? new Vector2(main, cross)
                 : new Vector2(cross, main);
 
+        public static bool IsFitContent(FlexDirection direction, UINode node, bool mainAxis)
+        {
+            if (direction == FlexDirection.Row)
+                return mainAxis
+                    ? node.WidthMode == SizeMode.FitContent
+                    : node.HeightMode == SizeMode.FitContent;
+
+            return mainAxis
+                ? node.HeightMode == SizeMode.FitContent
+                : node.WidthMode == SizeMode.FitContent;
+        }
+
 
     }
 }

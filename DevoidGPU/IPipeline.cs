@@ -1,6 +1,6 @@
 ﻿namespace DevoidGPU
 {
-    public interface IPipeline
+    public interface IPipeline : IDisposable
     {
 
     }

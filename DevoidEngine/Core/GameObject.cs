@@ -179,7 +179,7 @@ namespace DevoidEngine.Core
         {
             if (Components.Contains(component))
             {
-                //scene?.ComponentRemoved(component);
+                scene?.ComponentRemoved(component);
                 component.OnDestroy();
                 Components.Remove(component);
             }

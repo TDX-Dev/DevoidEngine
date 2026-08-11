@@ -228,19 +228,24 @@ namespace DevoidEngine.SourceGen.ComponentSerialization
                 }
                 """);
 
+                    string deserializeExpression =
+                        field.Type.SpecialType == SpecialType.System_String
+                            ? "reader.ReadString() ?? string.Empty"
+                            : $"reader.Read{GetPrimitiveReader(field.Type)}()";
+
                     deserializeBody.AppendLine($$"""
-                if (!reader.End)
-                {
-                    try
-                    {
-                        component.{{fieldName}} = reader.Read{{GetPrimitiveReader(field.Type)}}();
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine("[Serialization] Failed to deserialize field '{{fieldName}}' in {{componentName}}: " + e.Message);
-                    }
-                }
-                """);
+                        if (!reader.End)
+                        {
+                            try
+                            {
+                                component.{{fieldName}} = {{deserializeExpression}};
+                            }
+                            catch (Exception e)
+                            {
+                                Console.WriteLine("[Serialization] Failed to deserialize field '{{fieldName}}' in {{componentName}}: " + e.Message);
+                            }
+                        }
+                        """);
                 }
 
 
