@@ -1,4 +1,5 @@
 ﻿using DevoidEngine.Core;
+using DevoidEngine.Gizmos;
 using DevoidEngine.Rendering.PostProcessing;
 using DevoidEngine.UI;
 using DevoidEngine.Util;
@@ -68,6 +69,7 @@ namespace DevoidEngine.Rendering
         public SkyRenderer SkyRenderer { get; private set; } = null!;
 
         public PostProcessor PostProcessor { get; private set; } = null!;
+        public GizmoSystem GizmoSystem { get; private set; } = null!;
 
         public EnvironmentLighting Environment => SkyRenderer.Environment;
 
@@ -270,6 +272,8 @@ namespace DevoidEngine.Rendering
             PostProcessor.AddPass(new BloomPass());
 
             ActiveTechnique.Initialize();
+
+            GizmoSystem = new GizmoSystem();
         }
 
         public void Render(ICommandList cmd, Viewport viewport)

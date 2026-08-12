@@ -29,7 +29,7 @@ namespace DevoidEngine.Gizmos
 
         public object? Target { get; set; }
 
-        internal GizmoDragState? DragState { get; set; }
+        //internal GizmoDragState? DragState { get; set; }
 
         internal GizmoContext(
             Viewport viewport,
