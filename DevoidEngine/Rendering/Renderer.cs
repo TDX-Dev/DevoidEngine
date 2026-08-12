@@ -52,13 +52,19 @@ namespace DevoidEngine.Rendering
         public Shader VBAOShader {  get; private set; } = null!;
         public MaterialInstance VBAOMaterialInstance { get; private set; } = null!;
 
+        public Shader GizmoShader { get; private set; } = null!;
+        public Material GizmoMaterial { get; private set; } = null!;
+        public MaterialInstance GizmoMaterialInstance { get; private set; } = null!;
+
         public RenderTarget ViewportBlitTarget { get; private set; } = null!;
         public RenderTarget UIRenderTarget { get; private set; } = null!;
         public RenderTarget InfoRenderTarget { get; private set; } = null!;
         public RenderTarget VBAORenderTarget { get; private set; } = null!;
+        public RenderTarget GizmoRenderTarget { get; private set; } = null!;
         public UniformBuffer CameraBuffer { get; private set; } = null!;
         public UniformBuffer SceneBuffer { get; private set; } = null!;
         public UniformBuffer PerObjectBuffer { get; private set; } = null!;
+        public UniformBuffer PerFrameBuffer { get; private set; } = null!;
         public SkyRenderer SkyRenderer { get; private set; } = null!;
 
         public PostProcessor PostProcessor { get; private set; } = null!;
@@ -70,6 +76,9 @@ namespace DevoidEngine.Rendering
 
         private IDescriptorLayout PerObjectDescriptorLayout = null!;
         private IDescriptorSet PerObjectDescriptor = null!;
+
+        private IDescriptorLayout PerFrameDescriptorLayout = null!;
+        private IDescriptorSet PerFrameDescriptor = null!;
 
         private Stack<ViewportRect> viewportStack = null!;
         private ViewportRect currentViewport;
@@ -160,7 +169,7 @@ namespace DevoidEngine.Rendering
                     Type = DescriptorType.UniformBuffer
                 },
                 new() {
-                    Binding = 2,
+                    Binding = 3,
                     Stages = DevoidGPU.ShaderStage.Fragment,
                     Type = DescriptorType.UniformBuffer
                 },
@@ -211,27 +220,41 @@ namespace DevoidEngine.Rendering
             PerObjectDescriptorLayout = Engine.GraphicsDevice.CreateDescriptorLayout([
                 new() {
                     Binding = 1,
-                    Stages = DevoidGPU.ShaderStage.Vertex,
+                    Stages = DevoidGPU.ShaderStage.Vertex | DevoidGPU.ShaderStage.Fragment,
                     Type = DescriptorType.UniformBuffer
                 }
             ]);
 
             PerObjectDescriptor = Engine.GraphicsDevice.CreateDescriptorSet(PerObjectDescriptorLayout);
 
+            PerFrameDescriptorLayout = Engine.GraphicsDevice.CreateDescriptorLayout([
+                new() {
+                    Binding = 2,
+                    Stages =  DevoidGPU.ShaderStage.Fragment,
+                    Type = DescriptorType.UniformBuffer
+                }
+            ]);
+
+            PerFrameDescriptor = Engine.GraphicsDevice.CreateDescriptorSet(PerFrameDescriptorLayout);
+
             CameraBuffer = UniformBuffer.Create(ResourceUsage.Dynamic, (uint)Unsafe.SizeOf<CameraData>());
             PerObjectBuffer = UniformBuffer.Create(ResourceUsage.Dynamic, (uint)Unsafe.SizeOf<MeshRenderData>());
             SceneBuffer = UniformBuffer.Create(ResourceUsage.Dynamic, (uint)Unsafe.SizeOf<SceneData>());
+            PerFrameBuffer = UniformBuffer.Create(ResourceUsage.Dynamic, (uint)Unsafe.SizeOf<PerFrameData>());
 
             PerCameraDescriptor.SetUniformBuffer(0, CameraBuffer.GPU);
             PerCameraDescriptor.SetUniformBuffer(2, SceneBuffer.GPU);
             PerObjectDescriptor.SetUniformBuffer(1, PerObjectBuffer.GPU);
 
+            PerFrameDescriptor.SetUniformBuffer(2, PerFrameBuffer.GPU);
+
             API = new RenderAPI();
 
             ViewportBlitTarget = RenderTarget.Create(1);
             UIRenderTarget = RenderTarget.Create(1);
-            InfoRenderTarget = RenderTarget.Create(1);
+            InfoRenderTarget = RenderTarget.Create(2);
             VBAORenderTarget = RenderTarget.Create(1);
+            GizmoRenderTarget = RenderTarget.Create(1);
 
             renderView = new RenderView();
 
@@ -252,6 +275,9 @@ namespace DevoidEngine.Rendering
         public void Render(ICommandList cmd, Viewport viewport)
         {
             ViewportBlitTarget.SetColorAttachment(0, viewport.OutputTexture!);
+
+            cmd.SetDescriptorSet(3, PerFrameDescriptor);
+
             cmd.SetFramebuffer(ViewportBlitTarget.GPU);
             cmd.ClearColor(0, Colors.Transparent);
 
@@ -455,6 +481,19 @@ namespace DevoidEngine.Rendering
                 Usage = TextureUsage.RenderTarget | TextureUsage.ShaderResource
             };
 
+            TextureDescription textureIdentifierDescription = new()
+            {
+                Width = context.Viewport.Width,
+                Height = context.Viewport.Height,
+                Depth = 1,
+                Format = TextureFormat.R16_Float,
+                Dimension = TextureDimension.Texture2D,
+                ArraySize = 1,
+                Samples = new TextureSampleDescription(1, 0),
+                MipLevels = 1,
+                Usage = TextureUsage.RenderTarget | TextureUsage.ShaderResource
+            };
+
             TextureDescription textureDepthDescription = new()
             {
                 Width = context.Viewport.Width,
@@ -469,9 +508,11 @@ namespace DevoidEngine.Rendering
             };
 
             Texture normalTexture = context.Resources.GetOrCreateTexture("RENDERPASSINFO_NORMALS", textureNormalDescription);
+            Texture identifierTexture = context.Resources.GetOrCreateTexture("RENDERPASSINFO_IDENTIFIER", textureIdentifierDescription);
             Texture depthTexture = context.Resources.GetOrCreateTexture("RENDERPASSINFO_DEPTH", textureDepthDescription);
 
             InfoRenderTarget.SetColorAttachment(0, normalTexture);
+            InfoRenderTarget.SetColorAttachment(1, identifierTexture);
             InfoRenderTarget.SetDepthAttachment(depthTexture);
 
             context.CommandList.SetFramebuffer(InfoRenderTarget.GPU);
@@ -529,19 +570,24 @@ namespace DevoidEngine.Rendering
 
             PerCameraDescriptor.SetTexture(19, AOTexture.GPU);
         }
+        public void RenderGizmos()
+        {
+
+        }
         public void UpdateCameraBuffer(CameraData cameraData)
         {
             CameraBuffer.Update(cameraData);
         }
 
-        public void UpdatePerObjectData(Matrix4x4 model)
+        public void UpdatePerObjectData(Matrix4x4 model, float uniqueIdentifier = -1)
         {
             Matrix4x4.Invert(model, out var ModelMatrixInv);
 
             MeshRenderData meshRenderData = new()
             {
                 ModelMatrix = model,
-                ModelMatrixInv = ModelMatrixInv
+                ModelMatrixInv = ModelMatrixInv,
+                UniqueIdentifier = uniqueIdentifier
             };
 
 
@@ -557,7 +603,10 @@ namespace DevoidEngine.Rendering
                 directionalLightCount = (uint)view.DirectionalLightCount
             });
         }
-
+        public void UpdatePerFrameData(PerFrameData data)
+        {
+            PerFrameBuffer.Update(data);
+        }
         public void UpdateEnvironment(EnvironmentLighting env)
         {
             PerCameraDescriptor.SetTexture(15, env.Skybox.GPU);
@@ -596,7 +645,7 @@ namespace DevoidEngine.Rendering
                 1,
                 material.DescriptorSet);
 
-            UpdatePerObjectData(item.render_transform);
+            UpdatePerObjectData(item.render_transform, item.render_mesh.UniqueIdentifier);
             cmd.SetDescriptorSet(2, PerObjectDescriptor);
 
             item.render_mesh.Draw(cmd);
@@ -638,7 +687,7 @@ namespace DevoidEngine.Rendering
                         material.DescriptorSet);
                 }
 
-                UpdatePerObjectData(item.render_transform);
+                UpdatePerObjectData(item.render_transform, item.render_mesh.UniqueIdentifier);
 
 
                 item.render_mesh.Draw(cmd);

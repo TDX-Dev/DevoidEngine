@@ -11,11 +11,19 @@ cbuffer CameraData : register(b0)
     float NearClip;
     float FarClip;
     float2 ScreenSize;
-    int FrameIndex;
+    float _padding0;
 };
 
 cbuffer PerObject : register(b1)
 {
     float4x4 Model;
     float4x4 invModel;
+    float UniqueIdentifier;
+    float3 _padding02;
 };
+
+cbuffer PerFrame : register(b2)
+{
+    int FrameIndex;
+    float3 _padding01;
+}

@@ -10,7 +10,7 @@ RWTexture2DArray<float4> DebugCube : register(u1);
 RWStructuredBuffer<SH9> PartialSH : register(u0);
 groupshared float4 SharedSH[9][64];
 
-cbuffer Material : register(b4)
+cbuffer Material : register(b5)
 {
     float EnvironmentMapResolution;
     float3 padding;

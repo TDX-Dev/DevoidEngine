@@ -56,7 +56,7 @@ namespace DevoidGPU.DX11
             flags |= ShaderFlags.Debug | ShaderFlags.SkipOptimization;
 #endif
             CompilationResult result;
-            result = ShaderBytecode.Compile(source, entryPoint, profile, flags, EffectFlags.None, shaderDefines, new DX11ShaderIncludeHandler(Path.GetDirectoryName(path)!));
+            result = ShaderBytecode.Compile(source, entryPoint, profile, flags, EffectFlags.None, shaderDefines, new DX11ShaderIncludeHandler(Path.GetDirectoryName(path)!), Path.GetFileName(path)!);
             if (result.HasErrors)
                 throw new Exception($"Shader compile error ({Name}): {result.Message}");
 

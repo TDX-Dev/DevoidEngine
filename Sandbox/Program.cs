@@ -13,7 +13,7 @@ namespace Sandbox
                 Name = "Devoid Engine",
                 API = GraphicsAPI.DX11,
                 Resizable = true,
-                VSync = true
+                VSync = false
             });
 
             application.AddLayer(new SandboxGlassTest());

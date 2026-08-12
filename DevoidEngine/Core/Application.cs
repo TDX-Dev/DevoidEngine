@@ -71,7 +71,7 @@ namespace DevoidEngine.Core
                 StartVisible = false,
                 StartCentered = true,
                 StartFocused = true,
-
+                Vsync = specification.VSync
             });
 
             mainSurface = new WindowSurface(
@@ -278,6 +278,11 @@ namespace DevoidEngine.Core
             Engine.Instance.SceneTree.RenderScenes();
 
             List<Viewport> viewports = Engine.Instance.SceneTree.GetViewports();
+
+            Engine.Renderer.UpdatePerFrameData(new PerFrameData()
+            {
+                FrameIndex = (int)Engine.Instance.FrameCount
+            });
 
             foreach (Viewport viewport in viewports)
             {

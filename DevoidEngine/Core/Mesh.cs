@@ -10,6 +10,7 @@ namespace DevoidEngine.Core
         public ResourceUsage Usage { get; }
 
         public bool HasBones => false;
+        public float UniqueIdentifier = float.MaxValue;
 
         public VertexInfo VertexInfo => HasBones ? Vertex.VertexInfo : Vertex.VertexInfo;
 

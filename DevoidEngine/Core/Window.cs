@@ -22,6 +22,7 @@ namespace DevoidEngine.Core
         public bool StartCentered;
 
         public bool Transparency;
+        public bool Vsync;
     }
     public class Window : NativeWindow
     {
@@ -46,7 +47,7 @@ namespace DevoidEngine.Core
             WindowBorder = specification.Resizable ? WindowBorder.Resizable : WindowBorder.Fixed,
 
             Title = specification.Title,
-            Vsync = VSyncMode.Off
+            Vsync = specification.Vsync ? VSyncMode.On : VSyncMode.Off,
 
         }
         )

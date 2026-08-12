@@ -393,6 +393,8 @@ namespace Sandbox
             Console.WriteLine("Sandbox exited successfully");
         }
         float timer = 0;
+        float frameTimeTotal = 0;
+        int frameCount = 0;
         public override void OnUpdate(float deltaTime)
         {
             if (Engine.InputSystem.GetActionDown("Grab"))
@@ -407,13 +409,24 @@ namespace Sandbox
                 }
             }
             timer += deltaTime;
+            frameTimeTotal += deltaTime;
+            frameCount++;
+
             if (timer > 1)
             {
+                float averageFrameTime = frameTimeTotal / frameCount;
+                float averageFPS = 1.0f / averageFrameTime;
+
                 timer = 0;
+                frameTimeTotal = 0;
+                frameCount = 0;
+
                 GPUInfo.Text =
-                $"GPU: {Engine.Instance.GraphicsDeviceInfo.Name}\n" +
-                $"VRAM: {Engine.Instance.GraphicsDeviceInfo.VideoMemoryUsage / (1024f * 1024f):F1} MB / {Engine.Instance.GraphicsDeviceInfo.DedicatedVideoMemory / (1024f * 1024f):F1} MB\n" +
-                $"VRAM Budget: {Engine.Instance.GraphicsDeviceInfo.VideoMemoryBudget / (1024f * 1024f):F1} MB";
+                    $"GPU: {Engine.Instance.GraphicsDeviceInfo.Name}\n" +
+                    $"VRAM: {Engine.Instance.GraphicsDeviceInfo.VideoMemoryUsage / (1024f * 1024f):F1} MB / {Engine.Instance.GraphicsDeviceInfo.DedicatedVideoMemory / (1024f * 1024f):F1} MB\n" +
+                    $"VRAM Budget: {Engine.Instance.GraphicsDeviceInfo.VideoMemoryBudget / (1024f * 1024f):F1} MB\n" +
+                    $"Frame Time: {averageFrameTime * 1000:F2} ms\n" +
+                    $"FPS: {averageFPS:F1}";
             }
         }
 

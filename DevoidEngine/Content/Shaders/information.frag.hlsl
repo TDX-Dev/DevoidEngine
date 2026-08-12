@@ -8,7 +8,18 @@ struct PSInput
     float3 WorldspacePosition : TEXCOORD1;
 };
 
-float4 PSMain(PSInput input) : SV_Target0
+struct PSOutput
 {
-    return float4(input.NormalViewSpace, 1);
+    float4 NormalViewSpace : SV_RenderTarget0;
+    float Identifier : SV_RenderTarget1;
+};
+
+#include "./Common/RenderConstants.hlsl"
+
+PSOutput PSMain(PSInput input) : SV_Target0
+{
+    PSOutput output;
+    output.Identifier = UniqueIdentifier;
+    output.NormalViewSpace = float4(input.NormalViewSpace, 1);
+    return output;
 }

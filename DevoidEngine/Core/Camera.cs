@@ -46,8 +46,7 @@ namespace DevoidEngine.Core
                 CameraPosition = Position,
                 NearClip = Near,
                 FarClip = Far,
-                ScreenSize = screenSize,
-                FrameIndex = (int)Engine.Instance.FrameCount
+                ScreenSize = screenSize
             };
         }
 

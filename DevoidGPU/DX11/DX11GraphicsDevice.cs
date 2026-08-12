@@ -31,7 +31,10 @@ namespace DevoidGPU.DX11
 
             var levels = new[]
             {
+                FeatureLevel.Level_11_1,
                 FeatureLevel.Level_11_0,
+                FeatureLevel.Level_10_1,
+                FeatureLevel.Level_10_0
             };
 
 

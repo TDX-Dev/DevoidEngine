@@ -40,7 +40,7 @@ struct ShadowData
 #include "./Constants.hlsl"
 
 
-cbuffer SceneData : register(b2)
+cbuffer SceneData : register(b3)
 {
     uint pointLightCount;
     uint spotLightCount;

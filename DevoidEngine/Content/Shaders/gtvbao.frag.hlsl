@@ -25,8 +25,8 @@ SamplerState PointSampler
 #define SampleCount    8
 #define SectorCount    32
 
-static const float VBAOThickness = 0.25;
-static const float VBAORadius = 1;
+static const float VBAOThickness = 0.7;
+static const float VBAORadius = 2;
 static const float RadiusSq = VBAORadius * VBAORadius;
 
 #define ACOS_QUALITY_MODE 1

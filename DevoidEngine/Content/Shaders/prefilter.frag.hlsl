@@ -13,7 +13,7 @@ SamplerState MAT_Skybox_Sampler : register(s0);
 Texture2D BlueNoise : register(t1);
 
 
-cbuffer Material : register(b4)
+cbuffer Material : register(b5)
 {
     float Roughness;
     float MaxPrefilterMipLevel;
