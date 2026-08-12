@@ -3,8 +3,6 @@ using DevoidEngine.InputSystem;
 using DevoidEngine.InputSystem.InputDevices;
 using DevoidEngine.Rendering;
 using DevoidEngine.Util;
-using System;
-using System.Collections.Generic;
 using System.Numerics;
 
 namespace DevoidEngine.Gizmos
@@ -13,62 +11,17 @@ namespace DevoidEngine.Gizmos
     {
         private readonly Dictionary<Viewport, GizmoContext> contexts = [];
 
-        public GizmoDrawList Draw(
-            Viewport viewport,
-            ReadOnlySpan<Gizmo> gizmos)
-        {
-            GizmoContext context = GetContext(viewport);
-
-            UpdateInput(context);
-
-            if (context.ActiveGizmo != null)
-            {
-                context.ActiveGizmo.Drag(context);
-
-                if (context.MouseReleased)
-                {
-                    context.ActiveGizmo.EndDrag(context);
-
-                    context.ActiveGizmo = null;
-                    context.ActiveHit = null;
-                }
-            }
-            else
-            {
-                UpdateHover(context, gizmos);
-
-                if (context.MousePressed &&
-                    context.HoveredGizmo != null &&
-                    context.HoveredHit.HasValue)
-                {
-                    context.ActiveGizmo = context.HoveredGizmo;
-                    context.ActiveHit = context.HoveredHit;
-
-                    context.ActiveGizmo.BeginDrag(
-                        context,
-                        context.ActiveHit.Value);
-                }
-            }
-
-            GizmoDrawList drawList = new();
-
-            foreach (Gizmo gizmo in gizmos)
-            {
-                gizmo.Draw(context, drawList);
-            }
-
-            return drawList;
-        }
-
-        private GizmoContext GetContext(Viewport viewport)
+        public GizmoContext GetContext(Viewport viewport)
         {
             if (!contexts.TryGetValue(
                     viewport,
                     out GizmoContext? context))
             {
                 if (viewport.Camera3D == null)
+                {
                     throw new InvalidOperationException(
                         "Cannot create a GizmoContext without a Camera3D.");
+                }
 
                 context = new GizmoContext(
                     viewport,
@@ -80,9 +33,76 @@ namespace DevoidEngine.Gizmos
             return context;
         }
 
-        private void UpdateInput(GizmoContext context)
+        public GizmoDrawList Draw(
+            Viewport viewport,
+            ReadOnlySpan<Gizmo> gizmos)
         {
-            InputState input = Engine.InputSystem.State;
+            GizmoContext context = GetContext(viewport);
+
+            context.ResetFrame();
+
+            UpdateInput(context);
+            UpdateInteraction(context, gizmos);
+
+            foreach (Gizmo gizmo in gizmos)
+            {
+                gizmo.Draw(
+                    context,
+                    context.DrawList);
+            }
+
+            context.EndFrame();
+
+            return context.DrawList;
+        }
+
+        private void UpdateInteraction(
+            GizmoContext context,
+            ReadOnlySpan<Gizmo> gizmos)
+        {
+            // Currently dragging a gizmo.
+            if (context.ActiveGizmo != null)
+            {
+                context.ActiveGizmo.Drag(context);
+
+                if (context.MouseReleased)
+                {
+                    context.ActiveGizmo.EndDrag(context);
+
+                    context.ActiveGizmo = null;
+                    context.ActiveHit = null;
+                }
+
+                return;
+            }
+
+            // Nothing is being dragged, so determine what is hovered.
+            UpdateHover(
+                context,
+                gizmos);
+
+            // Start dragging when the mouse is pressed.
+            if (context.MousePressed &&
+                context.HoveredGizmo != null &&
+                context.HoveredHit.HasValue)
+            {
+                context.ActiveGizmo =
+                    context.HoveredGizmo;
+
+                context.ActiveHit =
+                    context.HoveredHit;
+
+                context.ActiveGizmo.BeginDrag(
+                    context,
+                    context.ActiveHit.Value);
+            }
+        }
+
+        private void UpdateInput(
+            GizmoContext context)
+        {
+            InputState input =
+                Engine.InputSystem.State;
 
             Vector2 mousePosition = new(
                 input.Get(
@@ -117,17 +137,24 @@ namespace DevoidEngine.Gizmos
                     InputDeviceType.Mouse,
                     (ushort)MouseButton.Left);
 
-            // Input mouse coordinates are window coordinates.
-            // Convert them into viewport-local coordinates.
             Vector2 viewportPosition =
-                mousePosition - context.Viewport.Bounds.Position;
+                mousePosition -
+                context.Viewport.Bounds.Position;
 
-            context.MousePosition = viewportPosition;
-            context.MouseDelta = mouseDelta;
+            context.MousePosition =
+                viewportPosition;
 
-            context.MouseDown = mouseDown;
-            context.MousePressed = mousePressed;
-            context.MouseReleased = mouseReleased;
+            context.MouseDelta =
+                mouseDelta;
+
+            context.MouseDown =
+                mouseDown;
+
+            context.MousePressed =
+                mousePressed;
+
+            context.MouseReleased =
+                mouseReleased;
         }
 
         private void UpdateHover(
@@ -140,14 +167,19 @@ namespace DevoidEngine.Gizmos
             if (gizmos.Length == 0)
                 return;
 
-            Viewport viewport = context.Viewport;
+            Viewport viewport =
+                context.Viewport;
 
-            if (viewport.Width <= 0 || viewport.Height <= 0)
+            if (viewport.Width <= 0 ||
+                viewport.Height <= 0)
+            {
                 return;
+            }
 
-            Vector2 mouse = context.MousePosition;
+            Vector2 mouse =
+                context.MousePosition;
 
-            // Mouse is outside this viewport.
+            // Mouse is outside viewport.
             if (mouse.X < 0 ||
                 mouse.Y < 0 ||
                 mouse.X >= viewport.Width ||
@@ -164,7 +196,9 @@ namespace DevoidEngine.Gizmos
 
             Gizmo? closestGizmo = null;
             GizmoHit closestHit = default;
-            float closestDistance = float.MaxValue;
+
+            float closestDistance =
+                float.MaxValue;
 
             for (int i = 0; i < gizmos.Length; i++)
             {
@@ -180,16 +214,25 @@ namespace DevoidEngine.Gizmos
 
                 if (hit.Distance < closestDistance)
                 {
-                    closestDistance = hit.Distance;
-                    closestGizmo = gizmo;
-                    closestHit = hit;
+                    closestDistance =
+                        hit.Distance;
+
+                    closestGizmo =
+                        gizmo;
+
+                    closestHit =
+                        hit;
                 }
             }
 
-            context.HoveredGizmo = closestGizmo;
+            context.HoveredGizmo =
+                closestGizmo;
 
             if (closestGizmo != null)
-                context.HoveredHit = closestHit;
+            {
+                context.HoveredHit =
+                    closestHit;
+            }
         }
 
         private static Ray CreateMouseRay(
@@ -202,7 +245,8 @@ namespace DevoidEngine.Gizmos
                 (mousePosition.X / width) * 2f - 1f;
 
             float y =
-                1f - (mousePosition.Y / height) * 2f;
+                1f -
+                (mousePosition.Y / height) * 2f;
 
             Vector4 nearClip = new(
                 x,
@@ -239,9 +283,18 @@ namespace DevoidEngine.Gizmos
                     new Vector3(
                         farWorld.X,
                         farWorld.Y,
-                        farWorld.Z) - origin);
+                        farWorld.Z) -
+                    origin);
 
-            return new Ray(origin, direction);
+            return new Ray(
+                origin,
+                direction);
+        }
+
+        public void RemoveViewport(
+            Viewport viewport)
+        {
+            contexts.Remove(viewport);
         }
     }
 }

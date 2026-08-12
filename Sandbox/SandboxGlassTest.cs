@@ -33,8 +33,8 @@ namespace Sandbox
         MaterialInstance PBRMaterial = null!;
         MaterialInstance GroundPBRMaterial = null!;
 
-        private TransformGizmo transformGizmo = null!;
-        private GameObject gizmoTarget = null!;
+        //private TransformGizmo transformGizmo = null!;
+        //private GameObject gizmoTarget = null!;
 
         readonly Random rand = new();
 

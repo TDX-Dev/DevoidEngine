@@ -1,11 +1,6 @@
 ﻿using DevoidEngine.Core;
 using DevoidEngine.Rendering;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DevoidEngine.Gizmos
 {
@@ -27,9 +22,7 @@ namespace DevoidEngine.Gizmos
         public Gizmo? ActiveGizmo { get; internal set; }
         public GizmoHit? ActiveHit { get; internal set; }
 
-        public object? Target { get; set; }
-
-        //internal GizmoDragState? DragState { get; set; }
+        internal GizmoDrawList DrawList { get; } = new();
 
         internal GizmoContext(
             Viewport viewport,
@@ -37,6 +30,19 @@ namespace DevoidEngine.Gizmos
         {
             Viewport = viewport;
             Camera = camera;
+        }
+
+        internal void ResetFrame()
+        {
+            MousePressed = false;
+            MouseReleased = false;
+            MouseDelta = Vector2.Zero;
+
+            DrawList.Clear();
+        }
+
+        internal void EndFrame()
+        {
         }
     }
 }

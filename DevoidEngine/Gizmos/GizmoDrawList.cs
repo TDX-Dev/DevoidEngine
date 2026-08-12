@@ -103,5 +103,10 @@ namespace DevoidEngine.Gizmos
 
         public ReadOnlySpan<GizmoPrimitive> Primitives =>
             CollectionsMarshal.AsSpan(primitives);
+
+        public void Clear()
+        {
+            primitives.Clear();
+        }
     }
 }
