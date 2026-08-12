@@ -574,9 +574,23 @@ namespace DevoidEngine.Rendering
 
             PerCameraDescriptor.SetTexture(19, AOTexture.GPU);
         }
-        public void RenderGizmos()
+        public void RenderGizmos(ICommandList cmd, Viewport viewport, ReadOnlySpan<Gizmo> gizmos)
         {
+            if (gizmos.Length == 0)
+                return;
 
+            GizmoDrawList drawList =
+                GizmoSystem.Draw(
+                    viewport,
+                    gizmos);
+
+            if (drawList.Primitives.Length == 0)
+                return;
+
+            Console.WriteLine("Gizmos");
+
+
+            // GPU rendering here.
         }
         public void UpdateCameraBuffer(CameraData cameraData)
         {

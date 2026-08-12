@@ -11,7 +11,7 @@ namespace DevoidEngine.Gizmos
 {
     public sealed class GizmoDrawList
     {
-        private readonly List<GizmoPrimitive> primitives = new();
+        private readonly List<GizmoPrimitive> primitives = [];
 
         public void Line(
             Vector3 from,

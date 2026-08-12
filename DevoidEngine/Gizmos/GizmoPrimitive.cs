@@ -25,7 +25,8 @@ namespace DevoidEngine.Gizmos
 
         public GizmoStyle Style;
 
-        public uint Id;
+        public GizmoId Id;
+        public bool Interactive;
 
         public static GizmoPrimitive Line(
             Vector3 from,

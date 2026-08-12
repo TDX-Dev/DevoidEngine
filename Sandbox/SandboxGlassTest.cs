@@ -4,6 +4,7 @@ using DevoidEngine.Assets;
 using DevoidEngine.Audio;
 using DevoidEngine.Components;
 using DevoidEngine.Core;
+using DevoidEngine.Gizmos;
 using DevoidEngine.InputSystem;
 using DevoidEngine.InputSystem.InputDevices;
 using DevoidEngine.Rendering;
@@ -31,6 +32,9 @@ namespace Sandbox
 
         MaterialInstance PBRMaterial = null!;
         MaterialInstance GroundPBRMaterial = null!;
+
+        private TransformGizmo transformGizmo = null!;
+        private GameObject gizmoTarget = null!;
 
         readonly Random rand = new();
 
