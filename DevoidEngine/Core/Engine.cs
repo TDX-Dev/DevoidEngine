@@ -1,6 +1,7 @@
 ﻿using DevoidEngine.AssetPipeline;
 using DevoidEngine.Audio;
 using DevoidEngine.Audio.SoLoud;
+using DevoidEngine.Gizmos;
 using DevoidEngine.InputSystem;
 using DevoidEngine.Physics;
 using DevoidEngine.Physics.Bepu;
@@ -37,6 +38,7 @@ namespace DevoidEngine.Core
         public static PhysicsSystem PhysicsSystem => Instance.physicsSystem;
         public static AudioManager AudioSystem => Instance.audioSystem;
         public static UISystem UISystem => Instance.uiSystem;
+        public static GizmoSystem GizmoSystem => Instance.gizmoSystem;
 #if DEBUG
         public static string BasePath => BuildInfo.EngineRoot;
 #else
@@ -68,6 +70,7 @@ namespace DevoidEngine.Core
         private PhysicsSystem physicsSystem = null!;
         private AudioManager audioSystem = null!;
         private UISystem uiSystem = null!;
+        private GizmoSystem gizmoSystem = null!;
 
         private Engine(EngineConfig config)
         {
@@ -106,10 +109,12 @@ namespace DevoidEngine.Core
             instance.physicsSystem = new PhysicsSystem(new BepuPhysicsBackend());
             instance.audioSystem = new AudioManager(new SoLoudAudioBackend());
             instance.uiSystem = new UISystem();
+            instance.gizmoSystem = new GizmoSystem();
 
             instance.VirtualFileSystem = new VirtualFileSystem();
 
             instance.uiSystem.Initialize();
+            instance.gizmoSystem.Initialize();
 
         }
     }

@@ -1,112 +1,135 @@
-﻿using DevoidEngine.Core;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Numerics;
 
 namespace DevoidEngine.Gizmos
 {
     public sealed class GizmoDrawList
     {
-        private readonly List<GizmoPrimitive> primitives = [];
+        private readonly List<GizmoDrawCommand> commands = [];
 
-        public void Line(
-            Vector3 from,
-            Vector3 to,
-            GizmoStyle style,
-            uint id = 0)
-        {
-            primitives.Add(
-                GizmoPrimitive.Line(
-                    from,
-                    to,
-                    style,
-                    id));
-        }
-
-        public void Arrow(
-            Vector3 position,
-            Vector3 direction,
-            float length,
-            GizmoStyle style,
-            uint id = 0)
-        {
-            primitives.Add(
-                GizmoPrimitive.Arrow(
-                    position,
-                    direction,
-                    length,
-                    style,
-                    id));
-        }
-
-        public void Cube(
-            Matrix4x4 transform,
-            Vector3 size,
-            GizmoStyle style,
-            uint id = 0)
-        {
-            primitives.Add(
-                GizmoPrimitive.Cube(
-                    transform,
-                    size,
-                    style,
-                    id));
-        }
-
-        public void Sphere(
-            Vector3 position,
-            float radius,
-            GizmoStyle style,
-            uint id = 0)
-        {
-            primitives.Add(
-                GizmoPrimitive.Sphere(
-                    position,
-                    radius,
-                    style,
-                    id));
-        }
-
-        public void Circle(
-            Vector3 center,
-            Vector3 normal,
-            float radius,
-            GizmoStyle style,
-            uint id = 0)
-        {
-            primitives.Add(
-                GizmoPrimitive.Circle(
-                    center,
-                    normal,
-                    radius,
-                    style,
-                    id));
-        }
-
-        public void Mesh(
-            Mesh mesh,
-            Matrix4x4 transform,
-            GizmoStyle style,
-            uint id = 0)
-        {
-            primitives.Add(
-                GizmoPrimitive.SetMesh(
-                    mesh,
-                    transform,
-                    style,
-                    id));
-        }
-
-        public ReadOnlySpan<GizmoPrimitive> Primitives =>
-            CollectionsMarshal.AsSpan(primitives);
+        public IReadOnlyList<GizmoDrawCommand> Commands => commands;
 
         public void Clear()
         {
-            primitives.Clear();
+            commands.Clear();
+        }
+
+        public void AddLine(
+            Vector3 start,
+            Vector3 end,
+            Vector4 color)
+        {
+            AddLine(
+                start,
+                end,
+                GizmoMaterial.Colored(color));
+        }
+
+        public void AddLine(
+            Vector3 start,
+            Vector3 end,
+            GizmoMaterial material)
+        {
+            commands.Add(
+                GizmoDrawCommand.Line(
+                    start,
+                    end,
+                    material));
+        }
+
+        public void AddArrow(
+            Vector3 start,
+            Vector3 end,
+            Vector4 color)
+        {
+            AddArrow(
+                start,
+                end,
+                GizmoMaterial.Colored(color));
+        }
+
+        public void AddArrow(
+            Vector3 start,
+            Vector3 end,
+            GizmoMaterial material)
+        {
+            commands.Add(
+                GizmoDrawCommand.Arrow(
+                    start,
+                    end,
+                    material));
+        }
+
+        public void AddBox(
+            Vector3 min,
+            Vector3 max,
+            Vector4 color)
+        {
+            AddBox(
+                min,
+                max,
+                GizmoMaterial.Colored(color));
+        }
+
+        public void AddBox(
+            Vector3 min,
+            Vector3 max,
+            GizmoMaterial material)
+        {
+            commands.Add(
+                GizmoDrawCommand.Box(
+                    min,
+                    max,
+                    material));
+        }
+
+        public void AddWireBox(
+            Vector3 min,
+            Vector3 max,
+            Vector4 color)
+        {
+            AddWireBox(
+                min,
+                max,
+                GizmoMaterial.Colored(color));
+        }
+
+        public void AddWireBox(
+            Vector3 min,
+            Vector3 max,
+            GizmoMaterial material)
+        {
+            commands.Add(
+                GizmoDrawCommand.WireBox(
+                    min,
+                    max,
+                    material));
+        }
+
+        public void AddCircle(
+            Vector3 center,
+            float radius,
+            Vector3 normal,
+            Vector4 color)
+        {
+            AddCircle(
+                center,
+                radius,
+                normal,
+                GizmoMaterial.Colored(color));
+        }
+
+        public void AddCircle(
+            Vector3 center,
+            float radius,
+            Vector3 normal,
+            GizmoMaterial material)
+        {
+            commands.Add(
+                GizmoDrawCommand.Circle(
+                    center,
+                    radius,
+                    normal,
+                    material));
         }
     }
 }

@@ -1,5 +1,7 @@
-﻿using DevoidEngine.Components;
+﻿using Assimp;
+using DevoidEngine.Components;
 using DevoidEngine.Core;
+using DevoidEngine.Gizmos;
 using DevoidEngine.UI;
 using DevoidEngine.Util;
 using DevoidGPU;
@@ -16,6 +18,7 @@ namespace DevoidEngine.Rendering
 
         public Camera3D? Camera3D { get; private set; }
         public UIContext UIContext { get; private set; }
+        public GizmoContext GizmoContext { get; private set; }
 
         public List<Camera3D> Camera3Ds { get; private set; }
         public Texture? OutputTexture = null!;
@@ -31,9 +34,19 @@ namespace DevoidEngine.Rendering
                 Viewport = this,
             };
 
+            GizmoContext = new()
+            {
+                Viewport = this,
+            };
+
             Engine.Renderer.RegisterViewport(this);
 
             bounds = new Rect(Vector2.Zero, new Vector2(Width, Height));
+
+            Width = Math.Max(1, Width);
+            Height = Math.Max(1, Height);
+
+            OutputTexture = Texture.Create2D(Width, Height, TextureFormat.RGBA16_Float, TextureUsage.ShaderResource | TextureUsage.RenderTarget);
         }
 
         public bool AddCamera3D(Camera3D camera)

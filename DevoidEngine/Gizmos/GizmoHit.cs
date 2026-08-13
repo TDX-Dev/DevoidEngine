@@ -1,30 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DevoidEngine.Gizmos
+﻿namespace DevoidEngine.Gizmos
 {
-    public readonly struct GizmoHit
+    public struct GizmoHit
     {
-        public readonly uint Id;
-        public readonly float Distance;
-
-        public readonly Vector3 Position;
-        public readonly Vector3 Normal;
+        public Gizmo Gizmo;
+        public int Handle;
+        public float Distance;
+        public GizmoDragConstraint Constraint;
 
         public GizmoHit(
-            uint id,
+            Gizmo gizmo,
+            int handle,
             float distance,
-            Vector3 position,
-            Vector3 normal)
+            GizmoDragConstraint constraint
+        )
         {
-            Id = id;
+            Gizmo = gizmo;
+            Handle = handle;
             Distance = distance;
-            Position = position;
-            Normal = normal;
+            Constraint = constraint;
         }
     }
 }

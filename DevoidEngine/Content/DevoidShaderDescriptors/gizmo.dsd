@@ -1,0 +1,35 @@
+{
+  "$schema": "./dsdschema.json",
+  "Name": "Vertex Lit",
+
+  "MaterialParameters": { "BufferName": "Material" },
+  "Resources": [
+    {
+      "Name": "DepthTexture",
+      "Kind": "SampledTexture",
+      "Type": "Texture2D"
+    },
+    {
+      "Name": "Texture",
+      "Kind": "SampledTexture",
+      "Type": "Texture2D"
+    }
+  ],
+
+  "DefaultPass": "Forward",
+  "Passes": [
+    {
+      "Name": "Forward",
+      "MaterialBuffer": "Material",
+      "Shaders": {
+        "VS": "../Shaders/vertex_lit.vert.hlsl",
+        "FS": "../Shaders/gizmo.frag.hlsl"
+      },
+      "States": {
+        "Blend": "Alpha",
+        "Cull": "Back",
+        "Depth": "LessEqual"
+      }
+    }
+  ]
+}

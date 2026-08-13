@@ -2,6 +2,8 @@
 
 namespace DevoidEngine.Core
 {
+    public readonly record struct PipelineKey(VertexInfo VertexLayout, PrimitiveType Topology);
+
     public sealed class ShaderPass : IDisposable
     {
         // Graphics stages
@@ -17,7 +19,7 @@ namespace DevoidEngine.Core
         public DepthStencilState Depth;
         public RasterizerState Rasterizer;
 
-        private readonly Dictionary<VertexInfo, IPipeline> graphicsPipelines = [];
+        private readonly Dictionary<PipelineKey, IPipeline> graphicsPipelines = [];
 
         public IComputePipeline? ComputePipeline { get; set; }
 
@@ -38,12 +40,16 @@ namespace DevoidEngine.Core
 
         public IPipeline GetPipeline(
             IGraphicsDevice device,
-            VertexInfo vertexLayout)
+            VertexInfo vertexLayout,
+            PrimitiveType topology = PrimitiveType.Triangles
+        )
         {
             if (IsCompute)
                 throw new InvalidOperationException("Compute passes do not have graphics pipelines.");
 
-            if (graphicsPipelines.TryGetValue(vertexLayout, out var pipeline))
+            PipelineKey key = new(vertexLayout, topology);
+
+            if (graphicsPipelines.TryGetValue(key, out var pipeline))
                 return pipeline;
 
             pipeline = device.CreateGraphicsPipeline(
@@ -58,10 +64,10 @@ namespace DevoidEngine.Core
                     DepthStencil = Depth,
                     Rasterizer = Rasterizer,
 
-                    Topology = PrimitiveType.Triangles
+                    Topology = topology
                 });
 
-            graphicsPipelines[vertexLayout] = pipeline;
+            graphicsPipelines[key] = pipeline;
 
             return pipeline;
         }

@@ -1,48 +1,51 @@
-﻿using DevoidEngine.Core;
+﻿using DevoidEngine.Components;
 using DevoidEngine.Rendering;
+using DevoidEngine.Util;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace DevoidEngine.Gizmos
 {
     public sealed class GizmoContext
     {
-        public Viewport Viewport { get; }
-        public Camera Camera { get; }
+        public Viewport Viewport { get; internal set; } = null!;
+
+        public List<Gizmo> Gizmos { get; } = [];
+
+    public GizmoHit? HotHit { get; internal set; }
+    public GizmoHit? ActiveHit { get; internal set; }
+
+        public GizmoDrawList DrawList { get; } = new();
+
+        public Camera3D Camera => Viewport.Camera3D!;
 
         public Vector2 MousePosition { get; internal set; }
         public Vector2 MouseDelta { get; internal set; }
 
-        public bool MouseDown { get; internal set; }
-        public bool MousePressed { get; internal set; }
-        public bool MouseReleased { get; internal set; }
+        public bool IsMouseDown { get; internal set; }
 
-        public Gizmo? HoveredGizmo { get; internal set; }
-        public GizmoHit? HoveredHit { get; internal set; }
-
-        public Gizmo? ActiveGizmo { get; internal set; }
-        public GizmoHit? ActiveHit { get; internal set; }
-
-        internal GizmoDrawList DrawList { get; } = new();
-
-        internal GizmoContext(
-            Viewport viewport,
-            Camera camera)
+        public Ray GetMouseRay(Vector2 mousePosition)
         {
-            Viewport = viewport;
-            Camera = camera;
+            return Camera.GetCamera().ScreenToWorldRay(
+                mousePosition,
+                Viewport.Width,
+                Viewport.Height);
         }
-
-        internal void ResetFrame()
+        public Vector3 GetMousePosition(GizmoDragConstraint constraint)
         {
-            MousePressed = false;
-            MouseReleased = false;
-            MouseDelta = Vector2.Zero;
+            if (constraint.TryGetPosition(
+                    this,
+                    MousePosition,
+                    out Vector3 position))
+            {
+                return position;
+            }
 
-            DrawList.Clear();
-        }
-
-        internal void EndFrame()
-        {
+            return default;
         }
     }
 }

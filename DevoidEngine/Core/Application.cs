@@ -237,7 +237,7 @@ namespace DevoidEngine.Core
 
                 numFrames++;
 
-                if (systemInfoTimer >= 1.0f)
+                if (systemInfoTimer >= 2.0f)
                 {
                     systemInfoTimer = 0.0f;
 
@@ -268,6 +268,7 @@ namespace DevoidEngine.Core
 
             List<Viewport> viewports = Engine.Instance.SceneTree.GetViewports();
             Engine.UISystem.Update(deltaTime, viewports);
+            Engine.GizmoSystem.Update(deltaTime, viewports);
 
             Engine.Instance.SceneTree.UpdateScenes(deltaTime);
         }

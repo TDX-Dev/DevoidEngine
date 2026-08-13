@@ -1,5 +1,6 @@
 ﻿using DevoidEngine.Core;
 using DevoidEngine.InputSystem.InputDevices;
+using System.Numerics;
 
 namespace DevoidEngine.InputSystem
 {
@@ -79,6 +80,47 @@ namespace DevoidEngine.InputSystem
         public bool GetKey(Keys w)
         {
             return false;
+        }
+
+        public Vector2 MousePosition
+        {
+            get
+            {
+                return new Vector2(
+                    State.Get(InputDeviceType.Mouse, (ushort)MouseAxis.X),
+                    State.Get(InputDeviceType.Mouse, (ushort)MouseAxis.Y));
+            }
+        }
+
+        public Vector2 MouseDelta
+        {
+            get
+            {
+                return new Vector2(
+                    State.Get(InputDeviceType.Mouse, (ushort)MouseAxis.DeltaX),
+                    State.Get(InputDeviceType.Mouse, (ushort)MouseAxis.DeltaY));
+            }
+        }
+
+        public bool GetMouseButton(MouseButton button)
+        {
+            return State.Get(
+                InputDeviceType.Mouse,
+                (ushort)button) != 0;
+        }
+
+        public bool GetMouseButtonDown(MouseButton button)
+        {
+            return State.GetDown(
+                InputDeviceType.Mouse,
+                (ushort)button);
+        }
+
+        public bool GetMouseButtonUp(MouseButton button)
+        {
+            return State.GetUp(
+                InputDeviceType.Mouse,
+                (ushort)button);
         }
     }
 }

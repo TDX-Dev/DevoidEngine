@@ -5,6 +5,7 @@ using DevoidEngine.Audio;
 using DevoidEngine.Components;
 using DevoidEngine.Core;
 using DevoidEngine.Gizmos;
+using DevoidEngine.Gizmos.DevoidEngine.Gizmos;
 using DevoidEngine.InputSystem;
 using DevoidEngine.InputSystem.InputDevices;
 using DevoidEngine.Rendering;
@@ -33,9 +34,6 @@ namespace Sandbox
         MaterialInstance PBRMaterial = null!;
         MaterialInstance GroundPBRMaterial = null!;
 
-        //private TransformGizmo transformGizmo = null!;
-        //private GameObject gizmoTarget = null!;
-
         readonly Random rand = new();
 
         public override void OnGUIRender()
@@ -45,6 +43,23 @@ namespace Sandbox
 
         public override void OnAttach()
         {
+            BoundsGizmo transformGizmo = new()
+            {
+
+            };
+
+            BoundsGizmo transformGizmo1 = new()
+            {
+
+            };
+
+            TranslateGizmo translateGizmo = new() { };
+
+            Engine.Instance.SceneTree.RootViewport.GizmoContext.Gizmos.Add(transformGizmo);
+            Engine.Instance.SceneTree.RootViewport.GizmoContext.Gizmos.Add(transformGizmo1);
+            Engine.Instance.SceneTree.RootViewport.GizmoContext.Gizmos.Add(translateGizmo);
+
+
             Application.MainWindow.OnResize += MainWindow_OnResize;
             Engine.Instance.SceneTree.OnSceneChanged += SceneTree_OnSceneChanged;
 
@@ -358,27 +373,7 @@ namespace Sandbox
 
             canvas.Initialize();
 
-        }
-        ContainerNode GetPreviewBox()
-        {
-            ContainerNode container = new()
-            {
-                Layout = new LayoutOptions()
-                {
-                    FlexGrowCross = 0,
-                    FlexGrowMain = 0
-                },
-                Direction = FlexDirection.Column,
-                Padding = Padding.GetAll(10),
-                Gap = 10
-            };
-
-            container.AddStyleBoxOverride(StyleKeys.Normal, new StyleBoxFlat()
-            {
-                BackgroundColor = new Vector4(0, 0, 0, 0.3f)
-            });
-            return container;
-        }
+        } 
 
 
         private void SceneTree_OnSceneChanged(Scene obj)
@@ -436,6 +431,7 @@ namespace Sandbox
 
         public override void OnRender(ICommandList cmd)
         {
+
             //cmd.SetViewport(0, 0, Application.MainWindow.Window.Size.X, Application.MainWindow.Window.Size.Y);
             ////cmd.SetPipeline(shader.GetPass("Forward").GetPipeline(Engine.GraphicsDevice, Vertex.VertexInfo));
             ////cmd.SetDescriptorSet(1, set);

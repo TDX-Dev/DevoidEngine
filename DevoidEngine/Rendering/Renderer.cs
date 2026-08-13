@@ -52,24 +52,19 @@ namespace DevoidEngine.Rendering
 
         public Shader VBAOShader {  get; private set; } = null!;
         public MaterialInstance VBAOMaterialInstance { get; private set; } = null!;
-
-        public Shader GizmoShader { get; private set; } = null!;
-        public Material GizmoMaterial { get; private set; } = null!;
-        public MaterialInstance GizmoMaterialInstance { get; private set; } = null!;
-
         public RenderTarget ViewportBlitTarget { get; private set; } = null!;
         public RenderTarget UIRenderTarget { get; private set; } = null!;
         public RenderTarget InfoRenderTarget { get; private set; } = null!;
         public RenderTarget VBAORenderTarget { get; private set; } = null!;
-        public RenderTarget GizmoRenderTarget { get; private set; } = null!;
         public UniformBuffer CameraBuffer { get; private set; } = null!;
         public UniformBuffer SceneBuffer { get; private set; } = null!;
         public UniformBuffer PerObjectBuffer { get; private set; } = null!;
         public UniformBuffer PerFrameBuffer { get; private set; } = null!;
         public SkyRenderer SkyRenderer { get; private set; } = null!;
+        public GizmoRenderer GizmoRenderer { get; private set; } = null!;
 
         public PostProcessor PostProcessor { get; private set; } = null!;
-        public GizmoSystem GizmoSystem { get; private set; } = null!;
+
 
         public EnvironmentLighting Environment => SkyRenderer.Environment;
 
@@ -91,8 +86,10 @@ namespace DevoidEngine.Rendering
         private ShaderStorageBuffer<GPUSpotLight> SpotLightBuffer = null!;
         private ShaderStorageBuffer<GPUDirectionalLight> DirectionalLightBuffer = null!;
 
-        private Pool<RenderMeshData> uiRenderPool = null!;
+        private Pool<RenderMeshData> uiRenderDataPool = null!;
+        private Pool<RenderMeshData> gizmoRenderDataPool = null!;
         private readonly List<RenderMeshData> uiRenderCache = [];
+        private readonly List<RenderMeshData> gizmoRenderCache = [];
 
         private readonly Queue<Action<ICommandList>> pendingGpuCommands = [];
 
@@ -136,7 +133,8 @@ namespace DevoidEngine.Rendering
                 throw new Exception("Graphics device not initialized yet.");
 
             viewportStack = new Stack<ViewportRect>();
-            uiRenderPool = new Pool<RenderMeshData>();
+            uiRenderDataPool = new Pool<RenderMeshData>();
+            gizmoRenderDataPool = new Pool<RenderMeshData>();
             RenderResources = [];
 
             ActiveTechnique = config.Technique switch
@@ -256,7 +254,6 @@ namespace DevoidEngine.Rendering
             UIRenderTarget = RenderTarget.Create(1);
             InfoRenderTarget = RenderTarget.Create(2);
             VBAORenderTarget = RenderTarget.Create(1);
-            GizmoRenderTarget = RenderTarget.Create(1);
 
             renderView = new RenderView();
 
@@ -265,6 +262,8 @@ namespace DevoidEngine.Rendering
             DirectionalLightBuffer = ShaderStorageBuffer<GPUDirectionalLight>.Create(ResourceUsage.Dynamic, Renderer.MAX_DIRECTIONAL_LIGHTS);
 
             SkyRenderer = new SkyRenderer();
+            GizmoRenderer = new GizmoRenderer();
+            GizmoRenderer.Initialize(Engine.GraphicsDevice, Engine.BasePath);
 
             PostProcessor = new PostProcessor();
 
@@ -273,7 +272,6 @@ namespace DevoidEngine.Rendering
 
             ActiveTechnique.Initialize();
 
-            GizmoSystem = new GizmoSystem();
         }
 
         public void Render(ICommandList cmd, Viewport viewport)
@@ -334,12 +332,14 @@ namespace DevoidEngine.Rendering
                 activeTechniqueTarget.ColorTextures[0]!
             );
 
+            GizmoRenderer.Render(context, viewport, viewportResources);
             RenderUI(cmd, viewport, viewportResources);
 
             ViewportBlitTarget.SetColorAttachment(0, viewport.OutputTexture!);
             cmd.SetFramebuffer(ViewportBlitTarget.GPU);
             API.RenderToScreen(cmd, finalColor);
             API.RenderToScreen(cmd, UIRenderTarget.ColorTextures[0]!);
+            API.RenderToScreen(cmd, GizmoRenderer.GizmoRenderTarget.ColorTextures[0]!);
         }
 
         public void RenderUI(ICommandList cmd, Viewport viewport, RenderResourceCache resources)
@@ -417,7 +417,7 @@ namespace DevoidEngine.Rendering
 
                     case UICommandType.Quad:
                         {
-                            RenderMeshData meshData = uiRenderPool.Get();
+                            RenderMeshData meshData = uiRenderDataPool.Get();
 
                             meshData.render_mesh = PrimitiveMeshes.GetQuad();
                             meshData.render_material = command.Quad.Material;
@@ -438,7 +438,7 @@ namespace DevoidEngine.Rendering
 
                     case UICommandType.Text:
                         {
-                            RenderMeshData meshData = uiRenderPool.Get();
+                            RenderMeshData meshData = uiRenderDataPool.Get();
 
                             meshData.render_mesh = command.Text.TextMesh;
                             meshData.render_material = command.Text.Material;
@@ -463,13 +463,12 @@ namespace DevoidEngine.Rendering
 
             for (var i = 0; i < uiRenderCache.Count; i++)
             {
-                uiRenderPool.Return(uiRenderCache[i]);
+                uiRenderDataPool.Return(uiRenderCache[i]);
             }
 
 
             uiRenderCache.Clear();
         }
-
         public void RenderInformationPass(ref RenderContext context, RenderView view)
         {
             TextureDescription textureNormalDescription = new()
@@ -574,24 +573,6 @@ namespace DevoidEngine.Rendering
 
             PerCameraDescriptor.SetTexture(19, AOTexture.GPU);
         }
-        public void RenderGizmos(ICommandList cmd, Viewport viewport, ReadOnlySpan<Gizmo> gizmos)
-        {
-            if (gizmos.Length == 0)
-                return;
-
-            GizmoDrawList drawList =
-                GizmoSystem.Draw(
-                    viewport,
-                    gizmos);
-
-            if (drawList.Primitives.Length == 0)
-                return;
-
-            Console.WriteLine("Gizmos");
-
-
-            // GPU rendering here.
-        }
         public void UpdateCameraBuffer(CameraData cameraData)
         {
             CameraBuffer.Update(cameraData);
@@ -669,7 +650,7 @@ namespace DevoidEngine.Rendering
             item.render_mesh.Draw(cmd);
         }
 
-        public void Execute(ICommandList cmd, List<RenderMeshData> objects, MaterialInstance? overrideMaterial = null)
+        public void Execute(ICommandList cmd, List<RenderMeshData> objects, MaterialInstance? overrideMaterial = null, PrimitiveType primitiveType = PrimitiveType.Triangles)
         {
             ShaderPass? currentPass = null;
             MaterialInstance? currentMaterial = null;
@@ -689,7 +670,7 @@ namespace DevoidEngine.Rendering
                 {
                     currentPass = pass;
 
-                    cmd.SetPipeline(pass.GetPipeline(Engine.GraphicsDevice, item.render_mesh.VertexInfo));
+                    cmd.SetPipeline(pass.GetPipeline(Engine.GraphicsDevice, item.render_mesh.VertexInfo, primitiveType));
 
                     cmd.SetDescriptorSet(
                         0,
@@ -767,6 +748,7 @@ namespace DevoidEngine.Rendering
         {
             ActiveTechnique?.Dispose();
             SkyRenderer.Dispose();
+            GizmoRenderer.Dispose();
 
             DefaultMaterial.Dispose();
             NullMaterial.Dispose();

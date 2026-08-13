@@ -6,20 +6,40 @@ namespace DevoidEngine.Util
     public static class PrimitiveMeshes
     {
         private static Mesh? quad;
+        private static Mesh? centeredQuad;
+        private static Mesh? centeredCircle;
         private static Mesh? cube;
+        private static Mesh? wireCube;
         private static Mesh? invCube;
         private static Mesh? fullscreenMesh;
         private static Mesh? uvsphereMesh;
+        private static Mesh? cylinderMesh;
+
 
         public static Mesh GetQuad()
         {
             quad ??= CreateQuad();
             return quad;
         }
+        public static Mesh GetCenteredQuad()
+        {
+            centeredQuad ??= CreateCenteredQuad();
+            return centeredQuad;
+        }
+        public static Mesh GetCenteredCircle()
+        {
+            centeredCircle ??= CreateCircle();
+            return centeredCircle;
+        }
         public static Mesh GetCube()
         {
             cube ??= CreateCube();
             return cube;
+        }
+        public static Mesh GetWireCube()
+        {
+            wireCube ??= CreateWireCube();
+            return wireCube;
         }
         public static Mesh GetInvertedUVCube()
         {
@@ -36,6 +56,12 @@ namespace DevoidEngine.Util
             uvsphereMesh ??= CreateSphere();
             return uvsphereMesh;
         }
+        public static Mesh GetCylinder()
+        {
+            cylinderMesh ??= CreateCylinder();
+            return cylinderMesh;
+        }
+
         public static Mesh CreateCube()
         {
             Mesh mesh = new()
@@ -188,7 +214,54 @@ namespace DevoidEngine.Util
 
             return mesh;
         }
+        public static Mesh CreateWireCube()
+        {
+            Mesh mesh = new()
+            {
+                Positions =
+                [
+                    // Front corners
+                    new(-0.5f, -0.5f,  0.5f), // 0: Bottom-Left
+            new( 0.5f, -0.5f,  0.5f), // 1: Bottom-Right
+            new( 0.5f,  0.5f,  0.5f), // 2: Top-Right
+            new(-0.5f,  0.5f,  0.5f), // 3: Top-Left
 
+            // Back corners
+            new(-0.5f, -0.5f, -0.5f), // 4: Bottom-Left
+            new( 0.5f, -0.5f, -0.5f), // 5: Bottom-Right
+            new( 0.5f,  0.5f, -0.5f), // 6: Top-Right
+            new(-0.5f,  0.5f, -0.5f)  // 7: Top-Left
+                ],
+
+                Normals =
+                [
+                    Vector3.Zero, Vector3.Zero, Vector3.Zero, Vector3.Zero,
+            Vector3.Zero, Vector3.Zero, Vector3.Zero, Vector3.Zero
+                ],
+
+                UVs =
+                [
+                    Vector2.Zero, Vector2.Zero, Vector2.Zero, Vector2.Zero,
+            Vector2.Zero, Vector2.Zero, Vector2.Zero, Vector2.Zero
+                ],
+
+                Indices =
+                [
+                    // Front face loop
+                    0, 1,  1, 2,  2, 3,  3, 0,
+
+            // Back face loop
+            4, 5,  5, 6,  6, 7,  7, 4,
+
+            // Connecting edges (front-to-back)
+            0, 4,  1, 5,  2, 6,  3, 7
+                ]
+            };
+
+            mesh.Upload();
+
+            return mesh;
+        }
         public static Mesh CreateInvertedUVCube()
         {
             Mesh mesh = new()
@@ -371,7 +444,6 @@ namespace DevoidEngine.Util
 
             return mesh;
         }
-
         public static Mesh CreateQuad()
         {
             Mesh mesh = new()
@@ -410,7 +482,44 @@ namespace DevoidEngine.Util
 
             return mesh;
         }
+        public static Mesh CreateCenteredQuad()
+        {
+            Mesh mesh = new()
+            {
+                Positions =
+                [
+                    new Vector3(-0.5f, -0.5f, 0),
+                    new Vector3( 0.5f, -0.5f, 0),
+                    new Vector3( 0.5f,  0.5f, 0),
+                    new Vector3(-0.5f,  0.5f, 0),
+        ],
 
+                UVs =
+                [
+                        new Vector2(0.0f, 0.0f),
+                new Vector2(1.0f, 0.0f),
+                new Vector2(1.0f, 1.0f),
+                new Vector2(0.0f, 1.0f),
+        ],
+
+                Normals =
+                [
+                    Vector3.UnitZ,
+            Vector3.UnitZ,
+            Vector3.UnitZ,
+            Vector3.UnitZ
+                ],
+                Indices =
+                [
+                    0, 1, 2,
+                    2, 3, 0
+                ]
+            };
+
+            mesh.Upload();
+
+            return mesh;
+        }
         public static Mesh CreateSphere(float radius = 0.5f, int slices = 64, int stacks = 32)
         {
             Mesh mesh = new();
@@ -474,13 +583,7 @@ namespace DevoidEngine.Util
 
             return mesh;
         }
-
-        public static Mesh CreateCapsule(
-            float radius = 0.5f,
-            float height = 2.0f,
-            int slices = 32,
-            int hemisphereStacks = 8,
-            int cylinderStacks = 1)
+        public static Mesh CreateCapsule(float radius = 0.5f, float height = 2.0f, int slices = 32, int hemisphereStacks = 8, int cylinderStacks = 1)
         {
             Mesh mesh = new();
 
@@ -624,6 +727,197 @@ namespace DevoidEngine.Util
             mesh.Normals = [.. normals];
             mesh.UVs = [.. uvs];
             mesh.Indices = [.. indices];
+
+            mesh.Upload();
+
+            return mesh;
+        }
+        public static Mesh CreateCylinder(
+            float radius = 0.5f,
+            float height = 1.0f,
+            int slices = 32,
+            int stacks = 1
+        )
+        {
+            Mesh mesh = new();
+
+            List<Vector3> positions = [];
+            List<Vector3> normals = [];
+            List<Vector2> uvs = [];
+            List<uint> indices = [];
+
+            float halfHeight = height * 0.5f;
+
+            // Side rings
+            for (int stack = 0; stack <= stacks; stack++)
+            {
+                float v = (float)stack / stacks;
+                float y = -halfHeight + v * height;
+
+                for (int slice = 0; slice <= slices; slice++)
+                {
+                    float u = (float)slice / slices;
+                    float theta = u * MathF.PI * 2.0f;
+
+                    float x = MathF.Cos(theta) * radius;
+                    float z = MathF.Sin(theta) * radius;
+
+                    positions.Add(new Vector3(x, y, z));
+                    normals.Add(Vector3.Normalize(new Vector3(x, 0.0f, z)));
+                    uvs.Add(new Vector2(u, 1.0f - v));
+                }
+            }
+
+            int vertsPerRing = slices + 1;
+
+            // Side faces
+            for (int stack = 0; stack < stacks; stack++)
+            {
+                int row0 = stack * vertsPerRing;
+                int row1 = row0 + vertsPerRing;
+
+                for (int slice = 0; slice < slices; slice++)
+                {
+                    uint a = (uint)(row0 + slice);
+                    uint b = (uint)(row0 + slice + 1);
+                    uint c = (uint)(row1 + slice);
+                    uint d = (uint)(row1 + slice + 1);
+
+                    indices.Add(a);
+                    indices.Add(c);
+                    indices.Add(b);
+
+                    indices.Add(b);
+                    indices.Add(c);
+                    indices.Add(d);
+                }
+            }
+
+            // Top cap
+            int topCenter = positions.Count;
+
+            positions.Add(new Vector3(0, halfHeight, 0));
+            normals.Add(Vector3.UnitY);
+            uvs.Add(new Vector2(0.5f, 0.5f));
+
+            for (int slice = 0; slice <= slices; slice++)
+            {
+                float u = (float)slice / slices;
+                float theta = u * MathF.PI * 2.0f;
+
+                float x = MathF.Cos(theta) * radius;
+                float z = MathF.Sin(theta) * radius;
+
+                positions.Add(new Vector3(x, halfHeight, z));
+                normals.Add(Vector3.UnitY);
+                uvs.Add(new Vector2(
+                    x / (radius * 2.0f) + 0.5f,
+                    z / (radius * 2.0f) + 0.5f));
+            }
+
+            int topRing = topCenter + 1;
+
+            for (int slice = 0; slice < slices; slice++)
+            {
+                indices.Add((uint)topCenter);
+                indices.Add((uint)(topRing + slice));
+                indices.Add((uint)(topRing + slice + 1));
+            }
+
+            // Bottom cap
+            int bottomCenter = positions.Count;
+
+            positions.Add(new Vector3(0, -halfHeight, 0));
+            normals.Add(-Vector3.UnitY);
+            uvs.Add(new Vector2(0.5f, 0.5f));
+
+            for (int slice = 0; slice <= slices; slice++)
+            {
+                float u = (float)slice / slices;
+                float theta = u * MathF.PI * 2.0f;
+
+                float x = MathF.Cos(theta) * radius;
+                float z = MathF.Sin(theta) * radius;
+
+                positions.Add(new Vector3(x, -halfHeight, z));
+                normals.Add(-Vector3.UnitY);
+                uvs.Add(new Vector2(
+                    x / (radius * 2.0f) + 0.5f,
+                    z / (radius * 2.0f) + 0.5f));
+            }
+
+            int bottomRing = bottomCenter + 1;
+
+            for (int slice = 0; slice < slices; slice++)
+            {
+                // Reverse winding because we're looking down at the bottom.
+                indices.Add((uint)bottomCenter);
+                indices.Add((uint)(bottomRing + slice + 1));
+                indices.Add((uint)(bottomRing + slice));
+            }
+
+            mesh.Positions = [.. positions];
+            mesh.Normals = [.. normals];
+            mesh.UVs = [.. uvs];
+            mesh.Indices = [.. indices];
+
+            mesh.Upload();
+
+            return mesh;
+        }
+
+        public static Mesh CreateCircle(int segments = 16)
+        {
+            Mesh mesh = new();
+
+            Vector3[] positions = new Vector3[segments + 1];
+            Vector2[] uvs = new Vector2[segments + 1];
+            Vector3[] normals = new Vector3[segments + 1];
+            uint[] indices = new uint[segments * 3];
+
+            // Center
+            positions[0] = Vector3.Zero;
+            uvs[0] = new Vector2(0.5f, 0.5f);
+            normals[0] = Vector3.UnitZ;
+
+            // Rim
+            for (int i = 0; i < segments; i++)
+            {
+                float angle =
+                    i / (float)segments * MathF.Tau;
+
+                float x = MathF.Cos(angle);
+                float y = MathF.Sin(angle);
+
+                int vertex = i + 1;
+
+                positions[vertex] =
+                    new Vector3(x * 0.5f, y * 0.5f, 0);
+
+                uvs[vertex] =
+                    new Vector2(
+                        x * 0.5f + 0.5f,
+                        y * 0.5f + 0.5f);
+
+                normals[vertex] = Vector3.UnitZ;
+            }
+
+            // Triangle fan
+            for (int i = 0; i < segments; i++)
+            {
+                int next = (i + 1) % segments;
+
+                int index = i * 3;
+
+                indices[index + 0] = 0;
+                indices[index + 1] = (uint)next + 1;
+                indices[index + 2] = (uint)i + 1;
+            }
+
+            mesh.Positions = positions;
+            mesh.UVs = uvs;
+            mesh.Normals = normals;
+            mesh.Indices = indices;
 
             mesh.Upload();
 

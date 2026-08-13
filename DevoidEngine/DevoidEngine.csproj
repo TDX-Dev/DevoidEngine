@@ -74,6 +74,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<None Update="Content\DevoidShaderDescriptors\gizmo.dsd">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  <Visible>true</Visible>
+		</None>
 		<None Update="Content\DevoidShaderDescriptors\gtvbao.dsd">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		  <Visible>true</Visible>
@@ -171,6 +175,10 @@
 		  <Visible>true</Visible>
 		</None>
 		<None Update="Content\Shaders\ui_textsdf.frag.hlsl">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  <Visible>true</Visible>
+		</None>
+		<None Update="Content\Shaders\gizmo.frag.hlsl">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		  <Visible>true</Visible>
 		</None>

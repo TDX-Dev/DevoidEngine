@@ -2,299 +2,221 @@
 using DevoidEngine.InputSystem;
 using DevoidEngine.InputSystem.InputDevices;
 using DevoidEngine.Rendering;
-using DevoidEngine.Util;
 using System.Numerics;
 
 namespace DevoidEngine.Gizmos
 {
     public sealed class GizmoSystem
     {
-        private readonly Dictionary<Viewport, GizmoContext> contexts = [];
+        private GizmoContext? HoveredContext;
+        private GizmoContext? CapturedContext;
 
-        public GizmoContext GetContext(Viewport viewport)
+        public void Initialize()
         {
-            if (!contexts.TryGetValue(
-                    viewport,
-                    out GizmoContext? context))
-            {
-                if (viewport.Camera3D == null)
-                {
-                    throw new InvalidOperationException(
-                        "Cannot create a GizmoContext without a Camera3D.");
-                }
-
-                context = new GizmoContext(
-                    viewport,
-                    viewport.Camera3D.GetCamera());
-
-                contexts.Add(viewport, context);
-            }
-
-            return context;
+            Engine.InputSystem.Router.Push(new GizmoInputLayer());
         }
 
-        public GizmoDrawList Draw(
-            Viewport viewport,
-            ReadOnlySpan<Gizmo> gizmos)
+        public void Update(float deltaTime, List<Viewport> viewports)
         {
-            GizmoContext context = GetContext(viewport);
+            //foreach (var viewport in viewports)
+            //{
+            //    //GizmoContext context = viewport.GizmoContext;
 
-            context.ResetFrame();
-
-            UpdateInput(context);
-            UpdateInteraction(context, gizmos);
-
-            foreach (Gizmo gizmo in gizmos)
-            {
-                gizmo.Draw(
-                    context,
-                    context.DrawList);
-            }
-
-            context.EndFrame();
-
-            return context.DrawList;
+            //    // Per-frame gizmo logic can go here later.
+            //}
         }
 
-        private void UpdateInteraction(
-            GizmoContext context,
-            ReadOnlySpan<Gizmo> gizmos)
+        public void MouseMove(Vector2 globalMouse)
         {
-            // Currently dragging a gizmo.
-            if (context.ActiveGizmo != null)
+            List<Viewport> viewports =
+                Engine.Instance.SceneTree.GetViewports();
+
+            if (CapturedContext != null)
             {
-                context.ActiveGizmo.Drag(context);
-
-                if (context.MouseReleased)
-                {
-                    context.ActiveGizmo.EndDrag(context);
-
-                    context.ActiveGizmo = null;
-                    context.ActiveHit = null;
-                }
+                ProcessMouseMove(
+                    CapturedContext,
+                    CapturedContext.Viewport,
+                    globalMouse);
 
                 return;
             }
 
-            // Nothing is being dragged, so determine what is hovered.
-            UpdateHover(
-                context,
-                gizmos);
-
-            // Start dragging when the mouse is pressed.
-            if (context.MousePressed &&
-                context.HoveredGizmo != null &&
-                context.HoveredHit.HasValue)
+            for (int i = viewports.Count - 1; i >= 0; i--)
             {
-                context.ActiveGizmo =
-                    context.HoveredGizmo;
+                Viewport viewport = viewports[i];
 
-                context.ActiveHit =
-                    context.HoveredHit;
+                if (!viewport.Bounds.Contains(globalMouse))
+                    continue;
 
-                context.ActiveGizmo.BeginDrag(
-                    context,
-                    context.ActiveHit.Value);
+                ProcessMouseMove(
+                    viewport.GizmoContext,
+                    viewport,
+                    globalMouse);
+
+                return;
             }
+
+            // Mouse isn't over any viewport.
+            foreach (Viewport viewport in viewports)
+            {
+                GizmoContext context = viewport.GizmoContext;
+
+                if (context.HotHit.HasValue)
+                    context.HotHit = null;
+            }
+
+            HoveredContext = null;
         }
 
-        private void UpdateInput(
-            GizmoContext context)
+        private void ProcessMouseMove(
+            GizmoContext context,
+            Viewport viewport,
+            Vector2 globalMouse)
         {
-            InputState input =
-                Engine.InputSystem.State;
-
-            Vector2 mousePosition = new(
-                input.Get(
-                    InputDeviceType.Mouse,
-                    (ushort)MouseAxis.X),
-
-                input.Get(
-                    InputDeviceType.Mouse,
-                    (ushort)MouseAxis.Y));
-
-            Vector2 mouseDelta = new(
-                input.Get(
-                    InputDeviceType.Mouse,
-                    (ushort)MouseAxis.DeltaX),
-
-                input.Get(
-                    InputDeviceType.Mouse,
-                    (ushort)MouseAxis.DeltaY));
-
-            bool mouseDown =
-                input.Get(
-                    InputDeviceType.Mouse,
-                    (ushort)MouseButton.Left) != 0f;
-
-            bool mousePressed =
-                input.GetDown(
-                    InputDeviceType.Mouse,
-                    (ushort)MouseButton.Left);
-
-            bool mouseReleased =
-                input.GetUp(
-                    InputDeviceType.Mouse,
-                    (ushort)MouseButton.Left);
-
-            Vector2 viewportPosition =
-                mousePosition -
-                context.Viewport.Bounds.Position;
-
-            context.MousePosition =
-                viewportPosition;
+            Vector2 mouse =
+                globalMouse - viewport.Bounds.Position;
 
             context.MouseDelta =
-                mouseDelta;
+                mouse - context.MousePosition;
 
-            context.MouseDown =
-                mouseDown;
+            context.MousePosition = mouse;
 
-            context.MousePressed =
-                mousePressed;
+            // Don't change the selected handle while dragging.
+            if (context.ActiveHit.HasValue)
+            {
+                context.ActiveHit.Value.Gizmo.OnDrag(
+                    context,
+                    context.ActiveHit.Value);
 
-            context.MouseReleased =
-                mouseReleased;
+                return;
+            }
+
+            GizmoHit? previous = context.HotHit;
+
+            context.HotHit = FindHit(
+                context,
+                mouse);
+
+            if (previous?.Gizmo != context.HotHit?.Gizmo ||
+                previous?.Handle != context.HotHit?.Handle)
+            {
+                // Handle hover transition here later if desired.
+            }
+
+            if (context.HotHit.HasValue)
+                HoveredContext = context;
+            else
+                HoveredContext = null;
         }
 
-        private void UpdateHover(
-            GizmoContext context,
-            ReadOnlySpan<Gizmo> gizmos)
+        public bool MouseDown(Vector2 globalMouse)
         {
-            context.HoveredGizmo = null;
-            context.HoveredHit = null;
+            GizmoContext? context =
+                GetTargetContext(globalMouse);
 
-            if (gizmos.Length == 0)
-                return;
+            if (context == null)
+                return false;
 
-            Viewport viewport =
-                context.Viewport;
+            if (!context.HotHit.HasValue)
+                return false;
 
-            if (viewport.Width <= 0 ||
-                viewport.Height <= 0)
+            GizmoHit hit = context.HotHit.Value;
+
+            context.ActiveHit = hit;
+            CapturedContext = context;
+
+            hit.Gizmo.OnBeginDrag(
+                context,
+                hit);
+
+            return true;
+        }
+
+        public bool MouseUp(Vector2 globalMouse)
+        {
+            GizmoContext? context =
+                CapturedContext ?? GetTargetContext(globalMouse);
+
+            if (context == null ||
+                !context.ActiveHit.HasValue)
             {
-                return;
+                return false;
             }
 
-            Vector2 mouse =
-                context.MousePosition;
+            GizmoHit hit = context.ActiveHit.Value;
 
-            // Mouse is outside viewport.
-            if (mouse.X < 0 ||
-                mouse.Y < 0 ||
-                mouse.X >= viewport.Width ||
-                mouse.Y >= viewport.Height)
+            hit.Gizmo.OnEndDrag(
+                context,
+                hit);
+
+            context.ActiveHit = null;
+            context.MouseDelta = Vector2.Zero;
+
+            CapturedContext = null;
+
+            return true;
+        }
+
+        private GizmoHit? FindHit(
+            GizmoContext context,
+            Vector2 mouse)
+        {
+            GizmoHit? bestHit = null;
+
+            foreach (Gizmo gizmo in context.Gizmos)
             {
-                return;
-            }
-
-            Ray ray = CreateMouseRay(
-                context.Camera,
-                mouse,
-                viewport.Width,
-                viewport.Height);
-
-            Gizmo? closestGizmo = null;
-            GizmoHit closestHit = default;
-
-            float closestDistance =
-                float.MaxValue;
-
-            for (int i = 0; i < gizmos.Length; i++)
-            {
-                Gizmo gizmo = gizmos[i];
+                if (!gizmo.Enabled)
+                    continue;
 
                 if (!gizmo.HitTest(
                         context,
-                        ray,
+                        mouse,
                         out GizmoHit hit))
                 {
                     continue;
                 }
 
-                if (hit.Distance < closestDistance)
+                if (!bestHit.HasValue ||
+                    hit.Distance < bestHit.Value.Distance)
                 {
-                    closestDistance =
-                        hit.Distance;
-
-                    closestGizmo =
-                        gizmo;
-
-                    closestHit =
-                        hit;
+                    bestHit = hit;
                 }
             }
 
-            context.HoveredGizmo =
-                closestGizmo;
+            return bestHit;
+        }
 
-            if (closestGizmo != null)
+        private GizmoContext? GetTargetContext(
+            Vector2 globalMouse)
+        {
+            if (CapturedContext != null)
+                return CapturedContext;
+
+            List<Viewport> viewports =
+                Engine.Instance.SceneTree.GetViewports();
+
+            for (int i = viewports.Count - 1; i >= 0; i--)
             {
-                context.HoveredHit =
-                    closestHit;
+                Viewport viewport = viewports[i];
+
+                if (viewport.Bounds.Contains(globalMouse))
+                    return viewport.GizmoContext;
             }
+
+            return null;
         }
 
-        private static Ray CreateMouseRay(
-            Camera camera,
-            Vector2 mousePosition,
-            int width,
-            int height)
+        public void Draw(GizmoContext context)
         {
-            float x =
-                (mousePosition.X / width) * 2f - 1f;
+            context.DrawList.Clear();
 
-            float y =
-                1f -
-                (mousePosition.Y / height) * 2f;
+            foreach (Gizmo gizmo in context.Gizmos)
+            {
+                if (!gizmo.Enabled)
+                    continue;
 
-            Vector4 nearClip = new(
-                x,
-                y,
-                0f,
-                1f);
-
-            Vector4 farClip = new(
-                x,
-                y,
-                1f,
-                1f);
-
-            Vector4 nearWorld =
-                Vector4.Transform(
-                    nearClip,
-                    camera.InverseViewProjection);
-
-            Vector4 farWorld =
-                Vector4.Transform(
-                    farClip,
-                    camera.InverseViewProjection);
-
-            nearWorld /= nearWorld.W;
-            farWorld /= farWorld.W;
-
-            Vector3 origin = new(
-                nearWorld.X,
-                nearWorld.Y,
-                nearWorld.Z);
-
-            Vector3 direction =
-                Vector3.Normalize(
-                    new Vector3(
-                        farWorld.X,
-                        farWorld.Y,
-                        farWorld.Z) -
-                    origin);
-
-            return new Ray(
-                origin,
-                direction);
-        }
-
-        public void RemoveViewport(
-            Viewport viewport)
-        {
-            contexts.Remove(viewport);
+                gizmo.Draw(context);
+            }
         }
     }
 }

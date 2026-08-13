@@ -105,6 +105,40 @@ namespace DevoidEngine.Core
             return new(screen, w);
         }
 
+        public Ray ScreenToWorldRay(Vector2 screenPosition, float screenWidth, float screenHeight)
+        {
+            float x = (screenPosition.X / screenWidth) * 2.0f - 1.0f;
+            float y = 1.0f - (screenPosition.Y / screenHeight) * 2.0f;
+
+            Vector3 nearNdc = new(x, y, 0.0f);
+            Vector3 farNdc = new(x, y, 1.0f);
+
+            Matrix4x4 inverseViewProjection =
+                Matrix4x4.Invert(
+                    View * Projection,
+                    out Matrix4x4 inverse)
+                    ? inverse
+                    : Matrix4x4.Identity;
+
+            Vector4 nearClip = new(nearNdc, 1.0f);
+            Vector4 farClip = new(farNdc, 1.0f);
+
+            Vector4 nearWorld =
+                Vector4.Transform(nearClip, inverseViewProjection);
+
+            Vector4 farWorld =
+                Vector4.Transform(farClip, inverseViewProjection);
+
+            nearWorld /= nearWorld.W;
+            farWorld /= farWorld.W;
+
+            Vector3 origin = nearWorld.AsVector3();
+            Vector3 direction =
+                Vector3.Normalize(farWorld.AsVector3() - origin);
+
+            return new Ray(origin, direction);
+        }
+
         public bool IntersectsAABB(Vector3 min, Vector3 max)
         {
             if (Frustum == null)
