@@ -10,14 +10,13 @@ namespace Elemental
             {
                 Height = 720,
                 Width = 1280,
-                Name = "Devoid Engine",
+                Name = "Elemental Editor",
                 API = GraphicsAPI.DX11,
                 Resizable = true,
                 VSync = false
             });
 
-            //application.AddLayer(new SandboxGlassTest());
-            //application.AddLayer(new SandboxProgram());
+            application.AddLayer(new EditorLayer());
 
             Engine.Instance.ProjectSystem.Load(
                 "D:/Devoid Engine/DevoidProject/new_project.devoid"

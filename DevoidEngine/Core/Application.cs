@@ -29,13 +29,12 @@ namespace DevoidEngine.Core
         public const int ENGINE_MAJOR_VER = 0;
         public const int ENGINE_MINOR_VER = 1;
 
-
         public WindowSurface MainWindow => mainSurface;
+        public readonly ImGuiRenderer ImguiRenderer;
 
         private readonly WindowSurface mainSurface;
         private readonly List<WindowSurface> surfaces;
         private readonly FrameTimer frameTimer;
-        private readonly ImGuiRenderer imguiRenderer;
 
         private readonly LayerManager layerManager;
         private float deltaTimeAccumulator = 0f;
@@ -94,9 +93,9 @@ namespace DevoidEngine.Core
 
             Engine.InputSystem.UpdateInputProviderWindow(window);
 
-            imguiRenderer = new ImGuiRenderer();
-            imguiRenderer.Initialize();
-            imguiRenderer.OnGUI += () => { layerManager.OnGUILayers(); };
+            ImguiRenderer = new ImGuiRenderer();
+            ImguiRenderer.Initialize(mainSurface);
+            ImguiRenderer.OnGUI += () => { layerManager.OnGUILayers(); };
 
             //for (int i = 0; i < 10; i++)
             //{
@@ -169,6 +168,7 @@ namespace DevoidEngine.Core
                         Engine.InputSystem.Update(); // Only update main window, change for multi window support
                 }
 
+
                 Engine.AudioSystem.Update();
 
                 deltaTimeAccumulator += deltaTime;
@@ -194,10 +194,10 @@ namespace DevoidEngine.Core
                         continue;
                     surface.UpdateSurface(deltaTime);
                     cmd.SetFramebuffer(surface.Framebuffer);
-                    cmd.ClearColor(0, Colors.White);
+                    cmd.ClearColor(0, Colors.Black);
                     if (surface == mainSurface)
                     {
-                        imguiRenderer.BeginFrame(surface, deltaTime);
+                        ImguiRenderer.BeginFrame(surface, deltaTime);
                         UpdateCursor();
                         Render(cmd, surface);
                         Engine.InputSystem.EndFrame();
@@ -290,7 +290,7 @@ namespace DevoidEngine.Core
                 Engine.Renderer.Render(cmd, viewport);
             }
             layerManager.PostRenderLayers(cmd);
-            imguiRenderer.EndFrame(cmd, surface);
+            ImguiRenderer.EndFrame(cmd, surface);
         }
 
         public void AddLayer(Layer layer)

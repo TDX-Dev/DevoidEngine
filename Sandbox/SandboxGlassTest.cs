@@ -38,7 +38,11 @@ namespace Sandbox
 
         public override void OnGUIRender()
         {
+            if (ImGui.Begin("Hey!"))
+            {
 
+            }
+            ImGui.End();
         }
 
         public override void OnAttach()

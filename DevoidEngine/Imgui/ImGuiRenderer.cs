@@ -3,6 +3,7 @@ using DevoidEngine.InputSystem;
 using DevoidEngine.Rendering;
 using DevoidGPU;
 using ImGuiNET;
+using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -11,13 +12,12 @@ using Window = DevoidEngine.Core.Window;
 
 namespace DevoidEngine.Imgui
 {
-
     [StructLayout(LayoutKind.Sequential)]
     public struct ImShaderData
     {
         public Matrix4x4 ProjectionMatrix;
-        public float DPIScaling;
-        Vector3 padding;
+        public float DpiScaling;
+        private Vector3 padding;
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -35,77 +35,54 @@ namespace DevoidEngine.Imgui
         );
     }
 
-
     public class ImGuiRenderer : IInputLayer
     {
-        private static readonly Keys[] ImGuiKeys =
-[
-    Keys.Tab,
-    Keys.Left,
-    Keys.Right,
-    Keys.Up,
-    Keys.Down,
-    Keys.PageUp,
-    Keys.PageDown,
-    Keys.Home,
-    Keys.End,
-    Keys.Insert,
-    Keys.Delete,
-    Keys.Backspace,
-    Keys.Space,
-    Keys.Enter,
-    Keys.Escape,
+        private static readonly Keys[] imGuiKeys =
+        [
+            Keys.Tab, Keys.Left, Keys.Right, Keys.Up, Keys.Down,
+            Keys.PageUp, Keys.PageDown, Keys.Home, Keys.End, Keys.Insert,
+            Keys.Delete, Keys.Backspace, Keys.Space, Keys.Enter, Keys.Escape,
+            Keys.A, Keys.C, Keys.S, Keys.V, Keys.X, Keys.Y, Keys.Z
+        ];
 
-    Keys.A,
-    Keys.C,
-    Keys.S,
-    Keys.V,
-    Keys.X,
-    Keys.Y,
-    Keys.Z
-];
-        readonly Shader guiShader;
-        ImShaderData ImShaderData = new();
-        readonly UniformBuffer ShaderConstantBuffer;
+        private readonly Shader guiShader;
+        private ImShaderData imShaderData = new();
+        private readonly UniformBuffer shaderConstantBuffer;
 
-        VertexBuffer<ImGuiVertex> VertexBuffer;
-        IndexBuffer IndexBuffer;
-        //IInputLayout InputLayout;
+        private VertexBuffer<ImGuiVertex> vertexBuffer;
+        private IndexBuffer indexBuffer;
 
         private readonly IDescriptorSet guiDescriptor;
 
         private int vertexBufferSize = 2000;
         private int indexBufferSize = 4000;
 
-        private Texture? _fontTexture;
-        private readonly Sampler _defaultSampler;
+        private Texture? fontTexture;
+        private readonly Sampler defaultSampler;
 
         private readonly RenderTarget imguiRenderTarget;
-        private Texture imguiRenderTexture = null!;
+        private Texture? imguiRenderTexture;
 
         private int prevWidth;
         private int prevHeight;
 
-        //private bool _fontsConfigured = false;
-        private int _fontsCount = -1;
-        private ImFontPtr DefaultFont;
+        private int fontsCount = -1;
+        private ImFontPtr defaultFont;
 
-        public Action? OnGUI;
-
+        public Action? OnGUI { get; set; }
+        public float FooterHeight { get; set; } = 24f;
+        public float ToolbarHeight { get; set; } = 28f;
 
         public ImGuiRenderer()
         {
-            this.guiShader = Shader.FromDescriptorFile(Engine.GraphicsDevice, "Content/DevoidShaderDescriptors/imgui_shader.dsd");
+            guiShader = Shader.FromDescriptorFile(Engine.GraphicsDevice, "Content/DevoidShaderDescriptors/imgui_shader.dsd");
+            guiDescriptor = Engine.GraphicsDevice.CreateDescriptorSet(guiShader.DefaultPass.DescriptorLayout);
+            shaderConstantBuffer = UniformBuffer.Create(ResourceUsage.Dynamic, (uint)Unsafe.SizeOf<ImShaderData>());
 
-            this.guiDescriptor = Engine.GraphicsDevice.CreateDescriptorSet(guiShader.DefaultPass.DescriptorLayout);
+            vertexBuffer = new VertexBuffer<ImGuiVertex>(Engine.GraphicsDevice, vertexBufferSize, ImGuiVertex.VertexInfo, ResourceUsage.Dynamic);
+            indexBuffer = new IndexBuffer(Engine.GraphicsDevice, indexBufferSize, ResourceUsage.Dynamic, IndexFormat.UInt16);
 
-            this.ShaderConstantBuffer = UniformBuffer.Create(ResourceUsage.Dynamic, (uint)Unsafe.SizeOf<ImShaderData>());
-
-            this.VertexBuffer = new VertexBuffer<ImGuiVertex>(Engine.GraphicsDevice, vertexBufferSize, ImGuiVertex.VertexInfo, ResourceUsage.Dynamic);
-            this.IndexBuffer = new IndexBuffer(Engine.GraphicsDevice, indexBufferSize, ResourceUsage.Dynamic, IndexFormat.UInt16);
-            //this.InputLayout = graphicsDevice.CreateInputLayout(ImGuiVertex.VertexInfo, guiShader.vShader);
-
-            this._defaultSampler = Sampler.Create(new SamplerDescription()
+            defaultSampler = Sampler.Create(new SamplerDescription()
             {
                 MinFilter = FilterMode.Linear,
                 MagFilter = FilterMode.Linear,
@@ -118,7 +95,6 @@ namespace DevoidEngine.Imgui
                 MinLOD = 0.0f,
                 MaxLOD = 0.0f
             });
-            //Engine.InputSystem.Router.Push(this);
 
             imguiRenderTarget = RenderTarget.Create(1);
         }
@@ -128,7 +104,6 @@ namespace DevoidEngine.Imgui
             if (drawData.CmdListsCount == 0)
                 return;
 
-            // Take first command list
             var vtxBuffer = drawData.CmdLists[0].VtxBuffer;
             int total = Math.Min(count, vtxBuffer.Size);
 
@@ -146,28 +121,23 @@ namespace DevoidEngine.Imgui
                 byte b = (byte)((col >> 16) & 0xFF);
                 byte a = (byte)((col >> 24) & 0xFF);
 
-                Console.WriteLine(
-                    $"V{i}: pos=({pos.X:F1}, {pos.Y:F1}), uv=({uv.X:F2}, {uv.Y:F2}), col=RGBA({r},{g},{b},{a}) [0x{col:X8}]"
-                );
+                Console.WriteLine($"V{i}: pos=({pos.X:F1}, {pos.Y:F1}), uv=({uv.X:F2}, {uv.Y:F2}), col=RGBA({r},{g},{b},{a}) [0x{col:X8}]");
             }
         }
 
         public ImFontPtr AddFontFromFile(string path, float sizePixels)
         {
-            ImGuiIOPtr io = ImGui.GetIO();
-            return io.Fonts.AddFontFromFileTTF(path, sizePixels);
+            return ImGui.GetIO().Fonts.AddFontFromFileTTF(path, sizePixels);
         }
 
         public void AddDefaultFont()
         {
-            ImGuiIOPtr io = ImGui.GetIO();
-            io.Fonts.AddFontDefault();
+            ImGui.GetIO().Fonts.AddFontDefault();
         }
 
         public void SetDefaultFont(ImFontPtr font)
         {
-            this.DefaultFont = font;
-
+            defaultFont = font;
         }
 
         public unsafe ImFontPtr LoadIconFont(string path, int size, (ushort, ushort) range)
@@ -180,23 +150,13 @@ namespace DevoidEngine.Imgui
                 PixelSnapH = true
             };
 
-            ushort[] ranges =
-            [
-                range.Item1,
-                range.Item2,
-                0
-            ];
+            ushort[] ranges = [range.Item1, range.Item2, 0];
 
             fixed (ushort* rangePtr = ranges)
             {
                 try
                 {
-                    return ImGui.GetIO().Fonts.AddFontFromFileTTF(
-                        path,
-                        size,
-                        config,
-                        (IntPtr)rangePtr
-                    );
+                    return ImGui.GetIO().Fonts.AddFontFromFileTTF(path, size, config, (IntPtr)rangePtr);
                 }
                 finally
                 {
@@ -205,79 +165,52 @@ namespace DevoidEngine.Imgui
             }
         }
 
+        private unsafe void UpdateMonitors()
+        {
+            ImGuiPlatformIOPtr platformIO = ImGui.GetPlatformIO();
 
-        public void Initialize()
+            if (platformIO.NativePtr->Monitors.Data != IntPtr.Zero)
+            {
+                Marshal.FreeHGlobal((nint)platformIO.NativePtr->Monitors.Data);
+            }
+
+            int count = Monitors.GetMonitors().Count;
+            if (count == 0)
+            {
+                platformIO.NativePtr->Monitors = new ImVector();
+                return;
+            }
+
+            IntPtr data = Marshal.AllocHGlobal(Unsafe.SizeOf<ImGuiPlatformMonitor>() * count);
+            platformIO.NativePtr->Monitors = new ImVector(count, count, data);
+
+            var monitors = Monitors.GetMonitors();
+            for (int i = 0; i < monitors.Count; i++)
+            {
+                MonitorInfo monitor = monitors[i];
+                ImGuiPlatformMonitorPtr imguiMonitor = platformIO.Monitors[i];
+
+                imguiMonitor.MainPos = new Vector2(monitor.ClientArea.Min.X, monitor.ClientArea.Min.Y);
+                imguiMonitor.MainSize = new Vector2(monitor.ClientArea.Size.X, monitor.ClientArea.Size.Y);
+                imguiMonitor.WorkPos = new Vector2(monitor.WorkArea.Min.X, monitor.WorkArea.Min.Y);
+                imguiMonitor.WorkSize = new Vector2(monitor.WorkArea.Size.X, monitor.WorkArea.Size.Y);
+                imguiMonitor.DpiScale = 1.0f;
+            }
+        }
+
+        public unsafe void Initialize(WindowSurface window)
         {
             ImGui.SetCurrentContext(ImGui.CreateContext());
-            //ImGuizmo.SetImGuiContext(ImGui.GetCurrentContext());
-
-            //var platformIO = ImGui.GetPlatformIO();
-
-            //platformIO.Platform_CreateWindow = CreateWindow;
-            //platformIO.Platform_DestroyWindow = DestroyWindow;
-            //platformIO.Platform_ShowWindow = ShowWindow;
-            //platformIO.Platform_SetWindowPos = SetWindowPos;
-            //platformIO.Platform_GetWindowPos = GetWindowPos;
-            //platformIO.Platform_SetWindowSize = SetWindowSize;
-            //platformIO.Platform_GetWindowSize = GetWindowSize;
-            //platformIO.Platform_RenderWindow = RenderWindow;
-            //platformIO.Platform_SwapBuffers = SwapBuffers;
-
             ImGuiIOPtr io = ImGui.GetIO();
 
             io.BackendFlags |= ImGuiBackendFlags.RendererHasVtxOffset;
-            //io.ConfigFlags |= ImGuiConfigFlags.ViewportsEnable;
             io.ConfigFlags |= ImGuiConfigFlags.DockingEnable;
 
-            //io.BackendFlags |= ImGuiBackendFlags.PlatformHasViewports;
-            //io.BackendFlags |= ImGuiBackendFlags.RendererHasViewports;
-
             ConfigureFontAtlas();
-
         }
-
-        //unsafe void CreateWindow(ImGuiViewportPtr vp)
-        //{
-        //    Window window = new Window(new WindowSpecification()
-        //    {
-        //        WindowSize = new Vector2(vp.Size.X, vp.Size.Y),
-        //        WindowTitle = "ImGui Viewport"
-        //    });
-
-        //    vp.PlatformHandle = window.GetWindowPtr();
-        //    vp.PlatformUserData = GCHandle.ToIntPtr(GCHandle.Alloc(window));
-        //}
-
-        //unsafe void DestroyWindow(ImGuiViewportPtr vp)
-        //{
-        //    var handle = GCHandle.FromIntPtr(vp.PlatformUserData);
-        //    var window = (Window)handle.Target!;
-
-        //    window.Dispose();
-        //    handle.Free();
-        //}
-
-        //unsafe void RenderWindow(ImGuiViewportPtr vp, IntPtr data)
-        //{
-        //    var handle = GCHandle.FromIntPtr(vp.PlatformUserData);
-        //    var window = (Window)handle.Target!;
-
-        //    window.MakeCurrent();
-
-        //    RenderImDrawData(vp.DrawData);
-        //}
-
-        //unsafe void SwapBuffers(ImGuiViewportPtr vp, IntPtr data)
-        //{
-        //    var handle = GCHandle.FromIntPtr(vp.PlatformUserData);
-        //    var window = (Window)handle.Target!;
-
-        //    window.;
-        //}
 
         public void ConfigureFontAtlas()
         {
-
             ImGuiIOPtr io = ImGui.GetIO();
 
             if (io.Fonts.Fonts.Size == 0)
@@ -286,37 +219,47 @@ namespace DevoidEngine.Imgui
             }
 
             io.Fonts.Build();
-
-            // Bake the font atlas
             io.Fonts.GetTexDataAsRGBA32(out nint pixels, out int width, out int height, out int bpp);
 
             int size = width * height * bpp;
             byte[] managedPixels = new byte[size];
             Marshal.Copy(pixels, managedPixels, 0, size);
 
-            _fontTexture = Texture.Create2D(width, height, TextureFormat.RGBA8_UNorm, TextureUsage.ShaderResource);
-            _fontTexture.GPU.Update(managedPixels);
+            fontTexture?.Dispose(); // Optimize: Prevents memory leak when fonts change/rebuild
 
-            io.Fonts.SetTexID((nint)_fontTexture.ID);
+            fontTexture = Texture.Create2D(width, height, TextureFormat.RGBA8_UNorm, TextureUsage.ShaderResource);
+            fontTexture.GPU.Update(managedPixels);
 
+            io.Fonts.SetTexID((nint)fontTexture.ID);
         }
 
         public void UpdateDisplay(Window window)
         {
             if (window.ClientSize.X == 0 || window.ClientSize.Y == 0)
                 return;
+
             ImGui.GetIO().DisplaySize = new(window.ClientSize.X, window.ClientSize.Y);
+
             if (window.ClientSize.X != prevWidth || window.ClientSize.Y != prevHeight)
             {
-                imguiRenderTexture = Texture.Create2D(window.ClientSize.X, window.ClientSize.Y, TextureFormat.RGBA8_UNorm, TextureUsage.RenderTarget | TextureUsage.ShaderResource);
-                prevHeight = window.ClientSize.Y;
-                prevWidth = window.ClientSize.X;
-            }
-            imguiRenderTarget.SetColorAttachment(0, imguiRenderTexture);
-        }
+                imguiRenderTexture?.Dispose(); // Optimize: Resolves memory leak upon window resize
 
-        public float FooterHeight = 24f;
-        public float ToolbarHeight = 28f;
+                imguiRenderTexture = Texture.Create2D(
+                    window.ClientSize.X,
+                    window.ClientSize.Y,
+                    TextureFormat.RGBA8_UNorm,
+                    TextureUsage.RenderTarget | TextureUsage.ShaderResource
+                );
+
+                prevWidth = window.ClientSize.X;
+                prevHeight = window.ClientSize.Y;
+            }
+
+            if (imguiRenderTexture != null)
+            {
+                imguiRenderTarget.SetColorAttachment(0, imguiRenderTexture);
+            }
+        }
 
         public void SetCustomToolbarHeight(float height) => ToolbarHeight = height;
 
@@ -325,23 +268,16 @@ namespace DevoidEngine.Imgui
             ImGuiViewportPtr viewport = ImGui.GetMainViewport();
 
             ImGui.SetNextWindowPos(
-                new Vector2(
-                    viewport.WorkPos.X,
-                    viewport.WorkPos.Y + ToolbarHeight
-                ),
+                new Vector2(viewport.WorkPos.X, viewport.WorkPos.Y + ToolbarHeight),
                 ImGuiCond.Always
             );
 
             ImGui.SetNextWindowSize(
-                new Vector2(
-                    viewport.WorkSize.X,
-                    viewport.WorkSize.Y - ToolbarHeight - FooterHeight
-                ),
+                new Vector2(viewport.WorkSize.X, viewport.WorkSize.Y - ToolbarHeight - FooterHeight),
                 ImGuiCond.Always
             );
 
             ImGui.SetNextWindowViewport(viewport.ID);
-
             ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 0.0f);
             ImGui.PushStyleVar(ImGuiStyleVar.WindowBorderSize, 0.0f);
             ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Vector2.Zero);
@@ -361,17 +297,12 @@ namespace DevoidEngine.Imgui
             ImGui.PopStyleVar(3);
 
             uint dockspaceId = ImGui.GetID("MyDockspace");
-
-            ImGui.DockSpace(
-                dockspaceId,
-                Vector2.Zero,
-                ImGuiDockNodeFlags.PassthruCentralNode
-            );
+            ImGui.DockSpace(dockspaceId, Vector2.Zero, ImGuiDockNodeFlags.PassthruCentralNode);
 
             ImGui.End();
         }
 
-        static ImGuiKey MapKey(Keys key)
+        private static ImGuiKey MapKey(Keys key)
         {
             return key switch
             {
@@ -390,7 +321,6 @@ namespace DevoidEngine.Imgui
                 Keys.Space => ImGuiKey.Space,
                 Keys.Enter => ImGuiKey.Enter,
                 Keys.Escape => ImGuiKey.Escape,
-
                 Keys.A => ImGuiKey.A,
                 Keys.C => ImGuiKey.C,
                 Keys.S => ImGuiKey.S,
@@ -398,88 +328,59 @@ namespace DevoidEngine.Imgui
                 Keys.X => ImGuiKey.X,
                 Keys.Y => ImGuiKey.Y,
                 Keys.Z => ImGuiKey.Z,
-
                 _ => ImGuiKey.None
             };
         }
 
-
         public void UpdateInput(Window window)
         {
             ImGuiIOPtr io = ImGui.GetIO();
-
             var mouse = window.MouseState;
             var keyboard = window.KeyboardState;
 
-            io.MousePos = new Vector2(
-                mouse.Position.X,
-                mouse.Position.Y);
-
+            io.MousePos = new Vector2(mouse.Position.X, mouse.Position.Y);
             io.MouseDown[0] = mouse.IsButtonDown(MouseButton.Left);
             io.MouseDown[1] = mouse.IsButtonDown(MouseButton.Right);
             io.MouseDown[2] = mouse.IsButtonDown(MouseButton.Middle);
-
             io.MouseWheel = mouse.ScrollDelta.Y;
             io.MouseWheelH = mouse.ScrollDelta.X;
 
-            foreach (Keys key in ImGuiKeys)
+            foreach (Keys key in imGuiKeys)
             {
-                io.AddKeyEvent(
-                    MapKey(key),
-                    keyboard.IsKeyDown(key));
+                io.AddKeyEvent(MapKey(key), keyboard.IsKeyDown(key));
             }
 
-            io.AddKeyEvent(
-                ImGuiKey.ModCtrl,
-                keyboard.IsKeyDown(Keys.LeftControl) ||
-                keyboard.IsKeyDown(Keys.RightControl));
-
-            io.AddKeyEvent(
-                ImGuiKey.ModShift,
-                keyboard.IsKeyDown(Keys.LeftShift) ||
-                keyboard.IsKeyDown(Keys.RightShift));
-
-            io.AddKeyEvent(
-                ImGuiKey.ModAlt,
-                keyboard.IsKeyDown(Keys.LeftAlt) ||
-                keyboard.IsKeyDown(Keys.RightAlt));
-
-            io.AddKeyEvent(
-                ImGuiKey.ModSuper,
-                keyboard.IsKeyDown(Keys.LeftSuper) ||
-                keyboard.IsKeyDown(Keys.RightSuper));
+            io.AddKeyEvent(ImGuiKey.ModCtrl, keyboard.IsKeyDown(Keys.LeftControl) || keyboard.IsKeyDown(Keys.RightControl));
+            io.AddKeyEvent(ImGuiKey.ModShift, keyboard.IsKeyDown(Keys.LeftShift) || keyboard.IsKeyDown(Keys.RightShift));
+            io.AddKeyEvent(ImGuiKey.ModAlt, keyboard.IsKeyDown(Keys.LeftAlt) || keyboard.IsKeyDown(Keys.RightAlt));
+            io.AddKeyEvent(ImGuiKey.ModSuper, keyboard.IsKeyDown(Keys.LeftSuper) || keyboard.IsKeyDown(Keys.RightSuper));
         }
 
         public void OnTextInput(char c)
         {
-            ImGuiIOPtr io = ImGui.GetIO();
-            io.AddInputCharacter(c);
+            ImGui.GetIO().AddInputCharacter(c);
         }
 
         public void UpdatePerFrameParameters(float delta)
         {
             ImGuiIOPtr io = ImGui.GetIO();
-
             io.DeltaTime = delta;
 
-            if (io.Fonts.Fonts.Size != _fontsCount)
+            if (io.Fonts.Fonts.Size != fontsCount)
             {
                 ConfigureFontAtlas();
-                _fontsCount = io.Fonts.Fonts.Size;
+                fontsCount = io.Fonts.Fonts.Size;
             }
         }
 
-        public void BeginFrame(
-            WindowSurface surface,
-            float delta)
+        public void BeginFrame(WindowSurface surface, float delta)
         {
             UpdatePerFrameParameters(delta);
             UpdateDisplay(surface.Window);
             UpdateInput(surface.Window);
 
             ImGui.NewFrame();
-
-            ImGui.PushFont(DefaultFont);
+            ImGui.PushFont(defaultFont);
 
             CreateDockspace();
 
@@ -491,85 +392,54 @@ namespace DevoidEngine.Imgui
         public void EndFrame(ICommandList cmd, WindowSurface surface)
         {
             ImGui.Render();
-            RenderImDrawData(ImGui.GetDrawData(), cmd, surface);
+
+            var size = surface.Window.ClientSize;
+
+            RenderImDrawData(
+                ImGui.GetDrawData(),
+                cmd,
+                surface,
+                size.X,
+                size.Y
+            );
+
+            ImGui.UpdatePlatformWindows();
+            ImGui.RenderPlatformWindowsDefault();
         }
 
-        //public void PerFrame(float delta = 1 / 60f)
-        //{
-        //    UpdatePerFrameParameters(delta);
-        //    UpdateDisplay();
-        //    UpdateInput();   // <---- add this
-
-        //    ImGui.NewFrame();
-
-        //    ImGui.PushFont(DefaultFont);
-
-        //    CreateDockspace();
-
-        //    OnGUI?.Invoke();
-
-        //    ImGui.PopFont();
-
-        //    ImGui.Render();
-        //    RenderImDrawData(ImGui.GetDrawData());
-        //}
-
-        public void RenderImDrawData(ImDrawDataPtr drawData, ICommandList cmd, WindowSurface surface)
+        public void RenderImDrawData(ImDrawDataPtr drawData, ICommandList cmd, WindowSurface surface, int fbWidth, int fbHeight)
         {
             if (drawData.CmdListsCount == 0) return;
 
-            ImGuiIOPtr io = ImGui.GetIO();
-
-            int fbWidth = (int)(io.DisplaySize.X * io.DisplayFramebufferScale.X);
-            int fbHeight = (int)(io.DisplaySize.Y * io.DisplayFramebufferScale.Y);
-            if (fbWidth <= 0 || fbHeight <= 0) return;
-
-            drawData.ScaleClipRects(io.DisplayFramebufferScale);
+            drawData.ScaleClipRects(Vector2.One);
 
             var mvp = Matrix4x4.CreateOrthographicOffCenterLeftHanded(
                 0.0f, fbWidth,
                 fbHeight, 0.0f,
-                -1.0f, 1.0f);
+                -1.0f, 1.0f
+            );
 
-            ImShaderData.ProjectionMatrix = mvp;
-            ImShaderData.DPIScaling = 1.0f;
+            imShaderData.ProjectionMatrix = mvp;
+            imShaderData.DpiScaling = 1.0f;
 
-            //graphicsDevice.MainSurface.Bind();
-            ////graphicsDevice.MainSurface.ClearColor(new Vector4(0, 0, 0, 1));
-            //graphicsDevice.SetPrimitiveType(PrimitiveType.Triangles);
             cmd.SetFramebuffer(surface.Framebuffer);
 
             Engine.Renderer.PushViewport(cmd, new ViewportRect()
             {
                 X = 0,
                 Y = 0,
-                Width = fbWidth, Height = fbHeight,
+                Width = fbWidth,
+                Height = fbHeight,
             });
 
-
-            ShaderConstantBuffer.Update(ImShaderData);
-
-            guiDescriptor.SetUniformBuffer(0, ShaderConstantBuffer.GPU);
+            shaderConstantBuffer.Update(imShaderData);
+            guiDescriptor.SetUniformBuffer(0, shaderConstantBuffer.GPU);
 
             IPipeline guiPipeline = guiShader.DefaultPass.GetPipeline(Engine.GraphicsDevice, ImGuiVertex.VertexInfo);
-
-            
-
             cmd.SetPipeline(guiPipeline);
 
-            //graphicsDevice.MainSurface.Bind();
-            ////graphicsDevice.MainSurface.ClearColor(new Vector4(0, 0, 0, 1));
-            //graphicsDevice.SetViewport(0, 0, fbWidth, fbHeight);
-            //graphicsDevice.SetBlendState(BlendMode.AlphaBlend);
-            //graphicsDevice.SetDepthState(DepthTest.Disabled, false);
-            //graphicsDevice.SetRasterizerState(CullMode.None);
-            //graphicsDevice.SetScissorState(true);
-
-            //InputLayout.Bind();
-
-            cmd.SetVertexBuffer(VertexBuffer.GPU);
-            cmd.SetIndexBuffer(IndexBuffer.GPU);
-
+            cmd.SetVertexBuffer(vertexBuffer.GPU);
+            cmd.SetIndexBuffer(indexBuffer.GPU);
             cmd.SetDescriptorSet(0, guiDescriptor);
 
             var clipOffset = drawData.DisplayPos;
@@ -581,26 +451,23 @@ namespace DevoidEngine.Imgui
                 int vtxSize = cmdList.VtxBuffer.Size * Unsafe.SizeOf<ImDrawVert>();
                 if (vtxSize > vertexBufferSize)
                 {
-                    VertexBuffer.Dispose();
+                    vertexBuffer.Dispose();
                     vertexBufferSize = (int)Math.Max(vertexBufferSize * 1.5f, vtxSize);
-                    VertexBuffer = new VertexBuffer<ImGuiVertex>(Engine.GraphicsDevice, vertexBufferSize, ImGuiVertex.VertexInfo, ResourceUsage.Dynamic);
-                    cmd.SetVertexBuffer(VertexBuffer.GPU);
+                    vertexBuffer = new VertexBuffer<ImGuiVertex>(Engine.GraphicsDevice, vertexBufferSize, ImGuiVertex.VertexInfo, ResourceUsage.Dynamic);
+                    cmd.SetVertexBuffer(vertexBuffer.GPU);
                 }
 
                 int idxSize = cmdList.IdxBuffer.Size * sizeof(ushort);
                 if (idxSize > indexBufferSize)
                 {
-                    IndexBuffer.Dispose();
+                    indexBuffer.Dispose();
                     indexBufferSize = (int)Math.Max(indexBufferSize * 1.5f, idxSize);
-                    IndexBuffer = new IndexBuffer(Engine.GraphicsDevice, indexBufferSize, ResourceUsage.Dynamic, IndexFormat.UInt16);
-
-                    cmd.SetIndexBuffer(IndexBuffer.GPU);
-
+                    indexBuffer = new IndexBuffer(Engine.GraphicsDevice, indexBufferSize, ResourceUsage.Dynamic, IndexFormat.UInt16);
+                    cmd.SetIndexBuffer(indexBuffer.GPU);
                 }
 
-                VertexBuffer.Update(cmdList.VtxBuffer.Data, cmdList.VtxBuffer.Size);
-                IndexBuffer.Update(cmdList.IdxBuffer.Data, cmdList.IdxBuffer.Size);
-
+                vertexBuffer.Update(cmdList.VtxBuffer.Data, cmdList.VtxBuffer.Size);
+                indexBuffer.Update(cmdList.IdxBuffer.Data, cmdList.IdxBuffer.Size);
 
                 for (int cmd_i = 0; cmd_i < cmdList.CmdBuffer.Size; cmd_i++)
                 {
@@ -621,34 +488,16 @@ namespace DevoidEngine.Imgui
                         continue;
 
                     cmd.SetScissor(x1, y1, x2, y2);
-                    //graphicsDevice.SetScissorRectangle(x1, y1, x2 - x1, y2 - y1);
 
                     var texture = Engine.Instance.TextureManager.Get((ulong)pcmd.TextureId);
                     guiDescriptor.SetTexture(0, texture.GPU);
-                    guiDescriptor.SetSampler(0, _defaultSampler.GPU);
-
-                    //var texture = (ITexture2D)graphicsDevice.GetTexture(pcmd.TextureId);
-                    //Renderer.GraphicsDevice.BindTexture(texture, 0, ShaderStage.Fragment);
-                    //_defaultSampler.Bind();
+                    guiDescriptor.SetSampler(0, defaultSampler.GPU);
 
                     cmd.DrawIndexed((int)pcmd.ElemCount, (int)pcmd.IdxOffset, (int)pcmd.VtxOffset);
-
-                    //graphicsDevice.DrawIndexed((int)pcmd.ElemCount, (int)pcmd.IdxOffset, (int)pcmd.VtxOffset);
                 }
             }
 
             Engine.Renderer.PopViewport(cmd);
-
-            if (io.ConfigFlags.HasFlag(ImGuiConfigFlags.ViewportsEnable))
-            {
-                ImGui.UpdatePlatformWindows();
-                ImGui.RenderPlatformWindowsDefault();
-            }
-
-            //graphicsDevice.SetScissorState(false);
-            //graphicsDevice.SetBlendState(BlendMode.Opaque);
-            //graphicsDevice.SetDepthState(DepthTest.LessEqual, true);
-            //graphicsDevice.SetRasterizerState(CullMode.Back);
         }
 
         public bool Handle(ref InputEvent e)
@@ -661,6 +510,7 @@ namespace DevoidEngine.Imgui
                 if (ImGui.GetIO().WantCaptureMouse)
                     return true;
             }
+
             if (e.DeviceType == InputDeviceType.Keyboard)
             {
                 if (ImGui.GetIO().WantCaptureKeyboard)
