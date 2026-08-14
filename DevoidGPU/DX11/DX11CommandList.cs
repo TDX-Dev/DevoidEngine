@@ -491,30 +491,47 @@ namespace DevoidGPU.DX11
             {
                 if (boundRTVs[i] == tex)
                 {
-                    boundRTVs[i] = null;
+                    Console.WriteLine(
+                        $"[HAZARD] Unbinding RTV[{i}] " +
+                        $"because texture is being bound as SRV");
+
                     dirty = true;
-                }
-            }
-            for (int i = 0; i < boundCS_UAVTextures.Length; i++)
-            {
-                if (boundCS_UAVTextures[i] == tex)
-                {
-                    deviceContext.ComputeShader.SetUnorderedAccessView(i, null);
-                    boundCS_UAVTextures[i] = null;
                 }
             }
 
             if (boundDSV == tex)
             {
-                boundDSV = null;
+                Console.WriteLine(
+                    "[HAZARD] Unbinding DSV because texture is being bound as SRV");
+
                 dirty = true;
+            }
+
+            for (int i = 0; i < boundCS_UAVTextures.Length; i++)
+            {
+                if (boundCS_UAVTextures[i] == tex)
+                {
+                    Console.WriteLine(
+                        $"[HAZARD] Unbinding CS UAV[{i}] " +
+                        $"because texture is being bound as SRV");
+
+                    deviceContext.ComputeShader.SetUnorderedAccessView(i, null);
+                    boundCS_UAVTextures[i] = null;
+                }
             }
 
             if (dirty)
             {
                 deviceContext.OutputMerger.SetRenderTargets(
-                    (DepthStencilView?)null,
+                    null,
                     []);
+
+                Array.Clear(boundRTVs);
+                boundDSV = null;
+
+                // CRITICAL:
+                // The physical OM state no longer matches currentFramebuffer.
+                currentFramebuffer = null;
             }
         }
         private void ResolveForSRV(DX11ShaderStorageBuffer buffer)

@@ -56,7 +56,6 @@ namespace DevoidEngine.Rendering
         {
             if (OutputTexture != null)
             {
-                Engine.Instance.TextureManager.Unregister(OutputTexture);
                 OutputTexture.Dispose();
                 OutputTexture = null;
             }
@@ -67,9 +66,6 @@ namespace DevoidEngine.Rendering
                 TextureFormat.RGBA16_Float,
                 TextureUsage.ShaderResource | TextureUsage.RenderTarget
             );
-
-            // Register newly created viewport texture with TextureManager
-            Engine.Instance.TextureManager.Register(OutputTexture);
         }
 
         public void Resize(int width, int height)

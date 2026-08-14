@@ -32,16 +32,20 @@ namespace Elemental
         /// <summary> Called inside the ImGui render pass. </summary>
         public void Draw()
         {
-            if (!IsOpen) return;
+            if (!IsOpen)
+                return;
 
-            OnBeginWindow();
-            OnImGuiRender();
+            bool visible = OnBeginWindow();
+
+            if (visible)
+                OnImGuiRender();
+
             OnEndWindow();
         }
 
-        protected virtual void OnBeginWindow()
+        protected virtual bool OnBeginWindow()
         {
-            ImGui.Begin(Title, ref isOpen, WindowFlags);
+            return ImGui.Begin(Title, ref isOpen, WindowFlags);
         }
 
         protected abstract void OnImGuiRender();

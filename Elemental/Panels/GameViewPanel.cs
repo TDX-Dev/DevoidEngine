@@ -19,7 +19,7 @@ namespace Elemental.Panels
         {
             if (Viewport.ActiveCamera == null)
             {
-                ImGui.SetCursorPos(PanelSize * 0.5f);
+                ImGui.SetCursorPos((PanelSize) * 0.5f);
                 ImGui.TextColored(new System.Numerics.Vector4(1, 0, 0, 1), "No Active Scene Camera!");
             }
         }

@@ -21,14 +21,18 @@ namespace Elemental.Panels
             Engine.Instance.ViewportManager.RegisterViewport(Viewport);
         }
 
-        protected override void OnBeginWindow()
+        protected override bool OnBeginWindow()
         {
-            // Remove padding for full-frame viewport image rendering
-            ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(0, 0));
-            base.OnBeginWindow();
+            ImGui.PushStyleVar(
+                ImGuiStyleVar.WindowPadding,
+                new Vector2(0, 0));
 
-            IsHovered = ImGui.IsWindowHovered();
-            IsFocused = ImGui.IsWindowFocused();
+            bool visible = base.OnBeginWindow();
+
+            IsHovered = visible && ImGui.IsWindowHovered();
+            IsFocused = visible && ImGui.IsWindowFocused();
+
+            return visible;
         }
 
         protected override void OnImGuiRender()
@@ -47,8 +51,13 @@ namespace Elemental.Panels
             // 2. Render output texture inside ImGui using TextureManager ID
             if (Viewport.OutputTexture != null)
             {
-                ulong managerId = Math.Clamp(Engine.Instance.TextureManager.GetId(Viewport.OutputTexture) + 1, 11, 11);
-                ImGui.Image((IntPtr)managerId, PanelSize, new Vector2(0, 1), new Vector2(1, 0));
+                ulong managerId = Engine.Instance.TextureManager.GetId(Viewport.OutputTexture);
+
+                ImGui.Image(
+                    (IntPtr)managerId,
+                    PanelSize,
+                    new Vector2(0, 1),
+                    new Vector2(1, 0));
             }
 
             // 3. Compute relative mouse position inside the viewport
