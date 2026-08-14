@@ -55,7 +55,7 @@ namespace DevoidEngine.Gizmos
                 Vector3 position = GetHandlePosition(i, min, max);
 
                 Vector3 screen =
-                    context.Camera.GetCamera().WorldToScreen(
+                    context.Camera.WorldToScreen(
                         position,
                         context.Viewport.Width,
                         context.Viewport.Height);
@@ -84,7 +84,7 @@ namespace DevoidEngine.Gizmos
                 Vector3 axis =
                     GetHandleAxis(i);
 
-                Vector3 billboardNormal = -context.Camera.GetCamera().Front;
+                Vector3 billboardNormal = -context.Camera.Front;
 
                 bestHit = new GizmoHit
                 {

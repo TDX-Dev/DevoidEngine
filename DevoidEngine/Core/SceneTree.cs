@@ -9,17 +9,10 @@ namespace DevoidEngine.Core
 
         public event Action<Scene>? OnSceneChanged;
 
-        private readonly List<Viewport> viewports = [];
-
         public SceneTree()
         {
             RootViewport = new Viewport();
-            viewports.Add(RootViewport);
-        }
-
-        public List<Viewport> GetViewports()
-        {
-            return viewports;
+            Engine.Instance.ViewportManager.RegisterViewport(RootViewport);
         }
 
         public void LoadScene(Scene scene)
@@ -37,6 +30,7 @@ namespace DevoidEngine.Core
             CurrentScene = scene;
             scene.Physics = Engine.PhysicsSystem;
             scene.Audio = Engine.AudioSystem;
+            RootViewport.TargetScene = scene;
             CurrentScene.Start();
 
             OnSceneChanged?.Invoke(CurrentScene);

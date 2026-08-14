@@ -17,6 +17,14 @@ namespace DevoidEngine.Rendering
         public int Width;
         public int Height;
     }
+
+    public struct ScissorRect
+    {
+        public int X;
+        public int Y;
+        public int Width;
+        public int Height;
+    }
     public enum RenderTechnique
     {
         Forward,
@@ -38,7 +46,7 @@ namespace DevoidEngine.Rendering
 
         public ShaderLibrary ShaderLibrary { get; set; } = null!;
 
-        public RenderWorld World { get; private set; } = null!;
+        //public RenderWorld World { get; private set; } = null!;
         public RenderAPI API { get; private set; } = null!;
 
         public Texture BlueNoiseTexture { get; private set; } = null!;
@@ -80,6 +88,9 @@ namespace DevoidEngine.Rendering
         private Stack<ViewportRect> viewportStack = null!;
         private ViewportRect currentViewport;
 
+        private Stack<ScissorRect> scissorStack = null!;
+        private ScissorRect currentScissor;
+
         private RenderView renderView;
 
         private ShaderStorageBuffer<GPUPointLight> PointLightBuffer = null!;
@@ -120,7 +131,34 @@ namespace DevoidEngine.Rendering
                 currentViewport.Height);
             }
         }
+        public void PushScissor(ICommandList cmd, ScissorRect scissor)
+        {
+            scissorStack.Push(currentScissor);
+            currentScissor = scissor;
 
+            cmd.SetScissor(
+                scissor.X,
+                scissor.Y,
+                scissor.Width,
+                scissor.Height);
+        }
+
+        public void PopScissor(ICommandList cmd, bool setPrevious = true)
+        {
+            if (scissorStack.Count == 0)
+                return;
+
+            currentScissor = scissorStack.Pop();
+
+            if (setPrevious)
+            {
+                cmd.SetScissor(
+                    currentScissor.X,
+                    currentScissor.Y,
+                    currentScissor.Width,
+                    currentScissor.Height);
+            }
+        }
         //private readonly IDescriptorLayout PerObjectDescriptorLayout = null!;
         //private readonly IDescriptorSet PerObjectDescriptor = null!;
 
@@ -133,6 +171,7 @@ namespace DevoidEngine.Rendering
                 throw new Exception("Graphics device not initialized yet.");
 
             viewportStack = new Stack<ViewportRect>();
+            scissorStack = new Stack<ScissorRect>();
             uiRenderDataPool = new Pool<RenderMeshData>();
             gizmoRenderDataPool = new Pool<RenderMeshData>();
             RenderResources = [];
@@ -144,7 +183,6 @@ namespace DevoidEngine.Rendering
             };
 
             ShaderLibrary = new ShaderLibrary();
-            World = new RenderWorld();
 
             DefaultShader = Shader.FromDescriptorFile(Engine.GraphicsDevice, Path.Combine(Engine.BasePath, "Content/DevoidShaderDescriptors/pbr_mat.dsd"));
             DefaultMaterial = new Material(DefaultShader);
@@ -283,7 +321,7 @@ namespace DevoidEngine.Rendering
             cmd.SetFramebuffer(ViewportBlitTarget.GPU);
             cmd.ClearColor(0, Colors.Transparent);
 
-            if (viewport.Camera3D == null || ActiveTechnique == null)
+            if (viewport.ActiveCamera == null || ActiveTechnique == null)
                 return;
 
             ExecutePendingGPUCommands(cmd);
@@ -297,7 +335,8 @@ namespace DevoidEngine.Rendering
                 Y = 0,
             });
 
-            Camera camera = viewport.Camera3D.GetCamera();
+
+            Camera camera = viewport.ActiveCamera;
 
             RenderResourceCache viewportResources = RenderResources[viewport];
 
@@ -313,7 +352,7 @@ namespace DevoidEngine.Rendering
             SkyRenderer.Render(context);
 
             renderView.Clear();
-            World.BuildView(camera, ref renderView);
+            viewport.TargetScene.World.BuildView(camera, ref renderView);
 
             camera.UpdateProjectionMatrix(((float)viewport.Width) / viewport.Height);
             UpdateCameraBuffer(camera.GetCameraData(new Vector2(viewport.Width, viewport.Height)));

@@ -1,11 +1,10 @@
-﻿using Assimp;
-using DevoidEngine.Components;
+﻿using DevoidEngine.Components;
 using DevoidEngine.Core;
 using DevoidEngine.Gizmos;
 using DevoidEngine.UI;
 using DevoidEngine.Util;
 using DevoidGPU;
-using Microsoft.VisualBasic;
+using System;
 using System.Numerics;
 
 namespace DevoidEngine.Rendering
@@ -16,19 +15,23 @@ namespace DevoidEngine.Rendering
         public int Width { get; private set; }
         public int Height { get; private set; }
 
-        public Camera3D? Camera3D { get; private set; }
+        public Camera? ActiveCamera => CameraOverride ?? TargetScene?.MainCamera?.GetCamera();
+
+        public Scene TargetScene { get; set; } = null!;
         public UIContext UIContext { get; private set; }
         public GizmoContext GizmoContext { get; private set; }
 
-        public List<Camera3D> Camera3Ds { get; private set; }
-        public Texture? OutputTexture = null!;
+        public Camera? CameraOverride { get; set; }
+
+        public Texture? OutputTexture { get; private set; } = null;
 
         private Rect bounds;
 
-        public Viewport()
+        public Viewport(int width = 1280, int height = 720)
         {
+            Width = width;
+            Height = height;
 
-            Camera3Ds = [];
             UIContext = new()
             {
                 Viewport = this,
@@ -46,18 +49,27 @@ namespace DevoidEngine.Rendering
             Width = Math.Max(1, Width);
             Height = Math.Max(1, Height);
 
-            OutputTexture = Texture.Create2D(Width, Height, TextureFormat.RGBA16_Float, TextureUsage.ShaderResource | TextureUsage.RenderTarget);
+            ReallocateTexture();
         }
 
-        public bool AddCamera3D(Camera3D camera)
+        private void ReallocateTexture()
         {
-            Camera3Ds.Add(camera);
-            return Camera3Ds.Count == 1;
-        }
+            if (OutputTexture != null)
+            {
+                Engine.Instance.TextureManager.Unregister(OutputTexture);
+                OutputTexture.Dispose();
+                OutputTexture = null;
+            }
 
-        public void SetCamera3D(Camera3D camera)
-        {
-            Camera3D = camera;
+            OutputTexture = Texture.Create2D(
+                Width,
+                Height,
+                TextureFormat.RGBA16_Float,
+                TextureUsage.ShaderResource | TextureUsage.RenderTarget
+            );
+
+            // Register newly created viewport texture with TextureManager
+            Engine.Instance.TextureManager.Register(OutputTexture);
         }
 
         public void Resize(int width, int height)
@@ -65,14 +77,15 @@ namespace DevoidEngine.Rendering
             width = Math.Max(1, width);
             height = Math.Max(1, height);
 
+            if (Width == width && Height == height)
+                return;
+
             Width = width;
             Height = height;
 
             bounds = new Rect(Vector2.Zero, new Vector2(Width, Height));
 
-            OutputTexture?.Dispose();
-
-            OutputTexture = Texture.Create2D(width, height, TextureFormat.RGBA16_Float, TextureUsage.ShaderResource | TextureUsage.RenderTarget);
+            ReallocateTexture();
 
             Engine.Renderer.ResizeViewport(this);
         }
@@ -80,7 +93,14 @@ namespace DevoidEngine.Rendering
         public void Dispose()
         {
             Engine.Renderer.RemoveViewport(this);
-            OutputTexture?.Dispose();
+
+            if (OutputTexture != null)
+            {
+                Engine.Instance.TextureManager.Unregister(OutputTexture);
+                OutputTexture.Dispose();
+                OutputTexture = null;
+            }
+
             GC.SuppressFinalize(this);
         }
     }

@@ -104,7 +104,7 @@ namespace DevoidEngine.Gizmos
             {
                 GizmoHit? bestHit = null;
 
-                Camera camera = context.Camera.GetCamera();
+                Camera camera = context.Camera;
 
                 for (int axisIndex = 0; axisIndex < 3; axisIndex++)
                 {

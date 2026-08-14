@@ -14,7 +14,10 @@ namespace DevoidEngine.Components
             set
             {
                 is_current_camera = value;
-
+                if (is_current_camera && gameObject?.Scene != null)
+                {
+                    gameObject.Scene.SetMainCamera(this);
+                }
             }
         }
 
@@ -64,31 +67,29 @@ namespace DevoidEngine.Components
 
         public override void OnAttach()
         {
-            Viewport viewport = GetTree().RootViewport;
-
-            bool firstCamera = viewport.AddCamera3D(this);
-            if (firstCamera || is_current_camera)
-                viewport.SetCamera3D(this);
+            // Register with the local Scene instead of asking RootViewport directly!
+            if (gameObject?.Scene != null)
+            {
+                gameObject.Scene.RegisterCamera(this);
+            }
         }
 
+        public override void OnDestroy()
+        {
+            if (gameObject?.Scene != null)
+            {
+                gameObject.Scene.UnregisterCamera(this);
+            }
+        }
+
+        internal void SetIsCurrentInternal(bool isCurrent)
+        {
+            is_current_camera = isCurrent;
+        }
 
         public override void OnStart()
         {
-            Matrix4x4 world = gameObject.Transform.WorldMatrix;
-
-            Vector3 position = world.Translation;
-
-            Vector3 forward = Vector3.Normalize(new Vector3(
-                world.M31,
-                world.M32,
-                world.M33));
-
-            Vector3 up = Vector3.Normalize(new Vector3(
-                world.M21,
-                world.M22,
-                world.M23));
-
-            camera.UpdateView(position, forward, up);
+            UpdateCameraView(gameObject.Transform.WorldMatrix);
         }
 
         public override void OnRender()
@@ -104,6 +105,11 @@ namespace DevoidEngine.Components
                     Engine.Instance.InterpolationAlpha)
                 : transform.WorldMatrix;
 
+            UpdateCameraView(world);
+        }
+
+        private void UpdateCameraView(in Matrix4x4 world)
+        {
             Vector3 position = world.Translation;
 
             Vector3 forward = Vector3.Normalize(new Vector3(

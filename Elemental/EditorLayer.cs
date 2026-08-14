@@ -1,5 +1,6 @@
 ﻿using DevoidEngine.Core;
 using DevoidGPU;
+using Elemental.Panels;
 using ImGuiNET;
 using System;
 using System.Collections.Generic;
@@ -14,32 +15,54 @@ namespace Elemental
     {
         ImFontPtr editorFont;
 
+        private PanelManager panelManager = null!;
+        private Scene activeScene = null!;
 
         public override void OnAttach()
         {
             SetStyling();
             editorFont = Application.ImguiRenderer.AddFontFromFile("./Assets/Fonts/JBM.ttf", 16);
             Application.ImguiRenderer.SetDefaultFont(editorFont);
+
+
+            panelManager = new PanelManager();
+            panelManager.AddPanel(new SceneViewPanel(activeScene));
+            panelManager.AddPanel(new GameViewPanel(activeScene));
         }
 
         public override void OnGUIRender()
         {
             DrawMenuBar();
+            panelManager.OnImGuiRender();
+
         }
 
         public override void OnUpdate(float deltaTime)
         {
-            
+            // Update active scene on change
+            if (Engine.Instance.SceneTree.CurrentScene != activeScene)
+            {
+                activeScene = Engine.Instance.SceneTree.CurrentScene!;
+                foreach (var vpPanel in new ViewportPanel[] { panelManager.GetPanel<SceneViewPanel>()!, panelManager.GetPanel<GameViewPanel>()! })
+                {
+                    if (vpPanel != null) vpPanel.Viewport.TargetScene = activeScene!;
+                }
+            }
+
+            panelManager.OnUpdate(deltaTime);
         }
 
         public override void OnPostRender(ICommandList cmd)
         {
-            
+            cmd.SetFramebuffer(Application.MainWindow.Framebuffer);
+            cmd.SetViewport(0, 0, Application.MainWindow.Window.ClientSize.X, Application.MainWindow.Window.ClientSize.Y);
+            Engine.Renderer.API.RenderToScreen(cmd, Engine.Instance.SceneTree.RootViewport.OutputTexture!);
         }
 
         public override void OnDetach()
         {
-            
+            panelManager.Clear();
+            //EditorServices.Clear();
         }
 
         void DrawMenuBar()

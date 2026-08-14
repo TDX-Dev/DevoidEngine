@@ -1,4 +1,6 @@
-﻿using DevoidEngine.Assets;
+﻿using Assimp;
+using Assimp.Unmanaged;
+using DevoidEngine.Assets;
 using DevoidEngine.Audio;
 using DevoidEngine.Components;
 using DevoidEngine.Physics;
@@ -14,9 +16,12 @@ namespace DevoidEngine.Core
         public string SceneName { get; set; } = "Empty Scene";
 
         public List<GameObject> GameObjects { get; private set; }
-
+        public RenderWorld World { get; private set; } = null!;
         public PhysicsSystem Physics { get; internal set; } = null!;
         public AudioManager Audio { get; internal set; } = null!;
+
+        public List<Camera3D> Cameras { get; private set; } = [];
+        public Camera3D? MainCamera { get; private set; }
 
         private bool isPlaying = false;
         private bool isStarted = false;
@@ -31,6 +36,7 @@ namespace DevoidEngine.Core
             transforms = [];
             renderables = [];
 
+            World = new();
         }
 
         public void Start()
@@ -65,9 +71,11 @@ namespace DevoidEngine.Core
                 transform.hasMoved = false;
             }
 
-            Camera3D? currentSceneCamera3D = Engine.Instance.SceneTree.RootViewport.Camera3D;
-            if (currentSceneCamera3D != null)
-                Audio.SetListener(currentSceneCamera3D.gameObject.Transform.Position, currentSceneCamera3D.gameObject.Transform.Forward, currentSceneCamera3D.gameObject.Transform.Up);
+            if (MainCamera != null)
+            {
+                Transform3D camTransform = MainCamera.gameObject.Transform;
+                Audio?.SetListener(camTransform.Position, camTransform.Forward, camTransform.Up);
+            }
         }
 
         public void LateUpdate(float deltaTime)
@@ -159,7 +167,37 @@ namespace DevoidEngine.Core
             }
             return null;
         }
+        public void RegisterCamera(Camera3D camera)
+        {
+            if (!Cameras.Contains(camera))
+            {
+                Cameras.Add(camera);
+            }
 
+            if (MainCamera == null || camera.IsCurrent)
+            {
+                SetMainCamera(camera);
+            }
+        }
+
+        public void UnregisterCamera(Camera3D camera)
+        {
+            Cameras.Remove(camera);
+
+            if (MainCamera == camera)
+            {
+                MainCamera = Cameras.Count > 0 ? Cameras[0] : null;
+            }
+        }
+
+        public void SetMainCamera(Camera3D camera)
+        {
+            MainCamera = camera;
+            foreach (var cam in Cameras)
+            {
+                cam.SetIsCurrentInternal(cam == camera);
+            }
+        }
         public void ComponentAdded(Component component)
         {
             if (component is IRenderComponent renderComponent)
@@ -190,6 +228,8 @@ namespace DevoidEngine.Core
             GameObjects.Clear();
             transforms.Clear();
             renderables.Clear();
+            Cameras.Clear();
+            MainCamera = null;
         }
     }
 }

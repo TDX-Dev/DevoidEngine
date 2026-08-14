@@ -17,8 +17,8 @@ namespace DevoidEngine.Components
                     return;
 
                 mesh = value;
-                instance_id = Engine.Renderer.World.CreateMeshInstance(mesh);
-                Engine.Renderer.World.InstanceSetTransform(instance_id, gameObject.Transform.WorldMatrix);
+                instance_id = gameObject.Scene.World.CreateMeshInstance(mesh);
+                gameObject.Scene.World.InstanceSetTransform(instance_id, gameObject.Transform.WorldMatrix);
             }
         }
 
@@ -31,7 +31,7 @@ namespace DevoidEngine.Components
                     return;
 
                 material = value;
-                Engine.Renderer.World.InstanceSetMaterial(instance_id, material);
+                gameObject.Scene.World.InstanceSetMaterial(instance_id, material);
             }
         }
 
@@ -67,7 +67,7 @@ namespace DevoidEngine.Components
             {
                 worldMatrixInterpolated = gameObject.Transform.WorldMatrix;
             }
-            Engine.Renderer.World.InstanceSetTransform(instance_id, worldMatrixInterpolated);
+            gameObject.Scene.World.InstanceSetTransform(instance_id, worldMatrixInterpolated);
             has_moved_current_frame = false;
         }
 
@@ -75,7 +75,7 @@ namespace DevoidEngine.Components
         {
             if (mesh != null && instance_id.IsValid)
             {
-                Engine.Renderer.World.FreeMeshInstance(instance_id);
+                gameObject.Scene.World.FreeMeshInstance(instance_id);
                 Engine.Instance.AssetManager.Unload(mesh);
             }
             if (material != null)

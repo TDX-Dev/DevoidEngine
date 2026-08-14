@@ -53,6 +53,7 @@ namespace DevoidEngine.Core
         public bool UseInterpolation { get; set; } = true;
         public TextureManager TextureManager { get; internal set; } = null!;
         public SceneTree SceneTree { get; set; } = null!;
+        public ViewportManager ViewportManager { get; internal set; } = null!;
         public VirtualFileSystem VirtualFileSystem { get; set; } = null!;
         public Version EngineVersion { get; set; } = null!;
         public Project ProjectSystem { get; set; } = null!;
@@ -104,6 +105,7 @@ namespace DevoidEngine.Core
 
 
             instance.renderer.Initialize(config.RendererConfig);
+            instance.ViewportManager = new ViewportManager();
             instance.SceneTree = new SceneTree();
             instance.inputSystem = new Input();
             instance.physicsSystem = new PhysicsSystem(new BepuPhysicsBackend());

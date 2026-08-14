@@ -348,7 +348,6 @@ namespace DevoidGPU.DX11
                 deviceContext.ComputeShader.SetShaderResource((int)slot, view);
             }
         }
-
         internal void BindShaderResourceView(uint slot, ShaderStage stages, DX11Texture tex)
         {
             ResolveForSRV(tex);
@@ -389,7 +388,6 @@ namespace DevoidGPU.DX11
                 }
             }
         }
-
         internal void BindShaderResourceView(uint slot, ShaderStage stages, DX11ShaderStorageBuffer buffer)
         {
             ResolveForSRV(buffer);
@@ -430,7 +428,6 @@ namespace DevoidGPU.DX11
                 }
             }
         }
-
         private void BindUnorderedAccessView(uint slot, ShaderStage stages, DX11Texture tex)
         {
             ResolveForUAV(tex);
@@ -444,7 +441,6 @@ namespace DevoidGPU.DX11
             }
 
         }
-
         private void BindUnorderedAccessView(uint slot, ShaderStage stages, DX11ShaderStorageBuffer buffer)
         {
             ResolveForUAV(buffer);
@@ -457,7 +453,6 @@ namespace DevoidGPU.DX11
                 boundCS_UAVBuffers[slot] = buffer;
             }
         }
-
         internal void BindSampler(uint slot, ShaderStage stages, SamplerState sampler)
         {
             if ((stages & ShaderStage.Vertex) != 0 &&
@@ -488,7 +483,6 @@ namespace DevoidGPU.DX11
                 boundCS_Samplers[slot] = sampler;
             }
         }
-
         private void ResolveForSRV(DX11Texture tex)
         {
             bool dirty = false;

@@ -137,7 +137,7 @@ namespace DevoidEngine.Components
 
         private void CreateRenderLight()
         {
-            RenderWorld world = Engine.Renderer.World;
+            RenderWorld world = gameObject.Scene.World;
 
             switch (lightType)
             {
@@ -159,7 +159,7 @@ namespace DevoidEngine.Components
 
         private void DestroyRenderLight()
         {
-            RenderWorld world = Engine.Renderer.World;
+            RenderWorld world = gameObject.Scene.World;
 
             switch (lightType)
             {
@@ -186,7 +186,7 @@ namespace DevoidEngine.Components
         private void RebuildGPUData()
         {
             //Console.WriteLine("Rebuilt light data");
-            RenderWorld world = Engine.Renderer.World;
+            RenderWorld world = gameObject.Scene.World;
 
             Vector3 position = gameObject.Transform.Position;
             Vector3 forward = gameObject.Transform.Forward;

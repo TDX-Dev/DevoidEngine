@@ -63,7 +63,7 @@ namespace DevoidEngine.UI
 
         public void MouseMove(Vector2 mouse)
         {
-            List<Viewport> viewports = Engine.Instance.SceneTree.GetViewports();
+            List<Viewport> viewports = Engine.Instance.ViewportManager.GetViewports();
 
             if (CapturedContext != null)
             {
@@ -299,7 +299,7 @@ namespace DevoidEngine.UI
             if (CapturedContext != null)
                 return CapturedContext;
 
-            List<Viewport> viewports = Engine.Instance.SceneTree.GetViewports();
+            List<Viewport> viewports = Engine.Instance.ViewportManager.GetViewports();
 
             for (int i = viewports.Count - 1; i >= 0; i--)
             {

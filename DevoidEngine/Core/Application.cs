@@ -206,6 +206,7 @@ namespace DevoidEngine.Core
                     surface.RenderSurface(cmd);
 
                 }
+                cmd.SetScissor(0, 0, 1280, 720);
                 cmd.End();
                 Engine.GraphicsDevice.Submit(cmd);
 
@@ -266,7 +267,7 @@ namespace DevoidEngine.Core
         {
             layerManager.UpdateLayers(deltaTime);
 
-            List<Viewport> viewports = Engine.Instance.SceneTree.GetViewports();
+            List<Viewport> viewports = Engine.Instance.ViewportManager.GetViewports();
             Engine.UISystem.Update(deltaTime, viewports);
             Engine.GizmoSystem.Update(deltaTime, viewports);
 
@@ -278,17 +279,12 @@ namespace DevoidEngine.Core
             layerManager.RenderLayers(cmd);
             Engine.Instance.SceneTree.RenderScenes();
 
-            List<Viewport> viewports = Engine.Instance.SceneTree.GetViewports();
-
             Engine.Renderer.UpdatePerFrameData(new PerFrameData()
             {
                 FrameIndex = (int)Engine.Instance.FrameCount
             });
+            Engine.Instance.ViewportManager.RenderAll(cmd);
 
-            foreach (Viewport viewport in viewports)
-            {
-                Engine.Renderer.Render(cmd, viewport);
-            }
             layerManager.PostRenderLayers(cmd);
             ImguiRenderer.EndFrame(cmd, surface);
         }

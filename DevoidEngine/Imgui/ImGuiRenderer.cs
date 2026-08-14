@@ -487,13 +487,22 @@ namespace DevoidEngine.Imgui
                     if (x2 <= x1 || y2 <= y1)
                         continue;
 
-                    cmd.SetScissor(x1, y1, x2, y2);
+                    //cmd.SetScissor(x1, y1, x2, y2);
+                    Engine.Renderer.PushScissor(cmd, new ScissorRect()
+                    {
+                        X = x1,
+                        Y = y1,
+                        Width = x2,
+                        Height = y2,
+                    });
 
                     var texture = Engine.Instance.TextureManager.Get((ulong)pcmd.TextureId);
                     guiDescriptor.SetTexture(0, texture.GPU);
                     guiDescriptor.SetSampler(0, defaultSampler.GPU);
 
                     cmd.DrawIndexed((int)pcmd.ElemCount, (int)pcmd.IdxOffset, (int)pcmd.VtxOffset);
+
+                    Engine.Renderer.PopScissor(cmd);
                 }
             }
 

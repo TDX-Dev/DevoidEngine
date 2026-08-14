@@ -1,4 +1,5 @@
 ﻿using DevoidEngine.Components;
+using DevoidEngine.Core;
 using DevoidEngine.Rendering;
 using DevoidEngine.Util;
 using System;
@@ -16,12 +17,12 @@ namespace DevoidEngine.Gizmos
 
         public List<Gizmo> Gizmos { get; } = [];
 
-    public GizmoHit? HotHit { get; internal set; }
-    public GizmoHit? ActiveHit { get; internal set; }
+        public GizmoHit? HotHit { get; internal set; }
+        public GizmoHit? ActiveHit { get; internal set; }
 
         public GizmoDrawList DrawList { get; } = new();
 
-        public Camera3D Camera => Viewport.Camera3D!;
+        public Camera Camera => Viewport.ActiveCamera!;
 
         public Vector2 MousePosition { get; internal set; }
         public Vector2 MouseDelta { get; internal set; }
@@ -30,7 +31,7 @@ namespace DevoidEngine.Gizmos
 
         public Ray GetMouseRay(Vector2 mousePosition)
         {
-            return Camera.GetCamera().ScreenToWorldRay(
+            return Camera.ScreenToWorldRay(
                 mousePosition,
                 Viewport.Width,
                 Viewport.Height);
