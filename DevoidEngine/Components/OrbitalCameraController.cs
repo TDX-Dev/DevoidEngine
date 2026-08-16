@@ -9,10 +9,6 @@ namespace DevoidEngine.Components
     {
         public override string Type => nameof(OrbitalCameraController);
 
-        // --------------------------------------------------------
-        // Settings
-        // --------------------------------------------------------
-
         public float OrbitSensitivity = 0.005f;
         public float PanSensitivity = 0.02f;
         public float ZoomSensitivity = 1.5f;
@@ -21,10 +17,6 @@ namespace DevoidEngine.Components
         public float MaxDistance = 100.0f;
         public float InitialDistance = 10.0f;
 
-        // Input Actions - You will need to define these in your InputSystem
-        // OrbitAction -> e.g., Middle Mouse Button
-        // PanAction   -> e.g., Shift + Middle Mouse Button
-        // ZoomAction  -> e.g., Scroll Wheel Delta
         public string OrbitAction = "Orbit";
         public string PanAction = "Pan";
         public string ZoomAction = "Zoom";
@@ -54,6 +46,8 @@ namespace DevoidEngine.Components
 
             // Apply initial setup
             UpdateCameraDistance();
+
+            Console.WriteLine("Gum");
         }
 
         private void CreateCameraHierarchy()

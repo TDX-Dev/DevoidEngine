@@ -166,7 +166,7 @@ float4 PSMain(PSInput input) : SV_TARGET
     float3 albedo = albedoTex * Albedo.rgb;
     float metallic = saturate(metallicTex * Metallic);
     float roughness = saturate(roughnessTex * Roughness);
-    float ao = screenAO; // * AO;
+    float ao = clamp(screenAO, 1, 1); // * AO;
     float3 emission = emissiveTex * EmissiveColor * EmissiveStrength;
     
     float3 N = GetNormalFromMap(input);

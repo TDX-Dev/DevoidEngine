@@ -15,6 +15,10 @@ namespace Elemental.Panels
         public bool IsHovered { get; private set; }
         public bool IsFocused { get; private set; }
 
+        private Vector2 pendingSize;
+        private Vector2 allocatedSize;
+        private int resizeFrames;
+
         protected ViewportPanel(string title, Scene activeScene) : base(title)
         {
             Viewport = new Viewport(1280, 720);
@@ -37,14 +41,30 @@ namespace Elemental.Panels
 
         protected override void OnImGuiRender()
         {
-            // 1. Detect dynamic panel resize and update Viewport
             Vector2 contentSize = ImGui.GetContentRegionAvail();
-            if (contentSize.X != PanelSize.X || contentSize.Y != PanelSize.Y)
+
+            if (contentSize.X > 0 && contentSize.Y > 0)
             {
                 PanelSize = contentSize;
-                if (PanelSize.X > 0 && PanelSize.Y > 0)
+
+                if (contentSize != pendingSize)
                 {
-                    Viewport.Resize((int)PanelSize.X, (int)PanelSize.Y);
+                    pendingSize = contentSize;
+                    resizeFrames = 0;
+                }
+                else
+                {
+                    resizeFrames++;
+                }
+
+                if (resizeFrames >= 2 &&
+                    pendingSize != allocatedSize)
+                {
+                    allocatedSize = pendingSize;
+
+                    Viewport.Resize(
+                        (int)allocatedSize.X,
+                        (int)allocatedSize.Y);
                 }
             }
 
@@ -56,8 +76,8 @@ namespace Elemental.Panels
                 ImGui.Image(
                     (IntPtr)managerId,
                     PanelSize,
-                    new Vector2(0, 1),
-                    new Vector2(1, 0));
+                    new Vector2(0, 0),
+                    new Vector2(1, 1));
             }
 
             // 3. Compute relative mouse position inside the viewport

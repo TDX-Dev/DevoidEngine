@@ -96,6 +96,7 @@ namespace DevoidEngine.Core
             ImguiRenderer = new ImGuiRenderer();
             ImguiRenderer.Initialize(mainSurface);
             ImguiRenderer.OnGUI += () => { layerManager.OnGUILayers(); };
+            mainSurface.OnTextInput += ImguiRenderer.OnTextInput;
 
             //for (int i = 0; i < 10; i++)
             //{

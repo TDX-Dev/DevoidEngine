@@ -17,11 +17,6 @@ namespace Elemental.Panels
 
         protected override void OnViewportOverlayRender()
         {
-            if (Viewport.ActiveCamera == null)
-            {
-                ImGui.SetCursorPos((PanelSize) * 0.5f);
-                ImGui.TextColored(new System.Numerics.Vector4(1, 0, 0, 1), "No Active Scene Camera!");
-            }
         }
     }
 }

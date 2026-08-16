@@ -9,6 +9,9 @@ namespace Elemental
     public class EditorCamera
     {
         public Vector3 Position { get; set; } = new Vector3(0, 5, 10);
+        public Vector3 FocalPoint { get; set; } = Vector3.Zero;
+        public float Distance { get; set; } = 10f;
+
         public float Pitch { get; set; } = -20f; // Degrees
         public float Yaw { get; set; } = -90f;   // Degrees (pointing down -Z)
 
@@ -36,40 +39,92 @@ namespace Elemental
             NearPlane = near;
             FarPlane = far;
 
+            // Compute initial distance and focal point based on position & orientation
             Recalculate();
+            Distance = Vector3.Distance(Position, FocalPoint);
         }
 
         public void OnUpdate(float deltaTime, bool isHovered)
         {
-            // Only capture input when Right Mouse Button is held down
+            Vector2 mouseDelta = ImGui.GetIO().MouseDelta;
+            float wheel = ImGui.GetIO().MouseWheel;
+
+            // -------------------------------------------------------------
+            // 1. Right Mouse Button: Fly Cam Mode (FPS Style)
+            // -------------------------------------------------------------
             if (ImGui.IsMouseDown(ImGuiMouseButton.Right))
             {
-                // 1. Mouse Look
-                Vector2 mouseDelta = ImGui.GetIO().MouseDelta;
+                // Mouse Look
                 Yaw += mouseDelta.X * MouseSensitivity;
                 Pitch -= mouseDelta.Y * MouseSensitivity;
                 Pitch = Math.Clamp(Pitch, -89f, 89f);
 
-                // 2. Adjust Flight Speed via Mouse Wheel
-                float wheel = ImGui.GetIO().MouseWheel;
+                // Flight Speed Adjustment via Scroll Wheel
                 if (wheel != 0)
                 {
                     MoveSpeed = MathF.Max(0.5f, MoveSpeed + wheel * 2.0f);
                 }
 
-                // 3. Movement
+                // Movement
                 float speed = MoveSpeed * deltaTime;
                 if (ImGui.IsKeyDown(ImGuiKey.ModShift))
                 {
-                    speed *= 2.5f; // Speed boost
+                    speed *= 2.5f;
                 }
 
-                if (ImGui.IsKeyDown(ImGuiKey.W)) Position += Forward * speed;
-                if (ImGui.IsKeyDown(ImGuiKey.S)) Position -= Forward * speed;
-                if (ImGui.IsKeyDown(ImGuiKey.A)) Position -= Right * speed;
-                if (ImGui.IsKeyDown(ImGuiKey.D)) Position += Right * speed;
-                if (ImGui.IsKeyDown(ImGuiKey.E)) Position += Vector3.UnitY * speed; // Ascend
-                if (ImGui.IsKeyDown(ImGuiKey.Q)) Position -= Vector3.UnitY * speed; // Descend
+                float forward = (ImGui.IsKeyDown(ImGuiKey.W) ? 1f : 0f) - (ImGui.IsKeyDown(ImGuiKey.S) ? 1f : 0f);
+                float right = (ImGui.IsKeyDown(ImGuiKey.D) ? 1f : 0f) - (ImGui.IsKeyDown(ImGuiKey.A) ? 1f : 0f);
+                float up = (ImGui.IsKeyDown(ImGuiKey.E) ? 1f : 0f) - (ImGui.IsKeyDown(ImGuiKey.Q) ? 1f : 0f);
+
+                Vector3 moveDir = Vector3.Zero;
+                moveDir += Forward * forward;
+                moveDir -= Right * right;
+                moveDir += Vector3.UnitY * up;
+
+                if (moveDir != Vector3.Zero)
+                {
+                    moveDir = Vector3.Normalize(moveDir);
+                }
+
+                Position += moveDir * speed;
+
+                // Sync FocalPoint so Orbit mode seamlessly picks up from current position
+                FocalPoint = Position + Forward * Distance;
+            }
+            // -------------------------------------------------------------
+            // 2. Middle Mouse Button: Blender Orbit / Pan Mode
+            // -------------------------------------------------------------
+            else if (ImGui.IsMouseDown(ImGuiMouseButton.Middle))
+            {
+                if (ImGui.IsKeyDown(ImGuiKey.ModShift))
+                {
+                    // Pan (MMB + Shift) - moves both target & camera along local view plane
+                    float panSpeed = Distance * 0.002f; // Scale speed with distance for smooth feel
+                    Vector3 pan = (Right * mouseDelta.X + Up * mouseDelta.Y) * panSpeed;
+
+                    FocalPoint += pan;
+                    Position += pan;
+                }
+                else
+                {
+                    // Orbit around FocalPoint (MMB)
+                    Yaw += mouseDelta.X * MouseSensitivity;
+                    Pitch -= mouseDelta.Y * MouseSensitivity;
+                    Pitch = Math.Clamp(Pitch, -89f, 89f);
+
+                    RecalculateOrientation();
+                    Position = FocalPoint - Forward * Distance;
+                }
+            }
+            // -------------------------------------------------------------
+            // 3. Zooming via Scroll Wheel (when RMB is not held)
+            // -------------------------------------------------------------
+            else if (wheel != 0 && isHovered)
+            {
+                // Exponential zoom relative to current focal distance
+                float zoomDelta = wheel * (Distance * 0.1f);
+                Distance = MathF.Max(0.1f, Distance - zoomDelta);
+                Position = FocalPoint - Forward * Distance;
             }
 
             Recalculate();
@@ -86,17 +141,18 @@ namespace Elemental
 
         public void LookAt(Vector3 target)
         {
+            FocalPoint = target;
             Vector3 dir = Vector3.Normalize(target - Position);
             Pitch = MathF.Asin(dir.Y) * (180f / MathF.PI);
             Yaw = MathF.Atan2(dir.Z, dir.X) * (180f / MathF.PI);
+            Distance = Vector3.Distance(Position, FocalPoint);
             Recalculate();
         }
 
-        private void Recalculate()
+        private void RecalculateOrientation()
         {
-            // Compute directional vectors from Pitch & Yaw
             float pitchRad = Pitch * (MathF.PI / 180f);
-            float yawRad = Yaw * (MathF.PI / 180f);
+            float yawRad = -Yaw * (MathF.PI / 180f);
 
             Vector3 dir;
             dir.X = MathF.Cos(yawRad) * MathF.Cos(pitchRad);
@@ -106,6 +162,11 @@ namespace Elemental
             Forward = Vector3.Normalize(dir);
             Right = Vector3.Normalize(Vector3.Cross(Forward, Vector3.UnitY));
             Up = Vector3.Normalize(Vector3.Cross(Right, Forward));
+        }
+
+        private void Recalculate()
+        {
+            RecalculateOrientation();
 
             // Compute Matrices
             ViewMatrix = Matrix4x4.CreateLookAt(Position, Position + Forward, Up);

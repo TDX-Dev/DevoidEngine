@@ -1,4 +1,5 @@
 ﻿using SharpDX.Direct3D11;
+using System.Diagnostics;
 using System.Numerics;
 using static System.Net.Mime.MediaTypeNames;
 using Buffer = SharpDX.Direct3D11.Buffer;
@@ -80,8 +81,22 @@ namespace DevoidGPU.DX11
                 bottom);
         }
 
-        public void SetFramebuffer(IFrameBuffer framebuffer)
+        public void SetFramebuffer(IFrameBuffer? framebuffer)
         {
+            if (framebuffer == null)
+            {
+                deviceContext.OutputMerger.SetRenderTargets(
+                    null,
+                    (RenderTargetView[])null!);
+
+                currentFramebuffer = null;
+
+                Array.Clear(boundRTVs);
+                boundDSV = null;
+
+                return;
+            }
+
             DX11Framebuffer dx11Fb = (DX11Framebuffer)framebuffer;
 
             if (ReferenceEquals(currentFramebuffer, dx11Fb) && !dx11Fb.Dirty)
@@ -494,7 +509,6 @@ namespace DevoidGPU.DX11
                     Console.WriteLine(
                         $"[HAZARD] Unbinding RTV[{i}] " +
                         $"because texture is being bound as SRV");
-
                     dirty = true;
                 }
             }

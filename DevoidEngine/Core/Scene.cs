@@ -50,9 +50,8 @@ namespace DevoidEngine.Core
 
         public void Update(float deltaTime)
         {
-            //if (isPlaying)
-            //{
-            //}
+            if (!isPlaying)
+                return;
 
             for (int i = 0; i < GameObjects.Count; i++)
             {
@@ -166,6 +165,12 @@ namespace DevoidEngine.Core
                     return GameObjects[i];
             }
             return null;
+        }
+        public void RemoveGameObject(GameObject gameObject)
+        {
+            transforms.Remove(gameObject.Transform);
+            GameObjects.Remove(gameObject);
+            gameObject.OnDestroy();
         }
         public void RegisterCamera(Camera3D camera)
         {

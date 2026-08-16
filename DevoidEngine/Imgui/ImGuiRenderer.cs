@@ -39,10 +39,41 @@ namespace DevoidEngine.Imgui
     {
         private static readonly Keys[] imGuiKeys =
         [
+            // Navigation & Editing
             Keys.Tab, Keys.Left, Keys.Right, Keys.Up, Keys.Down,
             Keys.PageUp, Keys.PageDown, Keys.Home, Keys.End, Keys.Insert,
             Keys.Delete, Keys.Backspace, Keys.Space, Keys.Enter, Keys.Escape,
-            Keys.A, Keys.C, Keys.S, Keys.V, Keys.X, Keys.Y, Keys.Z
+            Keys.CapsLock, Keys.ScrollLock, Keys.NumLock, Keys.PrintScreen, Keys.Pause,
+
+            // Modifiers
+            Keys.LeftShift, Keys.RightShift,
+            Keys.LeftControl, Keys.RightControl,
+            Keys.LeftAlt, Keys.RightAlt,
+            Keys.LeftSuper, Keys.RightSuper,
+
+            // Alphabet (A-Z)
+            Keys.A, Keys.B, Keys.C, Keys.D, Keys.E, Keys.F, Keys.G, Keys.H, Keys.I,
+            Keys.J, Keys.K, Keys.L, Keys.M, Keys.N, Keys.O, Keys.P, Keys.Q, Keys.R,
+            Keys.S, Keys.T, Keys.U, Keys.V, Keys.W, Keys.X, Keys.Y, Keys.Z,
+
+            // Number Row (0-9)
+            Keys.D0, Keys.D1, Keys.D2, Keys.D3, Keys.D4,
+            Keys.D5, Keys.D6, Keys.D7, Keys.D8, Keys.D9,
+
+            // Function Keys (F1-F12)
+            Keys.F1, Keys.F2, Keys.F3, Keys.F4, Keys.F5, Keys.F6,
+            Keys.F7, Keys.F8, Keys.F9, Keys.F10, Keys.F11, Keys.F12,
+
+            // Keypad
+            Keys.KeyPad0, Keys.KeyPad1, Keys.KeyPad2, Keys.KeyPad3, Keys.KeyPad4,
+            Keys.KeyPad5, Keys.KeyPad6, Keys.KeyPad7, Keys.KeyPad8, Keys.KeyPad9,
+            Keys.KeyPadDecimal, Keys.KeyPadDivide, Keys.KeyPadMultiply,
+            Keys.KeyPadSubtract, Keys.KeyPadAdd, Keys.KeyPadEnter,
+
+            // Punctuation & Symbols
+            Keys.Minus, Keys.Equal, Keys.LeftBracket, Keys.RightBracket,
+            Keys.Semicolon, Keys.Apostrophe, Keys.GraveAccent, Keys.Comma,
+            Keys.Period, Keys.Slash, Keys.Backslash
         ];
 
         private readonly Shader guiShader;
@@ -68,10 +99,10 @@ namespace DevoidEngine.Imgui
 
         private int fontsCount = -1;
         private ImFontPtr defaultFont;
-
+        private readonly List<nint> _glyphRanges = [];
         public Action? OnGUI { get; set; }
         public float FooterHeight { get; set; } = 24f;
-        public float ToolbarHeight { get; set; } = 28f;
+        public float ToolbarHeight { get; set; } = 70f;
 
         public ImGuiRenderer()
         {
@@ -140,7 +171,10 @@ namespace DevoidEngine.Imgui
             defaultFont = font;
         }
 
-        public unsafe ImFontPtr LoadIconFont(string path, int size, (ushort, ushort) range)
+        public unsafe ImFontPtr LoadIconFont(
+            string path,
+            int size,
+            (ushort Min, ushort Max) range)
         {
             ImFontConfigPtr config = new(ImGuiNative.ImFontConfig_ImFontConfig())
             {
@@ -150,18 +184,27 @@ namespace DevoidEngine.Imgui
                 PixelSnapH = true
             };
 
-            ushort[] ranges = [range.Item1, range.Item2, 0];
+            nint ranges = Marshal.AllocHGlobal(3 * sizeof(ushort));
 
-            fixed (ushort* rangePtr = ranges)
+            ushort* rangePtr = (ushort*)ranges;
+
+            rangePtr[0] = range.Min;
+            rangePtr[1] = range.Max;
+            rangePtr[2] = 0;
+
+            _glyphRanges.Add(ranges);
+
+            try
             {
-                try
-                {
-                    return ImGui.GetIO().Fonts.AddFontFromFileTTF(path, size, config, (IntPtr)rangePtr);
-                }
-                finally
-                {
-                    config.Destroy();
-                }
+                return ImGui.GetIO().Fonts.AddFontFromFileTTF(
+                    path,
+                    size,
+                    config,
+                    ranges);
+            }
+            finally
+            {
+                config.Destroy();
             }
         }
 
@@ -306,6 +349,7 @@ namespace DevoidEngine.Imgui
         {
             return key switch
             {
+                // Navigation & Editing
                 Keys.Tab => ImGuiKey.Tab,
                 Keys.Left => ImGuiKey.LeftArrow,
                 Keys.Right => ImGuiKey.RightArrow,
@@ -321,13 +365,107 @@ namespace DevoidEngine.Imgui
                 Keys.Space => ImGuiKey.Space,
                 Keys.Enter => ImGuiKey.Enter,
                 Keys.Escape => ImGuiKey.Escape,
+                Keys.CapsLock => ImGuiKey.CapsLock,
+                Keys.ScrollLock => ImGuiKey.ScrollLock,
+                Keys.NumLock => ImGuiKey.NumLock,
+                Keys.PrintScreen => ImGuiKey.PrintScreen,
+                Keys.Pause => ImGuiKey.Pause,
+
+                // Modifiers
+                Keys.LeftShift => ImGuiKey.LeftShift,
+                Keys.RightShift => ImGuiKey.RightShift,
+                Keys.LeftControl => ImGuiKey.LeftCtrl,
+                Keys.RightControl => ImGuiKey.RightCtrl,
+                Keys.LeftAlt => ImGuiKey.LeftAlt,
+                Keys.RightAlt => ImGuiKey.RightAlt,
+                Keys.LeftSuper => ImGuiKey.LeftSuper,
+                Keys.RightSuper => ImGuiKey.RightSuper,
+
+                // Alphabet
                 Keys.A => ImGuiKey.A,
+                Keys.B => ImGuiKey.B,
                 Keys.C => ImGuiKey.C,
+                Keys.D => ImGuiKey.D,
+                Keys.E => ImGuiKey.E,
+                Keys.F => ImGuiKey.F,
+                Keys.G => ImGuiKey.G,
+                Keys.H => ImGuiKey.H,
+                Keys.I => ImGuiKey.I,
+                Keys.J => ImGuiKey.J,
+                Keys.K => ImGuiKey.K,
+                Keys.L => ImGuiKey.L,
+                Keys.M => ImGuiKey.M,
+                Keys.N => ImGuiKey.N,
+                Keys.O => ImGuiKey.O,
+                Keys.P => ImGuiKey.P,
+                Keys.Q => ImGuiKey.Q,
+                Keys.R => ImGuiKey.R,
                 Keys.S => ImGuiKey.S,
+                Keys.T => ImGuiKey.T,
+                Keys.U => ImGuiKey.U,
                 Keys.V => ImGuiKey.V,
+                Keys.W => ImGuiKey.W,
                 Keys.X => ImGuiKey.X,
                 Keys.Y => ImGuiKey.Y,
                 Keys.Z => ImGuiKey.Z,
+
+                // Number Row
+                Keys.D0 => ImGuiKey._0,
+                Keys.D1 => ImGuiKey._1,
+                Keys.D2 => ImGuiKey._2,
+                Keys.D3 => ImGuiKey._3,
+                Keys.D4 => ImGuiKey._4,
+                Keys.D5 => ImGuiKey._5,
+                Keys.D6 => ImGuiKey._6,
+                Keys.D7 => ImGuiKey._7,
+                Keys.D8 => ImGuiKey._8,
+                Keys.D9 => ImGuiKey._9,
+
+                // Function Keys
+                Keys.F1 => ImGuiKey.F1,
+                Keys.F2 => ImGuiKey.F2,
+                Keys.F3 => ImGuiKey.F3,
+                Keys.F4 => ImGuiKey.F4,
+                Keys.F5 => ImGuiKey.F5,
+                Keys.F6 => ImGuiKey.F6,
+                Keys.F7 => ImGuiKey.F7,
+                Keys.F8 => ImGuiKey.F8,
+                Keys.F9 => ImGuiKey.F9,
+                Keys.F10 => ImGuiKey.F10,
+                Keys.F11 => ImGuiKey.F11,
+                Keys.F12 => ImGuiKey.F12,
+
+                // Keypad
+                Keys.KeyPad0 => ImGuiKey.Keypad0,
+                Keys.KeyPad1 => ImGuiKey.Keypad1,
+                Keys.KeyPad2 => ImGuiKey.Keypad2,
+                Keys.KeyPad3 => ImGuiKey.Keypad3,
+                Keys.KeyPad4 => ImGuiKey.Keypad4,
+                Keys.KeyPad5 => ImGuiKey.Keypad5,
+                Keys.KeyPad6 => ImGuiKey.Keypad6,
+                Keys.KeyPad7 => ImGuiKey.Keypad7,
+                Keys.KeyPad8 => ImGuiKey.Keypad8,
+                Keys.KeyPad9 => ImGuiKey.Keypad9,
+                Keys.KeyPadDecimal => ImGuiKey.KeypadDecimal,
+                Keys.KeyPadDivide => ImGuiKey.KeypadDivide,
+                Keys.KeyPadMultiply => ImGuiKey.KeypadMultiply,
+                Keys.KeyPadSubtract => ImGuiKey.KeypadSubtract,
+                Keys.KeyPadAdd => ImGuiKey.KeypadAdd,
+                Keys.KeyPadEnter => ImGuiKey.KeypadEnter,
+
+                // Punctuation & Symbols
+                Keys.Minus => ImGuiKey.Minus,
+                Keys.Equal => ImGuiKey.Equal,
+                Keys.LeftBracket => ImGuiKey.LeftBracket,
+                Keys.RightBracket => ImGuiKey.RightBracket,
+                Keys.Semicolon => ImGuiKey.Semicolon,
+                Keys.Apostrophe => ImGuiKey.Apostrophe,
+                Keys.GraveAccent => ImGuiKey.GraveAccent,
+                Keys.Comma => ImGuiKey.Comma,
+                Keys.Period => ImGuiKey.Period,
+                Keys.Slash => ImGuiKey.Slash,
+                Keys.Backslash => ImGuiKey.Backslash,
+
                 _ => ImGuiKey.None
             };
         }
@@ -500,6 +638,7 @@ namespace DevoidEngine.Imgui
                     guiDescriptor.SetTexture(0, texture.GPU);
                     guiDescriptor.SetSampler(0, defaultSampler.GPU);
 
+                    cmd.SetDescriptorSet(0, guiDescriptor);
                     cmd.DrawIndexed((int)pcmd.ElemCount, (int)pcmd.IdxOffset, (int)pcmd.VtxOffset);
 
                     Engine.Renderer.PopScissor(cmd);

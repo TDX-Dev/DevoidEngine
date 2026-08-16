@@ -267,6 +267,7 @@ namespace DevoidEngine.Rendering
             }
 
             //cmd.ClearColor(0, new Vector4(0, 0, 0, 1));
+            cmd.SetFramebuffer(null);
 
             Engine.Renderer.PopViewport(cmd);
         }
@@ -390,6 +391,7 @@ namespace DevoidEngine.Rendering
                 Engine.Renderer.PopViewport(cmd);
 
             }
+            cmd.SetFramebuffer(null);
         }
 
         void GenerateBRDFLUT(ICommandList cmd)
@@ -425,6 +427,7 @@ namespace DevoidEngine.Rendering
             cmd.SetFramebuffer(PanoramaRenderTarget.GPU);
             Engine.Renderer.Execute(cmd, ConversionRenderData);
 
+            cmd.SetFramebuffer(null);
             Engine.Renderer.PopViewport(cmd);
         }
 

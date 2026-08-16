@@ -36,7 +36,6 @@ namespace DevoidEngine.Rendering
             GizmoContext gizmoContext = viewport.GizmoContext;
             Engine.GizmoSystem.Draw(gizmoContext);
 
-            if (gizmoContext.DrawList.Commands.Count == 0) return;
 
             TextureDescription gizmoColorDesc = new()
             {
@@ -74,6 +73,8 @@ namespace DevoidEngine.Rendering
             context.CommandList.SetFramebuffer(GizmoRenderTarget.GPU);
             context.CommandList.ClearColor(0, Vector4.Zero);
             context.CommandList.ClearDepthStencil(1, 0);
+
+            if (gizmoContext.DrawList.Commands.Count == 0) return;
 
             Camera renderCamera = context.Camera;
 
