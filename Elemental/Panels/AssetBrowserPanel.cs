@@ -6,9 +6,60 @@ using System.Text;
 
 namespace Elemental.Panels
 {
+
     public class AssetBrowserPanel : Panel
     {
+        private sealed class FolderNode
+        {
+            public string Path = string.Empty;
+            public string Name = string.Empty;
+
+            public List<FolderNode>? Children;
+        }
+
+
+        private static readonly Dictionary<string, string> FileIcons =
+            new(StringComparer.OrdinalIgnoreCase)
+            {
+                [".cs"] = LucideIconFont.IconFileCode,
+                [".json"] = LucideIconFont.IconFileJson,
+                [".xml"] = LucideIconFont.IconFileCode,
+                [".shader"] = LucideIconFont.IconFileCode,
+                [".hlsl"] = LucideIconFont.IconFileCode,
+
+                [".png"] = LucideIconFont.IconImage,
+                [".jpg"] = LucideIconFont.IconImage,
+                [".jpeg"] = LucideIconFont.IconImage,
+                [".bmp"] = LucideIconFont.IconImage,
+
+                [".wav"] = LucideIconFont.IconAudioLines,
+                [".mp3"] = LucideIconFont.IconAudioLines,
+                [".ogg"] = LucideIconFont.IconAudioLines,
+
+                [".obj"] = LucideIconFont.IconBox,
+                [".fbx"] = LucideIconFont.IconBox,
+
+                [".scene"] = LucideIconFont.IconPanelsTopLeft,
+                [".prefab"] = LucideIconFont.IconPackage,
+
+                [".ttf"] = LucideIconFont.IconTypeOutline,
+            };
+
+
+
         private string currentDirectory = Engine.Instance.ProjectSystem.AssetPath;
+
+        private string _rootPath = string.Empty;
+
+        private string[] _currentDirectories = Array.Empty<string>();
+        private string[] _currentFiles = Array.Empty<string>();
+
+        private bool _directoryDirty = true;
+        private FolderNode? _folderRoot;
+        private bool _folderTreeDirty = true;
+
+        private readonly Dictionary<string, string> _normalizedPaths =
+            new(StringComparer.OrdinalIgnoreCase);
 
         private const float FolderPanelWidth = 250.0f;
         private const float AssetItemHeight = 48.0f;
@@ -18,21 +69,64 @@ namespace Elemental.Panels
 
         public AssetBrowserPanel() : base("Asset Browser")
         {
+            _rootPath = Path.GetFullPath(
+                Engine.Instance.ProjectSystem.AssetPath);
+
+            currentDirectory = _rootPath;
+        }
+
+        private void NavigateTo(string directory)
+        {
+            directory = Path.GetFullPath(directory);
+
+            if (string.Equals(
+                currentDirectory,
+                directory,
+                StringComparison.OrdinalIgnoreCase))
+                return;
+
+            currentDirectory = directory;
+            _directoryDirty = true;
+        }
+
+        private void RefreshCurrentDirectory()
+        {
+            try
+            {
+                _currentDirectories =
+                    Directory.GetDirectories(currentDirectory);
+
+                _currentFiles =
+                    Directory.GetFiles(currentDirectory);
+            }
+            catch (DirectoryNotFoundException)
+            {
+                currentDirectory = _rootPath;
+
+                _currentDirectories =
+                    Directory.GetDirectories(currentDirectory);
+
+                _currentFiles =
+                    Directory.GetFiles(currentDirectory);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                _currentDirectories = Array.Empty<string>();
+                _currentFiles = Array.Empty<string>();
+            }
+
+            _directoryDirty = false;
         }
 
         protected override void OnImGuiRender()
         {
-            string root = Engine.Instance.ProjectSystem.AssetPath;
-
-            // Make sure the current directory is still valid.
             if (!Directory.Exists(currentDirectory))
-                currentDirectory = root;
+                NavigateTo(_rootPath);
+
+            if (_directoryDirty)
+                RefreshCurrentDirectory();
 
             Vector2 available = ImGui.GetContentRegionAvail();
-
-            // -------------------------
-            // Folder tree
-            // -------------------------
 
             ImGui.BeginChild(
                 "AssetBrowserFolders",
@@ -40,15 +134,11 @@ namespace Elemental.Panels
                 ImGuiChildFlags.Borders
             );
 
-            DrawFolderTree(root);
+            DrawFolderTree(_rootPath);
 
             ImGui.EndChild();
 
             ImGui.SameLine();
-
-            // -------------------------
-            // Asset list
-            // -------------------------
 
             ImGui.BeginChild(
                 "AssetBrowserContents",
@@ -63,19 +153,39 @@ namespace Elemental.Panels
 
         private void DrawFolderTree(string path)
         {
-            string root = Engine.Instance.ProjectSystem.AssetPath;
+            FolderNode node;
 
-            string name = Path.GetFileName(path);
-
-            // The asset root has no useful filename when it's something
-            // like "C:\" so give it a proper label.
-            if (Path.GetFullPath(path) == Path.GetFullPath(root))
-                name = $"{LucideIconFont.IconFolderRoot} Assets";
+            if (string.Equals(
+                path,
+                _rootPath,
+                StringComparison.OrdinalIgnoreCase))
+            {
+                node = GetFolderRoot();
+            }
             else
-                name = $"{LucideIconFont.IconFolder} " + name;
+            {
+                // This overload is no longer what we want for recursion.
+                return;
+            }
 
-                bool isCurrent = Path.GetFullPath(path) ==
-                                 Path.GetFullPath(currentDirectory);
+            DrawFolderNode(node);
+        }
+
+        private void DrawFolderNode(FolderNode node)
+        {
+            bool isRoot = string.Equals(
+                node.Path,
+                _rootPath,
+                StringComparison.OrdinalIgnoreCase);
+
+            string name = isRoot
+                ? $"{LucideIconFont.IconFolderRoot} Assets"
+                : $"{LucideIconFont.IconFolder} {node.Name}";
+
+            bool isCurrent = string.Equals(
+                node.Path,
+                currentDirectory,
+                StringComparison.OrdinalIgnoreCase);
 
             ImGuiTreeNodeFlags flags =
                 ImGuiTreeNodeFlags.OpenOnArrow |
@@ -84,53 +194,47 @@ namespace Elemental.Panels
             if (isCurrent)
                 flags |= ImGuiTreeNodeFlags.Selected;
 
-            string[] directories = Directory.GetDirectories(path);
+            LoadFolderChildren(node);
 
-            // Leaf directories don't need a tree arrow.
-            if (directories.Length == 0)
+            if (node.Children!.Count == 0)
                 flags |= ImGuiTreeNodeFlags.Leaf;
+
+            ImGui.PushID(node.Path);
 
             bool open = ImGui.TreeNodeEx(name, flags);
 
-            // Clicking the folder name selects it.
             if (ImGui.IsItemClicked())
-            {
-                currentDirectory = path;
-            }
+                NavigateTo(node.Path);
 
             if (open)
             {
-                foreach (string directory in directories)
-                {
-                    DrawFolderTree(directory);
-                }
+                foreach (FolderNode child in node.Children)
+                    DrawFolderNode(child);
 
                 ImGui.TreePop();
             }
-        }
 
+            ImGui.PopID();
+        }
         private void DrawCurrentDirectory()
         {
-            string[] directories = Directory.GetDirectories(currentDirectory);
-            string[] files = Directory.GetFiles(currentDirectory);
+            string relativePath = Path.GetRelativePath(
+                _rootPath,
+                currentDirectory);
 
-            // Optional: show the current path at the top.
             ImGui.TextUnformatted(
-                Path.GetRelativePath(
-                    Engine.Instance.ProjectSystem.AssetPath,
-                    currentDirectory
-                )
-            );
+                relativePath == "."
+                    ? "Assets"
+                    : relativePath);
 
             ImGui.Separator();
 
-            // Directories appear first.
-            foreach (string directory in directories)
-            {
-                DrawDirectoryItem(directory);
-            }
+            DrawParentDirectory();
 
-            foreach (string file in files)
+            foreach (string directory in _currentDirectories)
+                DrawDirectoryItem(directory);
+
+            foreach (string file in _currentFiles)
             {
                 if (Path.GetExtension(file).Equals(
                     ".meta",
@@ -141,15 +245,43 @@ namespace Elemental.Panels
             }
         }
 
+        private void DrawParentDirectory()
+        {
+            if (string.Equals(
+                currentDirectory,
+                _rootPath,
+                StringComparison.OrdinalIgnoreCase))
+                return;
+
+            if (DrawAssetItem(
+                "..",
+                LucideIconFont.IconFolderUp,
+                "__parent_directory__"))
+            {
+                string? parent =
+                    Directory.GetParent(currentDirectory)?.FullName;
+
+                if (parent != null &&
+                    parent.StartsWith(
+                        _rootPath,
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    NavigateTo(parent);
+                }
+            }
+        }
+
         private void DrawDirectoryItem(string directory)
         {
             string name = Path.GetFileName(directory);
 
-            DrawAssetItem(
+            if (DrawAssetItem(
                 name,
                 LucideIconFont.IconFolder,
-                () => currentDirectory = directory,
-                directory);
+                directory))
+            {
+                NavigateTo(directory);
+            }
         }
 
 
@@ -159,8 +291,7 @@ namespace Elemental.Panels
 
             DrawAssetItem(
                 name,
-                LucideIconFont.IconFile,
-                null,
+                GetFileIcon(file),
                 file);
 
             if (ImGui.BeginDragDropSource())
@@ -187,11 +318,9 @@ namespace Elemental.Panels
                 ImGui.EndDragDropSource();
             }
         }
-
-        private static void DrawAssetItem(
+        private static bool DrawAssetItem(
             string name,
             string icon,
-            Action? doubleClickAction,
             string contextPath
         )
         {
@@ -199,8 +328,10 @@ namespace Elemental.Panels
                 ImGui.GetContentRegionAvail().X,
                 AssetItemHeight);
 
+            ImGui.PushID(contextPath);
+
             ImGui.Selectable(
-                $"##AssetItem_{contextPath}",
+                "##AssetItem",
                 false,
                 ImGuiSelectableFlags.AllowDoubleClick,
                 size);
@@ -232,13 +363,12 @@ namespace Elemental.Panels
                 ImGui.GetColorU32(ImGuiCol.Text),
                 name);
 
+            ImGui.PopID();
+
             // Double click
-            if (doubleClickAction != null &&
-                ImGui.IsItemHovered() &&
-                ImGui.IsMouseDoubleClicked(ImGuiMouseButton.Left))
-            {
-                doubleClickAction();
-            }
+            bool doubleClicked =
+                    ImGui.IsItemHovered() &&
+                    ImGui.IsMouseDoubleClicked(ImGuiMouseButton.Left);
 
             // Context menu
             if (ImGui.BeginPopupContextItem())
@@ -250,6 +380,67 @@ namespace Elemental.Panels
                 AssetContextMenuRegistry.Draw(contextPath);
 
                 ImGui.EndPopup();
+            }
+            return doubleClicked;
+        }
+
+        private static string GetFileIcon(string file)
+        {
+            string extension = Path.GetExtension(file);
+
+            if (FileIcons.TryGetValue(extension, out string? icon))
+                return icon;
+
+            return LucideIconFont.IconFile;
+        }
+
+        public static void RegisterFileIcon(string extension, string icon)
+        {
+            if (!extension.StartsWith('.'))
+                extension = "." + extension;
+
+            FileIcons[extension] = icon;
+        }
+
+        private FolderNode GetFolderRoot()
+        {
+            if (_folderRoot == null || _folderTreeDirty)
+            {
+                _folderRoot = new FolderNode
+                {
+                    Path = _rootPath,
+                    Name = "Assets"
+                };
+
+                _folderTreeDirty = false;
+            }
+
+            return _folderRoot;
+        }
+
+        private static void LoadFolderChildren(FolderNode node)
+        {
+            if (node.Children != null)
+                return;
+
+            node.Children = new List<FolderNode>();
+
+            try
+            {
+                foreach (string directory in Directory.GetDirectories(node.Path))
+                {
+                    node.Children.Add(new FolderNode
+                    {
+                        Path = directory,
+                        Name = Path.GetFileName(directory)
+                    });
+                }
+            }
+            catch (UnauthorizedAccessException)
+            {
+            }
+            catch (DirectoryNotFoundException)
+            {
             }
         }
     }

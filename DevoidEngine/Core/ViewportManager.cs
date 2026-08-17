@@ -81,7 +81,7 @@ namespace DevoidEngine.Core
                 Viewport viewport = viewports[i];
 
 
-                if (viewport.TargetScene == null || viewport.ActiveCamera == null)
+                if (viewport.TargetScene == null || viewport.ActiveCamera == null || !viewport.Render)
                     continue;
 
                 // Calls your existing Renderer loop

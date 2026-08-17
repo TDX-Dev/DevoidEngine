@@ -6,9 +6,14 @@ namespace DevoidEngine.Audio
     {
         internal AudioClipHandle _handle;
 
+        internal AudioClip(AudioClipHandle handle)
+        {
+            _handle = handle;
+        }
+
         public override void Dispose()
         {
-            // TODO
+            _handle = new AudioClipHandle();
         }
     }
 }

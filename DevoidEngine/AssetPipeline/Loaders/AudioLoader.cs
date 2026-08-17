@@ -9,10 +9,7 @@ namespace DevoidEngine.AssetPipeline.Loaders
 
         public AudioClip Load(byte[] data)
         {
-            AudioClip audio = new()
-            {
-                _handle = Engine.AudioSystem.Load(data)
-            };
+            AudioClip audio = new(new AudioClipHandle());
             return audio;
         }
     }

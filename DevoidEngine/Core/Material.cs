@@ -74,6 +74,8 @@ namespace DevoidEngine.Core
         public bool TryGetVariable(string name, out ShaderVariableInfo? info)
             => variables.TryGetValue(name, out info);
 
+        public IReadOnlyDictionary<string, ShaderVariableInfo> GetVariables() => variables;
+
         public bool HasTextureBinding(string name)
             => textureBindings.ContainsKey(name);
 

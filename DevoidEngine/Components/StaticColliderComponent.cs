@@ -99,7 +99,10 @@ namespace DevoidEngine.Components
         public override void OnDestroy()
         {
             if (internalStatic != null)
+            {
                 gameObject.Scene.Physics.RemoveStatic(internalStatic);
+                internalStatic = null;
+            }
         }
     }
 }

@@ -13,9 +13,6 @@ namespace DevoidEngine.Components
     {
         public override string Type => nameof(FirstPersonController);
 
-        // --------------------------------------------------------
-        // Settings
-        // --------------------------------------------------------
 
         public float WalkSpeed = 5f;
         public float SprintSpeed = 8f;
@@ -33,7 +30,6 @@ namespace DevoidEngine.Components
 
         public bool AllowSprint = true;
 
-        // --------------------------------------------------------
 
         private RigidBodyComponent rb = null!;
         private PickupComponent pickup = null!;
@@ -63,15 +59,12 @@ namespace DevoidEngine.Components
         // TODO: Replace with proper raycast
         private bool grounded = true;
 
-        public override void OnAttach()
+        public override void OnStart()
         {
             CreateRigidBody();
             CreateCameraHierarchy();
             CreateAudioObjects();
-        }
 
-        public override void OnStart()
-        {
             rb = gameObject.GetComponent<RigidBodyComponent>()!;
 
             cameraPivot = gameObject.Scene!
@@ -141,6 +134,7 @@ namespace DevoidEngine.Components
 
         private void CreateCameraHierarchy()
         {
+            Console.WriteLine("Creating Hierarchy!");
             cameraPivot = gameObject.Scene!.AddGameObject(
                 $"{gameObject.Name}_CameraPivot");
 

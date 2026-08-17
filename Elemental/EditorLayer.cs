@@ -7,90 +7,132 @@ using DevoidEngine.InputSystem.InputDevices;
 using DevoidEngine.Rendering;
 using DevoidGPU;
 using Elemental.Panels;
+using Elemental.ProjectSettings;
+using Elemental.Util;
 using ImGuiNET;
 using MessagePack;
 using System;
+using System.IO;
 using System.Numerics;
 
 namespace Elemental
 {
     public class EditorLayer : Layer
     {
-        private ImFontPtr _editorFont;
-        private PanelManager _panelManager = null!;
-        private Scene _activeScene = null!;
+        private ImFontPtr editorFont;
+        private PanelManager panelManager = null!;
+        private Scene activeScene = null!;
+        private Scene? editScene;
+        private Scene? playScene;
+        private bool isPlaying;
 
-        private EditorContext _editorContext = null!;
+        private EditorContext editorContext = null!;
+        private ProjectSettingsWindow projectSettings = null!;
 
-        private SceneViewPanel _sceneViewPanel = null!;
-        private GameViewPanel _gameViewPanel = null!;
+        private SceneViewPanel sceneViewPanel = null!;
+        private GameViewPanel gameViewPanel = null!;
+
+        private bool openProjectSettingsRequested = false;
+
+        private string? activeScenePath;
+
+        private bool saveScenePopupRequested;
+        private string saveSceneName = "";
+        private string saveSceneDirectory = "";
+
+        private string saveSceneError = "";
+
+        private string DefaultSceneDirectory => Engine.Instance.ProjectSystem.AssetPath;
 
         public override void OnAttach()
         {
             ApplyImGuiStyling();
             EditorIcons.Initialize();
 
-            _editorFont = Application.ImguiRenderer.AddFontFromFile("./Assets/Fonts/JBM.ttf", 16);
+            editorFont = Application.ImguiRenderer.AddFontFromFile("./Assets/Fonts/JBM.ttf", 16);
             Application.ImguiRenderer.LoadIconFont("./Assets/Fonts/lucide.ttf", 16, (LucideIconFont.FontUnicodeMin, LucideIconFont.FontUnicodeMax));
 
-            Application.ImguiRenderer.SetDefaultFont(_editorFont);
+            Application.ImguiRenderer.SetDefaultFont(editorFont);
 
-            _editorContext = new EditorContext();
+            editorContext = new EditorContext();
+            projectSettings = new ProjectSettingsWindow();
 
-            _panelManager = new PanelManager();
-            _sceneViewPanel = new SceneViewPanel(null!);
-            _gameViewPanel = new GameViewPanel(null!);
+            panelManager = new PanelManager();
+            sceneViewPanel = new SceneViewPanel(null!, editorContext);
+            gameViewPanel = new GameViewPanel(null!);
 
-            _panelManager.AddPanel(_sceneViewPanel);
-            _panelManager.AddPanel(_gameViewPanel);
-            _panelManager.AddPanel(new AssetBrowserPanel());
-            _panelManager.AddPanel(new InspectorPanel(_editorContext));
-            _panelManager.AddPanel(new HierarchyPanel(_editorContext));
+            panelManager.AddPanel(sceneViewPanel);
+            panelManager.AddPanel(gameViewPanel);
+            panelManager.AddPanel(new AssetBrowserPanel());
+            panelManager.AddPanel(new InspectorPanel(editorContext));
+            panelManager.AddPanel(new HierarchyPanel(editorContext));
+
+            ProjectSettingsRegistry.Register(new InputSettingsProvider());
 
             SetupSandbox();
+
+            Application.MainWindow.Window.Title = $"Elemental Editor - Editing Scene: {editScene?.SceneName ?? "Empty Scene"}";
         }
 
         public override void OnGUIRender()
         {
             DrawMenuBar();
-            _panelManager.OnImGuiRender();
+            HandlePopupOpen();
+            panelManager.OnImGuiRender();
+            projectSettings.Draw();
+
+            if (saveScenePopupRequested)
+            {
+                ImGui.OpenPopup("Save Scene");
+                saveScenePopupRequested = false;
+            }
+
+            DrawSaveSceneModal();
+
+            EditorUI.DrawMaterialInstanceEditors();
+        }
+
+        private void HandlePopupOpen()
+        {
+            if (openProjectSettingsRequested)
+            {
+                projectSettings.Open();
+                openProjectSettingsRequested = false;
+            }
         }
 
         public override void OnUpdate(float deltaTime)
         {
-            var currentScene = Engine.Instance.SceneTree.CurrentScene;
-            if (currentScene != null && currentScene != _activeScene)
-            {
-                _activeScene = currentScene;
-                _sceneViewPanel.Viewport.TargetScene = _activeScene;
-                _gameViewPanel.Viewport.TargetScene = _activeScene;
+            HandleSaveShortcuts();
 
-                // Keep active scene in context updated
-                _editorContext.ActiveScene = _activeScene;
+            var currentScene = Engine.Instance.SceneTree.CurrentScene;
+            if (currentScene != null && currentScene != activeScene)
+            {
+                activeScene = currentScene;
+                sceneViewPanel.Viewport.TargetScene = activeScene;
+                gameViewPanel.Viewport.TargetScene = activeScene;
+
+                editorContext.ActiveScene = activeScene;
             }
 
-            _panelManager.OnUpdate(deltaTime);
-        }
-
-        public override void OnPostRender(ICommandList cmd)
-        {
+            panelManager.OnUpdate(deltaTime);
         }
 
         public override void OnDetach()
         {
             EditorIcons.Shutdown();
-            _panelManager.Clear();
+            panelManager.Clear();
         }
 
         private void SetupSandbox()
         {
-            _activeScene = Asset.Load<PackedScene>("models/sh.gltf")!.Instantiate();
+            activeScene = Asset.Load<Scene>("BaseLevel.scene")!;/*Asset.Load<PackedScene>("models/sh.gltf")!.Instantiate();*/
 
-            Engine.Instance.SceneTree.LoadScene(_activeScene);
-            _sceneViewPanel.Viewport.TargetScene = _activeScene;
-            _gameViewPanel.Viewport.TargetScene = _activeScene;
+            Engine.Instance.SceneTree.LoadScene(activeScene);
+            sceneViewPanel.Viewport.TargetScene = activeScene;
+            gameViewPanel.Viewport.TargetScene = activeScene;
 
-            _editorContext.ActiveScene = _activeScene;
+            editorContext.ActiveScene = activeScene;
 
             SetupEnvironment();
             ConfigureInputBindings();
@@ -134,11 +176,10 @@ namespace Elemental
             ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 0);
             ImGui.PushStyleVar(ImGuiStyleVar.WindowBorderSize, 0);
             ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0));
+            ImGui.PushStyleColor(ImGuiCol.WindowBg, new Vector4(0.09f, 0.09f, 0.09f, 1.00f));
 
             ImGui.SetNextWindowPos(Vector2.Zero, ImGuiCond.Always);
-            ImGui.SetNextWindowSize(
-                new Vector2(ImGui.GetIO().DisplaySize.X, height),
-                ImGuiCond.Always);
+            ImGui.SetNextWindowSize(new Vector2(ImGui.GetIO().DisplaySize.X, height), ImGuiCond.Always);
 
             ImGui.Begin(
                 "##Toolbar",
@@ -154,31 +195,23 @@ namespace Elemental
 
             BeginToolbarSection("Scene Tools");
 
-            ToolbarButton(
-                "New",
-                LucideIconFont.IconFile,
-                "New");
+            ToolbarButton("New", LucideIconFont.IconFile, "New");
+            ImGui.SameLine();
+
+            ToolbarButton("Open", LucideIconFont.IconFolderOpen, "Open");
+            ImGui.SameLine();
+
+            if (ToolbarButton("Save", LucideIconFont.IconSave, "Save"))
+            {
+                SaveScene();
+            }
 
             ImGui.SameLine();
 
-            ToolbarButton(
-                "Open",
-                LucideIconFont.IconFolderOpen,
-                "Open");
-
-            ImGui.SameLine();
-
-            ToolbarButton(
-                "Save",
-                LucideIconFont.IconSave,
-                "Save");
-
-            ImGui.SameLine();
-
-            ToolbarButton(
-                "SaveAs",
-                LucideIconFont.IconFilePen,
-                "Save As");
+            if (ToolbarButton("SaveAs", LucideIconFont.IconFilePen, "Save As"))
+            {
+                SaveSceneAs();
+            }
 
             EndToolbarSection();
 
@@ -186,17 +219,10 @@ namespace Elemental
 
             BeginToolbarSection("Actions");
 
-            ToolbarButton(
-                "Undo",
-                LucideIconFont.IconUndo2,
-                "Undo");
-
+            ToolbarButton("Undo", LucideIconFont.IconUndo2, "Undo");
             ImGui.SameLine();
 
-            ToolbarButton(
-                "Redo",
-                LucideIconFont.IconRedo2,
-                "Redo");
+            ToolbarButton("Redo", LucideIconFont.IconRedo2, "Redo");
 
             EndToolbarSection();
 
@@ -204,38 +230,19 @@ namespace Elemental
 
             BeginToolbarSection("");
 
-            ToolbarButton(
-                "Select",
-                LucideIconFont.IconMousePointer2,
-                "Select");
-
+            ToolbarButton("Select", LucideIconFont.IconMousePointer2, "Select");
             ImGui.SameLine();
 
-            ToolbarButton(
-                "Move",
-                LucideIconFont.IconMove3d,
-                "Move");
-
+            ToolbarButton("Move", LucideIconFont.IconMove3d, "Move");
             ImGui.SameLine();
 
-            ToolbarButton(
-                "Rotate",
-                LucideIconFont.IconRotate3d,
-                "Rotate");
-
+            ToolbarButton("Rotate", LucideIconFont.IconRotate3d, "Rotate");
             ImGui.SameLine();
 
-            ToolbarButton(
-                "Scale",
-                LucideIconFont.IconScale3d,
-                "Scale");
-
+            ToolbarButton("Scale", LucideIconFont.IconScale3d, "Scale");
             ImGui.SameLine();
 
-            ToolbarButton(
-                "Spline",
-                LucideIconFont.IconSpline,
-                "Spline");
+            ToolbarButton("Spline", LucideIconFont.IconSpline, "Spline");
 
             EndToolbarSection();
 
@@ -243,31 +250,16 @@ namespace Elemental
 
             BeginToolbarSection("Primitives");
 
-            ToolbarButton(
-                "Cube",
-                LucideIconFont.IconCuboid,
-                "Create Cube");
-
+            ToolbarButton("Cube", LucideIconFont.IconCuboid, "Create Cube");
             ImGui.SameLine();
 
-            ToolbarButton(
-                "Sphere",
-                LucideIconFont.IconCircle,
-                "Create Sphere");
-
+            ToolbarButton("Sphere", LucideIconFont.IconCircle, "Create Sphere");
             ImGui.SameLine();
 
-            ToolbarButton(
-                "Cylinder",
-                LucideIconFont.IconCylinder,
-                "Create Cylinder");
-
+            ToolbarButton("Cylinder", LucideIconFont.IconCylinder, "Create Cylinder");
             ImGui.SameLine();
 
-            ToolbarButton(
-                "Mesh",
-                LucideIconFont.IconBox,
-                "Create Mesh");
+            ToolbarButton("Mesh", LucideIconFont.IconBox, "Create Mesh");
 
             EndToolbarSection();
 
@@ -275,67 +267,245 @@ namespace Elemental
 
             BeginToolbarSection("Game Tools");
 
-            ToolbarButton(
-                "Play",
-                LucideIconFont.IconPlay,
-                "Play");
+            if (!isPlaying)
+            {
+                if (ToolbarButton("Play", LucideIconFont.IconPlay, "Play"))
+                {
+                    PlayScene();
+                }
+            }
+            else
+            {
+                if (ToolbarButton("Stop", LucideIconFont.IconSquare, "Stop"))
+                {
+                    StopScene();
+                }
+            }
 
             ImGui.SameLine();
 
-            ToolbarButton(
-                "Open In Runtime",
-                LucideIconFont.IconAppWindow,
-                "Open In Runtime");
-
+            ToolbarButton("Open In Runtime", LucideIconFont.IconAppWindow, "Open In Runtime");
 
             EndToolbarSection();
 
             Separator();
 
-            // ---------------------------------------------------------------------
-            // Push everything after this to the right
-            // ---------------------------------------------------------------------
+            BeginToolbarSection("Project");
 
-            float remaining = ImGui.GetContentRegionAvail().X;
-
-            if (remaining > 0)
+            if (ToolbarButton("Project Settings", LucideIconFont.IconFileCog, "Project Settings"))
             {
-                ImGui.SameLine();
-                ImGui.Dummy(new Vector2(remaining, 0));
-                ImGui.SameLine();
+                openProjectSettingsRequested = true;
             }
 
-            // ---------------------------------------------------------------------
-            // Scene / editor selector
-            // ---------------------------------------------------------------------
+            EndToolbarSection();
 
-            ImGui.SetNextItemWidth(220);
-
-            //if (ImGui.BeginCombo(
-            //    "##CurrentScene",
-            //    CurrentSceneName))
-            //{
-            //    foreach (string scene in OpenScenes)
-            //    {
-            //        bool selected = scene == CurrentSceneName;
-
-            //        if (ImGui.Selectable(scene, selected))
-            //            CurrentSceneName = scene;
-
-            //        if (selected)
-            //            ImGui.SetItemDefaultFocus();
-            //    }
-
-            //    ImGui.EndCombo();
-            //}
+            Separator();
 
             ImGui.End();
 
-            ImGui.PopStyleColor();
+            ImGui.PopStyleColor(2);
             ImGui.PopStyleVar(2);
         }
 
-        static bool ToolbarButton(string id, string icon, string? tooltip = null)
+        private void PlayScene()
+        {
+            if (isPlaying)
+                return;
+
+            editScene = activeScene;
+            playScene = SceneTools.Copy(editScene);
+
+            Engine.Instance.SceneTree.LoadScene(playScene, disposeOld: false);
+
+            playScene.Play();
+
+            sceneViewPanel.Viewport.TargetScene = playScene;
+            gameViewPanel.Viewport.TargetScene = playScene;
+
+            editorContext.ActiveScene = playScene;
+
+            isPlaying = true;
+
+            Application.MainWindow.Window.Title = $"Elemental Editor - Playing Scene: {playScene.SceneName ?? "Empty Scene"}";
+        }
+
+        private void StopScene()
+        {
+            if (!isPlaying)
+                return;
+
+            Engine.Instance.SceneTree.LoadScene(editScene!);
+
+            activeScene = editScene!;
+            playScene = null;
+            isPlaying = false;
+
+            sceneViewPanel.Viewport.TargetScene = activeScene;
+            gameViewPanel.Viewport.TargetScene = activeScene;
+
+            editorContext.ActiveScene = activeScene;
+
+            Application.MainWindow.Window.Title = $"Elemental Editor - Editing Scene: {editScene?.SceneName ?? "Empty Scene"}";
+        }
+
+        private bool SaveScene()
+        {
+            if (isPlaying || activeScene == null)
+                return false;
+
+            if (string.IsNullOrWhiteSpace(activeScenePath))
+            {
+                OpenSaveSceneDialog();
+                return false;
+            }
+
+            return SaveSceneToPath(activeScenePath);
+        }
+
+        private bool SaveSceneToPath(string path)
+        {
+            try
+            {
+                string? directory = Path.GetDirectoryName(path);
+
+                if (string.IsNullOrWhiteSpace(directory))
+                {
+                    saveSceneError = "Invalid scene directory.";
+                    return false;
+                }
+
+                Directory.CreateDirectory(directory);
+
+                byte[] data = SceneTools.Serialize(activeScene);
+                File.WriteAllBytes(path, data);
+
+                activeScenePath = Path.GetFullPath(path);
+                activeScene.SceneName = Path.GetFileNameWithoutExtension(path);
+
+                editorContext.SceneDirty = false;
+
+                Application.MainWindow.Window.Title = $"Elemental Editor - Editing Scene: {activeScene.SceneName}";
+                Console.WriteLine($"[Editor] Saved scene: {activeScenePath}");
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                saveSceneError = ex.Message;
+                Console.WriteLine($"[Editor] Failed to save scene:\n{ex}");
+                return false;
+            }
+        }
+
+        private void SaveSceneAs()
+        {
+            if (isPlaying)
+                return;
+
+            OpenSaveSceneDialog();
+        }
+
+        private void OpenSaveSceneDialog()
+        {
+            saveScenePopupRequested = true;
+
+            saveSceneName = string.IsNullOrWhiteSpace(activeScene?.SceneName)
+                ? "Scene"
+                : activeScene.SceneName;
+
+            saveSceneDirectory = string.IsNullOrWhiteSpace(activeScenePath)
+                ? DefaultSceneDirectory
+                : Path.GetDirectoryName(activeScenePath) ?? DefaultSceneDirectory;
+
+            saveSceneError = "";
+        }
+
+        private void DrawSaveSceneModal()
+        {
+            if (!ImGui.BeginPopupModal("Save Scene", ImGuiWindowFlags.AlwaysAutoResize))
+            {
+                return;
+            }
+
+            ImGui.TextUnformatted("Name");
+            ImGui.SetNextItemWidth(450);
+            ImGui.InputText("##SceneName", ref saveSceneName, 256);
+
+            ImGui.Spacing();
+
+            ImGui.TextUnformatted("Location");
+            ImGui.SetNextItemWidth(450);
+            ImGui.InputText("##SceneDirectory", ref saveSceneDirectory, 1024);
+
+            ImGui.Spacing();
+
+            string filename = saveSceneName.Trim();
+            if (!filename.EndsWith(".scene", StringComparison.OrdinalIgnoreCase))
+            {
+                filename += ".scene";
+            }
+
+            string path = Path.Combine(saveSceneDirectory, filename);
+            ImGui.TextDisabled(path);
+
+            if (!string.IsNullOrEmpty(saveSceneError))
+            {
+                ImGui.Spacing();
+                ImGui.TextColored(new Vector4(1f, 0.3f, 0.3f, 1f), saveSceneError);
+            }
+
+            ImGui.Spacing();
+            ImGui.Separator();
+            ImGui.Spacing();
+
+            if (ImGui.Button("Save", new Vector2(-1, 0)))
+            {
+                if (string.IsNullOrWhiteSpace(saveSceneName))
+                {
+                    saveSceneError = "Scene name cannot be empty.";
+                }
+                else if (string.IsNullOrWhiteSpace(saveSceneDirectory))
+                {
+                    saveSceneError = "Scene location cannot be empty.";
+                }
+                else if (!Directory.Exists(saveSceneDirectory))
+                {
+                    saveSceneError = "The specified directory does not exist.";
+                }
+                else
+                {
+                    string finalPath = Path.Combine(saveSceneDirectory, filename);
+
+                    if (SaveSceneToPath(finalPath))
+                    {
+                        ImGui.CloseCurrentPopup();
+                    }
+                }
+            }
+
+            if (ImGui.Button("Cancel", new Vector2(-1, 0)))
+            {
+                ImGui.CloseCurrentPopup();
+            }
+
+            ImGui.EndPopup();
+        }
+
+        private void HandleSaveShortcuts()
+        {
+            if (!ImGui.GetIO().WantTextInput)
+            {
+                if (ImGui.IsKeyPressed(ImGuiKey.S, false) && ImGui.GetIO().KeyCtrl)
+                {
+                    if (ImGui.GetIO().KeyShift)
+                        SaveSceneAs();
+                    else
+                        SaveScene();
+                }
+            }
+        }
+
+        private static bool ToolbarButton(string id, string icon, string? tooltip = null)
         {
             bool pressed = ImGui.Button($"{icon}##{id}");
 
@@ -345,29 +515,21 @@ namespace Elemental
             return pressed;
         }
 
-        static void Separator()
+        private static void Separator()
         {
-            //ImGui.SameLine();
-            //ImGui.Dummy(new Vector2(4, 0));
             ImGui.SameLine();
-
             VerticalSeparator();
-
-            ////ImGui.SeparatorEx(ImGuiSeparatorFlags.Vertical, new Vector2(1, 20));
-            //ImGui.Separator();
-
             ImGui.SameLine();
         }
-        static void BeginToolbarSection(string label)
+
+        private static void BeginToolbarSection(string label)
         {
             ImGui.BeginGroup();
-
             ImGui.Text(label);
-
             ImGui.BeginGroup();
         }
 
-        static void EndToolbarSection()
+        private static void EndToolbarSection()
         {
             ImGui.EndGroup();
             ImGui.EndGroup();
@@ -481,23 +643,15 @@ namespace Elemental
 
         public static void VerticalSeparator(float thickness = 1.0f, float widthPadding = 4.0f)
         {
-            // 1. Get the screen position where the cursor currently sits
             Vector2 p = ImGui.GetCursorScreenPos();
-
-            // 2. Fetch the current window's draw list 
             ImDrawListPtr drawList = ImGui.GetWindowDrawList();
 
-            // 3. Determine the height of the line based on the remaining content region
             float height = ImGui.GetContentRegionAvail().Y;
-
-            // 4. Calculate the line's exact placement offset by padding
             float lineX = p.X + widthPadding;
 
-            // 5. Draw the vertical line using the theme's built-in border color
             uint color = ImGui.GetColorU32(ImGuiCol.Border);
             drawList.AddLine(new Vector2(lineX, p.Y), new Vector2(lineX, p.Y + height), color, thickness);
 
-            // 6. Advance the layout cursor so subsequent elements render to its right
             float totalWidth = (widthPadding * 2.0f) + thickness;
             ImGui.Dummy(new Vector2(totalWidth, height));
         }

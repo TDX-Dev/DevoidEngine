@@ -17,6 +17,9 @@ namespace DevoidEngine.Core
         }
 
         private readonly Dictionary<string, Texture> textureOverrides;
+        private readonly HashSet<string> overriddenProperties;
+        private readonly HashSet<string> overriddenTextures;
+
 
         private readonly byte[]? cpuBuffer;
         private readonly UniformBuffer? gpuBuffer;
@@ -67,6 +70,8 @@ namespace DevoidEngine.Core
 
 
             textureOverrides = [];
+            overriddenProperties = [];
+            overriddenTextures = [];
             isDirty = true;
 
             //descriptorSet.SetUniformBuffer((uint)BaseMaterial.MaterialBufferBindSlot, gpuBuffer.GPU);
@@ -146,6 +151,7 @@ namespace DevoidEngine.Core
 
             var span = cpuBuffer.AsSpan(varInfo!.Offset);
             MemoryMarshal.Write(span, in value);
+            overriddenProperties.Add(name);
 
             isDirty = true;
         }
@@ -159,6 +165,7 @@ namespace DevoidEngine.Core
             }
 
             textureOverrides[name] = texture ?? Texture.Default;
+            overriddenTextures.Add(name);
 
             ShaderResourceInfo binding = BaseMaterial.GetTextureBinding(name);
 
@@ -176,6 +183,47 @@ namespace DevoidEngine.Core
                 (uint)binding.BindSlot,
                 BaseMaterial.GetDefaultTexture(name).GPU);
         }
+
+        public ReadOnlySpan<byte> GetRawValue(string name)
+        {
+            if (cpuBuffer == null)
+                return [];
+
+            if (!BaseMaterial.TryGetVariable(name, out var info))
+                return [];
+
+            return cpuBuffer.AsSpan(info!.Offset, info.Size);
+        }
+
+        internal void SetRawValue(
+            string name,
+            ReadOnlySpan<byte> value)
+        {
+            if (cpuBuffer == null)
+                return;
+
+            if (!BaseMaterial.TryGetVariable(name, out var info))
+                return;
+
+            if (value.Length != info!.Size)
+                throw new ArgumentException(
+                    $"Invalid size for material variable '{name}'. " +
+                    $"Expected {info.Size}, got {value.Length}.");
+
+            value.CopyTo(cpuBuffer.AsSpan(info.Offset, info.Size));
+
+            isDirty = true;
+        }
+
+        internal IEnumerable<string> GetOverriddenProperties() => overriddenProperties;
+        internal IEnumerable<KeyValuePair<string, Texture>> GetTextureOverrides() => textureOverrides;
+        public bool IsTextureOverridden(string name) => overriddenTextures.Contains(name);
+        public Texture? GetTextureOverride(string name)
+        {
+            textureOverrides.TryGetValue(name, out var texture);
+            return texture;
+        }
+
 
         public void Dispose()
         {

@@ -39,16 +39,43 @@ namespace DevoidEngine.Components
 
         internal Mesh? mesh;
         internal MaterialInstance? material;
+
         private RID instance_id;
         private bool has_moved_current_frame = true;
 
         public override void OnAttach()
         {
             gameObject.Transform.TransformChanged += VisualTransformChanged;
+            Console.WriteLine(gameObject.Scene.SceneName + " Attached");
         }
 
         private void VisualTransformChanged()
         {
+            has_moved_current_frame = true;
+        }
+
+        public override void OnStart()
+        {
+            Console.WriteLine("Starting Mesh Renderer Component");
+            if (mesh == null)
+                return;
+
+            if (!instance_id.IsValid)
+            {
+                instance_id =
+                    gameObject.Scene.World.CreateMeshInstance(mesh);
+                gameObject.Scene.World.InstanceSetTransform(
+                    instance_id,
+                    gameObject.Transform.WorldMatrix);
+            }
+
+            if (material != null)
+            {
+                gameObject.Scene.World.InstanceSetMaterial(
+                    instance_id,
+                    material);
+            }
+
             has_moved_current_frame = true;
         }
 

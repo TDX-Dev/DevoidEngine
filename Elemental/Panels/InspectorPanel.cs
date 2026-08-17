@@ -106,9 +106,14 @@ namespace Elemental.Panels
 
                 ImGui.PushStyleVar(ImGuiStyleVar.ChildRounding, 6);
 
-                ImGui.BeginChild("component",
+                ImGui.BeginChild(
+                    "component",
                     new Vector2(0, 0),
-                    ImGuiChildFlags.Borders | ImGuiChildFlags.AutoResizeY);
+                    ImGuiChildFlags.Borders |
+                    ImGuiChildFlags.AutoResizeY |
+                    ImGuiChildFlags.AlwaysUseWindowPadding,
+                    ImGuiWindowFlags.NoScrollbar |
+                    ImGuiWindowFlags.NoScrollWithMouse);
 
                 bool open = ImGui.CollapsingHeader(component.GetType().Name,
                     ImGuiTreeNodeFlags.DefaultOpen);
@@ -171,7 +176,6 @@ namespace Elemental.Panels
                     }
 
                     EditorUI.EndPropertyGrid();
-                    i++;
                 }
 
                 ImGui.EndChild();
@@ -179,6 +183,8 @@ namespace Elemental.Panels
                 ImGui.PopID();
 
                 ImGui.Spacing();
+
+                i++;
             }
 
             if (ImGui.Button("Add Component", new Vector2(-1, 30)))

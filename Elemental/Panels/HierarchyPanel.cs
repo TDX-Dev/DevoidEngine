@@ -140,7 +140,7 @@ namespace Elemental.Panels
 
             if (ImGui.IsItemHovered() && ImGui.IsMouseDoubleClicked(ImGuiMouseButton.Left))
             {
-                FocusObject(obj);
+                _context.EditorCamera?.FocusObject(obj);
             }
 
             HandleDragDrop(obj);
@@ -277,9 +277,5 @@ namespace Elemental.Panels
             return false;
         }
 
-        private void FocusObject(GameObject obj)
-        {
-            // Focus implementation for scene camera context
-        }
     }
 }

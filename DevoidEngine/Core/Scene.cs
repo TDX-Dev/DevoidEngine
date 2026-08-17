@@ -14,6 +14,7 @@ namespace DevoidEngine.Core
         public event Action<Component>? OnComponentRemoved;
 
         public string SceneName { get; set; } = "Empty Scene";
+        public bool IsStarted => isStarted;
 
         public List<GameObject> GameObjects { get; private set; }
         public RenderWorld World { get; private set; } = null!;
@@ -41,8 +42,16 @@ namespace DevoidEngine.Core
 
         public void Start()
         {
+            if (isStarted)
+                return;
+
+            Console.WriteLine(
+                $"[Scene] Start: {SceneName}, Objects: {GameObjects.Count}");
+
             for (int i = 0; i < GameObjects.Count; i++)
             {
+                Console.WriteLine(
+                    $"[Scene] Starting GameObject: {GameObjects[i].Name}");
                 GameObjects[i].OnStart();
             }
             isStarted = true;
@@ -168,10 +177,25 @@ namespace DevoidEngine.Core
         }
         public void RemoveGameObject(GameObject gameObject)
         {
+            if (!GameObjects.Contains(gameObject))
+                return;
+
+            // Copy because destroying children modifies the hierarchy.
+            var children = gameObject.Children.ToArray();
+
+            for (int i = 0; i < children.Length; i++)
+            {
+                RemoveGameObject(children[i]);
+            }
+
+            gameObject.SetParent(null);
+
             transforms.Remove(gameObject.Transform);
             GameObjects.Remove(gameObject);
+
             gameObject.OnDestroy();
         }
+
         public void RegisterCamera(Camera3D camera)
         {
             if (!Cameras.Contains(camera))

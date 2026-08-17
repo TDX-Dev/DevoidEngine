@@ -11,6 +11,7 @@ namespace DevoidEngine.Rendering
 {
     public class Viewport : IDisposable
     {
+        public bool Render { get; set; } = true;
         public Rect Bounds => bounds;
         public int Width { get; private set; }
         public int Height { get; private set; }

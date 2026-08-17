@@ -35,7 +35,7 @@ namespace DevoidEngine.Core
         public static Input InputSystem => Instance.inputSystem;
         public static Renderer Renderer => Instance.renderer;
         public static Cursor Cursor => Instance.cursor;
-        public static PhysicsSystem PhysicsSystem => Instance.physicsSystem;
+        //public static PhysicsSystem PhysicsSystem => Instance.physicsSystem;
         public static AudioManager AudioSystem => Instance.audioSystem;
         public static UISystem UISystem => Instance.uiSystem;
         public static GizmoSystem GizmoSystem => Instance.gizmoSystem;
@@ -68,7 +68,7 @@ namespace DevoidEngine.Core
         private readonly Cursor cursor;
 
         private Input inputSystem = null!;
-        private PhysicsSystem physicsSystem = null!;
+        //private PhysicsSystem physicsSystem = null!;
         private AudioManager audioSystem = null!;
         private UISystem uiSystem = null!;
         private GizmoSystem gizmoSystem = null!;
@@ -108,7 +108,6 @@ namespace DevoidEngine.Core
             instance.ViewportManager = new ViewportManager();
             instance.SceneTree = new SceneTree();
             instance.inputSystem = new Input();
-            instance.physicsSystem = new PhysicsSystem(new BepuPhysicsBackend());
             instance.audioSystem = new AudioManager(new SoLoudAudioBackend());
             instance.uiSystem = new UISystem();
             instance.gizmoSystem = new GizmoSystem();

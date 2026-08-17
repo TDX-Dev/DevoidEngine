@@ -22,7 +22,9 @@
 
         public static readonly RID Invalid = new(-1, 0);
 
-        public bool IsValid => Index >= 0;
+        public bool IsValid =>
+            Index >= 0 &&
+            Generation != 0;
         public static bool operator ==(RID left, RID right)
         {
             return left.Equals(right);

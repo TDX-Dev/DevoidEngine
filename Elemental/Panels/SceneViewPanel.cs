@@ -10,15 +10,17 @@ namespace Elemental.Panels
 {
     public class SceneViewPanel : ViewportPanel
     {
-        public EditorCamera EditorCamera { get; }
         private bool _isNavigating;
+        private readonly EditorContext _context;
 
-        public SceneViewPanel(Scene activeScene) : base("Scene View", activeScene)
+
+        public SceneViewPanel(Scene activeScene, EditorContext context) : base("Scene View", activeScene)
         {
-            EditorCamera = new EditorCamera();
+            _context = context;
+            _context.EditorCamera = new EditorCamera();
 
             // Direct assignment to Viewport
-            Viewport.CameraOverride = EditorCamera.Camera;
+            Viewport.CameraOverride = context.EditorCamera!.Camera;
 
             BoundsGizmo transformGizmo = new()
             {
@@ -42,7 +44,7 @@ namespace Elemental.Panels
             // Keep aspect ratio aligned with window size
             if (Viewport.Width > 0 && Viewport.Height > 0)
             {
-                EditorCamera.SetAspectRatio((float)Viewport.Width / Viewport.Height);
+                _context.EditorCamera!.SetAspectRatio((float)Viewport.Width / Viewport.Height);
             }
 
             bool isRmb = ImGui.IsMouseDown(ImGuiMouseButton.Right);
@@ -64,14 +66,14 @@ namespace Elemental.Panels
             }
 
             // Update camera if the panel is focused OR currently mid-drag navigation
-            if (IsFocused || _isNavigating)
+            if (IsFocused || _isNavigating || _context.EditorCamera!.IsFocusing)
             {
                 if (_isNavigating)
                 {
                     ImGui.SetWindowFocus(); // Keep ImGui window focused during mouse drag
                 }
 
-                EditorCamera.OnUpdate(deltaTime, IsHovered || _isNavigating);
+                _context.EditorCamera!.OnUpdate(deltaTime, IsHovered || _isNavigating);
             }
         }
 

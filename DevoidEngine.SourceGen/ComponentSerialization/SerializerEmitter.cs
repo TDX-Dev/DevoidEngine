@@ -8,11 +8,16 @@ namespace DevoidEngine.SourceGen.ComponentSerialization
 {
     internal static class SerializerEmitter
     {
-        static readonly HashSet<string> AllowedTypes =
+        private static readonly HashSet<string> AllowedTypes =
         [
             "DevoidEngine.Rendering.LightType",
             "DevoidEngine.Rendering.LightAttenuationType"
         ];
+
+        private static readonly Dictionary<string, string> CustomSerializers = new()
+        {
+            ["DevoidEngine.Core.MaterialInstance"] = "DevoidEngine.Serialization.MaterialInstanceSerializer"
+        };
 
         public static void Emit(SourceProductionContext context, INamedTypeSymbol component)
         {
@@ -34,6 +39,7 @@ namespace DevoidEngine.SourceGen.ComponentSerialization
                     f.Name != "gameObject" &&
                     //f.Type.ToDisplayString() != "DevoidEngine.Engine.Core.GameObject" &&
                     (
+                        IsCustomSerializedType(f.Type) ||
                         IsAssetType(f.Type) ||
                         IsComponentType(f.Type) ||
                         IsGameObjectType(f.Type) ||
@@ -45,6 +51,7 @@ namespace DevoidEngine.SourceGen.ComponentSerialization
                         )
                     )
                 ).ToArray();
+
 
             StringBuilder serializeBody = new();
             StringBuilder deserializeBody = new();
@@ -58,8 +65,44 @@ namespace DevoidEngine.SourceGen.ComponentSerialization
 
                 serializeBody.AppendLine($"// Serialize field: {fieldName}");
 
+                if (IsCustomSerializedType(field.Type))
+                {
+                    string serializer = GetCustomSerializer(field.Type);
+                    serializeBody.AppendLine($$"""
+                        try
+                        {
+                            {{serializer}}.Serialize(
+                                ref writer,
+                                value.{{fieldName}});
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(
+                                "[Serialization] Failed to serialize custom field '{{fieldName}}' in {{componentName}}: "
+                                + e.Message);
 
-                if (IsAssetType(field.Type))
+                            writer.WriteNil();
+                        }
+                    """);
+
+                    deserializeBody.AppendLine($$"""
+                        if (!reader.End)
+                        {
+                            try
+                            {
+                                component.{{fieldName}} =
+                                    {{serializer}}.Deserialize(ref reader);
+                            }
+                            catch (Exception e)
+                            {
+                                Console.WriteLine(
+                                    "[Serialization] Failed to deserialize custom field '{{fieldName}}' in {{componentName}}: "
+                                    + e.Message);
+                            }
+                        }
+                    """);
+                }
+                else if (IsAssetType(field.Type))
                 {
                     serializeBody.AppendLine($$"""
                 try
@@ -349,8 +392,12 @@ namespace DevoidEngine.SourceGen.ComponentSerialization
         {
             while (type != null)
             {
-                if (type.ToDisplayString() == "DevoidEngine.Assets.AssetType")
+                if (type
+                    .WithNullableAnnotation(NullableAnnotation.None)
+                    .ToDisplayString() == "DevoidEngine.Assets.AssetType")
+                {
                     return true;
+                }
 
                 type = type.BaseType;
             }
@@ -379,6 +426,25 @@ namespace DevoidEngine.SourceGen.ComponentSerialization
         private static bool IsWhitelisted(ITypeSymbol type)
         {
             return AllowedTypes.Contains(type.ToDisplayString());
+        }
+
+        private static string GetTypeName(ITypeSymbol type)
+        {
+            return type
+                .WithNullableAnnotation(NullableAnnotation.None)
+                .ToDisplayString();
+        }
+
+        private static bool IsCustomSerializedType(ITypeSymbol type)
+        {
+            return CustomSerializers.ContainsKey(
+                GetTypeName(type));
+        }
+
+        private static string GetCustomSerializer(ITypeSymbol type)
+        {
+            return CustomSerializers[
+                GetTypeName(type)];
         }
 
         private static bool IsPrimitive(ITypeSymbol type)

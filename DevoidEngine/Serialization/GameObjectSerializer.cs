@@ -125,8 +125,8 @@ namespace DevoidEngine.Serialization
                 Name = data.Name,
                 Scene = scene
             };
-            var transform = go.AddComponent<Transform3D>();
-            go.Transform = transform;
+            var transform = go.Transform;//go.AddComponent<Transform3D>();
+            //go.Transform = transform;
 
             transform.LocalPosition = data.Position;
             transform.LocalRotation = data.Rotation;

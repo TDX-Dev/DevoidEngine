@@ -169,7 +169,6 @@ namespace DevoidEngine.Core
                         Engine.InputSystem.Update(); // Only update main window, change for multi window support
                 }
 
-
                 Engine.AudioSystem.Update();
 
                 deltaTimeAccumulator += deltaTime;

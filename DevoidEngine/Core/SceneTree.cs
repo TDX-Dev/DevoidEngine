@@ -1,4 +1,8 @@
-﻿using DevoidEngine.Rendering;
+﻿using DevoidEngine.Audio;
+using DevoidEngine.Audio.SoLoud;
+using DevoidEngine.Physics;
+using DevoidEngine.Physics.Bepu;
+using DevoidEngine.Rendering;
 
 namespace DevoidEngine.Core
 {
@@ -15,9 +19,9 @@ namespace DevoidEngine.Core
             Engine.Instance.ViewportManager.RegisterViewport(RootViewport);
         }
 
-        public void LoadScene(Scene scene)
+        public void LoadScene(Scene scene, bool disposeOld = true)
         {
-            if (CurrentScene != null)
+            if (CurrentScene != null && disposeOld)
             {
                 //CurrentScene.Destroy();
                 CurrentScene.Dispose();
@@ -28,10 +32,15 @@ namespace DevoidEngine.Core
             //scene.Physics = EngineSingleton.Instance.PhysicsSystem;
             //scene.ParticleSystem = EngineSingleton.Instance.ParticleSystem;
             CurrentScene = scene;
-            scene.Physics = Engine.PhysicsSystem;
-            scene.Audio = Engine.AudioSystem;
+            
+            if (!scene.IsStarted)
+            {
+                scene.Physics = new PhysicsSystem(new BepuPhysicsBackend());
+                scene.Audio = Engine.AudioSystem;
+                scene.Start();
+            }
+
             RootViewport.TargetScene = scene;
-            CurrentScene.Start();
 
             OnSceneChanged?.Invoke(CurrentScene);
         }

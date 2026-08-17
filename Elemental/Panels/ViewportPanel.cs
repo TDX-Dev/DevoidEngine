@@ -29,9 +29,11 @@ namespace Elemental.Panels
         {
             ImGui.PushStyleVar(
                 ImGuiStyleVar.WindowPadding,
-                new Vector2(0, 0));
+                Vector2.Zero);
 
             bool visible = base.OnBeginWindow();
+
+            Viewport.Render = visible;
 
             IsHovered = visible && ImGui.IsWindowHovered();
             IsFocused = visible && ImGui.IsWindowFocused();
