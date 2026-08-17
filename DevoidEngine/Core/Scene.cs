@@ -45,13 +45,8 @@ namespace DevoidEngine.Core
             if (isStarted)
                 return;
 
-            Console.WriteLine(
-                $"[Scene] Start: {SceneName}, Objects: {GameObjects.Count}");
-
             for (int i = 0; i < GameObjects.Count; i++)
             {
-                Console.WriteLine(
-                    $"[Scene] Starting GameObject: {GameObjects[i].Name}");
                 GameObjects[i].OnStart();
             }
             isStarted = true;

@@ -49,10 +49,10 @@ namespace Elemental.Panels
 
         private string currentDirectory = Engine.Instance.ProjectSystem.AssetPath;
 
-        private string _rootPath = string.Empty;
+        private readonly string _rootPath = string.Empty;
 
-        private string[] _currentDirectories = Array.Empty<string>();
-        private string[] _currentFiles = Array.Empty<string>();
+        private string[] _currentDirectories = [];
+        private string[] _currentFiles = [];
 
         private bool _directoryDirty = true;
         private FolderNode? _folderRoot;
@@ -111,8 +111,8 @@ namespace Elemental.Panels
             }
             catch (UnauthorizedAccessException)
             {
-                _currentDirectories = Array.Empty<string>();
-                _currentFiles = Array.Empty<string>();
+                _currentDirectories = [];
+                _currentFiles = [];
             }
 
             _directoryDirty = false;
@@ -423,7 +423,7 @@ namespace Elemental.Panels
             if (node.Children != null)
                 return;
 
-            node.Children = new List<FolderNode>();
+            node.Children = [];
 
             try
             {

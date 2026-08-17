@@ -47,7 +47,7 @@ namespace DevoidEngine.Util
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) != true)
             {
-                Console.WriteLine("Editor not running on windows, skipping dark titlebar.");
+                Console.WriteLine("Engine not running on windows, skipping dark titlebar.");
                 return;
             }
 

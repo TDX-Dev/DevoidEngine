@@ -8,5 +8,6 @@ namespace Elemental
         public Scene ActiveScene { get; set; } = null!;
         public bool SceneDirty { get; set; }
         public EditorCamera? EditorCamera { get; set; }
+        public bool IsSceneViewFocused { get; set; } = false;
     }
 }

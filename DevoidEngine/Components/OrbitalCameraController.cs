@@ -47,7 +47,6 @@ namespace DevoidEngine.Components
             // Apply initial setup
             UpdateCameraDistance();
 
-            Console.WriteLine("Gum");
         }
 
         private void CreateCameraHierarchy()

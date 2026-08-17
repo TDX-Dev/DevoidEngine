@@ -134,7 +134,6 @@ namespace DevoidEngine.Components
 
         private void CreateCameraHierarchy()
         {
-            Console.WriteLine("Creating Hierarchy!");
             cameraPivot = gameObject.Scene!.AddGameObject(
                 $"{gameObject.Name}_CameraPivot");
 

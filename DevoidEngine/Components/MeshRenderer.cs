@@ -46,7 +46,6 @@ namespace DevoidEngine.Components
         public override void OnAttach()
         {
             gameObject.Transform.TransformChanged += VisualTransformChanged;
-            Console.WriteLine(gameObject.Scene.SceneName + " Attached");
         }
 
         private void VisualTransformChanged()
@@ -56,7 +55,6 @@ namespace DevoidEngine.Components
 
         public override void OnStart()
         {
-            Console.WriteLine("Starting Mesh Renderer Component");
             if (mesh == null)
                 return;
 

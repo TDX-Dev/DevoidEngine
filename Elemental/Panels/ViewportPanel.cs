@@ -82,8 +82,8 @@ namespace Elemental.Panels
                     new Vector2(1, 1));
             }
 
-            // 3. Compute relative mouse position inside the viewport
-            Vector2 imageMin = ImGui.GetItemRectMin();
+                // 3. Compute relative mouse position inside the viewport
+                Vector2 imageMin = ImGui.GetItemRectMin();
             LocalMousePos = ImGui.GetMousePos() - imageMin;
 
             OnViewportOverlayRender();
