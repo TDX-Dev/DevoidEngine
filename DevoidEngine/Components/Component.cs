@@ -1,29 +1,106 @@
 ﻿using DevoidEngine.Core;
 using DevoidEngine.Serialization;
+using System.Diagnostics;
 
 namespace DevoidEngine.Components
 {
+    [Flags]
+    public enum ComponentTickMode
+    {
+        None = 0,
+
+        Play = 1 << 0,
+        Edit = 1 << 1,
+
+        // Convenience value for components that should run everywhere.
+        All = Play | Edit
+    }
+
     public abstract partial class Component
     {
         public override string ToString() => Type;
+        public virtual ComponentTickMode TickMode => ComponentTickMode.Play;
 
         [DontSerialize]
         public bool IsInitialized;
-
-        internal void InternalStart()
-        {
-            if (IsInitialized)
-            {
-                Console.WriteLine($"{Type} Component started twice. Skipping component start.");
-            }
-            OnStart();
-            IsInitialized = true;
-        }
 
         public abstract string Type { get; }
         public Component() { }
 
         public GameObject gameObject = null!;
+
+        private bool CanTick
+        {
+            get
+            {
+                if (gameObject == null || gameObject.Scene == null)
+                    return false;
+
+                return gameObject.Scene.SceneMode switch
+                {
+                    SceneMode.Play =>
+                        TickMode.HasFlag(ComponentTickMode.Play),
+
+                    SceneMode.Edit =>
+                        TickMode.HasFlag(ComponentTickMode.Edit),
+
+                    _ =>
+                        false
+                };
+            }
+        }
+
+
+        public void InternalStart()
+        {
+            if (IsInitialized)
+                return;
+
+            if (!CanTick)
+                return;
+
+            OnStart();
+            IsInitialized = true;
+        }
+
+        public void InternalUpdate(float dt)
+        {
+            if (!CanTick)
+                return;
+
+            OnUpdate(dt);
+        }
+
+        public void InternalLateUpdate(float dt)
+        {
+            if (!CanTick)
+                return;
+
+            OnLateUpdate(dt);
+        }
+
+        public void InternalFixedUpdate(float dt)
+        {
+            if (!CanTick)
+                return;
+
+            OnFixedUpdate(dt);
+        }
+
+        public void InternalRender()
+        {
+            if (!CanTick)
+                return;
+
+            OnRender();
+        }
+
+        public void InternalDestroy()
+        {
+
+            OnDestroy();
+            IsInitialized = false;
+        }
 
         // Notifications methods
         public virtual void OnAttach() { }

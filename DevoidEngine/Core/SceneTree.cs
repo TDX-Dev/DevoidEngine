@@ -23,22 +23,14 @@ namespace DevoidEngine.Core
         {
             if (CurrentScene != null && disposeOld)
             {
-                //CurrentScene.Destroy();
                 CurrentScene.Dispose();
                 GC.Collect();
             }
 
-            //scene.Audio = EngineSingleton.Instance.AudioSystem;
-            //scene.Physics = EngineSingleton.Instance.PhysicsSystem;
-            //scene.ParticleSystem = EngineSingleton.Instance.ParticleSystem;
             CurrentScene = scene;
-            
-            if (!scene.IsStarted)
-            {
-                scene.Physics = new PhysicsSystem(new BepuPhysicsBackend());
-                scene.Audio = Engine.AudioSystem;
-                scene.Start();
-            }
+
+            scene.Physics = new PhysicsSystem(new BepuPhysicsBackend());
+            scene.Audio = Engine.AudioSystem;
 
             RootViewport.TargetScene = scene;
 

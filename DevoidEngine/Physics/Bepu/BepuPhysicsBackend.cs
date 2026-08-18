@@ -211,7 +211,7 @@ namespace DevoidEngine.Physics.Bepu
 
         public IPhysicsStatic CreateStatic(PhysicsStaticDescription desc, GameObject owner)
         {
-            TypedIndex shapeIndex = CreateShapeStatic(desc.Shape);
+            TypedIndex shapeIndex = CreateShapeStatic(desc.Shape, owner.Transform.Scale);
 
             var pose = new RigidPose(desc.Position, desc.Rotation);
             var staticDescription = new StaticDescription(pose, shapeIndex);
@@ -295,7 +295,7 @@ namespace DevoidEngine.Physics.Bepu
             }
         }
 
-        private TypedIndex CreateShapeStatic(PhysicsShapeDescription shapeDesc)
+        private TypedIndex CreateShapeStatic(PhysicsShapeDescription shapeDesc, Vector3 scale)
         {
             switch (shapeDesc.Type)
             {
@@ -362,7 +362,7 @@ namespace DevoidEngine.Physics.Bepu
                         }
 
                         // IMPORTANT: scale handled here
-                        var mesh = new BepuPhysics.Collidables.Mesh(triangles, new Vector3(1, 1, 1), bufferPool);
+                        var mesh = new BepuPhysics.Collidables.Mesh(triangles, scale, bufferPool);
 
                         return simulation.Shapes.Add(mesh);
                     }

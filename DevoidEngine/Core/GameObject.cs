@@ -52,12 +52,12 @@ namespace DevoidEngine.Core
                 Components[i].InternalStart();
             }
         }
-
+        
         public void OnUpdate(float dt)
         {
             for (int i = 0; i < Components.Count; i++)
             {
-                Components[i].OnUpdate(dt);
+                Components[i].InternalUpdate(dt);
             }
         }
 
@@ -65,7 +65,7 @@ namespace DevoidEngine.Core
         {
             for (int i = 0; i < Components.Count; i++)
             {
-                Components[i].OnFixedUpdate(dt);
+                Components[i].InternalFixedUpdate(dt);
             }
         }
 
@@ -73,7 +73,7 @@ namespace DevoidEngine.Core
         {
             for (int i = 0; i < Components.Count; i++)
             {
-                Components[i].OnRender();
+                Components[i].InternalRender();
             }
         }
 
@@ -180,7 +180,7 @@ namespace DevoidEngine.Core
             if (Components.Contains(component))
             {
                 scene?.ComponentRemoved(component);
-                component.OnDestroy();
+                component.InternalDestroy();
                 Components.Remove(component);
             }
 

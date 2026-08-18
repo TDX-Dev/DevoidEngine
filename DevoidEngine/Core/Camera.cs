@@ -61,6 +61,7 @@ namespace DevoidEngine.Core
             Matrix4x4.Invert(Projection, out InverseProjection);
 
             Frustum.Update(View * Projection);
+            Matrix4x4.Invert(View * Projection, out InverseViewProjection);
 
             prev_aspectratio = aspectRatio;
             view_dirty = false;

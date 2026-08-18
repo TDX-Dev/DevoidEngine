@@ -14,6 +14,8 @@ namespace Elemental
         public ImGuiWindowFlags WindowFlags { get; protected set; } = ImGuiWindowFlags.None;
 
         private bool isOpen = true;
+        private bool focusRequested = false;
+
 
         protected Panel(string title)
         {
@@ -43,8 +45,17 @@ namespace Elemental
             OnEndWindow();
         }
 
+        public void RequestFocus()
+        {
+            focusRequested = true;
+        }
         protected virtual bool OnBeginWindow()
         {
+            if (focusRequested)
+            {
+                ImGui.SetNextWindowFocus();
+                focusRequested = false;
+            }
             return ImGui.Begin(Title, ref isOpen, WindowFlags);
         }
 

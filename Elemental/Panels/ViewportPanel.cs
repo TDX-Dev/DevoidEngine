@@ -71,9 +71,9 @@ namespace Elemental.Panels
             }
 
             // 2. Render output texture inside ImGui using TextureManager ID
-            if (Viewport.OutputTexture != null)
+            if (Viewport.ActiveCamera != null)
             {
-                ulong managerId = Engine.Instance.TextureManager.GetId(Viewport.OutputTexture);
+                ulong managerId = Engine.Instance.TextureManager.GetId(Viewport.OutputTexture!);
 
                 ImGui.Image(
                     (IntPtr)managerId,

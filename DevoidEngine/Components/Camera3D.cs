@@ -7,6 +7,7 @@ namespace DevoidEngine.Components
     public class Camera3D : Component
     {
         public override string Type => nameof(Camera3D);
+        public override ComponentTickMode TickMode => ComponentTickMode.All;
 
         public bool IsCurrent
         {
@@ -128,6 +129,11 @@ namespace DevoidEngine.Components
         public Camera GetCamera()
         {
             return camera;
+        }
+
+        public void SetAspectRatio(float aspectRatio)
+        {
+            camera.UpdateProjectionMatrix(aspectRatio);
         }
     }
 }

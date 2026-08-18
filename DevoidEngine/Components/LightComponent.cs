@@ -1,4 +1,5 @@
-﻿using DevoidEngine.Core;
+﻿using DevoidEngine.Attributes;
+using DevoidEngine.Core;
 using DevoidEngine.Rendering;
 using DevoidEngine.Util;
 using System.Numerics;
@@ -8,6 +9,7 @@ namespace DevoidEngine.Components
     public class LightComponent : Component
     {
         public override string Type => nameof(LightComponent);
+        public override ComponentTickMode TickMode => ComponentTickMode.All;
 
         private RID lightRID;
         private bool dirty = true;
@@ -127,7 +129,7 @@ namespace DevoidEngine.Components
         public override void OnAttach()
         {
             CreateRenderLight();
-
+            gameObject.Transform.TransformChanged += () => dirty = true;
         }
 
         public override void OnDestroy()

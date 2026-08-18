@@ -1,4 +1,6 @@
-﻿using DevoidEngine.Core;
+﻿using DevoidEngine.Attributes;
+using DevoidEngine.Components;
+using DevoidEngine.Core;
 using DevoidEngine.Serialization;
 using MessagePack;
 using System;
@@ -28,12 +30,5 @@ namespace Elemental.Util
             byte[] scenebytes = MessagePackSerializer.Serialize(data);
             return scenebytes;
         }
-
-        //public static Scene Deserialize(Scene scene)
-        //{
-        //    SceneData data = SceneSerializer.Serialize(scene);
-        //    byte[] scenebytes = MessagePackSerializer.Serialize(data);
-        //    return scenebytes;
-        //}
     }
 }

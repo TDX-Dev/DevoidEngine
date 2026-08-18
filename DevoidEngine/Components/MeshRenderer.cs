@@ -1,4 +1,5 @@
-﻿using DevoidEngine.Core;
+﻿using DevoidEngine.Attributes;
+using DevoidEngine.Core;
 using DevoidEngine.Util;
 using System.Numerics;
 
@@ -7,6 +8,7 @@ namespace DevoidEngine.Components
     public class MeshRenderer : Component
     {
         public override string Type => nameof(MeshRenderer);
+        public override ComponentTickMode TickMode => ComponentTickMode.All;
 
         public Mesh? Mesh
         {

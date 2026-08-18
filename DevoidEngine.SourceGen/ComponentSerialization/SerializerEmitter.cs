@@ -61,7 +61,7 @@ namespace DevoidEngine.SourceGen.ComponentSerialization
             foreach (var field in fields)
             {
                 string fieldName = field.Name;
-                string type = field.Type.ToDisplayString();
+                string type = GetTypeName(field.Type);
 
                 serializeBody.AppendLine($"// Serialize field: {fieldName}");
 
@@ -234,19 +234,26 @@ namespace DevoidEngine.SourceGen.ComponentSerialization
         try
         {
             var goId =
-                MessagePack.MessagePackSerializer.Deserialize<Guid>(
-                    ref reader,
-                    MessagePack.MessagePackSerializerOptions.Standard);
+        MessagePack.MessagePackSerializer.Deserialize<Guid>(
+            ref reader,
+            MessagePack.MessagePackSerializerOptions.Standard);
 
-            GameObjectSerializer.RegisterGameObjectReference(
-                component,
-                (owner, value) =>
-                {
-                    (({{namespaceName}}.{{componentName}})owner).{{fieldName}} =
-                        (DevoidEngine.Core.GameObject)value;
-                },
-                goId
-            );
+    if (goId == Guid.Empty)
+    {
+        component.{{fieldName}} = null;
+    }
+    else
+    {
+    GameObjectSerializer.RegisterGameObjectReference(
+        component,
+        (owner, value) =>
+        {
+            (({{namespaceName}}.{{componentName}})owner).{{fieldName}} =
+                value;
+        },
+        goId
+    );
+    }
         }
         catch (Exception e)
         {
@@ -392,12 +399,8 @@ namespace DevoidEngine.SourceGen.ComponentSerialization
         {
             while (type != null)
             {
-                if (type
-                    .WithNullableAnnotation(NullableAnnotation.None)
-                    .ToDisplayString() == "DevoidEngine.Assets.AssetType")
-                {
+                if (GetTypeName(type) == "DevoidEngine.Assets.AssetType")
                     return true;
-                }
 
                 type = type.BaseType;
             }
@@ -409,7 +412,7 @@ namespace DevoidEngine.SourceGen.ComponentSerialization
         {
             while (type != null)
             {
-                if (type.ToDisplayString() == "DevoidEngine.Components.Component")
+                if (GetTypeName(type) == "DevoidEngine.Components.Component")
                     return true;
 
                 type = type.BaseType!;
@@ -420,12 +423,12 @@ namespace DevoidEngine.SourceGen.ComponentSerialization
 
         private static bool IsGameObjectType(ITypeSymbol type)
         {
-            return type.ToDisplayString() == "DevoidEngine.Core.GameObject";
+            return GetTypeName(type) == "DevoidEngine.Core.GameObject";
         }
 
         private static bool IsWhitelisted(ITypeSymbol type)
         {
-            return AllowedTypes.Contains(type.ToDisplayString());
+            return AllowedTypes.Contains(GetTypeName(type));
         }
 
         private static string GetTypeName(ITypeSymbol type)

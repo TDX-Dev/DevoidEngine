@@ -121,12 +121,12 @@ namespace DevoidEngine.AssetPipeline.Importers
             }
 
 
-            SavePGM(
-                $"Debug/font_atlas_{Path.GetFileName(context.AssetPath)}.pgm",
-                atlas.Pixels,
-                atlas.Width,
-                atlas.Height
-            );
+            //SavePGM(
+            //    $"Debug/font_atlas_{Path.GetFileName(context.AssetPath)}.pgm",
+            //    atlas.Pixels,
+            //    atlas.Width,
+            //    atlas.Height
+            //);
 
             File.WriteAllBytes(
                 context.GetRootOutputPath(context.OutputExtension),

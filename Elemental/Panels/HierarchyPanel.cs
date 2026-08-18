@@ -42,7 +42,9 @@ namespace Elemental.Panels
             ImGui.PushStyleColor(ImGuiCol.HeaderHovered, new Vector4(0.23f, 0.23f, 0.24f, 1f));
             ImGui.PushStyleColor(ImGuiCol.HeaderActive, new Vector4(0.28f, 0.28f, 0.29f, 1f));
 
-            string sceneName = string.IsNullOrEmpty(_context.ActiveScene.SceneName) ? "Scene" : _context.ActiveScene.SceneName;
+            string sceneName = _context.ActiveDocument?.DisplayName ?? "Empty Scene";
+            if (_context.ActiveDocument!.IsDirty)
+                sceneName += " *";
             bool sceneOpened = ImGui.TreeNodeEx($"{LucideIconFont.IconTriangle} {sceneName}###SceneRoot", sceneFlags);
 
             ImGui.PopStyleColor(2);
@@ -205,7 +207,7 @@ namespace Elemental.Panels
             {
                 if (ImGui.MenuItem("Create Child"))
                 {
-                    var child = _context.ActiveScene.AddGameObject("GameObject");
+                    var child = _context.ActiveScene!.AddGameObject("GameObject");
                     child.SetParent(obj);
                 }
 
@@ -229,7 +231,7 @@ namespace Elemental.Panels
             {
                 if (ImGui.MenuItem("Create Empty"))
                 {
-                    _context.ActiveScene.AddGameObject("GameObject");
+                    _context.ActiveScene?.AddGameObject("GameObject");
                 }
 
                 ImGui.EndPopup();

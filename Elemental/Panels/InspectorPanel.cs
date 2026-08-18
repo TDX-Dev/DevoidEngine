@@ -71,7 +71,7 @@ namespace Elemental.Panels
             if (ImGui.InputText("##GameObjectName", ref name, 256))
             {
                 obj.Name = name;
-                _context.SceneDirty = true;
+                _context.ActiveDocument?.MarkDirty();
             }
 
             ImGui.PopItemWidth();
@@ -149,7 +149,7 @@ namespace Elemental.Panels
                         bool changed = EditorUI.DrawGenericField(field, component);
 
                         if (changed)
-                            context.SceneDirty = true;
+                            context.ActiveDocument?.MarkDirty();
 
                         EditorUI.EndProperty();
                     }
@@ -170,7 +170,7 @@ namespace Elemental.Panels
                         bool changed = EditorUI.DrawGenericProperty(prop, component);
 
                         if (changed)
-                            context.SceneDirty = true;
+                            context.ActiveDocument?.MarkDirty();
 
                         EditorUI.EndProperty();
                     }
@@ -196,7 +196,7 @@ namespace Elemental.Panels
             foreach (var comp in deleteQueue)
             {
                 obj.RemoveComponent(comp);
-                context.SceneDirty = true;
+                context.ActiveDocument?.MarkDirty();
             }
         }
 
@@ -235,7 +235,7 @@ namespace Elemental.Panels
 
                     obj.AddComponent(component);
 
-                    context.SceneDirty = true;
+                    context.ActiveDocument?.MarkDirty();
 
                     ImGui.CloseCurrentPopup();
                 }

@@ -362,6 +362,18 @@ namespace DevoidEngine.AssetPipeline
             return meta;
         }
 
+        public AssetMeta GetMeta(Guid guid)
+        {
+            if (!guidToAsset.TryGetValue(guid, out var entry))
+                throw new Exception("Asset entry not found");
+
+            string metaPath = Path.Combine(
+                Engine.Instance.ProjectSystem.AssetPath,
+                entry.MetaPath
+            );
+
+            return LoadMeta(metaPath, entry.AssetPath);
+        }
         private AssetMeta LoadMeta(string metaPath, string assetPath)
         {
             try

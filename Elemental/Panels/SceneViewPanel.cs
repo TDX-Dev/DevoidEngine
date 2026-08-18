@@ -15,7 +15,7 @@ namespace Elemental.Panels
         private bool _isNavigating;
         private readonly EditorContext _context;
 
-        public Action<string>? SceneDropRequested;
+        public Action<string>? AssetDropRequested;
 
 
 
@@ -120,9 +120,13 @@ namespace Elemental.Panels
         {
             string ext = Path.GetExtension(relativePath);
 
-            if (ext.Equals(".scene", StringComparison.OrdinalIgnoreCase))
+            if (ext.Equals(".scene", StringComparison.OrdinalIgnoreCase) ||
+                ext.Equals(".gltf", StringComparison.OrdinalIgnoreCase) ||
+                ext.Equals(".glb", StringComparison.OrdinalIgnoreCase) ||
+                ext.Equals(".fbx", StringComparison.OrdinalIgnoreCase) ||
+                ext.Equals(".obj", StringComparison.OrdinalIgnoreCase))
             {
-                SceneDropRequested?.Invoke(relativePath);
+                AssetDropRequested?.Invoke(relativePath);
             }
         }
     }

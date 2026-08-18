@@ -64,7 +64,7 @@ namespace Sandbox
             //scene.GameObjects[0].Transform.Position = new Vector3(0, 5, 0);
 
             Engine.Instance.SceneTree.LoadScene(scene);
-            scene.Play();
+            scene.SetMode(SceneMode.Play);
 
             //Engine.Instance.AssetDatabase.TryGetGuid("HDRIs/puresky.hdr", out Guid puresky);
             //Engine.Instance.AssetDatabase.Reimport(puresky, MessagePackSerializer.Serialize<TextureImportSettings>(new TextureImportSettings()

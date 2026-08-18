@@ -6,6 +6,9 @@ using DevoidEngine.InputSystem;
 using DevoidEngine.InputSystem.InputDevices;
 using DevoidEngine.Rendering;
 using DevoidGPU;
+using Elemental.ContextMenu;
+using Elemental.Dialogs;
+using Elemental.Documents;
 using Elemental.Panels;
 using Elemental.ProjectSettings;
 using Elemental.Util;
@@ -22,36 +25,47 @@ namespace Elemental
         private ImFontPtr editorFont;
         private PanelManager panelManager = null!;
         private EditorInputLayer editorInputLayer = null!;
-        private Scene activeScene = null!;
-        private Scene? editScene;
-        private Scene? playScene;
-        private bool isPlaying;
+        private SceneDocument activeDocument = null!;
 
         private EditorContext editorContext = null!;
         private ProjectSettingsWindow projectSettings = null!;
+        private ImportSettingsWindow importSettings = null!;
 
         private SceneViewPanel sceneViewPanel = null!;
         private GameViewPanel gameViewPanel = null!;
 
+        private EditorDialogManager dialogs = null!;
+
         private bool openProjectSettingsRequested = false;
-
-        private string? activeScenePath;
-
-        private bool saveScenePopupRequested;
-        private string saveSceneName = "";
-        private string saveSceneDirectory = "";
-        private string? pendingScenePath;
-        private bool loadPendingSceneAfterSave;
-        private bool unsavedScenePopupRequested;
-
-        private string saveSceneError = "";
+        bool openImportSettingsRequested;
+        string importSettingsPath = string.Empty;
+        private Scene? playScene;
+        private bool IsPlaying => playScene != null;
 
         private string DefaultSceneDirectory => Engine.Instance.ProjectSystem.AssetPath;
 
         public override void OnAttach()
         {
+            Engine.Instance.SceneTree.RootViewport.Render = false;
+            AssetContextMenuRegistry.Register("*", path =>
+            {
+                var ext = Path.GetExtension(path).ToLower();
+
+                if (ImporterRegistry.HasImporter(ext))
+                {
+                    if (ImGui.MenuItem("Open Import Settings"))
+                    {
+                        openImportSettingsRequested = true;
+                        importSettingsPath = path;
+                    }
+                }
+            });
+
             editorInputLayer = new EditorInputLayer();
             Engine.InputSystem.Router.Push(editorInputLayer);
+
+            dialogs = new EditorDialogManager();
+
 
             ApplyImGuiStyling();
 
@@ -62,12 +76,13 @@ namespace Elemental
 
             editorContext = new EditorContext();
             projectSettings = new ProjectSettingsWindow();
+            importSettings = new ImportSettingsWindow();
 
             panelManager = new PanelManager();
             sceneViewPanel = new SceneViewPanel(null!, editorContext);
             gameViewPanel = new GameViewPanel(null!);
 
-            sceneViewPanel.SceneDropRequested = HandleSceneDrop;
+            sceneViewPanel.AssetDropRequested = HandleAssetDrop;
 
             panelManager.AddPanel(sceneViewPanel);
             panelManager.AddPanel(gameViewPanel);
@@ -78,58 +93,39 @@ namespace Elemental
             ProjectSettingsRegistry.Register(new InputSettingsProvider());
 
             SetupSandbox();
-
-            Application.MainWindow.Window.Title = $"Elemental Editor - Editing Scene: {editScene?.SceneName ?? "Empty Scene"}";
         }
 
         public override void OnGUIRender()
         {
             DrawMenuBar();
-            HandlePopupOpen();
+
             panelManager.OnImGuiRender();
             projectSettings.Draw();
+            importSettings.Draw();
 
-            if (saveScenePopupRequested)
-            {
-                ImGui.OpenPopup("Save Scene");
-                saveScenePopupRequested = false;
-            }
+            dialogs.Draw();
 
-            if (unsavedScenePopupRequested)
-            {
-                ImGui.OpenPopup("Unsaved Changes");
-                unsavedScenePopupRequested = false;
-            }
-
-            DrawSaveSceneModal();
-            DrawUnsavedSceneModal();
-
-            EditorUI.DrawMaterialInstanceEditors();
-        }
-
-        private void HandlePopupOpen()
-        {
             if (openProjectSettingsRequested)
             {
                 projectSettings.Open();
                 openProjectSettingsRequested = false;
             }
+
+            if (openImportSettingsRequested)
+            {
+                importSettings.Open(importSettingsPath);
+                openImportSettingsRequested = false;
+            }
+
+
+            EditorUI.DrawMaterialInstanceEditors();
         }
 
         public override void OnUpdate(float deltaTime)
         {
             HandleSaveShortcuts();
+
             editorInputLayer.SceneViewFocused = editorContext.IsSceneViewFocused;
-
-            var currentScene = Engine.Instance.SceneTree.CurrentScene;
-            if (currentScene != null && currentScene != activeScene)
-            {
-                activeScene = currentScene;
-                sceneViewPanel.Viewport.TargetScene = activeScene;
-                gameViewPanel.Viewport.TargetScene = activeScene;
-
-                editorContext.ActiveScene = activeScene;
-            }
 
             panelManager.OnUpdate(deltaTime);
         }
@@ -141,13 +137,15 @@ namespace Elemental
 
         private void SetupSandbox()
         {
-            activeScene = Asset.Load<Scene>("BaseLevel.scene")!;/*Asset.Load<PackedScene>("models/sh.gltf")!.Instantiate();*/
+            const string relativePath = "BaseLevel.scene";
 
-            Engine.Instance.SceneTree.LoadScene(activeScene);
-            sceneViewPanel.Viewport.TargetScene = activeScene;
-            gameViewPanel.Viewport.TargetScene = activeScene;
+            Scene scene = Asset.Load<Scene>(relativePath, false)!;
 
-            editorContext.ActiveScene = activeScene;
+            var document = new SceneDocument(scene);
+
+            document.MarkLoaded(Path.GetFullPath(Path.Combine(Engine.Instance.ProjectSystem.AssetPath, relativePath)));
+
+            SetActiveDocument(document);
 
             SetupEnvironment();
             ConfigureInputBindings();
@@ -210,7 +208,10 @@ namespace Elemental
 
             BeginToolbarSection("Scene Tools");
 
-            ToolbarButton("New", LucideIconFont.IconFile, "New");
+            if (ToolbarButton("New", LucideIconFont.IconFile, "New"))
+            {
+                RequestNewScene();
+            }
             ImGui.SameLine();
 
             ToolbarButton("Open", LucideIconFont.IconFolderOpen, "Open");
@@ -282,11 +283,12 @@ namespace Elemental
 
             BeginToolbarSection("Game Tools");
 
-            if (!isPlaying)
+            if (!IsPlaying)
             {
                 if (ToolbarButton("Play", LucideIconFont.IconPlay, "Play"))
                 {
                     PlayScene();
+                    gameViewPanel.RequestFocus();
                 }
             }
             else
@@ -294,6 +296,7 @@ namespace Elemental
                 if (ToolbarButton("Stop", LucideIconFont.IconSquare, "Stop"))
                 {
                     StopScene();
+                    sceneViewPanel.RequestFocus();
                 }
             }
 
@@ -324,77 +327,56 @@ namespace Elemental
 
         private void PlayScene()
         {
-            if (isPlaying)
+            if (IsPlaying)
                 return;
 
-            editScene = activeScene;
+            Scene editScene = activeDocument.Scene;
+
             playScene = SceneTools.Copy(editScene);
 
-            Engine.Instance.SceneTree.LoadScene(playScene, disposeOld: false);
+            SetActiveScene(
+                playScene,
+                SceneMode.Play,
+                disposeOld: false);
 
-            playScene.Play();
+            editorContext.SelectedObject = null;
 
-            sceneViewPanel.Viewport.TargetScene = playScene;
-            gameViewPanel.Viewport.TargetScene = playScene;
-
-            editorContext.ActiveScene = playScene;
-
-            isPlaying = true;
-
-            Application.MainWindow.Window.Title = $"Elemental Editor - Playing Scene: {playScene.SceneName ?? "Empty Scene"}";
+            Application.MainWindow.Window.Title =
+                $"Elemental Editor - Playing Scene: " +
+                $"{playScene.SceneName ?? "Empty Scene"}";
         }
 
         private void StopScene()
         {
-            if (!isPlaying)
+            if (!IsPlaying)
                 return;
 
-            Engine.Instance.SceneTree.LoadScene(editScene!);
+            Scene editScene = activeDocument.Scene;
 
-            activeScene = editScene!;
+            SetActiveScene(
+                editScene,
+                SceneMode.Edit,
+                disposeOld: true);
+
+            Engine.Instance.SceneTree.QueueFree(playScene!);
             playScene = null;
-            isPlaying = false;
 
-            sceneViewPanel.Viewport.TargetScene = activeScene;
-            gameViewPanel.Viewport.TargetScene = activeScene;
+            editorContext.SelectedObject = null;
 
-            editorContext.ActiveScene = activeScene;
-
-            Application.MainWindow.Window.Title = $"Elemental Editor - Editing Scene: {editScene?.SceneName ?? "Empty Scene"}";
+            Application.MainWindow.Window.Title =
+                $"Elemental Editor - Editing Scene: " +
+                $"{editScene.SceneName ?? "Empty Scene"}";
         }
-
-        private bool SaveScene()
-        {
-            if (isPlaying || activeScene == null)
-                return false;
-
-            if (string.IsNullOrWhiteSpace(activeScenePath))
-            {
-                OpenSaveSceneDialog();
-                return false;
-            }
-
-            return SaveSceneToPath(activeScenePath);
-        }
-        private void LoadPendingScene()
-        {
-            if (string.IsNullOrWhiteSpace(pendingScenePath))
-                return;
-
-            string path = pendingScenePath;
-            pendingScenePath = null;
-
-            LoadSceneFromPath(path);
-        }
-
         private bool LoadSceneFromPath(string relativePath)
         {
-            if (isPlaying)
+            if (IsPlaying)
                 return false;
 
             try
             {
-                Scene? scene = Asset.Load<Scene>(relativePath, false);
+                Scene? scene = Asset.Load<Scene>(
+                    relativePath,
+                    false);
 
                 if (scene == null)
                 {
@@ -404,26 +386,19 @@ namespace Elemental
                     return false;
                 }
 
-                activeScene = scene;
+                string fullPath =
+                    Path.GetFullPath(
+                        Path.Combine(
+                            Engine.Instance.ProjectSystem.AssetPath,
+                            relativePath));
 
-                Engine.Instance.SceneTree.LoadScene(activeScene);
+                var document = new SceneDocument(scene);
+                document.MarkLoaded(fullPath);
 
-                sceneViewPanel.Viewport.TargetScene = activeScene;
-                gameViewPanel.Viewport.TargetScene = activeScene;
-
-                editorContext.ActiveScene = activeScene;
-                editorContext.SceneDirty = false;
-
-                activeScenePath = Path.GetFullPath(
-                    Path.Combine(
-                        Engine.Instance.ProjectSystem.AssetPath,
-                        relativePath));
-
-                Application.MainWindow.Window.Title =
-                    $"Elemental Editor - Editing Scene: {activeScene.SceneName ?? "Empty Scene"}";
+                SetActiveDocument(document);
 
                 Console.WriteLine(
-                    $"[Editor] Loaded scene: {activeScenePath}");
+                    $"[Editor] Loaded scene: {document.FilePath}");
 
                 return true;
             }
@@ -435,201 +410,177 @@ namespace Elemental
                 return false;
             }
         }
+        private bool SaveScene()
+        {
+            if (IsPlaying)
+                return false;
+
+            if (!activeDocument.HasFile)
+            {
+                OpenSaveSceneDialog();
+                return false;
+            }
+
+            return SaveSceneToPath(activeDocument.FilePath!);
+        }
+
+        private void SaveSceneAs()
+        {
+            if (IsPlaying)
+                return;
+
+            OpenSaveSceneDialog();
+        }
+        private void RequestNewScene()
+        {
+            if (IsPlaying)
+                return;
+
+            if (!activeDocument.IsDirty)
+            {
+                CreateNewScene();
+                return;
+            }
+
+            dialogs.Open(
+                new UnsavedChangesDialog(
+                    "Unsaved Changes",
+
+                    $"Scene '{activeDocument.Scene.SceneName ?? "Untitled"}' " +
+                    "has unsaved changes.\n\n" +
+                    "Do you want to save your changes before creating a new scene?",
+
+                    onSave: SaveBeforeNewScene,
+
+                    onDiscard: CreateNewScene));
+        }
+        private void CreateNewScene()
+        {
+            if (IsPlaying)
+                return;
+
+            var scene = new Scene
+            {
+                SceneName = "Untitled"
+            };
+
+            var document = new SceneDocument(scene);
+
+            SetActiveDocument(document);
+
+            editorContext.SelectedObject = null;
+
+            Application.MainWindow.Window.Title =
+                "Elemental Editor - Untitled Scene";
+
+            Console.WriteLine("[Editor] Created new scene.");
+        }
+        private void SaveBeforeNewScene()
+        {
+            if (activeDocument.HasFile)
+            {
+                if (SaveScene())
+                {
+                    CreateNewScene();
+                }
+
+                return;
+            }
+
+            OpenSaveSceneDialog(
+                _ => CreateNewScene());
+        }
+        private void OpenSaveSceneDialog(Action<string>? onSaved = null)
+        {
+            string sceneName =
+                string.IsNullOrWhiteSpace(
+                    activeDocument.Scene.SceneName)
+                    ? "Scene"
+                    : activeDocument.Scene.SceneName;
+
+            string directory =
+                activeDocument.HasFile
+                    ? Path.GetDirectoryName(
+                        activeDocument.FilePath!)
+                        ?? DefaultSceneDirectory
+                    : DefaultSceneDirectory;
+
+            dialogs.Open(
+                new SaveSceneDialog(
+                    sceneName,
+                    directory,
+                    SaveSceneToPath,
+                    onSaved));
+        }
+
         private bool SaveSceneToPath(string path)
         {
+            Console.WriteLine(
+                $"[SCENE SAVE] " +
+                $"isPlaying={IsPlaying}, " +
+                $"activeDocument.Scene={activeDocument.Scene.SceneName}, " +
+                $"activeScene={editorContext.ActiveScene?.SceneName}, " +
+                $"playScene={playScene?.SceneName}, " +
+                $"sameAsPlay={ReferenceEquals(activeDocument.Scene, playScene)}");
+
             try
             {
-                string? directory = Path.GetDirectoryName(path);
+                string? directory =
+                    Path.GetDirectoryName(path);
 
                 if (string.IsNullOrWhiteSpace(directory))
                 {
-                    saveSceneError = "Invalid scene directory.";
+                    Console.WriteLine(
+                        "[Editor] Invalid scene directory.");
+
                     return false;
                 }
 
                 Directory.CreateDirectory(directory);
 
-                byte[] data = SceneTools.Serialize(activeScene);
+                byte[] data =
+                    SceneTools.Serialize(activeDocument.Scene);
+
                 File.WriteAllBytes(path, data);
 
-                activeScenePath = Path.GetFullPath(path);
-                activeScene.SceneName = Path.GetFileNameWithoutExtension(path);
+                activeDocument.Scene.SceneName =
+                    Path.GetFileNameWithoutExtension(path);
 
-                editorContext.SceneDirty = false;
+                activeDocument.MarkSaved(path);
 
-                Application.MainWindow.Window.Title =
-                    $"Elemental Editor - Editing Scene: {activeScene.SceneName}";
-
-                Console.WriteLine($"[Editor] Saved scene: {activeScenePath}");
-
-                if (loadPendingSceneAfterSave)
-                {
-                    loadPendingSceneAfterSave = false;
-                    LoadPendingScene();
-                }
+                Console.WriteLine(
+                    $"[Editor] Saved scene: {activeDocument.FilePath}");
 
                 return true;
             }
             catch (Exception ex)
             {
-                saveSceneError = ex.Message;
-                Console.WriteLine($"[Editor] Failed to save scene:\n{ex}");
+                Console.WriteLine(
+                    $"[Editor] Failed to save scene:\n{ex}");
+
                 return false;
             }
         }
-
-        private void SaveSceneAs()
+        private void SetActiveScene(Scene scene, SceneMode mode, bool disposeOld = true)
         {
-            if (isPlaying)
-                return;
+            Engine.Instance.SceneTree.LoadScene(scene, disposeOld);
 
-            OpenSaveSceneDialog();
+            scene.SetMode(mode);
+
+            sceneViewPanel.Viewport.TargetScene = scene;
+            gameViewPanel.Viewport.TargetScene = scene;
+
+            editorContext.ActiveScene = scene;
         }
-
-        private void OpenSaveSceneDialog()
+        private void SetActiveDocument(SceneDocument document)
         {
-            saveScenePopupRequested = true;
+            activeDocument = document;
 
-            saveSceneName = string.IsNullOrWhiteSpace(activeScene?.SceneName)
-                ? "Scene"
-                : activeScene.SceneName;
+            editorContext.ActiveDocument = document;
 
-            saveSceneDirectory = string.IsNullOrWhiteSpace(activeScenePath)
-                ? DefaultSceneDirectory
-                : Path.GetDirectoryName(activeScenePath) ?? DefaultSceneDirectory;
-
-            saveSceneError = "";
-        }
-
-        private void DrawSaveSceneModal()
-        {
-            if (!ImGui.BeginPopupModal("Save Scene", ImGuiWindowFlags.AlwaysAutoResize))
-            {
-                return;
-            }
-
-            ImGui.TextUnformatted("Name");
-            ImGui.SetNextItemWidth(450);
-            ImGui.InputText("##SceneName", ref saveSceneName, 256);
-
-            ImGui.Spacing();
-
-            ImGui.TextUnformatted("Location");
-            ImGui.SetNextItemWidth(450);
-            ImGui.InputText("##SceneDirectory", ref saveSceneDirectory, 1024);
-
-            ImGui.Spacing();
-
-            string filename = saveSceneName.Trim();
-            if (!filename.EndsWith(".scene", StringComparison.OrdinalIgnoreCase))
-            {
-                filename += ".scene";
-            }
-
-            string path = Path.Combine(saveSceneDirectory, filename);
-            ImGui.TextDisabled(path);
-
-            if (!string.IsNullOrEmpty(saveSceneError))
-            {
-                ImGui.Spacing();
-                ImGui.TextColored(new Vector4(1f, 0.3f, 0.3f, 1f), saveSceneError);
-            }
-
-            ImGui.Spacing();
-            ImGui.Separator();
-            ImGui.Spacing();
-
-            if (ImGui.Button("Save", new Vector2(-1, 0)))
-            {
-                if (string.IsNullOrWhiteSpace(saveSceneName))
-                {
-                    saveSceneError = "Scene name cannot be empty.";
-                }
-                else if (string.IsNullOrWhiteSpace(saveSceneDirectory))
-                {
-                    saveSceneError = "Scene location cannot be empty.";
-                }
-                else if (!Directory.Exists(saveSceneDirectory))
-                {
-                    saveSceneError = "The specified directory does not exist.";
-                }
-                else
-                {
-                    string finalPath = Path.Combine(saveSceneDirectory, filename);
-
-                    if (SaveSceneToPath(finalPath))
-                    {
-                        ImGui.CloseCurrentPopup();
-                    }
-                }
-            }
-
-            if (ImGui.Button("Cancel", new Vector2(-1, 0)))
-            {
-                loadPendingSceneAfterSave = false;
-                pendingScenePath = null;
-
-                ImGui.CloseCurrentPopup();
-            }
-
-            ImGui.EndPopup();
-        }
-        private void DrawUnsavedSceneModal()
-        {
-            if (!ImGui.BeginPopupModal(
-                    "Unsaved Changes",
-                    ImGuiWindowFlags.AlwaysAutoResize))
-            {
-                return;
-            }
-
-            ImGui.TextUnformatted(
-                $"Scene '{activeScene?.SceneName ?? "Untitled"}' has unsaved changes.");
-
-            ImGui.Spacing();
-
-            ImGui.TextUnformatted(
-                "Do you want to save your changes before loading the new scene?");
-
-            ImGui.Spacing();
-            ImGui.Separator();
-            ImGui.Spacing();
-
-            if (ImGui.Button("Save", new Vector2(120, 0)))
-            {
-                if (string.IsNullOrWhiteSpace(activeScenePath))
-                {
-                    loadPendingSceneAfterSave = true;
-                    OpenSaveSceneDialog();
-                    ImGui.CloseCurrentPopup();
-                }
-                else
-                {
-                    if (SaveScene())
-                    {
-                        LoadPendingScene();
-                        ImGui.CloseCurrentPopup();
-                    }
-                }
-            }
-
-            ImGui.SameLine();
-
-            if (ImGui.Button("Don't Save", new Vector2(120, 0)))
-            {
-                LoadPendingScene();
-                ImGui.CloseCurrentPopup();
-            }
-
-            ImGui.SameLine();
-
-            if (ImGui.Button("Cancel", new Vector2(120, 0)))
-            {
-                pendingScenePath = null;
-                ImGui.CloseCurrentPopup();
-            }
-
-            ImGui.EndPopup();
+            SetActiveScene(
+                document.Scene,
+                SceneMode.Edit);
         }
         private void HandleSaveShortcuts()
         {
@@ -644,19 +595,113 @@ namespace Elemental
                 }
             }
         }
-        private void HandleSceneDrop(string relativePath)
+        private void HandleAssetDrop(string relativePath)
         {
-            if (isPlaying)
+            if (IsPlaying)
                 return;
 
-            if (editorContext.SceneDirty)
+            string extension = Path.GetExtension(relativePath);
+
+            if (extension.Equals(".scene", StringComparison.OrdinalIgnoreCase))
             {
-                pendingScenePath = relativePath;
-                unsavedScenePopupRequested = true;
+                HandleSceneDrop(relativePath);
                 return;
             }
 
-            LoadSceneFromPath(relativePath);
+            if (extension.Equals(".gltf", StringComparison.OrdinalIgnoreCase) ||
+                extension.Equals(".glb", StringComparison.OrdinalIgnoreCase) ||
+                extension.Equals(".fbx", StringComparison.OrdinalIgnoreCase) ||
+                extension.Equals(".obj", StringComparison.OrdinalIgnoreCase))
+            {
+                HandleModelDrop(relativePath);
+                return;
+            }
+        }
+        private void HandleModelDrop(string relativePath)
+        {
+            try
+            {
+                PackedScene? modelScene =
+                    Asset.Load<PackedScene>(relativePath);
+
+                if (modelScene == null)
+                {
+                    Console.WriteLine(
+                        $"[Editor] Failed to load model: {relativePath}");
+                    return;
+                }
+
+                modelScene.Instantiate(activeDocument.Scene);
+
+                activeDocument.MarkDirty();
+
+                Console.WriteLine(
+                    $"[Editor] Instantiated model: {relativePath}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(
+                    $"[Editor] Failed to instantiate model '{relativePath}':\n{ex}");
+            }
+        }
+        private void HandleSceneDrop(string relativePath)
+        {
+            RequestLoadScene(relativePath);
+        }
+
+        private void RequestLoadScene(string relativePath)
+        {
+            if (IsPlaying)
+                return;
+
+            if (!activeDocument.IsDirty)
+            {
+                LoadSceneFromPath(relativePath);
+                return;
+            }
+
+            dialogs.Open(
+                new UnsavedChangesDialog(
+                    "Unsaved Changes",
+
+                    $"Scene '{activeDocument.Scene.SceneName ?? "Untitled"}' " +
+                    "has unsaved changes.\n\n" +
+                    "Do you want to save your changes before loading the new scene?",
+
+                    onSave: () =>
+                    {
+                        SaveBeforeLoad(relativePath);
+                    },
+
+                    onDiscard: () =>
+                    {
+                        LoadSceneFromPath(relativePath);
+                    }));
+        }
+
+        private void SaveBeforeLoad(string relativePath)
+        {
+            if (activeDocument.HasFile)
+            {
+                if (SaveScene())
+                {
+                    LoadSceneFromPath(relativePath);
+                }
+
+                return;
+            }
+
+            OpenSaveSceneDialog(
+                _ => LoadSceneFromPath(relativePath));
+        }
+        private void DumpScene(string label, Scene scene)
+        {
+            byte[] data = SceneTools.Serialize(scene);
+
+            Console.WriteLine(
+                $"[{label}] " +
+                $"Scene={scene.GetHashCode()}, " +
+                $"SerializedBytes={data.Length}");
         }
         private static bool ToolbarButton(string id, string icon, string? tooltip = null)
         {

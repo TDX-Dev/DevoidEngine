@@ -8,13 +8,23 @@ using DevoidEngine.Rendering;
 
 namespace DevoidEngine.Core
 {
+    public enum SceneMode
+    {
+        None,
+        Play,
+        Edit
+    }
+
     public sealed class Scene : AssetType, IDisposable
     {
         public event Action<Component>? OnComponentAdded;
         public event Action<Component>? OnComponentRemoved;
 
         public string SceneName { get; set; } = "Empty Scene";
-        public bool IsStarted => isStarted;
+        public bool IsPlaying => SceneMode == SceneMode.Play;
+        public bool IsEditing => SceneMode == SceneMode.Edit;
+        public bool IsRunning => SceneMode is SceneMode.Play or SceneMode.Edit;
+        public SceneMode SceneMode { get; private set; } = SceneMode.None;
 
         public List<GameObject> GameObjects { get; private set; }
         public RenderWorld World { get; private set; } = null!;
@@ -23,9 +33,6 @@ namespace DevoidEngine.Core
 
         public List<Camera3D> Cameras { get; private set; } = [];
         public Camera3D? MainCamera { get; private set; }
-
-        private bool isPlaying = false;
-        private bool isStarted = false;
 
 
         private readonly List<Transform3D> transforms;
@@ -40,21 +47,9 @@ namespace DevoidEngine.Core
             World = new();
         }
 
-        public void Start()
-        {
-            if (isStarted)
-                return;
-
-            for (int i = 0; i < GameObjects.Count; i++)
-            {
-                GameObjects[i].OnStart();
-            }
-            isStarted = true;
-        }
-
         public void Update(float deltaTime)
         {
-            if (!isPlaying)
+            if (!IsRunning)
                 return;
 
             for (int i = 0; i < GameObjects.Count; i++)
@@ -70,19 +65,25 @@ namespace DevoidEngine.Core
                     continue;
 
                 _ = transform.WorldMatrix;
-
                 transform.hasMoved = false;
             }
 
             if (MainCamera != null)
             {
                 Transform3D camTransform = MainCamera.gameObject.Transform;
-                Audio?.SetListener(camTransform.Position, camTransform.Forward, camTransform.Up);
+
+                Audio?.SetListener(
+                    camTransform.Position,
+                    camTransform.Forward,
+                    camTransform.Up);
             }
         }
 
         public void LateUpdate(float deltaTime)
         {
+            if (!IsRunning)
+                return;
+
             for (int i = 0; i < transforms.Count; i++)
             {
                 transforms[i].ClearDirty();
@@ -96,35 +97,50 @@ namespace DevoidEngine.Core
                 transforms[i].CapturePrevious();
             }
 
-            if (!isPlaying) { return; }
+            if (!IsRunning)
+                return;
 
             for (int i = 0; i < GameObjects.Count; i++)
             {
                 GameObjects[i].OnFixedUpdate(deltaTime);
             }
 
-            if (Engine.Instance.SimulatePhysics)
+            // Physics simulation itself remains Play-only.
+            if (IsPlaying && Engine.Instance.SimulatePhysics)
             {
                 Physics.Step(deltaTime);
                 Physics.SyncTransforms(deltaTime);
                 Physics.ResolveFrameCollisions();
-
             }
         }
 
         public void Render()
         {
+            if (!IsRunning)
+                return;
+
             for (int i = 0; i < GameObjects.Count; i++)
             {
                 GameObjects[i].OnRender();
             }
         }
 
-        public void Play(bool value = true)
+        public void SetMode(SceneMode mode)
         {
-            isPlaying = value;
-            if (!isStarted)
-                throw new InvalidOperationException("Scene cannot be played before it is started.");
+            if (SceneMode == mode)
+                return;
+
+            SceneMode = mode;
+
+            if (mode == SceneMode.None)
+                return;
+
+            // Let components decide whether they should start
+            // based on the new scene mode.
+            for (int i = 0; i < GameObjects.Count; i++)
+            {
+                GameObjects[i].OnStart();
+            }
         }
 
         public GameObject AddGameObject(string name = "GameObject")
@@ -134,20 +150,26 @@ namespace DevoidEngine.Core
                 Scene = this,
                 Name = name
             };
+
             GameObjects.Add(gameObject);
             transforms.Add(gameObject.Transform);
-            if (isStarted)
+
+            if (IsRunning)
                 gameObject.OnStart();
+
             return gameObject;
         }
 
         public GameObject AddGameObject(GameObject gameObject)
         {
             gameObject.Scene = this;
+
             GameObjects.Add(gameObject);
             transforms.Add(gameObject.Transform);
-            if (isStarted)
+
+            if (IsRunning)
                 gameObject.OnStart();
+
             return gameObject;
         }
 
@@ -227,7 +249,7 @@ namespace DevoidEngine.Core
             if (component is IRenderComponent renderComponent)
                 renderables.Add(renderComponent);
 
-            if (isPlaying)
+            if (IsRunning)
                 component.InternalStart();
 
             OnComponentAdded?.Invoke(component);

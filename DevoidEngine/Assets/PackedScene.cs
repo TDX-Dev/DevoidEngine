@@ -19,9 +19,9 @@ namespace DevoidEngine.Assets
         [Key(3)]
         public PackedCamera[] Cameras = [];
 
-        public Scene Instantiate()
+        public Scene Instantiate(Scene? existing = null)
         {
-            Scene scene = new();
+            Scene scene = existing ?? new();
 
             List<GameObject> objects = new(Nodes.Length);
 

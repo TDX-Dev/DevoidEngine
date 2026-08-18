@@ -154,13 +154,16 @@ namespace DevoidEngine.Core
         {
             foreach (var texture in textures)
             {
+                if (texture.Value.ID == Texture.Default.ID)
+                    continue;
                 texture.Value.Dispose();
             }
 
-            foreach (var sampler in samplers)
-            {
-                sampler.Value.Dispose();
-            }
+            //foreach (var sampler in samplers)
+            //{
+
+            //    sampler.Value.Dispose();
+            //}
 
             Shader.Dispose();
         }

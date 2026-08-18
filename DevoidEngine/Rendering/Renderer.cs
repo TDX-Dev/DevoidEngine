@@ -281,7 +281,7 @@ namespace DevoidEngine.Rendering
             PerFrameBuffer = UniformBuffer.Create(ResourceUsage.Dynamic, (uint)Unsafe.SizeOf<PerFrameData>());
 
             PerCameraDescriptor.SetUniformBuffer(0, CameraBuffer.GPU);
-            PerCameraDescriptor.SetUniformBuffer(2, SceneBuffer.GPU);
+            PerCameraDescriptor.SetUniformBuffer(3, SceneBuffer.GPU);
             PerObjectDescriptor.SetUniformBuffer(1, PerObjectBuffer.GPU);
 
             PerFrameDescriptor.SetUniformBuffer(2, PerFrameBuffer.GPU);
@@ -337,6 +337,7 @@ namespace DevoidEngine.Rendering
 
 
             Camera camera = viewport.ActiveCamera;
+            camera.UpdateProjectionMatrix(((float)viewport.Width) / viewport.Height);
 
             RenderResourceCache viewportResources = RenderResources[viewport];
 
@@ -353,8 +354,6 @@ namespace DevoidEngine.Rendering
 
             renderView.Clear();
             viewport.TargetScene.World.BuildView(camera, ref renderView);
-
-            camera.UpdateProjectionMatrix(((float)viewport.Width) / viewport.Height);
             UpdateCameraBuffer(camera.GetCameraData(new Vector2(viewport.Width, viewport.Height)));
             UpdateSceneData(renderView);
             UpdateLights(renderView);
