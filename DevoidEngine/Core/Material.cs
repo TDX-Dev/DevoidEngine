@@ -1,4 +1,5 @@
-﻿using DevoidEngine.Assets;
+﻿using Assimp.Unmanaged;
+using DevoidEngine.Assets;
 using DevoidGPU;
 using System.Numerics;
 using System.Runtime.InteropServices;
@@ -12,6 +13,8 @@ namespace DevoidEngine.Core
         public int MaterialBufferSize => materialBufferSize;
         public int MaterialBufferBindSlot => materialBufferBindSlot;
         public ShaderPass DefaultPass => Shader.DefaultPass;
+        public ShaderVariant Variant { get; private set; } = null!;
+        public IReadOnlyDictionary<string, string> Defines => defines;
 
 
         private readonly Dictionary<string, ShaderVariableInfo> variables;
@@ -20,6 +23,8 @@ namespace DevoidEngine.Core
 
         private readonly Dictionary<string, Texture> textures;
         private readonly Dictionary<string, Sampler> samplers;
+
+        private readonly Dictionary<string, string> defines = new(StringComparer.Ordinal);
 
         private readonly byte[] defaultBuffer = null!;
 
@@ -36,6 +41,7 @@ namespace DevoidEngine.Core
             textures = [];
             samplers = [];
 
+            RefreshVariant();
 
             MaterialLayout? layout = shader.MaterialLayout;
 
@@ -71,6 +77,24 @@ namespace DevoidEngine.Core
             }
         }
 
+        private void RefreshVariant()
+        {
+            Variant = Shader.GetVariant(defines);
+        }
+
+        public void SetDefine(string name, string value = "1")
+        {
+            defines[name] = value;
+
+            RefreshVariant();
+        }
+
+        public void RemoveDefine(string name)
+        {
+            if (defines.Remove(name))
+                RefreshVariant();
+        }
+
         public bool TryGetVariable(string name, out ShaderVariableInfo? info)
             => variables.TryGetValue(name, out info);
 
@@ -81,6 +105,12 @@ namespace DevoidEngine.Core
 
         public ShaderResourceInfo GetTextureBinding(string name)
             => textureBindings[name];
+
+        public bool HasSamplerBinding(string name)
+            => samplerBindings.ContainsKey(name);
+
+        public ShaderResourceInfo GetSamplerBinding(string name)
+            => samplerBindings[name];
 
 
         public Texture GetDefaultTexture(string name)
@@ -105,6 +135,14 @@ namespace DevoidEngine.Core
                 throw new Exception($"Texture '{name}' not found in material layout.");
 
             textures[name] = texture ?? Texture.Default;
+        }
+
+        public void SetSampler(string name, Sampler sampler)
+        {
+            if (!samplerBindings.ContainsKey(name))
+                throw new Exception($"Sampler '{name}' not found in material layout.");
+
+            samplers[name] = sampler ?? Sampler.Default;
         }
 
         #region SETTERS

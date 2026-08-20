@@ -153,10 +153,10 @@ namespace Elemental
 
         private void SetupEnvironment()
         {
-            Engine.Renderer.SkyRenderer.Sky = new HDRISky
-            {
-                PanoramaTexture = Asset.Load<Texture>("HDRIs/soil_puresky.hdr")!
-            };
+            //Engine.Renderer.SkyRenderer.Sky = new HDRISky
+            //{
+            //    PanoramaTexture = Asset.Load<Texture>("HDRIs/soil_puresky.hdr")!
+            //};
         }
 
         private void ConfigureInputBindings()

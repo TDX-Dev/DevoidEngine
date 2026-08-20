@@ -7,58 +7,74 @@ struct PSInput
     float3 WorldspacePosition : TEXCOORD1;
 };
 
-
 cbuffer BloomMipShaderData : register(b2)
 {
     float2 mipSize;
-    int mipLevel;
     float filterRadius;
 }
 
-
 Texture2D INPUT_TEXTURE : register(t0);
+Texture2D PREVIOUS_TEXTURE : register(t1);
+
 SamplerState INPUT_TEXTURESampler : register(s0);
 
-//float4 PSMain(PSInput input) : SV_TARGET
-//{
-//    float2 uv = input.UV0;
+float3 Upsample(float2 uv, float2 pixelSize)
+{
+    const float2 coords[9] =
+    {
+        float2(-1.0, 1.0),
+        float2(0.0, 1.0),
+        float2(1.0, 1.0),
 
-//    float2 offset = mipSize * filterRadius;
+        float2(-1.0, 0.0),
+        float2(0.0, 0.0),
+        float2(1.0, 0.0),
 
-//    float3 center = INPUT_TEXTURE.Sample(INPUT_TEXTURESampler, uv).rgb;
+        float2(-1.0, -1.0),
+        float2(0.0, -1.0),
+        float2(1.0, -1.0)
+    };
 
-//    float3 s1 = INPUT_TEXTURE.Sample(INPUT_TEXTURESampler, uv + float2(-offset.x, offset.y)).rgb;
-//    float3 s2 = INPUT_TEXTURE.Sample(INPUT_TEXTURESampler, uv + float2(offset.x, offset.y)).rgb;
-//    float3 s3 = INPUT_TEXTURE.Sample(INPUT_TEXTURESampler, uv + float2(-offset.x, -offset.y)).rgb;
-//    float3 s4 = INPUT_TEXTURE.Sample(INPUT_TEXTURESampler, uv + float2(offset.x, -offset.y)).rgb;
+    const float weights[9] =
+    {
+        0.0625, 0.125, 0.0625,
+        0.125, 0.25, 0.125,
+        0.0625, 0.125, 0.0625
+    };
 
-//    float3 result = center * 4.0;
-//    result += (s1 + s2 + s3 + s4) * 2.0;
-//    result *= 1.0 / 12.0;
+    float3 result = 0.0;
 
-//    return float4(result, 1.0);
-//}
+    [unroll]
+    for (int i = 0; i < 9; i++)
+    {
+        float2 sampleUV = uv + coords[i] * pixelSize;
+
+        result += weights[i] * PREVIOUS_TEXTURE.SampleLevel(INPUT_TEXTURESampler, sampleUV, 0).rgb;
+    }
+
+    return result;
+}
 
 float4 PSMain(PSInput input) : SV_TARGET
 {
     float2 uv = input.UV;
 
-    float2 texelSize = 1.0 / mipSize;
+    // Input is the CURRENT mip.
+    float3 currentColor =
+        INPUT_TEXTURE.SampleLevel(
+            INPUT_TEXTURESampler,
+            uv,
+            0).rgb;
 
-    float radius = filterRadius * exp2(mipLevel);
+    // mipSize must be the PREVIOUS / smaller texture size.
+    float2 previousPixelSize = 1.0 / mipSize;
 
-    float2 offset = texelSize * radius;
+    float3 previousColor = Upsample(uv, previousPixelSize);
 
-    float3 center = INPUT_TEXTURE.Sample(INPUT_TEXTURESampler, uv).rgb;
-
-    float3 s1 = INPUT_TEXTURE.Sample(INPUT_TEXTURESampler, uv + float2(-offset.x, offset.y)).rgb;
-    float3 s2 = INPUT_TEXTURE.Sample(INPUT_TEXTURESampler, uv + float2(offset.x, offset.y)).rgb;
-    float3 s3 = INPUT_TEXTURE.Sample(INPUT_TEXTURESampler, uv + float2(-offset.x, -offset.y)).rgb;
-    float3 s4 = INPUT_TEXTURE.Sample(INPUT_TEXTURESampler, uv + float2(offset.x, -offset.y)).rgb;
-
-    float3 result = center * 4.0;
-    result += (s1 + s2 + s3 + s4) * 2.0;
-    result *= 1.0 / 12.0;
+    float3 result = lerp(
+        currentColor,
+        previousColor,
+        filterRadius);
 
     return float4(result, 1.0);
 }

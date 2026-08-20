@@ -15,7 +15,7 @@ namespace DevoidEngine.Rendering
         {
             FullscreenShader = Shader.FromDescriptorFile(Engine.GraphicsDevice, Path.Combine(Engine.BasePath, "Content/DevoidShaderDescriptors/blit_mat.dsd"));
             FullscreenMesh = PrimitiveMeshes.GetFullscreenPlane();
-            FullscreenDescriptor = Engine.GraphicsDevice.CreateDescriptorSet(FullscreenShader.DefaultPass.DescriptorLayout);
+            FullscreenDescriptor = Engine.GraphicsDevice.CreateDescriptorSet(FullscreenShader.DefaultPass.GetVariant().DescriptorLayout);
 
             FullscreenSampler = Engine.GraphicsDevice.CreateSampler(new SamplerDescription()
             {
@@ -31,7 +31,7 @@ namespace DevoidEngine.Rendering
         {
             if (texture == null) return;
 
-            cmd.SetPipeline(FullscreenShader.DefaultPass.GetPipeline(Engine.GraphicsDevice, FullscreenMesh.VertexInfo));
+            cmd.SetPipeline(FullscreenShader.DefaultPass.GetPipeline(FullscreenShader.DefaultPass.GetVariant(), FullscreenMesh.VertexInfo));
             FullscreenDescriptor.SetTexture(0, texture.GPU);
 
             cmd.SetDescriptorSet(0, FullscreenDescriptor);
@@ -42,7 +42,7 @@ namespace DevoidEngine.Rendering
         {
             if (material == null) return;
 
-            cmd.SetPipeline(material.BaseMaterial.DefaultPass.GetPipeline(Engine.GraphicsDevice, FullscreenMesh.VertexInfo));
+            cmd.SetPipeline(material.BaseMaterial.DefaultPass.GetPipeline(material.BaseMaterial.Variant, FullscreenMesh.VertexInfo));
 
             cmd.SetDescriptorSet(0, material.DescriptorSet);
             FullscreenMesh.Draw(cmd);

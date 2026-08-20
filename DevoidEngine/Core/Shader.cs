@@ -53,79 +53,36 @@ namespace DevoidEngine.Core
 
             foreach (var passDesc in descriptor.Passes)
             {
-                ShaderStage? vertex = null;
-                ShaderStage? fragment = null;
-                ShaderStage? compute = null;
+                string? vertexPath = null;
+                string? fragmentPath = null;
+                string? computePath = null;
 
                 if (!string.IsNullOrWhiteSpace(passDesc.Shaders.VS))
                 {
-                    string vsPath = Path.Combine(baseDirectory, passDesc.Shaders.VS);
-
-                    vertex = new ShaderStage(
-                        device.CreateShader(new ShaderDescription
-                        {
-                            Name = $"{descriptor.Name}_{passDesc.Name}_VS",
-                            FilePath = vsPath,
-                            Source = File.ReadAllText(vsPath),
-                            EntryPoint = "VSMain",
-                            Stage = DevoidGPU.ShaderStage.Vertex,
-                            Defines = []
-                        }));
+                    vertexPath = Path.Combine(
+                        baseDirectory,
+                        passDesc.Shaders.VS);
                 }
 
                 if (!string.IsNullOrWhiteSpace(passDesc.Shaders.FS))
                 {
-                    string fsPath = Path.Combine(baseDirectory, passDesc.Shaders.FS);
-
-                    fragment = new ShaderStage(
-                        device.CreateShader(new ShaderDescription
-                        {
-                            Name = $"{descriptor.Name}_{passDesc.Name}_FS",
-                            FilePath = fsPath,
-                            Source = File.ReadAllText(fsPath),
-                            EntryPoint = "PSMain",
-                            Stage = DevoidGPU.ShaderStage.Fragment,
-                            Defines = []
-                        }));
+                    fragmentPath = Path.Combine(
+                        baseDirectory,
+                        passDesc.Shaders.FS);
                 }
 
                 if (!string.IsNullOrWhiteSpace(passDesc.Shaders.CS))
                 {
-                    string csPath = Path.Combine(baseDirectory, passDesc.Shaders.CS);
-
-                    compute = new ShaderStage(
-                        device.CreateShader(new ShaderDescription
-                        {
-                            Name = $"{descriptor.Name}_{passDesc.Name}_CS",
-                            FilePath = csPath,
-                            Source = File.ReadAllText(csPath),
-                            EntryPoint = "CSMain",
-                            Stage = DevoidGPU.ShaderStage.Compute,
-                            Defines = []
-                        }));
+                    computePath = Path.Combine(
+                        baseDirectory,
+                        passDesc.Shaders.CS);
                 }
 
-                ShaderPass pass = new(vertex, fragment, compute);
-
-                List<ShaderReflectionData> reflections = [];
-
-                if (vertex != null)
-                    reflections.Add(vertex.ShaderReflectionData);
-
-                if (fragment != null)
-                    reflections.Add(fragment.ShaderReflectionData);
-
-                if (compute != null)
-                    reflections.Add(compute.ShaderReflectionData);
-
-                ShaderReflectionData reflection_data =
-                    ShaderReflectionData.Merge([.. reflections]);
-
-                //ShaderReflectionData.Print(reflection_data);
-
-                shader.MaterialLayout ??= BuildMaterialLayout(descriptor, reflection_data);
-
-                pass.DescriptorLayout = CreateDescriptorLayout(device, reflection_data);
+                ShaderPass pass = new(
+                    device,
+                    vertexPath,
+                    fragmentPath,
+                    computePath);
 
                 if (passDesc.States != null)
                 {
@@ -136,51 +93,15 @@ namespace DevoidEngine.Core
                         ParseDepth(passDesc.States.Depth);
 
                     pass.Rasterizer =
-                        ParseRasterizer(passDesc.States.Cull, passDesc.States.Scissor);
-                }
-
-                //if (pass.Vertex != null && pass.Fragment != null)
-                //{
-                //    try
-                //    {
-                //        pass.Pipeline =
-                //            device.CreateGraphicsPipeline(
-                //                new GraphicsPipelineDescription
-                //                {
-                //                    VertexShader = pass.Vertex!.GPU,
-                //                    PixelShader = pass.Fragment!.GPU,
-
-                //                    PipelineLayout = pass.PipelineLayout,
-
-                //                    Topology = PrimitiveType.Triangles,
-
-                //                    VertexLayout = Vertex.VertexInfo, // HARDCODED FOR THE TIME BEING, ISSUE THO
-
-                //                    Rasterizer = pass.Rasterizer,
-                //                    DepthStencil = pass.Depth,
-                //                    Blend = pass.Blend
-                //                });
-                //    } catch
-                //    {
-                //        Console.WriteLine("Shader pipeline fast path creation failed.");
-                //    }
-                //}
-
-                if (pass.Compute != null)
-                {
-                    pass.ComputePipeline =
-                        device.CreateComputePipeline(new ComputePipelineDescription()
-                        {
-                            ComputeShader = pass.Compute.GPU
-                        });
+                        ParseRasterizer(
+                            passDesc.States.Cull,
+                            passDesc.States.Scissor);
                 }
 
                 shader.passes[passDesc.Name] = pass;
 
                 if (passDesc.Name == descriptor.DefaultPass)
-                {
                     shader.DefaultPass = pass;
-                }
             }
 
             shader.ShaderDescriptor = descriptor;
@@ -312,6 +233,141 @@ namespace DevoidEngine.Core
 
             return device.CreateDescriptorLayout(
                 [.. bindings]);
+        }
+
+        public ShaderVariant GetVariant(IReadOnlyDictionary<string, string>? defines = null)
+        {
+            ShaderVariant variant = DefaultPass.GetVariant(defines);
+
+            EnsureMaterialLayout(variant.ReflectionData);
+
+            return variant;
+        }
+
+        private void EnsureMaterialLayout(ShaderReflectionData reflection)
+        {
+            if (MaterialLayout == null)
+            {
+                MaterialLayout =
+                    BuildMaterialLayout(
+                        ShaderDescriptor,
+                        reflection);
+
+                return;
+            }
+
+            ValidateMaterialLayout(reflection);
+        }
+
+        private void ValidateMaterialLayout(ShaderReflectionData reflection)
+        {
+            MaterialLayout? actual =
+                BuildMaterialLayout(
+                    ShaderDescriptor,
+                    reflection);
+
+            if (actual == null)
+            {
+                if (MaterialLayout != null)
+                {
+                    throw new InvalidOperationException(
+                        $"Shader '{Name}' variant does not contain the expected material layout.");
+                }
+
+                return;
+            }
+
+            if (MaterialLayout!.BufferName != actual.BufferName ||
+                MaterialLayout.BufferSize != actual.BufferSize ||
+                MaterialLayout.BufferBindSlot != actual.BufferBindSlot)
+            {
+                throw new InvalidOperationException(
+                    $"Shader '{Name}' variant changed the material buffer layout.");
+            }
+
+            if (MaterialLayout.Variables.Count !=
+                actual.Variables.Count)
+            {
+                throw new InvalidOperationException(
+                    $"Shader '{Name}' variant changed the material variable layout.");
+            }
+
+            foreach (var expected in MaterialLayout.Variables)
+            {
+                if (!actual.Variables.TryGetValue(
+                        expected.Key,
+                        out ShaderVariableInfo? actualVariable))
+                {
+                    throw new InvalidOperationException(
+                        $"Shader '{Name}' variant removed material variable '{expected.Key}'.");
+                }
+
+                ShaderVariableInfo expectedVariable =
+                    expected.Value;
+
+                if (expectedVariable.Offset != actualVariable.Offset ||
+                    expectedVariable.Size != actualVariable.Size)
+                {
+                    throw new InvalidOperationException(
+                        $"Shader '{Name}' variant changed the layout of material variable '{expected.Key}'.");
+                }
+            }
+
+            if (MaterialLayout.Textures.Count !=
+                actual.Textures.Count)
+            {
+                throw new InvalidOperationException(
+                    $"Shader '{Name}' variant changed material texture bindings.");
+            }
+
+            foreach (var expected in MaterialLayout.Textures)
+            {
+                if (!actual.Textures.TryGetValue(
+                        expected.Key,
+                        out ShaderResourceInfo? actualResource))
+                {
+                    throw new InvalidOperationException(
+                        $"Shader '{Name}' variant removed material texture '{expected.Key}'.");
+                }
+
+                ShaderResourceInfo expectedResource =
+                    expected.Value;
+
+                if (expectedResource.BindSlot != actualResource.BindSlot ||
+                    expectedResource.Type != actualResource.Type)
+                {
+                    throw new InvalidOperationException(
+                        $"Shader '{Name}' variant changed material texture '{expected.Key}'.");
+                }
+            }
+
+            if (MaterialLayout.Samplers.Count !=
+                actual.Samplers.Count)
+            {
+                throw new InvalidOperationException(
+                    $"Shader '{Name}' variant changed material sampler bindings.");
+            }
+
+            foreach (var expected in MaterialLayout.Samplers)
+            {
+                if (!actual.Samplers.TryGetValue(
+                        expected.Key,
+                        out ShaderResourceInfo? actualResource))
+                {
+                    throw new InvalidOperationException(
+                        $"Shader '{Name}' variant removed material sampler '{expected.Key}'.");
+                }
+
+                ShaderResourceInfo expectedResource =
+                    expected.Value;
+
+                if (expectedResource.BindSlot != actualResource.BindSlot ||
+                    expectedResource.Type != actualResource.Type)
+                {
+                    throw new InvalidOperationException(
+                        $"Shader '{Name}' variant changed material sampler '{expected.Key}'.");
+                }
+            }
         }
 
         private static BlendStateDescription ParseBlend(string? blend)

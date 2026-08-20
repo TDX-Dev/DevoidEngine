@@ -673,7 +673,7 @@ namespace DevoidEngine.Rendering
         {
             MaterialInstance material = item.render_material ?? NullMaterialInstance;
             ShaderPass pass = material.BaseMaterial.DefaultPass;
-            cmd.SetPipeline(pass.GetPipeline(Engine.GraphicsDevice, item.render_mesh.VertexInfo));
+            cmd.SetPipeline(pass.GetPipeline(material.BaseMaterial.Variant, item.render_mesh.VertexInfo));
             cmd.SetDescriptorSet(
                         0,
                         PerCameraDescriptor);
@@ -708,7 +708,7 @@ namespace DevoidEngine.Rendering
                 {
                     currentPass = pass;
 
-                    cmd.SetPipeline(pass.GetPipeline(Engine.GraphicsDevice, item.render_mesh.VertexInfo, primitiveType));
+                    cmd.SetPipeline(pass.GetPipeline(material.BaseMaterial.Variant, item.render_mesh.VertexInfo, primitiveType));
 
                     cmd.SetDescriptorSet(
                         0,

@@ -17,8 +17,11 @@ namespace DevoidEngine.Core
         }
 
         private readonly Dictionary<string, Texture> textureOverrides;
+        private readonly Dictionary<string, Sampler> samplerOverrides;
+
         private readonly HashSet<string> overriddenProperties;
         private readonly HashSet<string> overriddenTextures;
+        private readonly HashSet<string> overriddenSamplers;
 
 
         private readonly byte[]? cpuBuffer;
@@ -33,8 +36,7 @@ namespace DevoidEngine.Core
         public MaterialInstance(Material material)
         {
             BaseMaterial = material;
-
-            descriptorSet = Engine.GraphicsDevice.CreateDescriptorSet(BaseMaterial.DefaultPass.DescriptorLayout);
+            descriptorSet = Engine.GraphicsDevice.CreateDescriptorSet(BaseMaterial.DefaultPass.GetVariant().DescriptorLayout);
 
             if (BaseMaterial.MaterialBufferSize > 0)
             {
@@ -70,8 +72,12 @@ namespace DevoidEngine.Core
 
 
             textureOverrides = [];
+            samplerOverrides = [];
+
             overriddenProperties = [];
             overriddenTextures = [];
+            overriddenSamplers = [];
+
             isDirty = true;
 
             //descriptorSet.SetUniformBuffer((uint)BaseMaterial.MaterialBufferBindSlot, gpuBuffer.GPU);
@@ -174,7 +180,11 @@ namespace DevoidEngine.Core
 
         public void ClearTextureOverride(string name)
         {
+            if (!BaseMaterial.HasTextureBinding(name))
+                return;
+
             textureOverrides.Remove(name);
+            overriddenTextures.Remove(name);
 
             ShaderResourceInfo binding =
                 BaseMaterial.GetTextureBinding(name);
@@ -182,6 +192,41 @@ namespace DevoidEngine.Core
             descriptorSet.SetTexture(
                 (uint)binding.BindSlot,
                 BaseMaterial.GetDefaultTexture(name).GPU);
+        }
+
+        public void SetSampler(string name, Sampler sampler)
+        {
+            if (!BaseMaterial.HasSamplerBinding(name))
+            {
+                Console.WriteLine($"Sampler '{name}' not found in material layout.");
+                return;
+            }
+
+            samplerOverrides[name] = sampler ?? Sampler.Default;
+            overriddenSamplers.Add(name);
+
+            ShaderResourceInfo binding =
+                BaseMaterial.GetSamplerBinding(name);
+
+            descriptorSet.SetSampler(
+                (uint)binding.BindSlot,
+                sampler?.GPU ?? Sampler.Default.GPU);
+        }
+
+        public void ClearSamplerOverride(string name)
+        {
+            if (!BaseMaterial.HasSamplerBinding(name))
+                return;
+
+            samplerOverrides.Remove(name);
+            overriddenSamplers.Remove(name);
+
+            ShaderResourceInfo binding =
+                BaseMaterial.GetSamplerBinding(name);
+
+            descriptorSet.SetSampler(
+                (uint)binding.BindSlot,
+                BaseMaterial.GetDefaultSampler(name).GPU);
         }
 
         public ReadOnlySpan<byte> GetRawValue(string name)

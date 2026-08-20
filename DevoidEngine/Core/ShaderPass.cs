@@ -2,100 +2,249 @@
 
 namespace DevoidEngine.Core
 {
-    public readonly record struct PipelineKey(VertexInfo VertexLayout, PrimitiveType Topology);
-
     public sealed class ShaderPass : IDisposable
     {
-        // Graphics stages
-        public ShaderStage? Vertex { get; }
-        public ShaderStage? Fragment { get; }
+        private readonly IGraphicsDevice device;
 
-        // Compute stage
-        public ShaderStage? Compute { get; }
+        private readonly string? vertexPath;
+        private readonly string? fragmentPath;
+        private readonly string? computePath;
 
-        public bool IsCompute => Compute != null;
+        private readonly Dictionary<
+            ShaderDefineSet,
+            ShaderVariant> variants = [];
+
+        public bool IsCompute =>
+            computePath != null;
 
         public BlendStateDescription Blend;
         public DepthStencilState Depth;
         public RasterizerState Rasterizer;
 
-        private readonly Dictionary<PipelineKey, IPipeline> graphicsPipelines = [];
-
-        public IComputePipeline? ComputePipeline { get; set; }
-
-        public IDescriptorLayout DescriptorLayout { get; internal set; } = null!;
-        public IPipelineLayout PipelineLayout { get; set; } = null!; 
-        public IPipeline Pipeline { get; set; } = null!;
-
-        // Graphics constructor
         public ShaderPass(
-            ShaderStage? vertex = null,
-            ShaderStage? fragment = null,
-            ShaderStage? compute = null)
+            IGraphicsDevice device,
+            string? vertexPath,
+            string? fragmentPath,
+            string? computePath)
         {
-            Vertex = vertex;
-            Fragment = fragment;
-            Compute = compute;
+            this.device = device;
+
+            this.vertexPath = vertexPath;
+            this.fragmentPath = fragmentPath;
+            this.computePath = computePath;
+        }
+
+        public ShaderVariant GetVariant(IReadOnlyDictionary<string, string>? defines = null)
+        {
+            ShaderDefineSet key =
+                new(defines);
+
+            if (variants.TryGetValue(
+                    key,
+                    out ShaderVariant? variant))
+            {
+                return variant;
+            }
+
+            variant = CompileVariant(key);
+
+            variants[key] = variant;
+
+            return variant;
+        }
+
+        private ShaderVariant CompileVariant(ShaderDefineSet defines)
+        {
+            ShaderStage? vertex = null;
+            ShaderStage? fragment = null;
+            ShaderStage? compute = null;
+
+            if (vertexPath != null)
+            {
+                vertex = new ShaderStage(
+                    device.CreateShader(
+                        new ShaderDescription
+                        {
+                            Name =
+                                $"{Path.GetFileNameWithoutExtension(vertexPath)}_VS_{defines}",
+
+                            FilePath = vertexPath,
+
+                            Source =
+                                File.ReadAllText(vertexPath),
+
+                            EntryPoint = "VSMain",
+
+                            Stage =
+                                DevoidGPU.ShaderStage.Vertex,
+
+                            Defines = defines.Defines.ToDictionary(x => x.Key, x => x.Value, StringComparer.Ordinal)
+                        }));
+            }
+
+            if (fragmentPath != null)
+            {
+                fragment = new ShaderStage(
+                    device.CreateShader(
+                        new ShaderDescription
+                        {
+                            Name =
+                                $"{Path.GetFileNameWithoutExtension(fragmentPath)}_FS_{defines}",
+
+                            FilePath = fragmentPath,
+
+                            Source =
+                                File.ReadAllText(fragmentPath),
+
+                            EntryPoint = "PSMain",
+
+                            Stage =
+                                DevoidGPU.ShaderStage.Fragment,
+
+                            Defines = defines.Defines.ToDictionary(x => x.Key, x => x.Value, StringComparer.Ordinal)
+                        }));
+            }
+
+            if (computePath != null)
+            {
+                compute = new ShaderStage(
+                    device.CreateShader(
+                        new ShaderDescription
+                        {
+                            Name =
+                                $"{Path.GetFileNameWithoutExtension(computePath)}_CS_{defines}",
+
+                            FilePath = computePath,
+
+                            Source =
+                                File.ReadAllText(computePath),
+
+                            EntryPoint = "CSMain",
+
+                            Stage =
+                                DevoidGPU.ShaderStage.Compute,
+
+                            Defines = defines.Defines.ToDictionary(x => x.Key, x => x.Value, StringComparer.Ordinal)
+                        }));
+            }
+
+            List<ShaderReflectionData> reflections = [];
+
+            if (vertex != null)
+                reflections.Add(vertex.ShaderReflectionData);
+
+            if (fragment != null)
+                reflections.Add(fragment.ShaderReflectionData);
+
+            if (compute != null)
+                reflections.Add(compute.ShaderReflectionData);
+
+            ShaderReflectionData reflection =
+                ShaderReflectionData.Merge(
+                    [.. reflections]);
+
+            IDescriptorLayout descriptorLayout =
+                CreateDescriptorLayout(
+                    device,
+                    reflection);
+
+            return new ShaderVariant(
+                vertex,
+                fragment,
+                compute,
+                reflection,
+                descriptorLayout);
         }
 
         public IPipeline GetPipeline(
-            IGraphicsDevice device,
+            ShaderVariant variant,
             VertexInfo vertexLayout,
-            PrimitiveType topology = PrimitiveType.Triangles
-        )
+            PrimitiveType topology = PrimitiveType.Triangles)
         {
-            if (IsCompute)
-                throw new InvalidOperationException("Compute passes do not have graphics pipelines.");
-
-            PipelineKey key = new(vertexLayout, topology);
-
-            if (graphicsPipelines.TryGetValue(key, out var pipeline))
-                return pipeline;
-
-            pipeline = device.CreateGraphicsPipeline(
-                new GraphicsPipelineDescription
-                {
-                    VertexShader = Vertex!.GPU,
-                    PixelShader = Fragment!.GPU,
-
-                    VertexLayout = vertexLayout,
-
-                    Blend = Blend,
-                    DepthStencil = Depth,
-                    Rasterizer = Rasterizer,
-
-                    Topology = topology
-                });
-
-            graphicsPipelines[key] = pipeline;
-
-            return pipeline;
+            return variant.GetPipeline(
+                device,
+                vertexLayout,
+                topology,
+                Blend,
+                Depth,
+                Rasterizer);
         }
 
-        public IComputePipeline GetComputePipeline(IGraphicsDevice device)
+        public IComputePipeline GetComputePipeline(
+            ShaderVariant variant)
         {
-            if (!IsCompute)
-                throw new InvalidOperationException("Graphics passes do not have compute pipelines.");
+            return variant.GetComputePipeline(device);
+        }
 
-            ComputePipeline ??=
-                device.CreateComputePipeline(new ComputePipelineDescription()
+        public IComputePipeline GetComputePipeline()
+        {
+            return GetVariant().GetComputePipeline(device);
+        }
+
+        private static IDescriptorLayout CreateDescriptorLayout(
+            IGraphicsDevice device,
+            ShaderReflectionData reflection)
+        {
+            List<DescriptorBinding> bindings = [];
+
+            foreach (var buffer in reflection.UniformBuffers)
+            {
+                bindings.Add(
+                    new DescriptorBinding
+                    {
+                        Binding = (uint)buffer.BindSlot,
+                        Type = DescriptorType.UniformBuffer,
+                        Stages = buffer.Stages
+                    });
+            }
+
+            foreach (var resource in reflection.Resources)
+            {
+                DescriptorType type = resource.Type switch
                 {
-                    ComputeShader = Compute!.GPU
-                });
+                    ShaderResourceType.Texture2D or
+                    ShaderResourceType.TextureCube or
+                    ShaderResourceType.Texture2DArray or
+                    ShaderResourceType.Texture3D
+                        => DescriptorType.Texture,
 
-            return ComputePipeline;
+                    ShaderResourceType.Sampler
+                        => DescriptorType.Sampler,
+
+                    ShaderResourceType.StructuredBuffer
+                        => DescriptorType.StorageBuffer,
+
+                    ShaderResourceType.RWStructuredBuffer
+                        => DescriptorType.RWStorageBuffer,
+
+                    ShaderResourceType.RWTexture2D or
+                    ShaderResourceType.RWTexture2DArray or
+                    ShaderResourceType.RWTexture3D
+                        => DescriptorType.RWTexture,
+
+                    _ => throw new InvalidOperationException(
+                        $"Unsupported shader resource type: {resource.Type}")
+                };
+
+                bindings.Add(
+                    new DescriptorBinding
+                    {
+                        Binding = (uint)resource.BindSlot,
+                        Type = type,
+                        Stages = resource.Stage
+                    });
+            }
+
+            return device.CreateDescriptorLayout(
+                [.. bindings]);
         }
 
         public void Dispose()
         {
-            foreach (var pipeline in graphicsPipelines.Values)
-            {
-                pipeline.Dispose();
-            }
+            foreach (ShaderVariant variant in variants.Values)
+                variant.Dispose();
 
-            graphicsPipelines.Clear();
-
-            ComputePipeline?.Dispose();
+            variants.Clear();
         }
     }
 }

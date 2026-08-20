@@ -26,7 +26,7 @@ cbuffer Material : register(b5)
     float Clearcoat;
     float ClearcoatRoughness;
     float3 ClearcoatTint;
-    float _padding1;
+    float Alpha;
 };
 
 Texture2D MAT_AlbedoMap : register(t0);
@@ -166,7 +166,7 @@ float4 PSMain(PSInput input) : SV_TARGET
     float3 albedo = albedoTex * Albedo.rgb;
     float metallic = saturate(metallicTex * Metallic);
     float roughness = saturate(roughnessTex * Roughness);
-    float ao = screenAO; // * AO;
+    float ao = screenAO * AO;
     float3 emission = emissiveTex * EmissiveColor * EmissiveStrength;
     
     float3 N = GetNormalFromMap(input);
@@ -262,6 +262,5 @@ float4 PSMain(PSInput input) : SV_TARGET
     );
 
     float3 color = ambient * (ao) + (Lo + emission);
-    //float3 color = Lo;
-    return float4(color, 1.0);
+    return float4(color, 1);
 }

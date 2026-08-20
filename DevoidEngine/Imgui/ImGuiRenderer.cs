@@ -107,7 +107,7 @@ namespace DevoidEngine.Imgui
         public ImGuiRenderer()
         {
             guiShader = Shader.FromDescriptorFile(Engine.GraphicsDevice, "Content/DevoidShaderDescriptors/imgui_shader.dsd");
-            guiDescriptor = Engine.GraphicsDevice.CreateDescriptorSet(guiShader.DefaultPass.DescriptorLayout);
+            guiDescriptor = Engine.GraphicsDevice.CreateDescriptorSet(guiShader.DefaultPass.GetVariant().DescriptorLayout);
             shaderConstantBuffer = UniformBuffer.Create(ResourceUsage.Dynamic, (uint)Unsafe.SizeOf<ImShaderData>());
 
             vertexBuffer = new VertexBuffer<ImGuiVertex>(Engine.GraphicsDevice, vertexBufferSize, ImGuiVertex.VertexInfo, ResourceUsage.Dynamic);
@@ -573,7 +573,7 @@ namespace DevoidEngine.Imgui
             shaderConstantBuffer.Update(imShaderData);
             guiDescriptor.SetUniformBuffer(0, shaderConstantBuffer.GPU);
 
-            IPipeline guiPipeline = guiShader.DefaultPass.GetPipeline(Engine.GraphicsDevice, ImGuiVertex.VertexInfo);
+            IPipeline guiPipeline = guiShader.DefaultPass.GetPipeline(guiShader.DefaultPass.GetVariant(), ImGuiVertex.VertexInfo);
             cmd.SetPipeline(guiPipeline);
 
             cmd.SetVertexBuffer(vertexBuffer.GPU);

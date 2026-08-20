@@ -10,75 +10,83 @@ struct PSInput
 cbuffer BloomMipShaderData : register(b2)
 {
     float2 mipSize;
-    int mipLevel;
     float filterRadius;
 }
 
 Texture2D INPUT_TEXTURE : register(t0);
 SamplerState INPUT_TEXTURESampler : register(s0);
 
-float Luma(float3 c)
-{
-    return dot(c, float3(0.2126, 0.7152, 0.0722));
-}
+//float Luma(float3 c)
+//{
+//    return dot(c, float3(0.2126, 0.7152, 0.0722));
+//}
 
-float KarisAverage(float3 col)
+//float KarisAverage(float3 col)
+//{
+//    float luma = Luma(col) * 0.25;
+//    return 1.0 / (1.0 + luma);
+//}
+
+float3 Downsample(float2 uv, float2 pixelSize)
 {
-    float luma = Luma(col) * 0.25;
-    return 1.0 / (1.0 + luma);
+    const float2 coords[13] =
+    {
+        float2(-1.0, 1.0),
+        float2(1.0, 1.0),
+        float2(-1.0, -1.0),
+        float2(1.0, -1.0),
+
+        float2(-2.0, 2.0),
+        float2(0.0, 2.0),
+        float2(2.0, 2.0),
+
+        float2(-2.0, 0.0),
+        float2(0.0, 0.0),
+        float2(2.0, 0.0),
+
+        float2(-2.0, -2.0),
+        float2(0.0, -2.0),
+        float2(2.0, -2.0)
+    };
+
+    const float weights[13] =
+    {
+        0.125,
+        0.125,
+        0.125,
+        0.125,
+
+        0.0555555,
+        0.0555555,
+        0.0555555,
+
+        0.0555555,
+        0.0555555,
+        0.0555555,
+
+        0.0555555,
+        0.0555555,
+        0.0555555
+    };
+
+    float3 result = 0.0;
+
+    [unroll]
+    for (int i = 0; i < 13; i++)
+    {
+        float2 sampleUV = uv + coords[i] * pixelSize;
+
+        result += weights[i] * INPUT_TEXTURE.Sample(INPUT_TEXTURESampler, sampleUV).rgb;
+    }
+
+    return result;
 }
 
 float4 PSMain(PSInput input) : SV_TARGET
 {
-    float2 texCoord = input.UV;
-    float2 texel = 1.0 / mipSize;
+    float2 pixelSize = (1.0 / mipSize) * 0.5;
 
-    float x = texel.x;
-    float y = texel.y;
+    float3 result = Downsample(input.UV, pixelSize);
 
-    float3 a = INPUT_TEXTURE.SampleLevel(INPUT_TEXTURESampler, texCoord + float2(-2 * x, 2 * y), 0).rgb;
-    float3 b = INPUT_TEXTURE.SampleLevel(INPUT_TEXTURESampler, texCoord + float2(0, 2 * y), 0).rgb;
-    float3 c = INPUT_TEXTURE.SampleLevel(INPUT_TEXTURESampler, texCoord + float2(2 * x, 2 * y), 0).rgb;
-
-    float3 d = INPUT_TEXTURE.SampleLevel(INPUT_TEXTURESampler, texCoord + float2(-2 * x, 0), 0).rgb;
-    float3 e = INPUT_TEXTURE.SampleLevel(INPUT_TEXTURESampler, texCoord, 0).rgb;
-    float3 f = INPUT_TEXTURE.SampleLevel(INPUT_TEXTURESampler, texCoord + float2(2 * x, 0), 0).rgb;
-
-    float3 g = INPUT_TEXTURE.SampleLevel(INPUT_TEXTURESampler, texCoord + float2(-2 * x, -2 * y), 0).rgb;
-    float3 h = INPUT_TEXTURE.SampleLevel(INPUT_TEXTURESampler, texCoord + float2(0, -2 * y), 0).rgb;
-    float3 i = INPUT_TEXTURE.SampleLevel(INPUT_TEXTURESampler, texCoord + float2(2 * x, -2 * y), 0).rgb;
-
-    float3 j = INPUT_TEXTURE.SampleLevel(INPUT_TEXTURESampler, texCoord + float2(-x, y), 0).rgb;
-    float3 k = INPUT_TEXTURE.SampleLevel(INPUT_TEXTURESampler, texCoord + float2(x, y), 0).rgb;
-    float3 l = INPUT_TEXTURE.SampleLevel(INPUT_TEXTURESampler, texCoord + float2(-x, -y), 0).rgb;
-    float3 m = INPUT_TEXTURE.SampleLevel(INPUT_TEXTURESampler, texCoord + float2(x, -y), 0).rgb;
-
-    float3 downsample;
-
-    if (mipLevel == 0)
-    {
-        float3 g0 = (a + b + d + e) * (0.125 / 4.0);
-        float3 g1 = (b + c + e + f) * (0.125 / 4.0);
-        float3 g2 = (d + e + g + h) * (0.125 / 4.0);
-        float3 g3 = (e + f + h + i) * (0.125 / 4.0);
-        float3 g4 = (j + k + l + m) * (0.5 / 4.0);
-
-        g0 *= KarisAverage(g0);
-        g1 *= KarisAverage(g1);
-        g2 *= KarisAverage(g2);
-        g3 *= KarisAverage(g3);
-        g4 *= KarisAverage(g4);
-
-        downsample = g0 + g1 + g2 + g3 + g4;
-        downsample = max(downsample, 0.0001);
-    }
-    else
-    {
-        downsample = e * 0.125;
-        downsample += (a + c + g + i) * 0.03125;
-        downsample += (b + d + f + h) * 0.0625;
-        downsample += (j + k + l + m) * 0.125;
-    }
-
-    return float4(downsample, 1);
+    return float4(result, 1.0);
 }

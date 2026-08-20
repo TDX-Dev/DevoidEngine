@@ -132,8 +132,9 @@ namespace DevoidEngine.Rendering
                 TextureUsage.UnorderedAccess |
                 TextureUsage.ShaderResource);
 
-            ProjectToSHPipeline = ProjectToSHMaterial.BaseMaterial.DefaultPass.ComputePipeline!;
-            ReduceSHPipeline = ReduceSHMaterial.BaseMaterial.DefaultPass.ComputePipeline!;
+            ProjectToSHPipeline = ProjectToSHMaterial.BaseMaterial.DefaultPass.GetComputePipeline();
+
+            ReduceSHPipeline = ReduceSHMaterial.BaseMaterial.DefaultPass.GetComputePipeline();
 
             uint groupsX = (uint)SkyResolution / 8;
             uint groupsY = (uint)SkyResolution / 8;

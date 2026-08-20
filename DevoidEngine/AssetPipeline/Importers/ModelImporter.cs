@@ -373,11 +373,13 @@ namespace DevoidEngine.AssetPipeline.Importers
             MaterialProperty metallicProperty = mat.GetProperty("$mat.metallicFactor,0,0");
             MaterialProperty clearCoatFactorProperty = mat.GetProperty("$mat.clearcoat.factor,0,0");
             MaterialProperty clearcoatRoughnessProperty = mat.GetProperty("$mat.clearcoat.roughnessFactor,0,0");
+            MaterialProperty transmissionProperty = mat.GetProperty("$mat.transmission.factor,0,0");
             //MaterialProperty transmissionProperty = mat.GetProperty("$mat.transmission.factor,0,0");
 
             
 
             asset.Floats["AO"] = 1f;
+            asset.Floats["Alpha"] = 1f;
 
             asset.Floats["Clearcoat"] = clearCoatFactorProperty?.GetFloatValue() ?? 0;
             asset.Floats["ClearcoatRoughness"] = clearcoatRoughnessProperty?.GetFloatValue() ?? 1;
@@ -385,6 +387,11 @@ namespace DevoidEngine.AssetPipeline.Importers
             if (mat.HasColorDiffuse)
             {
                 asset.Vector4s["Albedo"] = mat.ColorDiffuse;
+            }
+
+            if (transmissionProperty != null)
+            {
+                asset.Floats["Alpha"] = 0.5f;
             }
 
             if (roughnessProperty != null)
@@ -492,15 +499,15 @@ namespace DevoidEngine.AssetPipeline.Importers
             //    Console.WriteLine(slot.TextureType);
             //}
 
-            //MaterialProperty[] mps = mat.GetAllProperties();
-            //foreach (MaterialProperty mp in mps)
-            //{
-            //    Console.WriteLine(mp.FullyQualifiedName + " : " + mp.GetVector3Value());
-            //    //if (mp.FullyQualifiedName == "$clr.diffuse,0,0")
-            //    //{
-            //    //    Console.WriteLine("DIFFUSE: " + mp.GetVector4Value());
-            //    //}
-            //}
+            MaterialProperty[] mps = mat.GetAllProperties();
+            foreach (MaterialProperty mp in mps)
+            {
+                Console.WriteLine(mp.FullyQualifiedName + " : " + mp.GetFloatValue());
+                //if (mp.FullyQualifiedName == "$clr.diffuse,0,0")
+                //{
+                //    Console.WriteLine("DIFFUSE: " + mp.GetVector4Value());
+                //}
+            }
 
             //Console.WriteLine(mat.Opacity);
 

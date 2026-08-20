@@ -41,7 +41,7 @@
         "FS": "../Shaders/pbr.frag.hlsl"
       },
       "States": {
-        "Blend": "Off",
+        "Blend": "Alpha",
         "Cull": "Back",
         "Depth": "LessEqual"
       }
