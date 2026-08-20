@@ -98,15 +98,13 @@ namespace DevoidEngine.AssetPipeline
         {
             if (asset is AssetType assetType)
             {
-                // Decrement the count. If it hits 0, Release() returns true.
+                // Decrement the count. If it hits 0, returns true.
                 bool shouldDestroy = assetType.Release();
 
                 if (shouldDestroy)
                 {
-                    // 1. Remove it from the cache
                     AssetCache<T>.Cache.Remove(assetType.Guid);
 
-                    // 2. Free the unmanaged GPU memory (VRAM) immediately
                     assetType.Dispose();
 
                     Console.WriteLine($"[Asset] Unloaded and disposed asset {assetType.Guid}");

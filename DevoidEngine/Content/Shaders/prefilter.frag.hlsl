@@ -26,10 +26,6 @@ cbuffer Material : register(b5)
 
 float4 PSMain(PSInput input) : SV_Target
 {
-    //float3 dir = normalize(input.WorldspacePosition);
-    //dir.y = -dir.y;
-
-    //return float4(normalize(input.WorldspacePosition) * 0.5 + 0.5, 1);
     
     float3 N = normalize(input.WorldspacePosition);
     float3 R = N;
@@ -65,15 +61,12 @@ float4 PSMain(PSInput input) : SV_Target
 
             mipLevel = clamp(mipLevel, 0.0, MaxPrefilterMipLevel);
 
-            //L.y = -L.y;
-            
             float3 color = MAT_Skybox.SampleLevel(
                 MAT_Skybox_Sampler,
                 L,
                 mipLevel
             ).rgb;
-
-            //color = min(color, 25.0);
+            
             
             prefilteredColor += color * NdotL;
             totalWeight += NdotL;

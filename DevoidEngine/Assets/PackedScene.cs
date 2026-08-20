@@ -24,8 +24,6 @@ namespace DevoidEngine.Assets
             Scene scene = existing ?? new();
 
             List<GameObject> objects = new(Nodes.Length);
-
-            // Pass 1
             foreach (var node in Nodes)
             {
                 GameObject go = scene.AddGameObject(node.Name);
@@ -37,14 +35,11 @@ namespace DevoidEngine.Assets
                 objects.Add(go);
             }
 
-            // Pass 2
             for (int i = 0; i < Nodes.Length; i++)
             {
                 if (Nodes[i].Parent != -1)
                     objects[i].SetParent(objects[Nodes[i].Parent]);
             }
-
-            // Pass 3
             for (int i = 0; i < Nodes.Length; i++)
             {
                 var node = Nodes[i];
@@ -76,7 +71,6 @@ namespace DevoidEngine.Assets
                 }
             }
 
-            // Pass 4 - Lights
             for (int i = 0; i < Nodes.Length; i++)
             {
                 PackedLight? packed = Nodes[i].Light;

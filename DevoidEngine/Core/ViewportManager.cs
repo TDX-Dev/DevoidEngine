@@ -84,7 +84,6 @@ namespace DevoidEngine.Core
                 if (viewport.TargetScene == null || viewport.ActiveCamera == null || !viewport.Render)
                     continue;
 
-                // Calls your existing Renderer loop
                 Engine.Renderer.Render(cmd, viewport);
             }
         }

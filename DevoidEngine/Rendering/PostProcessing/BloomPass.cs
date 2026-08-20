@@ -28,7 +28,7 @@ namespace DevoidEngine.Rendering.PostProcessing
             public float filterRadius;
         }
         public int BloomMipCount { get; set; } = 8;
-        public float BloomRadius { get; set; } = 1;
+        public float BloomRadius { get; set; } = 0.7f;
 
         private readonly MaterialInstance prefilterMaterial;
         private readonly MaterialInstance downsampleMaterial;

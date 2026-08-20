@@ -23,8 +23,6 @@ namespace DevoidEngine.Components
             set
             {
                 internalShape = value;
-
-                // Recreate physics body if it already exists
                 if (internalBody != null)
                     CreateBody();
             }
@@ -37,8 +35,6 @@ namespace DevoidEngine.Components
         internal Vector3 SavedLinearVelocity;
         internal Vector3 SavedAngularVelocity;
 
-
-        //[DontSerialize]
         private IPhysicsBody? internalBody;
 
         internal PhysicsShapeDescription internalShape = new()
@@ -170,13 +166,6 @@ namespace DevoidEngine.Components
         {
             if (internalBody == null)
                 return;
-
-            //Matrix4x4 model = Helper.BuildModel(
-            //    internalBody.Position,
-            //    Shape.Size,
-            //    internalBody.Rotation);
-
-            //Gizmos.DrawCube(model, GizmoCategory.Physics);
         }
 
         public override void OnFixedUpdate(float dt)

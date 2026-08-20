@@ -265,9 +265,6 @@ namespace DevoidEngine.AssetPipeline.Importers
         {
             int vertexCount = mesh.VertexCount;
 
-            // OPTIMIZATION 5: Allocate exact array size once and fill via raw loops (No LINQ / Garbage)
-
-            // 1. Positions
             float[] positions = new float[vertexCount * 3];
             if (mesh.HasVertices)
             {
@@ -281,8 +278,6 @@ namespace DevoidEngine.AssetPipeline.Importers
                     positions[idx + 2] = v.Z;
                 }
             }
-
-            // 2. Normals (Guarded with HasNormals)
             float[] normals = mesh.HasNormals ? new float[vertexCount * 3] : [];
             if (mesh.HasNormals)
             {
@@ -297,7 +292,6 @@ namespace DevoidEngine.AssetPipeline.Importers
                 }
             }
 
-            // 3. UVs (Guarded against missing UV channels)
             float[] uvs = mesh.HasTextureCoords(0) ? new float[vertexCount * 2] : [];
             if (mesh.HasTextureCoords(0))
             {
@@ -311,7 +305,6 @@ namespace DevoidEngine.AssetPipeline.Importers
                 }
             }
 
-            // 4. Tangents & Bitangents
             bool hasTangents = mesh.Tangents.Count > 0 && mesh.BiTangents.Count > 0;
             float[] tangents = hasTangents ? new float[vertexCount * 3] : [];
             float[] bitangents = hasTangents ? new float[vertexCount * 3] : [];
@@ -336,7 +329,6 @@ namespace DevoidEngine.AssetPipeline.Importers
                 }
             }
 
-            // 5. Indices
             int faceCount = mesh.FaceCount;
             int totalIndices = 0;
             for (int i = 0; i < faceCount; i++)
@@ -374,7 +366,6 @@ namespace DevoidEngine.AssetPipeline.Importers
             MaterialProperty clearCoatFactorProperty = mat.GetProperty("$mat.clearcoat.factor,0,0");
             MaterialProperty clearcoatRoughnessProperty = mat.GetProperty("$mat.clearcoat.roughnessFactor,0,0");
             MaterialProperty transmissionProperty = mat.GetProperty("$mat.transmission.factor,0,0");
-            //MaterialProperty transmissionProperty = mat.GetProperty("$mat.transmission.factor,0,0");
 
             
 

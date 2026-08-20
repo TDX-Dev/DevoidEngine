@@ -173,12 +173,9 @@ float ComputeVBAO(
     uint2 fullResPixel = pixel * 2;
     float2 noise = SampleBlueNoise(fullResPixel, FrameIndex);
    
-
-    // Loop over multiple slice directions
     [unroll]
     for (uint d = 0; d < DirectionCount; ++d)
     {
-        // 1. Generate stratified 2D screen direction for slice d
         float angle = (noise.x + (float) d) * (PI / (float) DirectionCount);
         float2 rayDir = float2(cos(angle), sin(angle));
 
@@ -209,8 +206,6 @@ float ComputeVBAO(
         float rayOffset = frac(noise.y + (float) d * 0.6180339887498948482);
         
         uint globalOccludedBitfield = 0u;
-
-        // 4. Trace along positive (+rayDir) and negative (-rayDir) directions
         for (int side = -1; side <= 1; side += 2)
         {
             float samplingDirection = (float) side;
@@ -265,17 +260,12 @@ float ComputeVBAO(
 
                 float2 frontBackHorizon =
     float2(frontAngle, backAngle);
-
-// Shift from V to projected normal.
-// Map [-PI/2, +PI/2] to [0, 1].
                 frontBackHorizon =
     saturate(
         ((samplingDirection * -frontBackHorizon)
         - N_angle
         + HALF_PI) / PI
     );
-
-// Sampling direction reverses min/max.
                 if (samplingDirection >= 0.0)
                 {
                     frontBackHorizon = frontBackHorizon.yx;
@@ -307,8 +297,6 @@ float PSMain(PSInput input) : SV_TARGET
         return float4(1, 1, 1, 1);
 
     float3 positionVS = ReconstructViewPosition(input.UV, depth);
-
-    // Unpack normal if your G-Buffer stores normals in [0, 1] UNORM format
     float3 normalSample = NormalTexture.SampleLevel(PointSampler, input.UV, 0).xyz;
     float3 normalVS = normalize(normalSample);
     

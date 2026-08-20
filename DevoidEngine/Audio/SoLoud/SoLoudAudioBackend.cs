@@ -24,8 +24,6 @@ namespace DevoidEngine.Audio.SoLoud
             var result = Soloud.init();
             if (result != 0)
                 throw new Exception("SoLoud init failed");
-
-            // IMPORTANT: initialize listener immediately
             Soloud.set3dListenerParameters(
                 0, 0, 0,
                 0, 0, -1,

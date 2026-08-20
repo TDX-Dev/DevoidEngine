@@ -16,7 +16,6 @@
 
         public override void Import(ImportContext context, SceneImportSettings settings)
         {
-            // Do Nothing
         }
 
         public override bool Exists(ImportContext context)

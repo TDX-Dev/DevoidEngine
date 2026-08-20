@@ -68,7 +68,6 @@ namespace DevoidEngine.Components
 
         public override void OnAttach()
         {
-            // Register with the local Scene instead of asking RootViewport directly!
             if (gameObject?.Scene != null)
             {
                 gameObject.Scene.RegisterCamera(this);

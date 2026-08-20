@@ -40,8 +40,6 @@ void CSMain(uint3 DTid : SV_DispatchThreadID)
     
     if (FinalPass != 0)
     {
-    // Sum of solid angles is already 4PI, so we do NOT divide by 4PI.
-    // We only multiply by (A_l / PI) to bake in the cosine lobe and Lambertian BRDF.
 
         result.C[0] *= 1.0; // Band 0
 
@@ -55,23 +53,6 @@ void CSMain(uint3 DTid : SV_DispatchThreadID)
         result.C[7] *= 0.25;
         result.C[8] *= 0.25;
     }
-
-    //if (FinalPass != 0)
-    //{
-    //    const float invOmega = 1.0 / (4.0 * PI);
-
-    //    result.C[0] *= invOmega * PI;
-
-    //    result.C[1] *= invOmega * (2.0 * PI / 3.0);
-    //    result.C[2] *= invOmega * (2.0 * PI / 3.0);
-    //    result.C[3] *= invOmega * (2.0 * PI / 3.0);
-
-    //    result.C[4] *= invOmega * (PI / 4.0);
-    //    result.C[5] *= invOmega * (PI / 4.0);
-    //    result.C[6] *= invOmega * (PI / 4.0);
-    //    result.C[7] *= invOmega * (PI / 4.0);
-    //    result.C[8] *= invOmega * (PI / 4.0);
-    //}
 
     OutputSH[id] = result;
 }

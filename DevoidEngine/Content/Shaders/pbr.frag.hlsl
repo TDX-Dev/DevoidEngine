@@ -76,38 +76,17 @@ float3 ComputeIBL(
 )
 {
     float NoV = saturate(dot(N, V));
-
-    // Keep coordinate system Y-flip
     float3 R = reflect(-V, N);
-    //R.y = -R.y;
-    
-    // Base Layer (Specular & Diffuse)
-    // Always use SampleLevel in IBL shaders to avoid gradient calculation errors
     float2 dfg = BRDFLUT.SampleLevel(EnvironmentSampler, float2(NoV, roughness), 0.0).rg;
-    
-    // Filament Multi-Scattering Math
-    // dfg.x = A (Scale for 1 - F0)
-    // dfg.y = B (Scale for F0)
-    
-    // Single scattering directional albedo (Fss)
-    //float3 Fss = dfg.x + dfg.y * F0;
     float3 Fss = lerp(dfg.x.xxx, dfg.y.xxx, F0);
     
-    // Total directional albedo (E) - what a perfectly white material would reflect
     float E_white = dfg.x + dfg.y;
     
-    // Multiscattering energy compensation
     float3 energyCompensation = 1.0 + F0 * (1.0 / max(E_white, 1e-5) - 1.0);
     
     float3 totalSpecularEnergy = Fss * energyCompensation;
-    
-    // Evaluate Specular IBL
     float3 prefiltered = PrefilterMap.SampleLevel(EnvironmentSampler, R, roughness * 8.0).rgb;
     float3 specular = prefiltered * totalSpecularEnergy;
-
-    // Evaluate Diffuse IBL
-    // Energy Conservation: Light that didn't reflect as specular (E) enters the material.
-    // Metals have 0 diffuse. This is much more accurate than the old FresnelSchlick hack.
     float3 kD = (1.0 - saturate(totalSpecularEnergy)) * (1.0 - metallic);
     float3 diffuse = EvaluateIrradianceSH(EnvironmentSH, N) * albedo * kD;
     
@@ -129,18 +108,12 @@ float3 ComputeIBL(
         float2(NoVc, clearcoatRoughness),
         0.0
     ).rg;
-
-    // Clearcoat IOR is typically 1.5, which gives an F0 of 0.04
+    
     float coatFss = coatDFG.x + coatDFG.y * 0.04;
-
-    // Fresnel for the clearcoat layer's absorption mask
     float Fc = FresnelSchlick(NoVc, float3(0.04, 0.04, 0.04)).r;
 
-    // The clearcoat absorbs energy from the base layer before reflecting its own light
     result *= (1.0 - clearcoat * Fc);
     result += coatPrefilter * coatFss * clearcoat;
-    
-    //return result;
     return result;
 
 }

@@ -48,6 +48,11 @@ namespace DevoidEngine.Rendering
             RenderMeshData data = meshIdAllocator.GetRef(instance_id);
             data.render_material = material;
         }
+        public void InstanceSetStatic(RID instance_id, bool is_static)
+        {
+            RenderMeshData data = meshIdAllocator.GetRef(instance_id);
+            data.is_static = is_static;
+        }
         public RenderMeshData GetMeshInstance(RID rid)
         {
             return meshIdAllocator.Get(rid);
@@ -88,9 +93,7 @@ namespace DevoidEngine.Rendering
             directionalLights.Free(rid);
         }
 
-        public void PointLightSetPosition(
-    RID rid,
-    Vector3 position)
+        public void PointLightSetPosition(RID rid, Vector3 position)
         {
             ref GPUPointLight light =
                 ref pointLights.GetRef(rid);
@@ -100,9 +103,7 @@ namespace DevoidEngine.Rendering
             light.position.Z = position.Z;
         }
 
-        public void PointLightSetEnabled(
-            RID rid,
-            bool enabled)
+        public void PointLightSetEnabled(RID rid, bool enabled)
         {
             ref GPUPointLight light =
                 ref pointLights.GetRef(rid);
@@ -110,9 +111,7 @@ namespace DevoidEngine.Rendering
             light.position.W = enabled ? 1f : 0f;
         }
 
-        public void PointLightSetColor(
-            RID rid,
-            Vector3 color)
+        public void PointLightSetColor(RID rid, Vector3 color)
         {
             ref GPUPointLight light =
                 ref pointLights.GetRef(rid);
@@ -122,9 +121,7 @@ namespace DevoidEngine.Rendering
             light.color.Z = color.Z;
         }
 
-        public void PointLightSetIntensity(
-            RID rid,
-            float intensity)
+        public void PointLightSetIntensity(RID rid, float intensity)
         {
             ref GPUPointLight light =
                 ref pointLights.GetRef(rid);
@@ -132,9 +129,7 @@ namespace DevoidEngine.Rendering
             light.color.W = intensity;
         }
 
-        public void PointLightSetRange(
-            RID rid,
-            float radius)
+        public void PointLightSetRange(RID rid, float radius)
         {
             ref GPUPointLight light =
                 ref pointLights.GetRef(rid);
@@ -142,11 +137,7 @@ namespace DevoidEngine.Rendering
             light.range.X = radius;
         }
 
-        public void PointLightSetAttenuation(
-    RID rid,
-    LightAttenuationType attenuationType,
-    float linear,
-    float quadratic)
+        public void PointLightSetAttenuation(RID rid, LightAttenuationType attenuationType, float linear, float quadratic)
         {
             ref GPUPointLight light =
                 ref pointLights.GetRef(rid);
@@ -156,9 +147,7 @@ namespace DevoidEngine.Rendering
             light.range.W = quadratic;
         }
 
-        public void SpotLightSetPosition(
-    RID rid,
-    Vector3 position)
+        public void SpotLightSetPosition(RID rid, Vector3 position)
         {
             ref GPUSpotLight light =
                 ref spotLights.GetRef(rid);
@@ -168,9 +157,7 @@ namespace DevoidEngine.Rendering
             light.position.Z = position.Z;
         }
 
-        public void SpotLightSetEnabled(
-            RID rid,
-            bool enabled)
+        public void SpotLightSetEnabled(RID rid, bool enabled)
         {
             ref GPUSpotLight light =
                 ref spotLights.GetRef(rid);
@@ -178,9 +165,7 @@ namespace DevoidEngine.Rendering
             light.position.W = enabled ? 1f : 0f;
         }
 
-        public void SpotLightSetColor(
-            RID rid,
-            Vector3 color)
+        public void SpotLightSetColor(RID rid, Vector3 color)
         {
             ref GPUSpotLight light =
                 ref spotLights.GetRef(rid);
@@ -190,9 +175,7 @@ namespace DevoidEngine.Rendering
             light.color.Z = color.Z;
         }
 
-        public void SpotLightSetIntensity(
-            RID rid,
-            float intensity)
+        public void SpotLightSetIntensity(RID rid, float intensity)
         {
             ref GPUSpotLight light =
                 ref spotLights.GetRef(rid);
@@ -200,9 +183,7 @@ namespace DevoidEngine.Rendering
             light.color.W = intensity;
         }
 
-        public void SpotLightSetDirection(
-            RID rid,
-            Vector3 direction)
+        public void SpotLightSetDirection(RID rid, Vector3 direction)
         {
             ref GPUSpotLight light =
                 ref spotLights.GetRef(rid);
@@ -212,9 +193,7 @@ namespace DevoidEngine.Rendering
             light.direction.Z = direction.Z;
         }
 
-        public void SpotLightSetRadius(
-            RID rid,
-            float radius)
+        public void SpotLightSetRadius(RID rid, float radius)
         {
             ref GPUSpotLight light =
                 ref spotLights.GetRef(rid);
@@ -222,10 +201,7 @@ namespace DevoidEngine.Rendering
             light.direction.W = radius;
         }
 
-        public void SpotLightSetCutoffs(
-            RID rid,
-            float innerCutoff,
-            float outerCutoff)
+        public void SpotLightSetCutoffs(RID rid, float innerCutoff, float outerCutoff)
         {
             ref GPUSpotLight light =
                 ref spotLights.GetRef(rid);
@@ -234,9 +210,7 @@ namespace DevoidEngine.Rendering
             light.outerCutoff = outerCutoff;
         }
 
-        public void SpotLightSetShadowIndex(
-            RID rid,
-            int shadowIndex)
+        public void SpotLightSetShadowIndex(RID rid, int shadowIndex)
         {
             ref GPUSpotLight light =
                 ref spotLights.GetRef(rid);
@@ -244,9 +218,7 @@ namespace DevoidEngine.Rendering
             light.shadowIndex = shadowIndex;
         }
 
-        public void DirectionalLightSetDirection(
-    RID rid,
-    Vector3 direction)
+        public void DirectionalLightSetDirection(RID rid, Vector3 direction)
         {
             ref GPUDirectionalLight light =
                 ref directionalLights.GetRef(rid);
@@ -256,9 +228,7 @@ namespace DevoidEngine.Rendering
             light.Direction.Z = direction.Z;
         }
 
-        public void DirectionalLightSetEnabled(
-            RID rid,
-            bool enabled)
+        public void DirectionalLightSetEnabled(RID rid, bool enabled)
         {
             ref GPUDirectionalLight light =
                 ref directionalLights.GetRef(rid);
@@ -266,9 +236,7 @@ namespace DevoidEngine.Rendering
             light.Direction.W = enabled ? 1f : 0f;
         }
 
-        public void DirectionalLightSetColor(
-            RID rid,
-            Vector3 color)
+        public void DirectionalLightSetColor(RID rid, Vector3 color)
         {
             ref GPUDirectionalLight light =
                 ref directionalLights.GetRef(rid);
@@ -278,15 +246,15 @@ namespace DevoidEngine.Rendering
             light.Color.Z = color.Z;
         }
 
-        public void DirectionalLightSetIntensity(
-            RID rid,
-            float intensity)
+        public void DirectionalLightSetIntensity(RID rid, float intensity)
         {
             ref GPUDirectionalLight light =
                 ref directionalLights.GetRef(rid);
 
             light.Color.W = intensity;
         }
+        
+        
         public void BuildView(Camera camera, ref RenderView view)
         {
             var meshEntries = meshIdAllocator.AsSpan();
@@ -399,6 +367,28 @@ namespace DevoidEngine.Rendering
                     continue;
 
                 view.DirectionalLights[view.DirectionalLightCount++] = light;
+            }
+        }
+        public void GetStaticMeshes(List<RenderMeshData> output)
+        {
+            output.Clear();
+
+            ReadOnlySpan<Slot<RenderMeshData>> entries =
+                meshIdAllocator.AsSpan();
+
+            for (int i = 0; i < entries.Length; i++)
+            {
+                ref readonly Slot<RenderMeshData> slot = ref entries[i];
+
+                if (!slot.Occupied)
+                    continue;
+
+                ref readonly RenderMeshData data = ref slot.Value;
+
+                if (!data.is_static)
+                    continue;
+
+                output.Add(data);
             }
         }
 

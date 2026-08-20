@@ -8,7 +8,6 @@ namespace DevoidEngine.Components
     {
         public override string Type => nameof(ClockComponent);
 
-        // Assign these in the editor.
         public GameObject? HourHand;
         public GameObject? MinuteHand;
         public GameObject? SecondHand;
@@ -50,17 +49,13 @@ namespace DevoidEngine.Components
                 now.Second +
                 now.Millisecond / 1000f;
 
-            // Minute hand
             float minuteRotation =
                 minute * DegreesPerMinute;
 
-            // Hour hand moves continuously with the minutes.
             float hourRotation =
                 ((now.Hour % 12) + minute / 60f) *
                 (DegreesPerMinute / 60f);
 
-            // Second hand
-            //float secondRotation = second * (DegreesPerMinute / 60f);
 
             SetZRotation(
                 HourHand,

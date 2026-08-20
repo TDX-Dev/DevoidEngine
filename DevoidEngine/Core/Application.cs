@@ -98,40 +98,6 @@ namespace DevoidEngine.Core
             ImguiRenderer.OnGUI += () => { layerManager.OnGUILayers(); };
             mainSurface.OnTextInput += ImguiRenderer.OnTextInput;
 
-            //for (int i = 0; i < 10; i++)
-            //{
-
-            //    var window1 = new Window(new WindowSpecification
-            //    {
-            //        Title = specification.Name,
-            //        Width = specification.Width,
-            //        Height = specification.Height,
-            //        Resizable = true,
-            //        StartVisible = false,
-            //        StartFocused = true,
-            //        StartCentered = true,
-            //        Transparency = true,
-            //    });
-
-            //    var surface1 = new WindowSurface(
-            //        window1,
-            //        Engine.GraphicsDevice,
-            //        new SwapchainDescription()
-            //        {
-            //            BufferCount = 2,
-            //            Format = TextureFormat.RGBA8_UNorm,
-            //            Height = 480,
-            //            Width = 640,
-            //            RefreshRate = new Vector2(165, 0),
-            //            Samples = new TextureSampleDescription(1, 0),
-            //            VSync = true,
-            //            Windowed = true,
-            //        }
-            //    );
-
-            //    surfaces.Add(surface1);
-            //}
-
 
 #if DISPLAY_DEBUG_INFO
             Console.WriteLine("==============================================");

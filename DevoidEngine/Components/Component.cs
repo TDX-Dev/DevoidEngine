@@ -12,7 +12,6 @@ namespace DevoidEngine.Components
         Play = 1 << 0,
         Edit = 1 << 1,
 
-        // Convenience value for components that should run everywhere.
         All = Play | Edit
     }
 
@@ -101,7 +100,6 @@ namespace DevoidEngine.Components
             OnDestroy();
             IsInitialized = false;
         }
-
         // Notifications methods
         public virtual void OnAttach() { }
 
@@ -117,17 +115,5 @@ namespace DevoidEngine.Components
         }
 
         public SceneTree GetTree() => Engine.Instance.SceneTree;
-        //public Viewport GetViewport()
-        //{
-        //    GameObject? current = gameObject;
-
-        //    while (current != null)
-        //    {
-        //        if (current.TryGetComponent<>(out var vp))
-        //            return vp;
-
-        //        current = current.Parent;
-        //    }
-        //}
     }
 }

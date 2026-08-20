@@ -89,16 +89,11 @@ void CSMain(
     uint3 GTid : SV_GroupThreadID,
     uint3 Gid : SV_GroupID)
 {
-    //const uint Resolution = 32;
 
     
     float2 uv = (float2(DTid.xy) + 0.5) / float(EnvironmentMapResolution);
 
     float3 dir = CubeDirection(DTid.z, uv);
-
-// Write the direction mapped from [-1, 1] to [0, 1] into the texture array
-// DTid.xy is the pixel coordinate, DTid.z is the slice/face index (0 through 5)
-    //DebugCube[uint3(DTid.xy, DTid.z)] = float4(dir * 0.5 + 0.5, 1.0);
     
     float sh[9];
     EvaluateSHBasis(dir, sh);

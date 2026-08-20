@@ -31,25 +31,11 @@ namespace DevoidEngine.Serialization
             writer.WriteArrayHeader(3);
 
 
-            // =========================================================
-            // Base Material
-            // =========================================================
-
-            MessagePackSerializer.Serialize(
-                ref writer,
-                value.BaseMaterial.Guid,
-                Options);
+            MessagePackSerializer.Serialize(ref writer, value.BaseMaterial.Guid, Options);
 
 
-            // =========================================================
-            // Property Overrides
-            // =========================================================
+            var properties = value.GetOverriddenProperties();
 
-            var properties =
-                value.GetOverriddenProperties();
-
-            // Since this is IEnumerable, materialize it so we know
-            // the array count before writing the MessagePack array.
             var propertyList = properties.ToArray();
 
             writer.WriteArrayHeader(propertyList.Length);
@@ -65,19 +51,12 @@ namespace DevoidEngine.Serialization
 
                 writer.Write(propertyName);
 
-                ReadOnlySpan<byte> valueBytes =
-                    value.GetRawValue(propertyName);
+                ReadOnlySpan<byte> valueBytes = value.GetRawValue(propertyName);
 
                 writer.Write(valueBytes.ToArray());
             }
 
-
-            // =========================================================
-            // Texture Overrides
-            // =========================================================
-
-            var textures =
-                value.GetTextureOverrides().ToArray();
+            var textures = value.GetTextureOverrides().ToArray();
 
             writer.WriteArrayHeader(textures.Length);
 
@@ -85,10 +64,8 @@ namespace DevoidEngine.Serialization
             {
                 writer.WriteArrayHeader(2);
 
-                // Texture binding name
                 writer.Write(pair.Key);
 
-                // Texture asset
                 try
                 {
                     MessagePack.MessagePackSerializer.Serialize(
@@ -98,9 +75,7 @@ namespace DevoidEngine.Serialization
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(
-                        "[Serialization] Failed to serialize texture override " +
-                        $"'{pair.Key}': " + e.Message);
+                    Console.WriteLine("[Serialization] Failed to serialize texture override " + $"'{pair.Key}': " + e.Message);
 
                     writer.WriteNil();
                 }
@@ -114,25 +89,13 @@ namespace DevoidEngine.Serialization
             if (reader.TryReadNil())
                 return null;
 
-
-            // =========================================================
-            // Root array
-            // =========================================================
-
             int fieldCount =
                 reader.ReadArrayHeader();
 
             if (fieldCount < 3)
             {
-                throw new InvalidDataException(
-                    "Invalid MaterialInstance data. " +
-                    $"Expected 3 fields, got {fieldCount}.");
+                throw new InvalidDataException("Invalid MaterialInstance data. " + $"Expected 3 fields, got {fieldCount}.");
             }
-
-
-            // =========================================================
-            // Base Material
-            // =========================================================
 
             Guid materialGuid =
                 MessagePackSerializer.Deserialize<Guid>(
@@ -141,8 +104,7 @@ namespace DevoidEngine.Serialization
 
             if (materialGuid == Guid.Empty)
             {
-                Console.WriteLine(
-                    "[Serialization] MaterialInstance has no base material.");
+                Console.WriteLine("[Serialization] MaterialInstance has no base material.");
 
                 return null;
             }
@@ -163,11 +125,6 @@ namespace DevoidEngine.Serialization
 
             var instance =
                 new MaterialInstance(material);
-
-
-            // =========================================================
-            // Property Overrides
-            // =========================================================
 
             int propertyCount =
                 reader.ReadArrayHeader();
@@ -216,10 +173,6 @@ namespace DevoidEngine.Serialization
                     sequence.Value.ToArray();
 
 
-                // -----------------------------------------------------
-                // Validate against the current material layout
-                // -----------------------------------------------------
-
                 if (!material.TryGetVariable(
                         propertyName,
                         out var variable))
@@ -248,10 +201,6 @@ namespace DevoidEngine.Serialization
                     rawValue);
             }
 
-
-            // =========================================================
-            // Texture Overrides
-            // =========================================================
 
             int textureCount =
                 reader.ReadArrayHeader();
@@ -326,10 +275,6 @@ namespace DevoidEngine.Serialization
                 }
             }
 
-
-            // =========================================================
-            // Future fields
-            // =========================================================
 
             for (int i = 3; i < fieldCount; i++)
             {

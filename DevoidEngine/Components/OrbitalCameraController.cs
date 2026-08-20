@@ -74,8 +74,6 @@ namespace DevoidEngine.Components
 
             float zoomDelta = Engine.InputSystem.GetAction("Zoom");
 
-
-            // 1. Handle Zooming (Scroll Wheel)
             if (MathF.Abs(zoomDelta) > 0.01f)
             {
                 distance -= zoomDelta * ZoomSensitivity;
@@ -83,7 +81,6 @@ namespace DevoidEngine.Components
                 UpdateCameraDistance();
             }
 
-            // 2. Blender Style: Shift + Middle Mouse = Pan
             if (isOrbitingButton && isShiftPressed)
             {
                 float panX = -lookX * PanSensitivity;
@@ -94,7 +91,6 @@ namespace DevoidEngine.Components
 
                 gameObject.Transform.Position += (right * panX) + (up * panY);
             }
-            // 3. Middle Mouse alone = Orbit
             else if (isOrbitingButton)
             {
                 yaw += lookX * OrbitSensitivity;
@@ -118,15 +114,8 @@ namespace DevoidEngine.Components
 
         private void UpdateCameraDistance()
         {
-            // In a left-handed system, -Z is "backward".
-            // Since the camera is looking +Z (forward), placing it at -Z 
-            // makes it look directly at the pivot point (0,0,0 local).
             cameraObject.Transform.LocalPosition = new Vector3(0, 0, -distance);
         }
-
-        // --------------------------------------------------------
-        // Public API to manipulate the camera via other scripts
-        // --------------------------------------------------------
 
         public void SetFocusPoint(Vector3 position)
         {

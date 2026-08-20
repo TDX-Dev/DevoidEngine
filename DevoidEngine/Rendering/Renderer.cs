@@ -1,6 +1,7 @@
 ﻿using DevoidEngine.Core;
 using DevoidEngine.Gizmos;
 using DevoidEngine.Rendering.PostProcessing;
+using DevoidEngine.Rendering.ProbeGI;
 using DevoidEngine.UI;
 using DevoidEngine.Util;
 using DevoidGPU;
@@ -70,8 +71,8 @@ namespace DevoidEngine.Rendering
         public UniformBuffer PerFrameBuffer { get; private set; } = null!;
         public SkyRenderer SkyRenderer { get; private set; } = null!;
         public GizmoRenderer GizmoRenderer { get; private set; } = null!;
-
         public PostProcessor PostProcessor { get; private set; } = null!;
+        public ProbeGISystem ProbeGISystem { get; private set; } = null!;
 
 
         public EnvironmentLighting Environment => SkyRenderer.Environment;
@@ -304,6 +305,7 @@ namespace DevoidEngine.Rendering
             GizmoRenderer.Initialize(Engine.GraphicsDevice, Engine.BasePath);
 
             PostProcessor = new PostProcessor();
+            ProbeGISystem = new ProbeGISystem();
 
             PostProcessor.AddPass(new TonemapPass());
             PostProcessor.AddPass(new BloomPass());
@@ -780,7 +782,6 @@ namespace DevoidEngine.Rendering
             throw new InvalidOperationException(
                 "Viewport was not registered, cannot be removed.");
         }
-
 
         public void Dispose()
         {

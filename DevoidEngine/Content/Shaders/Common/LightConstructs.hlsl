@@ -160,49 +160,25 @@ float3 ComputeBRDF(
 {
     float NoV = saturate(dot(N, V));
     float NoL = saturate(dot(N, L));
-    
-    // Early exit if light is behind the surface
+   
     if (NoL <= 0.0) 
         return float3(0.0, 0.0, 0.0);
 
-    // Calculate Half-vector and shared dot products
     float3 H = normalize(V + L);
     float NoH = saturate(dot(N, H));
     float VoH = saturate(dot(V, H));
 
-    // ------------------------------------------------------------------------
-    // 1. Base Specular Lobe (GGX)
-    // ------------------------------------------------------------------------
     float D = DistributionGGX(NoH, roughness);
     float Vis = V_SmithGGXCorrelated(NoV, NoL, roughness);
     float3 F = FresnelSchlick(VoH, F0);
-
-    // Notice: No division! V_SmithGGXCorrelated handles the denominator.
     float3 specular = D * Vis * F;
-
-    // ------------------------------------------------------------------------
-    // 2. Base Diffuse Lobe (Lambert)
-    // ------------------------------------------------------------------------
-    // Energy conservation: diffuse light is what didn't reflect as specular
     float3 kD = (1.0 - F) * (1.0 - metallic);
     float3 diffuse = (kD * albedo) / PI;
-
-    // ------------------------------------------------------------------------
-    // 3. Clearcoat Lobe (GGX)
-    // ------------------------------------------------------------------------
-    // Polyurethane typically has an IOR yielding F0 = 0.04
     float coatD = DistributionGGX(NoH, clearcoatRoughness);
     float coatVis = V_SmithGGXCorrelated(NoV, NoL, clearcoatRoughness);
-    
-    // Evaluate Clearcoat Fresnel at VoH, multiplied by clearcoat weight
     float coatF = FresnelSchlick(VoH, float3(0.04, 0.04, 0.04)).r * clearcoat;
     
     float3 coatSpecular = coatD * coatVis * coatF;
-
-    // ------------------------------------------------------------------------
-    // 4. Final Energy Conservation & Assembly
-    // ------------------------------------------------------------------------
-    // The clearcoat layer absorbs light before it hits the base layer
     float3 baseLayer = (diffuse + specular) * (1.0 - coatF);
 
     return (baseLayer + coatSpecular) * radiance * NoL;

@@ -42,16 +42,12 @@ float3 HemisphereImportanceSampleDGGX(float2 u, float linearRoughness)
 {
     float a = linearRoughness;
     float phi = 2.0 * PI * u.x;
-    
-    // Optimized (a+1)*(a-1) -> float accuracy optimization from Filament
     float cosTheta2 = (1.0 - u.y) / (1.0 + (a + 1.0) * ((a - 1.0) * u.y));
     float cosTheta = sqrt(cosTheta2);
     float sinTheta = sqrt(max(0.0, 1.0 - cosTheta2));
 
     return float3(sinTheta * cos(phi), sinTheta * sin(phi), cosTheta);
 }
-
-// Height-correlated Smith GGX Visibility
 float Visibility(float NoV, float NoL, float a)
 {
     float a2 = a * a;
@@ -130,11 +126,6 @@ float3 FresnelSchlick(float cosTheta, float3 F0)
     float f = pow(1.0 - cosTheta, 5.0);
     return f + F0 * (1.0 - f);
 }
-
-//float3 FresnelSchlick(float cosTheta, float3 F0)
-//{
-//    return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
-//}
 
 float3 FresnelSchlickRoughness(float cosTheta, float3 F0, float roughness)
 {

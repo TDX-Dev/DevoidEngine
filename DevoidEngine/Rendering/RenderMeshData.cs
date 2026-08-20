@@ -9,6 +9,8 @@ namespace DevoidEngine.Rendering
         public Matrix4x4 render_transform;
         public MaterialInstance? render_material;
 
+        public bool is_static = false;
+
         public RenderMeshData() { }
 
         public RenderMeshData(Mesh mesh)

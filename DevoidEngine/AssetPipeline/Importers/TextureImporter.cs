@@ -31,13 +31,9 @@ namespace DevoidEngine.AssetPipeline.Importers
                 outputFormat = TextureFormat.RGBA8_UNorm_SRGB;
             }
 
-            // OPTIMIZATION 1: If TextureUtil supports streams, use File.OpenRead(context.AssetPath) instead.
-            // For now, we read the bytes but immediately drop the reference so the GC can clean it up.
+
             byte[] fileBytes = File.ReadAllBytes(context.AssetPath);
             ImageData image = TextureUtil.LoadImage(fileBytes);
-
-            // Free the raw file bytes from memory early
-            //fileBytes = [];
 
             int width = image.Width;
             int height = image.Height;

@@ -62,11 +62,8 @@ namespace DevoidEngine.Components
 
             if (!instance_id.IsValid)
             {
-                instance_id =
-                    gameObject.Scene.World.CreateMeshInstance(mesh);
-                gameObject.Scene.World.InstanceSetTransform(
-                    instance_id,
-                    gameObject.Transform.WorldMatrix);
+                instance_id = gameObject.Scene.World.CreateMeshInstance(mesh);
+                gameObject.Scene.World.InstanceSetTransform(instance_id, gameObject.Transform.WorldMatrix);
             }
 
             if (material != null)

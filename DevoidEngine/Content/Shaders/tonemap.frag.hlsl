@@ -24,7 +24,6 @@ static const float3x3 ACESInputMat =
     { 0.02840, 0.13383, 0.83777 }
 };
 
-// ODT_SAT => XYZ => D60_2_D65 => sRGB
 static const float3x3 ACESOutputMat =
 {
     { 1.60475, -0.53108, -0.07367 },
@@ -42,13 +41,11 @@ float3 RRTAndODTFit(float3 v)
 float3 ACESFitted(float3 color)
 {
     color = mul(ACESInputMat, color);
-
-    // Apply RRT and ODT
+    
     color = RRTAndODTFit(color);
 
     color = mul(ACESOutputMat, color);
-
-    // Clamp to [0, 1]
+    
     color = saturate(color);
 
     return color;
@@ -79,18 +76,14 @@ float3 AgX(float3 color)
 
     static const float MinEV = -12.47393;
     static const float MaxEV = 4.026069;
-
-    // Input transform
+    
     color = mul(AgXMatrix, color);
-
-    // Avoid log2(0)
+    
     color = max(color, 1e-10);
-
-    // Log2 encoding
+    
     color = clamp(log2(color), MinEV, MaxEV);
     color = (color - MinEV) / (MaxEV - MinEV);
-
-    // Contrast approximation
+    
     return AgXDefaultContrastApprox(color);
 }
 
@@ -104,14 +97,6 @@ float3 AgXEOTF(float3 color)
     };
     
     return mul(AgXInverseMatrix, color);
-
-    //// Output transform
-    //color = mul(AgXInverseMatrix, color);
-
-    //// Linear output (for sRGB backbuffer)
-    //color = pow(color, 2.2);
-
-    //return color;
 }
 
 float3 AgXLook(float3 color)
@@ -161,29 +146,22 @@ float3 ProcessAgX(float3 color)
 
     static const float MinEV = -12.47393;
     static const float MaxEV = 4.026069;
-
-    // 1. Input transform (Scene-referred linear to AgX working space)
+    
     color = mul(AgXMatrix, color);
-
-    // 2. Log2 encoding and normalization
+    
     color = max(color, 1e-10);
     color = clamp(log2(color), MinEV, MaxEV);
     color = (color - MinEV) / (MaxEV - MinEV);
-
-    // 3. Apply Look (Contrast, Saturation, CDL)
+    
     color = AgXLook(color);
-
-    // 4. Contrast approximation curve
+    
     color = AgXDefaultContrastApprox(color);
-
-    // 5. Output transform (Back to linear working space)
+    
     color = mul(AgXInverseMatrix, color);
-
-    // Ensure bounds are clean before final display encoding
+    
     return saturate(color);
 }
 
-// Evaluates the filmic S-curve for a given color vector
 float3 FilmicCurve(float3 x)
 {
     float A = 0.15; // Shoulder Strength
@@ -198,25 +176,20 @@ float3 FilmicCurve(float3 x)
 
 float3 TonemapFilmic(float3 color, float exposure = 2.0, float whitePoint = 11.2)
 {
-    // Apply exposure bias
     color *= exposure;
-
-    // Apply filmic curve
+    
     float3 curr = FilmicCurve(color);
-
-    // Normalize against the white point so bright whites map to 1.0
+    
     float3 whiteScale = 1.0 / FilmicCurve(float3(whitePoint, whitePoint, whitePoint));
     
     return saturate(curr * whiteScale);
 }
 
-// Accurate Linear to sRGB conversion
 float3 LinearToSRGB(float3 linearColor)
 {
     float3 sRGBLo = linearColor * 12.92;
     float3 sRGBHi = (pow(abs(linearColor), 1.0 / 2.4) * 1.055) - 0.055;
     
-    // Branchless select
     float3 isHi = step(0.0031308, linearColor);
     return lerp(sRGBLo, sRGBHi, isHi);
 }
@@ -238,7 +211,6 @@ float4 PSMain(PSInput input) : SV_Target0
     float bloomStrength = 0.175;
     hdr += (bloom) * bloomStrength * bloomIntensity;
     
-    //float3 ldr = ProcessAgX(hdr);
     float3 ldr = TonemapFilmic(hdr);
     ldr = LinearToSRGB(ldr);
     

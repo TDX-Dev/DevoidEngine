@@ -38,24 +38,3 @@ float4 PSMain(PSInput input) : SV_Target
     //float3 color = float3(1, 1, 1);
     return float4(color, 1);
 }
-
-
-// Sun Debug
-//float4 PSMain(PSInput input) : SV_Target
-//{
-//    float3 dir = normalize(input.WorldspacePosition);
-
-//    // Direction of the sun
-//    float3 sunDir = normalize(float3(0.0, 0.7, 0.7));
-
-//    // Cosine of angle between current direction and sun
-//    float cosTheta = dot(dir, sunDir);
-
-//    // Large debug sun
-//    float sun = smoothstep(0.995, 1.0, cosTheta);
-
-//    // Extremely bright HDR sun
-//    float3 color = sun * 50.0;
-
-//    return float4(color, 1.0);
-//}
