@@ -26,22 +26,6 @@ namespace Elemental.Panels
 
             // Direct assignment to Viewport
             Viewport.CameraOverride = context.EditorCamera!.Camera;
-
-            BoundsGizmo transformGizmo = new()
-            {
-
-            };
-
-            BoundsGizmo transformGizmo1 = new()
-            {
-
-            };
-
-            TranslateGizmo translateGizmo = new() { };
-
-            Viewport.GizmoContext.Gizmos.Add(transformGizmo);
-            Viewport.GizmoContext.Gizmos.Add(transformGizmo1);
-            Viewport.GizmoContext.Gizmos.Add(translateGizmo);
         }
 
         public override void OnUpdate(float deltaTime)

@@ -206,7 +206,6 @@ namespace DevoidEngine.Gizmos
 
         public void Draw(GizmoContext context)
         {
-            context.DrawList.Clear();
 
             foreach (Gizmo gizmo in context.Gizmos)
             {

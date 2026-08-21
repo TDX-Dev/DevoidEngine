@@ -37,10 +37,24 @@ namespace DevoidEngine.Components
             }
         }
 
+        public bool IsStatic
+        {
+            get => is_static;
+            set
+            {
+                if (value == is_static || mesh == null)
+                    return;
+
+                is_static = value;
+                gameObject.Scene.World.InstanceSetStatic(instance_id, is_static);
+            }
+        }
+
 
 
         internal Mesh? mesh;
         internal MaterialInstance? material;
+        internal bool is_static = false;
 
         private RID instance_id;
         private bool has_moved_current_frame = true;
@@ -64,6 +78,8 @@ namespace DevoidEngine.Components
             {
                 instance_id = gameObject.Scene.World.CreateMeshInstance(mesh);
                 gameObject.Scene.World.InstanceSetTransform(instance_id, gameObject.Transform.WorldMatrix);
+                gameObject.Scene.World.InstanceSetStatic(instance_id, is_static);
+
             }
 
             if (material != null)

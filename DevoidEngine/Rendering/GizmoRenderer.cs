@@ -194,6 +194,7 @@ namespace DevoidEngine.Rendering
 
             ClearBatches();
             //Console.WriteLine($"Gizmo draw calls: {gizmoDrawCalls}");
+            viewport.GizmoContext.DrawList.Clear();
         }
 
         private static PrimitiveType GetPrimitiveType(GizmoDrawCommand command)

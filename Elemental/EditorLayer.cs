@@ -2,6 +2,7 @@
 using DevoidEngine.Assets;
 using DevoidEngine.Components;
 using DevoidEngine.Core;
+using DevoidEngine.Gizmos;
 using DevoidEngine.InputSystem;
 using DevoidEngine.InputSystem.InputDevices;
 using DevoidEngine.Rendering;
@@ -129,7 +130,22 @@ namespace Elemental
 
             panelManager.OnUpdate(deltaTime);
         }
-
+        public override void OnRender(ICommandList cmd)
+        {
+            if (!sceneViewPanel.IsOpen)
+                return;
+            GizmoContext context = sceneViewPanel.Viewport.GizmoContext;
+            foreach (GameObject gameObject in activeDocument.Scene.GameObjects)
+            {
+                foreach (Component component in gameObject.Components)
+                {
+                    if (component is IGizmoProviderComponent gizmoProvider)
+                    {
+                        gizmoProvider.OnDrawGizmos(context);
+                    }
+                }
+            }
+        }
         public override void OnDetach()
         {
             panelManager.Clear();
@@ -137,7 +153,7 @@ namespace Elemental
 
         private void SetupSandbox()
         {
-            const string relativePath = "BaseLevel.scene";
+            const string relativePath = "CBox.scene";
 
             Scene scene = Asset.Load<Scene>(relativePath, false)!;
 

@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DevoidEngine.Rendering.ProbeGI
+namespace DevoidEngine.Gizmos
 {
-    internal class Tessellator
+    public interface IGizmoProviderComponent
     {
+        void OnDrawGizmos(GizmoContext context);
     }
 }
