@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using DevoidEngine.Core;
+using System.Numerics;
 
 namespace DevoidEngine.Gizmos
 {
@@ -8,7 +9,8 @@ namespace DevoidEngine.Gizmos
         Arrow,
         Box,
         WireBox,
-        Circle
+        Circle,
+        Mesh
     }
 
     public struct GizmoDrawCommand
@@ -27,6 +29,7 @@ namespace DevoidEngine.Gizmos
         public float Radius;
 
         public GizmoMaterial Material;
+        public Mesh Mesh;
 
         public static GizmoDrawCommand Line(
             Vector3 start,
@@ -96,6 +99,21 @@ namespace DevoidEngine.Gizmos
                 Center = center,
                 Radius = radius,
                 Normal = normal,
+                Material = material
+            };
+        }
+
+        public static GizmoDrawCommand MeshType(
+            Vector3 position,
+            Mesh mesh,
+            GizmoMaterial material
+        )
+        {
+            return new GizmoDrawCommand
+            {
+                Type = GizmoDrawCommandType.Mesh,
+                Mesh = mesh,
+                Center = position,
                 Material = material
             };
         }

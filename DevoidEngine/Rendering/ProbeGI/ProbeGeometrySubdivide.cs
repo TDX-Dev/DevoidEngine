@@ -7,11 +7,12 @@ using System.Threading.Tasks;
 
 namespace DevoidEngine.Rendering.ProbeGI
 {
-    public static class MeshTriangularSubdivide
+    public static class ProbeGeometrySubdivide
     {
-        public static List<Vector3> Subdivide(Vector3[] Vertices, uint[] Indices, float EdgeLength)
+        public static List<SurfacePoint> GetSurfacePoints(Vector3[] Vertices, uint[] Indices, float EdgeLength)
         {
-            List<Vector3> subdividedPoints = [];
+            List<SurfacePoint> subdividedPoints = [];
+
 
             for (int x = 0; x < Indices.Length; x +=3)
             {
@@ -31,6 +32,26 @@ namespace DevoidEngine.Rendering.ProbeGI
                 float longestEdge = Math.Max(v1v2, Math.Max(v2v3, v3v1));
                 int subdivisions = Math.Max(1, (int)Math.Ceiling(longestEdge / EdgeLength));
 
+                Vector3 normal = Vector3.Normalize(Vector3.Cross(v2 - v1, v3 - v1));
+
+                subdividedPoints.Add(new SurfacePoint
+                {
+                    Position = v1,
+                    Normal = normal
+                });
+
+                subdividedPoints.Add(new SurfacePoint
+                {
+                    Position = v2,
+                    Normal = normal
+                });
+
+                subdividedPoints.Add(new SurfacePoint
+                {
+                    Position = v3,
+                    Normal = normal
+                });
+
                 for (int i = 0; i <= subdivisions; i++)
                 {
                     for (int j = 0; j <= subdivisions - i; j++)
@@ -44,7 +65,11 @@ namespace DevoidEngine.Rendering.ProbeGI
                             v2 * v +
                             v3 * w;
 
-                        subdividedPoints.Add(position);
+                        subdividedPoints.Add(new SurfacePoint()
+                        {
+                            Position = position,
+                            Normal = normal,
+                        });
                     }
                 }
 

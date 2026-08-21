@@ -137,6 +137,13 @@ namespace DevoidEngine.Rendering
 
                             break;
                         }
+                    case GizmoDrawCommandType.Mesh:
+                        {
+                            meshData.render_mesh = command.Mesh!;
+                            meshData.render_transform = Matrix4x4.CreateTranslation(command.Center);
+                            Console.WriteLine(command.Mesh == null);
+                            break;
+                        }
                 }
 
                 if (meshData.render_mesh == null)
@@ -199,9 +206,12 @@ namespace DevoidEngine.Rendering
 
         private static PrimitiveType GetPrimitiveType(GizmoDrawCommand command)
         {
-            return command.Type == GizmoDrawCommandType.WireBox
-                ? PrimitiveType.Lines
-                : PrimitiveType.Triangles;
+            return command.Type switch
+            {
+                GizmoDrawCommandType.WireBox => PrimitiveType.Lines,
+                GizmoDrawCommandType.Mesh => PrimitiveType.Triangles,
+                _ => PrimitiveType.Triangles,
+            };
         }
 
         private void ClearBatches()

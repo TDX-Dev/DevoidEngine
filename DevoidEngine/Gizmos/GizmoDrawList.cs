@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using DevoidEngine.Core;
 
 namespace DevoidEngine.Gizmos
 {
@@ -129,6 +130,19 @@ namespace DevoidEngine.Gizmos
                     center,
                     radius,
                     normal,
+                    material));
+        }
+
+        public void AddMesh(
+            Vector3 position,
+            Mesh mesh,
+            GizmoMaterial material
+        )
+        {
+            commands.Add(
+                GizmoDrawCommand.MeshType(
+                    position,
+                    mesh,
                     material));
         }
     }
