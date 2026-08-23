@@ -1,4 +1,6 @@
-﻿using DevoidEngine.Gizmos;
+﻿using DevoidEngine.Core;
+using DevoidEngine.Gizmos;
+using DevoidEngine.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
@@ -7,8 +9,11 @@ namespace DevoidEngine.Util
 {
     public struct BVHTriangle
     {
-        public int MeshIndex;
         public int TriangleIndex;
+
+        public Vector3 V0;
+        public Vector3 V1;
+        public Vector3 V2;
 
         public BoundingBox Bounds;
         public Vector3 Centroid;
@@ -167,22 +172,20 @@ namespace DevoidEngine.Util
                 firstTriangle + triangleCount - mid);
         }
 
-        public void AddTriangle(int meshIndex, int triangleIndex, Vector3 v0, Vector3 v1, Vector3 v2)
+        public void AddTriangle(int triangleIndex, Vector3 v0, Vector3 v1, Vector3 v2)
         {
             Vector3 min = Vector3.Min(v0, Vector3.Min(v1, v2));
             Vector3 max = Vector3.Max(v0, Vector3.Max(v1, v2));
 
-            BoundingBox bounds = new(min, max);
-
-            BVHTriangle triangle = new()
+            triangles.Add(new BVHTriangle
             {
-                MeshIndex = meshIndex,
                 TriangleIndex = triangleIndex,
-                Bounds = bounds,
+                V0 = v0,
+                V1 = v1,
+                V2 = v2,
+                Bounds = new BoundingBox(min, max),
                 Centroid = (v0 + v1 + v2) / 3.0f
-            };
-
-            triangles.Add(triangle);
+            });
         }
 
         int FindBestSplit(int firstTriangle, int triangleCount, BoundingBox centroidBounds, BoundingBox nodeBounds, int axis)
@@ -353,16 +356,12 @@ namespace DevoidEngine.Util
 
             DrawNodeGizmos(context, material, 0, 0, level);
         }
-        static bool IntersectTriangle(
-    Vector3 origin,
-    Vector3 direction,
-    BVHTriangle triangle,
-    out float distance)
+        static bool IntersectTriangle(Vector3 origin, Vector3 direction, Vector3 v0, Vector3 v1, Vector3 v2, out float distance)
         {
             const float epsilon = 1e-7f;
 
-            Vector3 edge1 = triangle.V1 - triangle.V0;
-            Vector3 edge2 = triangle.V2 - triangle.V0;
+            Vector3 edge1 = v1 - v0;
+            Vector3 edge2 = v2 - v0;
 
             Vector3 p = Vector3.Cross(direction, edge2);
 
@@ -376,7 +375,7 @@ namespace DevoidEngine.Util
 
             float inverseDeterminant = 1.0f / determinant;
 
-            Vector3 t = origin - triangle.V0;
+            Vector3 t = origin - v0;
 
             float u = Vector3.Dot(t, p) * inverseDeterminant;
 
@@ -408,12 +407,259 @@ namespace DevoidEngine.Util
 
             return true;
         }
-        void DrawNodeGizmos(
-            GizmoContext context,
-            GizmoMaterial material,
-            int nodeIndex,
-            int depth,
-            int targetDepth)
+
+        public bool Raycast(Vector3 origin, Vector3 direction, float maxDistance, out float distance, out int triangleIndex)
+        {
+            distance = maxDistance;
+            triangleIndex = -1;
+
+            if (nodes.Count == 0)
+                return false;
+
+            if (!BoundingBox.IntersectsRay(nodes[0].Bounds, origin, direction, maxDistance, out _))
+            {
+                return false;
+            }
+
+            return RaycastNode(0, origin, direction, ref distance, ref triangleIndex);
+        }
+
+        bool RaycastNode(int nodeIndex, Vector3 origin, Vector3 direction, ref float closestDistance, ref int closestTriangle)
+        {
+            BVHNode node = nodes[nodeIndex];
+
+            if (!BoundingBox.IntersectsRay(
+                node.Bounds,
+                origin,
+                direction,
+                closestDistance,
+                out _))
+            {
+                return false;
+            }
+
+            if (node.Left < 0)
+            {
+                bool leafHit = false;
+
+                int end = node.FirstTriangle + node.TriangleCount;
+
+                for (int i = node.FirstTriangle; i < end; i++)
+                {
+                    BVHTriangle triangle = triangles[i];
+
+                    if (!IntersectTriangle(
+                        origin,
+                        direction,
+                        triangle.V0,
+                        triangle.V1,
+                        triangle.V2,
+                        out float triangleDistance))
+                    {
+                        continue;
+                    }
+
+                    if (triangleDistance >= closestDistance)
+                        continue;
+
+                    closestDistance = triangleDistance;
+                    closestTriangle = triangle.TriangleIndex;
+
+                    leafHit = true;
+                }
+
+                return leafHit;
+            }
+
+            int leftChild = node.Left;
+            int rightChild = node.Right;
+
+            bool leftHit = BoundingBox.IntersectsRay(
+                nodes[leftChild].Bounds,
+                origin,
+                direction,
+                closestDistance,
+                out float leftDistance);
+
+            bool rightHit = BoundingBox.IntersectsRay(
+                nodes[rightChild].Bounds,
+                origin,
+                direction,
+                closestDistance,
+                out float rightDistance);
+
+            if (!leftHit && !rightHit)
+                return false;
+
+            bool hit = false;
+
+            if (leftHit && rightHit)
+            {
+                if (leftDistance <= rightDistance)
+                {
+                    hit |= RaycastNode(
+                        leftChild,
+                        origin,
+                        direction,
+                        ref closestDistance,
+                        ref closestTriangle);
+
+                    if (rightDistance <= closestDistance)
+                    {
+                        hit |= RaycastNode(
+                            rightChild,
+                            origin,
+                            direction,
+                            ref closestDistance,
+                            ref closestTriangle);
+                    }
+                }
+                else
+                {
+                    hit |= RaycastNode(
+                        rightChild,
+                        origin,
+                        direction,
+                        ref closestDistance,
+                        ref closestTriangle);
+
+                    if (leftDistance <= closestDistance)
+                    {
+                        hit |= RaycastNode(
+                            leftChild,
+                            origin,
+                            direction,
+                            ref closestDistance,
+                            ref closestTriangle);
+                    }
+                }
+            }
+            else if (leftHit)
+            {
+                hit = RaycastNode(
+                    leftChild,
+                    origin,
+                    direction,
+                    ref closestDistance,
+                    ref closestTriangle);
+            }
+            else
+            {
+                hit = RaycastNode(
+                    rightChild,
+                    origin,
+                    direction,
+                    ref closestDistance,
+                    ref closestTriangle);
+            }
+
+            return hit;
+        }
+
+        public int CountIntersections(Vector3 origin, Vector3 direction, float maxDistance)
+        {
+            if (nodes.Count == 0)
+                return 0;
+
+            if (!BoundingBox.IntersectsRay(
+                nodes[0].Bounds,
+                origin,
+                direction,
+                maxDistance,
+                out _))
+            {
+                return 0;
+            }
+
+            return CountIntersectionsNode(
+                0,
+                origin,
+                direction,
+                maxDistance);
+        }
+
+        int CountIntersectionsNode(int nodeIndex, Vector3 origin, Vector3 direction, float maxDistance)
+        {
+            BVHNode node = nodes[nodeIndex];
+
+            if (!BoundingBox.IntersectsRay(
+                node.Bounds,
+                origin,
+                direction,
+                maxDistance,
+                out _))
+            {
+                return 0;
+            }
+
+            if (node.Left < 0)
+            {
+                int count = 0;
+
+                int end =
+                    node.FirstTriangle +
+                    node.TriangleCount;
+
+                for (int i = node.FirstTriangle; i < end; i++)
+                {
+                    BVHTriangle triangle = triangles[i];
+
+                    if (IntersectTriangle(
+                        origin,
+                        direction,
+                        triangle.V0,
+                        triangle.V1,
+                        triangle.V2,
+                        out float distance))
+                    {
+                        if (distance <= maxDistance)
+                            count++;
+                    }
+                }
+
+                return count;
+            }
+
+            return
+                CountIntersectionsNode(
+                    node.Left,
+                    origin,
+                    direction,
+                    maxDistance)
+                +
+                CountIntersectionsNode(
+                    node.Right,
+                    origin,
+                    direction,
+                    maxDistance);
+        }
+        public bool Intersects(BoundingBox bounds)
+        {
+            if (nodes.Count == 0)
+                return false;
+
+            return IntersectsNode(0, bounds);
+        }
+
+        bool IntersectsNode(int nodeIndex, BoundingBox bounds)
+        {
+            BVHNode node = nodes[nodeIndex];
+
+            if (!BoundingBox.Intersects(node.Bounds, bounds))
+                return false;
+
+            if (node.Left < 0)
+                return true;
+
+            if (IntersectsNode(node.Left, bounds))
+                return true;
+
+            if (IntersectsNode(node.Right, bounds))
+                return true;
+
+            return false;
+        }
+        void DrawNodeGizmos(GizmoContext context, GizmoMaterial material, int nodeIndex, int depth, int targetDepth)
         {
             BVHNode node = nodes[nodeIndex];
 
@@ -448,9 +694,7 @@ namespace DevoidEngine.Util
             }
         }
 
-        public void DrawAllGizmos(
-            GizmoContext context,
-            GizmoMaterial material)
+        public void DrawAllGizmos(GizmoContext context, GizmoMaterial material)
         {
             if (nodes.Count == 0)
                 return;
@@ -458,10 +702,7 @@ namespace DevoidEngine.Util
             DrawAllNodeGizmos(context, material, 0);
         }
 
-        void DrawAllNodeGizmos(
-            GizmoContext context,
-            GizmoMaterial material,
-            int nodeIndex)
+        void DrawAllNodeGizmos(GizmoContext context, GizmoMaterial material, int nodeIndex)
         {
             BVHNode node = nodes[nodeIndex];
 
@@ -485,10 +726,7 @@ namespace DevoidEngine.Util
             DrawLeafGizmos(context, material, 0);
         }
 
-        void DrawLeafGizmos(
-            GizmoContext context,
-            GizmoMaterial material,
-            int nodeIndex)
+        void DrawLeafGizmos(GizmoContext context, GizmoMaterial material, int nodeIndex)
         {
             BVHNode node = nodes[nodeIndex];
 

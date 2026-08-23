@@ -2,6 +2,7 @@
 using DevoidEngine.Gizmos;
 using DevoidEngine.Rendering;
 using DevoidEngine.Rendering.ProbeGI;
+using DevoidEngine.Util;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,6 +13,13 @@ using System.Threading.Tasks;
 
 namespace DevoidEngine.Components
 {
+    public enum OctreeDebugMode
+    {
+        Level,
+        All,
+        Leaves
+    }
+
     public class ProbeGI : Component, IGizmoProviderComponent
     {
         public override string Type => nameof(ProbeGI);
@@ -19,6 +27,7 @@ namespace DevoidEngine.Components
 
         GizmoMaterial GizmoMaterial = new();
         GizmoMaterial GizmoMaterialGrid = new();
+        GizmoMaterial GizmoMaterialOctree = new();
 
         public bool Regenerate = false;
         public Vector3 Min;
@@ -29,6 +38,13 @@ namespace DevoidEngine.Components
 
         private readonly List<SurfacePoint> subDividedPoints = [];
         private readonly List<Vector3> positions = [];
+        private readonly List<(int x, int y, int z)> validCells = [];
+
+        readonly ProbeOctree octree = new();
+
+        public bool ShowOctree = false;
+        public int OctreeLevel = 0;
+        public OctreeDebugMode OctreeMode = OctreeDebugMode.Level;
 
         private Vector3 gridMin;
         private int xCount;
@@ -40,6 +56,7 @@ namespace DevoidEngine.Components
         {
             GizmoMaterial.Color = new Vector4(0, 1, 0, 1);
             GizmoMaterialGrid.Color = new Vector4(0.5f, 0.5f, 0.5f, 1);
+            GizmoMaterialOctree.Color = new Vector4(0, 1, 1, 1);
         }
 
         public override void OnStart()
@@ -51,6 +68,7 @@ namespace DevoidEngine.Components
         {
             subDividedPoints.Clear();
             positions.Clear();
+            validCells.Clear();
 
             if (ProbeSpacing <= 0 || MaxProbes <= 0)
                 return;
@@ -115,13 +133,50 @@ namespace DevoidEngine.Components
                             gridMin.Z + (z + 0.5f) * spacing);
 
                         positions.Add(position);
+                        validCells.Add((x, y, z));
                     }
                 }
             }
 
+            BVH? bvh = gameObject.Scene.World.StaticBVH;
+
+            if (bvh == null)
+                return;
+
+            octree.Build(boundsMin, boundsMax, gameObject.Scene.World.StaticBVH!, 4, ProbeSpacing);
+
+            int beforeCount = positions.Count;
+
+            for (int i = positions.Count - 1; i >= 0; i--)
+            {
+                Vector3 position = positions[i];
+
+                int insideVotes = 0;
+
+                for (int j = 0; j < ProbeGISystem.ProbeDirections.Length; j++)
+                {
+                    int intersections = bvh.CountIntersections(
+                        position,
+                        ProbeGISystem.ProbeDirections[j],
+                        10000.0f);
+
+                    if ((intersections & 1) != 0)
+                        insideVotes++;
+                }
+
+                if (insideVotes < 4)
+                {
+                    positions.RemoveAt(i);
+                    validCells.RemoveAt(i);
+                }
+                    
+            }
+
             stopwatch.Stop();
 
+            Console.WriteLine($"Input points: {beforeCount}");
             Console.WriteLine($"Output points: {positions.Count}");
+            Console.WriteLine($"Eliminated points: {beforeCount - positions.Count}");
             Console.WriteLine($"Grid: {xCount} x {yCount} x {zCount}");
             Console.WriteLine($"Probe spacing: {spacing:F3}");
             Console.WriteLine($"Generation time: {stopwatch.Elapsed.TotalMilliseconds:F3} ms");
@@ -164,21 +219,42 @@ namespace DevoidEngine.Components
 
             context.DrawList.AddWireBox(Min, Max, GizmoMaterial);
 
-            for (int z = 0; z < zCount; z++)
+            for (int i = 0; i < validCells.Count; i++)
             {
-                for (int y = 0; y < yCount; y++)
+                (int x, int y, int z) = validCells[i];
+
+                Vector3 cellMin = new(
+                    gridMin.X + x * spacing,
+                    gridMin.Y + y * spacing,
+                    gridMin.Z + z * spacing
+                );
+
+                Vector3 cellMax = cellMin + new Vector3(spacing);
+
+                context.DrawList.AddWireBox(cellMin, cellMax, GizmoMaterialGrid);
+            }
+
+            if (ShowOctree)
+            {
+                switch (OctreeMode)
                 {
-                    for (int x = 0; x < xCount; x++)
-                    {
-                        Vector3 cellMin = new(
-                            gridMin.X + x * spacing,
-                            gridMin.Y + y * spacing,
-                            gridMin.Z + z * spacing);
+                    case OctreeDebugMode.Level:
+                        {
+                            int maxDepth = octree.GetMaxDepth();
+                            int level = Math.Clamp(OctreeLevel, 0, maxDepth);
 
-                        Vector3 cellMax = cellMin + new Vector3(spacing);
+                            octree.DrawGizmos(context, GizmoMaterialOctree, level);
 
-                        context.DrawList.AddWireBox(cellMin, cellMax, GizmoMaterialGrid);
-                    }
+                            break;
+                        }
+
+                    case OctreeDebugMode.All:
+                        octree.DrawAllGizmos(context, GizmoMaterialOctree);
+                        break;
+
+                    case OctreeDebugMode.Leaves:
+                        octree.DrawLeafGizmos(context, GizmoMaterialOctree);
+                        break;
                 }
             }
         }

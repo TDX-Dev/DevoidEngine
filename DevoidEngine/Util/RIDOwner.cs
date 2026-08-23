@@ -35,6 +35,13 @@ namespace DevoidEngine.Util
             return new RID(index, entries[index].Generation);
         }
 
+        public RID GetRID(int index)
+        {
+            Slot<T> slot = entries[index];
+
+            return new RID(index, slot.Generation);
+        }
+
         public bool Owns(RID rid)
         {
             if (rid.Index < 0 || rid.Index >= entries.Count)

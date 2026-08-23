@@ -82,7 +82,7 @@ namespace DevoidEngine.Rendering
 
                     Vector3 v2 = Vector3.Transform(mesh.Positions[mesh.Indices[j + 2]], transform);
 
-                    bvh.AddTriangle(i, j / 3, v0, v1, v2);
+                    bvh.AddTriangle(j / 3, v0, v1, v2);
                 }
             }
 

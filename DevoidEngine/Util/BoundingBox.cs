@@ -62,7 +62,15 @@ namespace DevoidEngine.Util
 
             return 2.0f * (d.X * d.Y + d.X * d.Z + d.Y * d.Z);
         }
-
+        public static bool Intersects(BoundingBox a, BoundingBox b)
+        {
+            return a.min.X <= b.max.X &&
+                   a.max.X >= b.min.X &&
+                   a.min.Y <= b.max.Y &&
+                   a.max.Y >= b.min.Y &&
+                   a.min.Z <= b.max.Z &&
+                   a.max.Z >= b.min.Z;
+        }
         public static bool IntersectsRay(BoundingBox bounds, Vector3 origin, Vector3 direction, float maxDistance)
         {
             float tMin = 0.0f;
@@ -97,6 +105,52 @@ namespace DevoidEngine.Util
                 if (tMin > tMax)
                     return false;
             }
+
+            return true;
+        }
+
+        public static bool IntersectsRay(BoundingBox bounds, Vector3 origin, Vector3 direction, float maxDistance, out float distance)
+        {
+            float tMin = 0.0f;
+            float tMax = maxDistance;
+
+            for (int axis = 0; axis < 3; axis++)
+            {
+                float o = origin[axis];
+                float d = direction[axis];
+                float min = bounds.min[axis];
+                float max = bounds.max[axis];
+
+                if (MathF.Abs(d) < 1e-8f)
+                {
+                    if (o < min || o > max)
+                    {
+                        distance = 0;
+                        return false;
+                    }
+
+                    continue;
+                }
+
+                float invD = 1.0f / d;
+
+                float t1 = (min - o) * invD;
+                float t2 = (max - o) * invD;
+
+                if (t1 > t2)
+                    (t1, t2) = (t2, t1);
+
+                tMin = MathF.Max(tMin, t1);
+                tMax = MathF.Min(tMax, t2);
+
+                if (tMin > tMax)
+                {
+                    distance = 0;
+                    return false;
+                }
+            }
+
+            distance = tMin;
 
             return true;
         }
