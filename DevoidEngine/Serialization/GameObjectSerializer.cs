@@ -150,7 +150,6 @@ namespace DevoidEngine.Serialization
                 go.AddComponent(component);
             }
 
-
             return go;
         }
     }

@@ -2,7 +2,7 @@
 
 namespace DevoidEngine.Util
 {
-    public class BoundingBox
+    public struct BoundingBox
     {
         public static BoundingBox Empty => new(Vector3.Zero, Vector3.Zero);
 
@@ -40,5 +40,65 @@ namespace DevoidEngine.Util
             worldMax = worldCenter + worldExtents;
         }
 
+        public static BoundingBox CreateEmptyBounds()
+        {
+            float max = float.MaxValue;
+
+            return new BoundingBox(
+                new Vector3(max, max, max),
+                new Vector3(-max, -max, -max));
+        }
+
+        public static BoundingBox Union(BoundingBox a, BoundingBox b)
+        {
+            return new BoundingBox(
+                Vector3.Min(a.min, b.min),
+                Vector3.Max(a.max, b.max));
+        }
+
+        public static float SurfaceArea(BoundingBox bounds)
+        {
+            Vector3 d = bounds.max - bounds.min;
+
+            return 2.0f * (d.X * d.Y + d.X * d.Z + d.Y * d.Z);
+        }
+
+        public static bool IntersectsRay(BoundingBox bounds, Vector3 origin, Vector3 direction, float maxDistance)
+        {
+            float tMin = 0.0f;
+            float tMax = maxDistance;
+
+            for (int axis = 0; axis < 3; axis++)
+            {
+                float o = origin[axis];
+                float d = direction[axis];
+                float min = bounds.min[axis];
+                float max = bounds.max[axis];
+
+                if (MathF.Abs(d) < 1e-8f)
+                {
+                    if (o < min || o > max)
+                        return false;
+
+                    continue;
+                }
+
+                float invD = 1.0f / d;
+
+                float t1 = (min - o) * invD;
+                float t2 = (max - o) * invD;
+
+                if (t1 > t2)
+                    (t1, t2) = (t2, t1);
+
+                tMin = MathF.Max(tMin, t1);
+                tMax = MathF.Min(tMax, t2);
+
+                if (tMin > tMax)
+                    return false;
+            }
+
+            return true;
+        }
     }
 }

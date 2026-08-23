@@ -35,13 +35,15 @@ namespace DevoidEngine.Components
                 if (gameObject == null || gameObject.Scene == null)
                     return false;
 
+                ComponentTickMode mode = TickMode;
+
                 return gameObject.Scene.SceneMode switch
                 {
                     SceneMode.Play =>
-                        TickMode.HasFlag(ComponentTickMode.Play),
+                        (mode & ComponentTickMode.Play) != 0,
 
                     SceneMode.Edit =>
-                        TickMode.HasFlag(ComponentTickMode.Edit),
+                        (mode & ComponentTickMode.Edit) != 0,
 
                     _ =>
                         false

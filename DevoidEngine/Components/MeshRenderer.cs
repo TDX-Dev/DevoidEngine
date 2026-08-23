@@ -96,10 +96,11 @@ namespace DevoidEngine.Components
         {
             if (Engine.Instance.FrameCount == 0)
                 return;
+            
             if ((!has_moved_current_frame || mesh == null || !IsInitialized))
                 return;
             Matrix4x4 worldMatrixInterpolated;
-            if (Engine.Instance.UseInterpolation)
+            if (Engine.Instance.UseInterpolation && !IsStatic)
             {
                 worldMatrixInterpolated = gameObject.Transform.GetGlobalTransformInterpolated(Engine.Instance.FrameCount, Engine.Instance.InterpolationAlpha);
             }

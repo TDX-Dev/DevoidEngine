@@ -246,7 +246,9 @@ namespace DevoidEngine.Components
         }
         internal void ClearDirty()
         {
-            dirty = false;
+            if (!hasMoved)
+                return;
+
             hasMoved = false;
 
             TransformChanged?.Invoke();

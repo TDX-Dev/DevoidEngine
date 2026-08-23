@@ -345,7 +345,7 @@ namespace DevoidEngine.Physics.Bepu
                         int triangleCount = indices.Length / 3;
 
                         // Allocate triangle buffer
-                        bufferPool.Take<Triangle>(triangleCount, out var triangles);
+                        bufferPool.Take<BepuPhysics.Collidables.Triangle>(triangleCount, out var triangles);
 
                         for (int i = 0; i < triangleCount; i++)
                         {
@@ -354,7 +354,7 @@ namespace DevoidEngine.Physics.Bepu
                             //    vertices[indices[i * 3 + 1]],
                             //    vertices[indices[i * 3 + 2]]
                             //);
-                            triangles[i] = new Triangle(
+                            triangles[i] = new BepuPhysics.Collidables.Triangle(
                                 vertices[indices[i * 3 + 0]],
                                 vertices[indices[i * 3 + 2]],
                                 vertices[indices[i * 3 + 1]]

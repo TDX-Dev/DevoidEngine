@@ -1,17 +1,22 @@
 ﻿using DevoidEngine.Core;
 using DevoidEngine.Util;
+using System.Diagnostics;
 using System.Numerics;
 
 namespace DevoidEngine.Rendering
 {
     public class RenderWorld
     {
+        public BVH? StaticBVH => staticBVH;
+
         private readonly RIDOwner<RenderMeshData> meshIdAllocator;
 
         private readonly RIDOwner<GPUPointLight> pointLights;
         private readonly RIDOwner<GPUSpotLight> spotLights;
         private readonly RIDOwner<GPUDirectionalLight> directionalLights;
 
+        private BVH? staticBVH;
+        private bool staticBVHDirty = true;
 
         public RenderWorld()
         {
@@ -21,7 +26,70 @@ namespace DevoidEngine.Rendering
             spotLights = new RIDOwner<GPUSpotLight>();
             directionalLights = new RIDOwner<GPUDirectionalLight>();
         }
+        public void UpdateAccelerationStructures()
+        {
+            if (!staticBVHDirty)
+                return;
 
+            Stopwatch bvhTimer = Stopwatch.StartNew();
+            BuildStaticBVH();
+            bvhTimer.Stop();
+            Console.WriteLine($"BVH Build time: {bvhTimer.Elapsed.TotalMilliseconds:F3} ms");
+
+            staticBVHDirty = false;
+        }
+
+        public void BuildStaticBVH()
+        {
+
+            ReadOnlySpan<Slot<RenderMeshData>> entries = meshIdAllocator.AsSpan();
+
+            BVH bvh = new(12);
+
+            for (int i = 0; i < entries.Length; i++)
+            {
+                ref readonly Slot<RenderMeshData> slot = ref entries[i];
+
+                if (!slot.Occupied)
+                    continue;
+
+                ref readonly RenderMeshData data = ref slot.Value;
+
+                if (!data.is_static)
+                    continue;
+
+                Mesh mesh = data.render_mesh;
+
+                Matrix4x4 transform = data.render_transform;
+
+                if (mesh.Indices == null)
+                {
+                    Console.WriteLine("[BVH Build]: Mesh was skipped due to not having indices.");
+                    continue;
+                }
+
+                if (mesh.Positions == null)
+                {
+                    Console.WriteLine("[BVH Build]: Mesh was skipped due to not having any vertex positions.");
+                    continue;
+                }
+
+                for (int j = 0; j < mesh.Indices.Length; j += 3)
+                {
+                    Vector3 v0 = Vector3.Transform(mesh.Positions[mesh.Indices[j]], transform);
+
+                    Vector3 v1 = Vector3.Transform(mesh.Positions[mesh.Indices[j + 1]], transform);
+
+                    Vector3 v2 = Vector3.Transform(mesh.Positions[mesh.Indices[j + 2]], transform);
+
+                    bvh.AddTriangle(i, j / 3, v0, v1, v2);
+                }
+            }
+
+            bvh.Build();
+
+            staticBVH = bvh;
+        }
         public RID CreateMeshInstance(Mesh mesh)
         {
             ArgumentNullException.ThrowIfNull(mesh);
@@ -36,6 +104,12 @@ namespace DevoidEngine.Rendering
         {
             RenderMeshData data = meshIdAllocator.Get(instance_id);
             data.render_transform = transform;
+
+            if (data.is_static)
+            {
+                Console.WriteLine("[BVH Build]: A static marked object was moved, this can cause performance issues.");
+                staticBVHDirty = true;
+            }
         }
 
         public void InstanceSetMesh(RID instance_id, Mesh mesh)
@@ -51,7 +125,11 @@ namespace DevoidEngine.Rendering
         public void InstanceSetStatic(RID instance_id, bool is_static)
         {
             RenderMeshData data = meshIdAllocator.GetRef(instance_id);
+            if (data.is_static == is_static)
+                return;
+
             data.is_static = is_static;
+            staticBVHDirty = true;
         }
         public RenderMeshData GetMeshInstance(RID rid)
         {
@@ -60,6 +138,8 @@ namespace DevoidEngine.Rendering
 
         public void FreeMeshInstance(RID rid)
         {
+            if (meshIdAllocator.Get(rid).is_static)
+                staticBVHDirty = true;
             meshIdAllocator.Free(rid);
         }
 

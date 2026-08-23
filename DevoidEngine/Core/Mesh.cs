@@ -21,7 +21,7 @@ namespace DevoidEngine.Core
 
         public uint[]? Indices { get => indices; set => indices = value; }
 
-        public BoundingBox LocalBounds { get; private set; } = null!;
+        public BoundingBox LocalBounds { get; private set; }
 
         private IndexBuffer? IB;
         private VertexBuffer<Vertex>? VB;

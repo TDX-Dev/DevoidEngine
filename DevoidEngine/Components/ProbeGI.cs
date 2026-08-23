@@ -18,21 +18,28 @@ namespace DevoidEngine.Components
         public override ComponentTickMode TickMode => ComponentTickMode.All;
 
         GizmoMaterial GizmoMaterial = new();
+        GizmoMaterial GizmoMaterialGrid = new();
 
         public bool Regenerate = false;
-        public float SubdivisionEdgeThreshold = 0.2f;
-        public float InitialShrinkBallRadius = 25f;
-        public float ClusterMergeDistance = 1f;
-        public float MedialSphereThreshold = 2;
-        public float ProbeSpacing = 0.75f;
+        public Vector3 Min;
+        public Vector3 Max;
+        public float ProbeSpacing = 2f;
+        public int MaxProbes = 2000;
 
-        private List<MedialBall> medialBalls = [];
-        private List<SurfacePoint> subDividedPoints = [];
-        private KDTree pointCloud = null!;
+
+        private readonly List<SurfacePoint> subDividedPoints = [];
+        private readonly List<Vector3> positions = [];
+
+        private Vector3 gridMin;
+        private int xCount;
+        private int yCount;
+        private int zCount;
+        private float spacing;
 
         public ProbeGI()
         {
             GizmoMaterial.Color = new Vector4(0, 1, 0, 1);
+            GizmoMaterialGrid.Color = new Vector4(0.5f, 0.5f, 0.5f, 1);
         }
 
         public override void OnStart()
@@ -43,62 +50,81 @@ namespace DevoidEngine.Components
         public void RegeneratePoints()
         {
             subDividedPoints.Clear();
+            positions.Clear();
+
+            if (ProbeSpacing <= 0 || MaxProbes <= 0)
+                return;
 
             List<RenderMeshData> data_meshes = [];
             gameObject.Scene.World.GetStaticMeshes(data_meshes);
 
             Stopwatch stopwatch = Stopwatch.StartNew();
-            for (int i = 0; i < data_meshes.Count; i++)
+
+            Vector3 boundsMin = Vector3.Min(Min, Max);
+            Vector3 boundsMax = Vector3.Max(Min, Max);
+
+            Vector3 size = boundsMax - boundsMin;
+
+            spacing = ProbeSpacing;
+
+            xCount = Math.Max(1, (int)MathF.Floor(size.X / spacing));
+            yCount = Math.Max(1, (int)MathF.Floor(size.Y / spacing));
+            zCount = Math.Max(1, (int)MathF.Floor(size.Z / spacing));
+
+            long totalProbes = (long)xCount * yCount * zCount;
+
+            if (totalProbes > MaxProbes)
             {
-                List<SurfacePoint> points = ProbeGeometrySubdivide.GetSurfacePoints(data_meshes[i].render_mesh.Positions!, data_meshes[i].render_mesh.Indices!, SubdivisionEdgeThreshold);
-                for (int j = 0; j < points.Count; j++)
+                float scale = MathF.Pow((float)totalProbes / MaxProbes, 1f / 3f);
+                spacing *= scale;
+
+                xCount = Math.Max(1, (int)MathF.Floor(size.X / spacing));
+                yCount = Math.Max(1, (int)MathF.Floor(size.Y / spacing));
+                zCount = Math.Max(1, (int)MathF.Floor(size.Z / spacing));
+
+                while ((long)xCount * yCount * zCount > MaxProbes)
                 {
-                    Vector3 position = Vector3.Transform(points[j].Position, data_meshes[i].render_transform);
-                    SurfacePoint sp = points[j];
-                    sp.Position = position;
-                    points[j] = sp;
+                    spacing *= 1.001f;
+
+                    xCount = Math.Max(1, (int)MathF.Floor(size.X / spacing));
+                    yCount = Math.Max(1, (int)MathF.Floor(size.Y / spacing));
+                    zCount = Math.Max(1, (int)MathF.Floor(size.Z / spacing));
                 }
-                subDividedPoints.AddRange(points);
             }
 
-            subDividedPoints = ProbeSurfacePointMerge.MergeClosePoints(subDividedPoints, ClusterMergeDistance);
+            Vector3 gridSize = new(
+                xCount * spacing,
+                yCount * spacing,
+                zCount * spacing);
 
-            Vector3[] positions = new Vector3[subDividedPoints.Count];
-            for (int i = 0; i < subDividedPoints.Count; i++)
-                positions[i] = subDividedPoints[i].Position;
-            pointCloud = new(positions);
+            Vector3 offset = (size - gridSize) * 0.5f;
 
+            gridMin = boundsMin + offset;
 
-            medialBalls.Clear();
-            medialBalls.AddRange(new MedialBall[subDividedPoints.Count]);
+            positions.Capacity = Math.Min(MaxProbes, (int)((long)xCount * yCount * zCount));
 
-            SurfacePoint[] finalPointArray = [.. subDividedPoints];
-
-            Parallel.For(0, subDividedPoints.Count, i =>
+            for (int z = 0; z < zCount; z++)
             {
-                medialBalls[i] = ProbeShrinkBall.ShrinkBall(
-                    pointCloud,
-                    finalPointArray,
-                    i,
-                    InitialShrinkBallRadius
-                );
-            });
+                for (int y = 0; y < yCount; y++)
+                {
+                    for (int x = 0; x < xCount; x++)
+                    {
+                        Vector3 position = new(
+                            gridMin.X + (x + 0.5f) * spacing,
+                            gridMin.Y + (y + 0.5f) * spacing,
+                            gridMin.Z + (z + 0.5f) * spacing);
 
-            List<MedialBall> candidates = [];
-
-            for (int i = 0; i < medialBalls.Count; i++)
-            {
-                if (medialBalls[i].Radius >= MedialSphereThreshold)
-                    candidates.Add(medialBalls[i]);
+                        positions.Add(position);
+                    }
+                }
             }
-
-            candidates = ProbeSurfacePointMerge.ReduceCandidates(candidates, 0.5f);
-
-            medialBalls = candidates;
 
             stopwatch.Stop();
-            Console.WriteLine($"Output points: {subDividedPoints.Count}");
-            Console.WriteLine($"Subdivision time: {stopwatch.Elapsed.TotalMilliseconds:F3} ms");
+
+            Console.WriteLine($"Output points: {positions.Count}");
+            Console.WriteLine($"Grid: {xCount} x {yCount} x {zCount}");
+            Console.WriteLine($"Probe spacing: {spacing:F3}");
+            Console.WriteLine($"Generation time: {stopwatch.Elapsed.TotalMilliseconds:F3} ms");
         }
 
         public void OnDrawGizmos(GizmoContext context)
@@ -130,13 +156,30 @@ namespace DevoidEngine.Components
             //        }
             //    }
             //}
-            for (int i = 0; i < medialBalls.Count; i++)
+
+            for (int i = 0; i < positions.Count; i++)
             {
-                context.DrawList.AddCircle(
-                    medialBalls[i].Center,
-                    0.1f,
-                    Vector3.UnitY,
-                    GizmoMaterial);
+                context.DrawList.AddCircle(positions[i], 0.5f, Vector3.UnitY, GizmoMaterialGrid);
+            }
+
+            context.DrawList.AddWireBox(Min, Max, GizmoMaterial);
+
+            for (int z = 0; z < zCount; z++)
+            {
+                for (int y = 0; y < yCount; y++)
+                {
+                    for (int x = 0; x < xCount; x++)
+                    {
+                        Vector3 cellMin = new(
+                            gridMin.X + x * spacing,
+                            gridMin.Y + y * spacing,
+                            gridMin.Z + z * spacing);
+
+                        Vector3 cellMax = cellMin + new Vector3(spacing);
+
+                        context.DrawList.AddWireBox(cellMin, cellMax, GizmoMaterialGrid);
+                    }
+                }
             }
         }
     }

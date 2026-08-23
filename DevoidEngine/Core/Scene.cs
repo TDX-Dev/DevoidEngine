@@ -57,16 +57,15 @@ namespace DevoidEngine.Core
                 GameObjects[i].OnUpdate(deltaTime);
             }
 
-            for (int i = 0; i < transforms.Count; i++)
-            {
-                Transform3D transform = transforms[i];
+            //for (int i = 0; i < transforms.Count; i++)
+            //{
+            //    Transform3D transform = transforms[i];
 
-                if (!transform.hasMoved)
-                    continue;
+            //    if (!transform.hasMoved)
+            //        continue;
 
-                _ = transform.WorldMatrix;
-                transform.hasMoved = false;
-            }
+            //    _ = transform.WorldMatrix;
+            //}
 
             if (MainCamera != null)
             {
@@ -77,6 +76,8 @@ namespace DevoidEngine.Core
                     camTransform.Forward,
                     camTransform.Up);
             }
+
+            World.UpdateAccelerationStructures();
         }
 
         public void LateUpdate(float deltaTime)
