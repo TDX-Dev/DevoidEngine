@@ -154,5 +154,29 @@ namespace DevoidEngine.Util
 
             return true;
         }
+
+        public static float DistanceSquared(BoundingBox bounds, Vector3 point)
+        {
+            float dx = 0.0f;
+            float dy = 0.0f;
+            float dz = 0.0f;
+
+            if (point.X < bounds.min.X)
+                dx = bounds.min.X - point.X;
+            else if (point.X > bounds.max.X)
+                dx = point.X - bounds.max.X;
+
+            if (point.Y < bounds.min.Y)
+                dy = bounds.min.Y - point.Y;
+            else if (point.Y > bounds.max.Y)
+                dy = point.Y - bounds.max.Y;
+
+            if (point.Z < bounds.min.Z)
+                dz = bounds.min.Z - point.Z;
+            else if (point.Z > bounds.max.Z)
+                dz = point.Z - bounds.max.Z;
+
+            return dx * dx + dy * dy + dz * dz;
+        }
     }
 }

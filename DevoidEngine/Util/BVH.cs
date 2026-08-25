@@ -659,6 +659,205 @@ namespace DevoidEngine.Util
 
             return false;
         }
+        public bool ClosestPoint(Vector3 position, out Vector3 closestPoint, out float distanceSquared)
+        {
+            closestPoint = Vector3.Zero;
+            distanceSquared = float.MaxValue;
+
+            if (nodes.Count == 0)
+                return false;
+
+            ClosestPointNode(
+                0,
+                position,
+                ref closestPoint,
+                ref distanceSquared);
+
+            return distanceSquared < float.MaxValue;
+        }
+
+        void ClosestPointNode(int nodeIndex, Vector3 position, ref Vector3 closestPoint, ref float closestDistanceSquared)
+        {
+            BVHNode node = nodes[nodeIndex];
+
+            // If this node's AABB is already farther away than
+            // our current closest point, nothing underneath it
+            // can improve the result.
+            float nodeDistanceSquared =
+                BoundingBox.DistanceSquared(
+                    node.Bounds,
+                    position);
+
+            if (nodeDistanceSquared >= closestDistanceSquared)
+                return;
+
+            // Leaf: test every triangle.
+            if (node.Left < 0)
+            {
+                int end =
+                    node.FirstTriangle +
+                    node.TriangleCount;
+
+                for (int i = node.FirstTriangle; i < end; i++)
+                {
+                    BVHTriangle triangle = triangles[i];
+
+                    Vector3 point = ClosestPointOnTriangle(
+                        position,
+                        triangle.V0,
+                        triangle.V1,
+                        triangle.V2);
+
+                    float distanceSquared =
+                        Vector3.DistanceSquared(
+                            position,
+                            point);
+
+                    if (distanceSquared >= closestDistanceSquared)
+                        continue;
+
+                    closestDistanceSquared = distanceSquared;
+                    closestPoint = point;
+                }
+
+                return;
+            }
+
+            int left = node.Left;
+            int right = node.Right;
+
+            float leftDistanceSquared =
+                BoundingBox.DistanceSquared(
+                    nodes[left].Bounds,
+                    position);
+
+            float rightDistanceSquared =
+                BoundingBox.DistanceSquared(
+                    nodes[right].Bounds,
+                    position);
+
+            // Visit the closer child first so that we get a
+            // small closestDistanceSquared as early as possible.
+            if (leftDistanceSquared <= rightDistanceSquared)
+            {
+                if (leftDistanceSquared < closestDistanceSquared)
+                {
+                    ClosestPointNode(
+                        left,
+                        position,
+                        ref closestPoint,
+                        ref closestDistanceSquared);
+                }
+
+                if (rightDistanceSquared < closestDistanceSquared)
+                {
+                    ClosestPointNode(
+                        right,
+                        position,
+                        ref closestPoint,
+                        ref closestDistanceSquared);
+                }
+            }
+            else
+            {
+                if (rightDistanceSquared < closestDistanceSquared)
+                {
+                    ClosestPointNode(
+                        right,
+                        position,
+                        ref closestPoint,
+                        ref closestDistanceSquared);
+                }
+
+                if (leftDistanceSquared < closestDistanceSquared)
+                {
+                    ClosestPointNode(
+                        left,
+                        position,
+                        ref closestPoint,
+                        ref closestDistanceSquared);
+                }
+            }
+        }
+
+        static Vector3 ClosestPointOnTriangle( Vector3 point, Vector3 a, Vector3 b, Vector3 c)
+        {
+            Vector3 ab = b - a;
+            Vector3 ac = c - a;
+            Vector3 ap = point - a;
+
+            float d1 = Vector3.Dot(ab, ap);
+            float d2 = Vector3.Dot(ac, ap);
+
+            // Vertex A
+            if (d1 <= 0.0f && d2 <= 0.0f)
+                return a;
+
+            Vector3 bp = point - b;
+
+            float d3 = Vector3.Dot(ab, bp);
+            float d4 = Vector3.Dot(ac, bp);
+
+            // Vertex B
+            if (d3 >= 0.0f && d4 <= d3)
+                return b;
+
+            float vc = d1 * d4 - d3 * d2;
+
+            // Edge AB
+            if (vc <= 0.0f &&
+                d1 >= 0.0f &&
+                d3 <= 0.0f)
+            {
+                float v = d1 / (d1 - d3);
+
+                return a + v * ab;
+            }
+
+            Vector3 cp = point - c;
+
+            float d5 = Vector3.Dot(ab, cp);
+            float d6 = Vector3.Dot(ac, cp);
+
+            // Vertex C
+            if (d6 >= 0.0f && d5 <= d6)
+                return c;
+
+            float vb = d5 * d2 - d1 * d6;
+
+            // Edge AC
+            if (vb <= 0.0f &&
+                d2 >= 0.0f &&
+                d6 <= 0.0f)
+            {
+                float w = d2 / (d2 - d6);
+
+                return a + w * ac;
+            }
+
+            float va = d3 * d6 - d5 * d4;
+
+            // Edge BC
+            if (va <= 0.0f &&
+                (d4 - d3) >= 0.0f &&
+                (d5 - d6) >= 0.0f)
+            {
+                float w =
+                    (d4 - d3) /
+                    ((d4 - d3) + (d5 - d6));
+
+                return b + w * (c - b);
+            }
+
+            // Inside the triangle.
+            float denominator = 1.0f / (va + vb + vc);
+
+            float v2 = vb * denominator;
+            float w2 = vc * denominator;
+
+            return a + ab * v2 + ac * w2;
+        }
+
         void DrawNodeGizmos(GizmoContext context, GizmoMaterial material, int nodeIndex, int depth, int targetDepth)
         {
             BVHNode node = nodes[nodeIndex];

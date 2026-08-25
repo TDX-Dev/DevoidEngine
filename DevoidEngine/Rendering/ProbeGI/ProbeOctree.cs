@@ -103,13 +103,13 @@ namespace DevoidEngine.Rendering.ProbeGI
                 return;
             }
 
-            if (!bvh.Intersects(node.Bounds))
-            {
-                node.Classification = OctreeNodeClassification.Empty;
-                node.IsLeaf = true;
-                nodes[nodeIndex] = node;
-                return;
-            }
+            //if (!bvh.Intersects(node.Bounds))
+            //{
+            //    node.Classification = OctreeNodeClassification.Empty;
+            //    node.IsLeaf = true;
+            //    nodes[nodeIndex] = node;
+            //    return;
+            //}
 
             Vector3 center = (node.Bounds.min + node.Bounds.max) * 0.5f;
 
@@ -178,38 +178,81 @@ namespace DevoidEngine.Rendering.ProbeGI
 
             return maxDepth;
         }
-        public void GetLeafCandidates(List<Vector3> positions)
+        public bool IsCandidate(Vector3 position)
         {
-            positions.Clear();
+            if (nodes.Count == 0)
+                return false;
+
+            return IsCandidate(0, position);
+        }
+
+        bool IsCandidate(int nodeIndex, Vector3 position)
+        {
+            ProbeOctreeNode node = nodes[nodeIndex];
+
+            if (position.X < node.Bounds.min.X ||
+                position.X > node.Bounds.max.X ||
+                position.Y < node.Bounds.min.Y ||
+                position.Y > node.Bounds.max.Y ||
+                position.Z < node.Bounds.min.Z ||
+                position.Z > node.Bounds.max.Z)
+                return false;
+
+            if (node.Classification == OctreeNodeClassification.Empty)
+                return false;
+
+            if (node.IsLeaf)
+                return true;
+
+            Vector3 center = (node.Bounds.min + node.Bounds.max) * 0.5f;
+
+            int child = 0;
+
+            if (position.X >= center.X)
+                child |= 1;
+
+            if (position.Y >= center.Y)
+                child |= 2;
+
+            if (position.Z >= center.Z)
+                child |= 4;
+
+            return IsCandidate(
+                node.FirstChild + child,
+                position);
+        }
+        public void GetMixedLeaves(List<BoundingBox> leaves)
+        {
+            leaves.Clear();
 
             if (nodes.Count == 0)
                 return;
 
-            GetLeafCandidates(0, positions);
+            GetMixedLeaves(0, leaves);
         }
 
-        void GetLeafCandidates(int nodeIndex, List<Vector3> positions)
+        void GetMixedLeaves(
+            int nodeIndex,
+            List<BoundingBox> leaves)
         {
             ProbeOctreeNode node = nodes[nodeIndex];
 
             if (node.IsLeaf)
             {
-                if (node.Classification != OctreeNodeClassification.Empty)
-                {
-                    positions.Add(
-                        (node.Bounds.min + node.Bounds.max) * 0.5f);
-                }
+                if (node.Classification == OctreeNodeClassification.Mixed)
+                    leaves.Add(node.Bounds);
 
                 return;
             }
 
             for (int i = 0; i < 8; i++)
             {
-                GetLeafCandidates(
+                GetMixedLeaves(
                     node.FirstChild + i,
-                    positions);
+                    leaves);
             }
         }
+
         public void DrawGizmos(
             GizmoContext context,
             GizmoMaterial material,
@@ -332,9 +375,7 @@ namespace DevoidEngine.Rendering.ProbeGI
             }
         }
 
-        OctreeNodeClassification ClassifyNode(
-    BoundingBox bounds,
-    BVH bvh)
+        OctreeNodeClassification ClassifyNode(BoundingBox bounds, BVH bvh)
         {
             Vector3 size = bounds.max - bounds.min;
 

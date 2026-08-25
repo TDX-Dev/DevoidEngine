@@ -13,12 +13,6 @@ using System.Threading.Tasks;
 
 namespace DevoidEngine.Components
 {
-    public enum OctreeDebugMode
-    {
-        Level,
-        All,
-        Leaves
-    }
 
     public class ProbeGI : Component, IGizmoProviderComponent
     {
@@ -29,22 +23,22 @@ namespace DevoidEngine.Components
         GizmoMaterial GizmoMaterialGrid = new();
         GizmoMaterial GizmoMaterialOctree = new();
 
+        public bool MarkAllGeometryStatic = false;
+        public bool GenerateExtents = false;
         public bool Regenerate = false;
         public Vector3 Min;
         public Vector3 Max;
         public float ProbeSpacing = 2f;
+        public float MaxProbeDistance = 4f;
         public int MaxProbes = 2000;
+
+        public bool DrawGrid = false;
 
 
         private readonly List<SurfacePoint> subDividedPoints = [];
         private readonly List<Vector3> positions = [];
         private readonly List<(int x, int y, int z)> validCells = [];
 
-        readonly ProbeOctree octree = new();
-
-        public bool ShowOctree = false;
-        public int OctreeLevel = 0;
-        public OctreeDebugMode OctreeMode = OctreeDebugMode.Level;
 
         private Vector3 gridMin;
         private int xCount;
@@ -143,13 +137,13 @@ namespace DevoidEngine.Components
             if (bvh == null)
                 return;
 
-            octree.Build(boundsMin, boundsMax, gameObject.Scene.World.StaticBVH!, 4, ProbeSpacing);
 
             int beforeCount = positions.Count;
 
             for (int i = positions.Count - 1; i >= 0; i--)
             {
                 Vector3 position = positions[i];
+
 
                 int insideVotes = 0;
 
@@ -168,8 +162,25 @@ namespace DevoidEngine.Components
                 {
                     positions.RemoveAt(i);
                     validCells.RemoveAt(i);
+                    continue;
                 }
-                    
+
+                if (!bvh.ClosestPoint(
+                    position,
+                    out _,
+                    out float distanceSquared))
+                {
+                    positions.RemoveAt(i);
+                    validCells.RemoveAt(i);
+                    continue;
+                }
+
+                if (distanceSquared > MaxProbeDistance * MaxProbeDistance)
+                {
+                    positions.RemoveAt(i);
+                    validCells.RemoveAt(i);
+                    continue;
+                }
             }
 
             stopwatch.Stop();
@@ -182,6 +193,48 @@ namespace DevoidEngine.Components
             Console.WriteLine($"Generation time: {stopwatch.Elapsed.TotalMilliseconds:F3} ms");
         }
 
+        public void MarkAllGeometry()
+        {
+            for (int i = 0; i < gameObject.Scene.GameObjects.Count; i++)
+            {
+                GameObject obj = gameObject.Scene.GameObjects[i];
+                MeshRenderer? mr = obj.GetComponent<MeshRenderer>();
+                if (mr != null)
+                    mr.IsStatic = true;
+            }
+        }
+        void GenerateWorldExtents()
+        {
+            List<RenderMeshData> meshes = [];
+
+            gameObject.Scene.World.GetStaticMeshes(meshes);
+
+            if (meshes.Count == 0)
+                return;
+
+            BoundingBox worldBounds = BoundingBox.CreateEmptyBounds();
+
+            foreach (RenderMeshData mesh in meshes)
+            {
+                BoundingBox localBounds = mesh.render_mesh.LocalBounds;
+
+                BoundingBox.TransformAABB(
+                    localBounds.min,
+                    localBounds.max,
+                    mesh.render_transform,
+                    out Vector3 worldMin,
+                    out Vector3 worldMax);
+
+                BoundingBox transformedBounds =
+                    new(worldMin, worldMax);
+
+                worldBounds =
+                    BoundingBox.Union(worldBounds, transformedBounds);
+            }
+
+            Min = worldBounds.min;
+            Max = worldBounds.max;
+        }
         public void OnDrawGizmos(GizmoContext context)
         {
             if (Regenerate)
@@ -190,6 +243,17 @@ namespace DevoidEngine.Components
                 Regenerate = false;
             }
 
+            if (MarkAllGeometryStatic)
+            {
+                MarkAllGeometry();
+                MarkAllGeometryStatic = false;
+            }
+
+            if (GenerateExtents)
+            {
+                GenerateWorldExtents();
+                GenerateExtents = false;
+            }
 
 
             //foreach (var gameObject in gameObjects)
@@ -219,42 +283,21 @@ namespace DevoidEngine.Components
 
             context.DrawList.AddWireBox(Min, Max, GizmoMaterial);
 
-            for (int i = 0; i < validCells.Count; i++)
+            if (DrawGrid)
             {
-                (int x, int y, int z) = validCells[i];
-
-                Vector3 cellMin = new(
-                    gridMin.X + x * spacing,
-                    gridMin.Y + y * spacing,
-                    gridMin.Z + z * spacing
-                );
-
-                Vector3 cellMax = cellMin + new Vector3(spacing);
-
-                context.DrawList.AddWireBox(cellMin, cellMax, GizmoMaterialGrid);
-            }
-
-            if (ShowOctree)
-            {
-                switch (OctreeMode)
+                for (int i = 0; i < validCells.Count; i++)
                 {
-                    case OctreeDebugMode.Level:
-                        {
-                            int maxDepth = octree.GetMaxDepth();
-                            int level = Math.Clamp(OctreeLevel, 0, maxDepth);
+                    (int x, int y, int z) = validCells[i];
 
-                            octree.DrawGizmos(context, GizmoMaterialOctree, level);
+                    Vector3 cellMin = new(
+                        gridMin.X + x * spacing,
+                        gridMin.Y + y * spacing,
+                        gridMin.Z + z * spacing
+                    );
 
-                            break;
-                        }
+                    Vector3 cellMax = cellMin + new Vector3(spacing);
 
-                    case OctreeDebugMode.All:
-                        octree.DrawAllGizmos(context, GizmoMaterialOctree);
-                        break;
-
-                    case OctreeDebugMode.Leaves:
-                        octree.DrawLeafGizmos(context, GizmoMaterialOctree);
-                        break;
+                    context.DrawList.AddWireBox(cellMin, cellMax, GizmoMaterialGrid);
                 }
             }
         }
