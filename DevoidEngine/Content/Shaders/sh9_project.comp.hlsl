@@ -1,20 +1,18 @@
-TextureCube<float4> MAT_Skybox : register(t0);
+#include "./Common/SH9.hlsl"
 
-struct SH9
-{
-    float4 C[9];
-};
+TextureCube<float4> MAT_Cubemap : register(t0);
+SamplerState MAT_CubemapSampler : register(s0);
 
-RWTexture2DArray<float4> DebugCube : register(u1);
 
 RWStructuredBuffer<SH9> PartialSH : register(u0);
 groupshared float4 SharedSH[9][64];
 
 cbuffer Material : register(b5)
 {
-    float EnvironmentMapResolution;
+    float CubemapResolution;
     float3 padding;
 }
+
 
 float3 CubeDirection(uint face, float2 uv)
 {
@@ -35,25 +33,6 @@ float3 CubeDirection(uint face, float2 uv)
         default:
             return normalize(float3(uv.x, -uv.y, 1));  // -Z (flipped)
     }
-}
-
-void EvaluateSHBasis(float3 d, out float sh[9])
-{
-    float x = d.x;
-    float y = d.y;
-    float z = d.z;
-
-    sh[0] = 0.282095f;
-
-    sh[1] = 0.488603f * y;
-    sh[2] = 0.488603f * z;
-    sh[3] = 0.488603f * x;
-
-    sh[4] = 1.092548f * x * y;
-    sh[5] = 1.092548f * y * z;
-    sh[6] = 0.315392f * (3.0f * z * z - 1.0f);
-    sh[7] = 1.092548f * x * z;
-    sh[8] = 0.546274f * (x * x - y * y);
 }
 
 float AreaElement(float x, float y)
@@ -81,8 +60,6 @@ float TexelSolidAngle(uint2 pixel, uint resolution)
       + AreaElement(x1, y1);
 }
 
-SamplerState MAT_SkyboxSampler : register(s0);
-
 [numthreads(8, 8, 1)]
 void CSMain(
     uint3 DTid : SV_DispatchThreadID,
@@ -91,16 +68,16 @@ void CSMain(
 {
 
     
-    float2 uv = (float2(DTid.xy) + 0.5) / float(EnvironmentMapResolution);
+    float2 uv = (float2(DTid.xy) + 0.5) / float(CubemapResolution);
 
     float3 dir = CubeDirection(DTid.z, uv);
     
     float sh[9];
     EvaluateSHBasis(dir, sh);
 
-    float3 color = MAT_Skybox.SampleLevel(MAT_SkyboxSampler, dir, 0).rgb;
+    float3 color = MAT_Cubemap.SampleLevel(MAT_CubemapSampler, dir, 0).rgb;
     
-    float omega = TexelSolidAngle(DTid.xy, EnvironmentMapResolution);
+    float omega = TexelSolidAngle(DTid.xy, CubemapResolution);
 
     float4 coeff[9];
 
@@ -137,8 +114,8 @@ void CSMain(
     
     if (localIndex == 0)
     {
-        uint groupsX = EnvironmentMapResolution / 8;
-        uint groupsY = EnvironmentMapResolution / 8;
+        uint groupsX = CubemapResolution / 8;
+        uint groupsY = CubemapResolution / 8;
 
         uint groupIndex =
             Gid.z * groupsX * groupsY +

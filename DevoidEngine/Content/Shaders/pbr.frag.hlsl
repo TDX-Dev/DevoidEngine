@@ -234,6 +234,7 @@ float4 PSMain(PSInput input) : SV_TARGET
         ClearcoatRoughness
     );
 
-    float3 color = ambient * (ao) + (Lo + emission);
-    return float4(color, 1);
+    float3 color = (ambient) * (ao) + (Lo + emission);
+
+    return float4(color, 1.0);
 }

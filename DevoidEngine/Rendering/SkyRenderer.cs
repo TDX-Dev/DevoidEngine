@@ -82,6 +82,8 @@ namespace DevoidEngine.Rendering
 
         private CameraData ConversionCameraData;
 
+        readonly SH9Projector sh9Projector;
+
         public SkyRenderer()
         {
             CubeMesh = PrimitiveMeshes.GetInvertedUVCube();
@@ -95,6 +97,9 @@ namespace DevoidEngine.Rendering
                 render_mesh = CubeMesh,
                 //render_material = Sky.Material,
             };
+
+
+            sh9Projector = new SH9Projector(SkyResolution, 6);
 
             SkyboxTexture = Texture.CreateCube(SkyResolution, TextureFormat.RGBA16_Float, TextureUsage.RenderTarget | TextureUsage.ShaderResource, (int)(Math.Log2(SkyResolution) + 1));
 
@@ -275,14 +280,14 @@ namespace DevoidEngine.Rendering
 
         void ProjectToSH(ICommandList cmd)
         {
-            ProjectToSHMaterial.SetTexture("MAT_Skybox", SkyboxTexture);
+            ProjectToSHMaterial.SetTexture("MAT_Cubemap", SkyboxTexture);
 
             cmd.SetComputePipeline(ProjectToSHPipeline);
 
             ProjectToSHMaterial.DescriptorSet.SetRWTexture(1, DebugCube.GPU);
             ProjectToSHMaterial.DescriptorSet.SetRWShaderStorageBuffer(0, PartialSH.GPU);
 
-            ProjectToSHMaterial.SetFloat("EnvironmentMapResolution", SkyResolution);
+            ProjectToSHMaterial.SetFloat("CubemapResolution", SkyResolution);
 
             cmd.SetDescriptorSet(0, ProjectToSHMaterial.DescriptorSet);
 

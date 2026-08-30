@@ -37,7 +37,7 @@ struct ShadowData
 
 #include "./MathConstants.hlsl"
 #include "./PBRMethods.hlsl"
-#include "./Constants.hlsl"
+#include "./SH9.hlsl"
 
 
 cbuffer SceneData : register(b3)
@@ -48,12 +48,25 @@ cbuffer SceneData : register(b3)
     uint _padding;
 };
 
+cbuffer ProbeGIData : register(b6)
+{
+    float3 ProbeGridMin;
+    float ProbeSpacing;
+
+    uint ProbeResolutionX;
+    uint ProbeResolutionY;
+    uint ProbeResolutionZ;
+    uint ProbeCount;
+};
+
 StructuredBuffer<GPUPointLight> PointLights : register(t10);
 StructuredBuffer<GPUSpotLight> SpotLights : register(t11);
 StructuredBuffer<GPUDirectionalLight> DirectionalLights : register(t12);
 
 StructuredBuffer<ShadowData> ShadowBuffer : register(t13);
 StructuredBuffer<SH9> EnvironmentSH : register(t17);
+
+StructuredBuffer<DiffuseProbe> DiffuseProbes : register(t20);
 
 Texture2D ShadowAtlas : register(t9);
 SamplerState ShadowSampler : register(s9);

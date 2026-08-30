@@ -153,7 +153,7 @@ namespace Elemental
 
         private void SetupSandbox()
         {
-            const string relativePath = "CBox.scene";
+            const string relativePath = "PortalLevel.scene";
 
             Scene scene = Asset.Load<Scene>(relativePath, false)!;
 

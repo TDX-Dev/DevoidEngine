@@ -72,7 +72,7 @@ namespace DevoidEngine.Rendering
         public SkyRenderer SkyRenderer { get; private set; } = null!;
         public GizmoRenderer GizmoRenderer { get; private set; } = null!;
         public PostProcessor PostProcessor { get; private set; } = null!;
-        public ProbeGISystem ProbeGISystem { get; private set; } = null!;
+        public ProbeGISystem ProbeGI { get; private set; } = null!;
 
 
         public EnvironmentLighting Environment => SkyRenderer.Environment;
@@ -251,6 +251,16 @@ namespace DevoidEngine.Rendering
                     Binding = 19,
                     Stages = DevoidGPU.ShaderStage.Fragment,
                     Type = DescriptorType.Texture
+                },
+                new() {
+                    Binding = 20,
+                    Stages = DevoidGPU.ShaderStage.Fragment,
+                    Type = DescriptorType.StorageBuffer
+                },
+                new() {
+                    Binding = 6,
+                    Stages = DevoidGPU.ShaderStage.Fragment,
+                    Type = DescriptorType.UniformBuffer
                 }
             ]);
 
@@ -305,7 +315,7 @@ namespace DevoidEngine.Rendering
             GizmoRenderer.Initialize(Engine.GraphicsDevice, Engine.BasePath);
 
             PostProcessor = new PostProcessor();
-            ProbeGISystem = new ProbeGISystem();
+            ProbeGI = new ProbeGISystem();
 
             PostProcessor.AddPass(new TonemapPass());
             PostProcessor.AddPass(new BloomPass());
@@ -316,6 +326,11 @@ namespace DevoidEngine.Rendering
 
         public void Render(ICommandList cmd, Viewport viewport)
         {
+            //ProbeGI.Render(cmd);
+
+            //if (ProbeGI.HasProbes)
+            //    UpdateProbeGI();
+
             ViewportBlitTarget.SetColorAttachment(0, viewport.OutputTexture!);
 
             cmd.SetDescriptorSet(3, PerFrameDescriptor);
@@ -664,7 +679,6 @@ namespace DevoidEngine.Rendering
             PerCameraDescriptor.SetShaderStorageBuffer(11, SpotLightBuffer.GPU);
             PerCameraDescriptor.SetShaderStorageBuffer(12, DirectionalLightBuffer.GPU);
         }
-
         public MaterialInstance GetDefaultMaterial()
         {
             return new MaterialInstance(DefaultMaterial);

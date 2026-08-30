@@ -1,0 +1,24 @@
+﻿{
+  "$schema": "./dsdschema.json",
+  "Name": "Diffuse Probe Pack",
+
+  "DefaultPass": "Forward",
+
+  "MaterialParameters": {
+    "BufferName": "PackData"
+  },
+  "Passes": [
+    {
+      "Name": "Forward",
+      "MaterialBuffer": "PackData",
+      "Shaders": {
+        "CS": "../Shaders/diffuse_probe_pack.comp.hlsl"
+      },
+      "States": {
+        "Blend": "Off",
+        "Cull": "None",
+        "Depth": "LessEqual"
+      }
+    }
+  ]
+}

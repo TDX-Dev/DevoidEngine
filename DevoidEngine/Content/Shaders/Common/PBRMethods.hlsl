@@ -2,7 +2,7 @@
 #define PBR_METHODS
 
 #include "./MathConstants.hlsl"
-#include "./Constants.hlsl"
+#include "./SH9.hlsl"
 
 
 float DistributionGGX(float NoH, float perceptualRoughness)

@@ -1,19 +1,14 @@
-struct SH9
-{
-    float4 C[9];
-};
+#include "./Common/SH9.hlsl"
 
 StructuredBuffer<SH9> InputSH : register(t0);
 RWStructuredBuffer<SH9> OutputSH : register(u0);
-
-#include "./Common/MathConstants.hlsl"
 
 cbuffer ReduceData : register(b0)
 {
     uint InputCount;
     uint FinalPass;
-    uint Padding0;
-    uint Padding1;
+    uint OutputOffset;
+    uint Padding;
 }
 
 [numthreads(64, 1, 1)]
@@ -37,22 +32,21 @@ void CSMain(uint3 DTid : SV_DispatchThreadID)
             result.C[i] += InputSH[b].C[i];
         }
     }
-    
+
     if (FinalPass != 0)
     {
+        result.C[0] *= 1.0;
 
-        result.C[0] *= 1.0; // Band 0
+        result.C[1] *= 2.0 / 3.0;
+        result.C[2] *= 2.0 / 3.0;
+        result.C[3] *= 2.0 / 3.0;
 
-        result.C[1] *= (2.0 / 3.0); // Band 1
-        result.C[2] *= (2.0 / 3.0);
-        result.C[3] *= (2.0 / 3.0);
-
-        result.C[4] *= 0.25; // Band 2
+        result.C[4] *= 0.25;
         result.C[5] *= 0.25;
         result.C[6] *= 0.25;
         result.C[7] *= 0.25;
         result.C[8] *= 0.25;
     }
 
-    OutputSH[id] = result;
+    OutputSH[id + OutputOffset] = result;
 }

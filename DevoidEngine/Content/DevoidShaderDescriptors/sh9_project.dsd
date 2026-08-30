@@ -7,14 +7,9 @@
   },
   "Resources": [
     {
-      "Name": "MAT_Skybox",
+      "Name": "MAT_Cubemap",
       "Type": "TextureCube",
       "Kind": "SampledTexture"
-    },
-    {
-      "Name": "DebugOutput",
-      "Type": "TextureCube",
-      "Kind": "StorageTexture"
     }
   ],
   "Passes": [

@@ -3,244 +3,171 @@ using DevoidEngine.Gizmos;
 using DevoidEngine.Rendering;
 using DevoidEngine.Rendering.ProbeGI;
 using DevoidEngine.Util;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DevoidEngine.Components
 {
-
     public class ProbeGI : Component, IGizmoProviderComponent
     {
-        public override string Type => nameof(ProbeGI);
-        public override ComponentTickMode TickMode => ComponentTickMode.All;
+        public override string Type =>
+            nameof(ProbeGI);
 
-        GizmoMaterial GizmoMaterial = new();
-        GizmoMaterial GizmoMaterialGrid = new();
-        GizmoMaterial GizmoMaterialOctree = new();
+        public override ComponentTickMode TickMode =>
+            ComponentTickMode.All;
+
+        readonly GizmoMaterial gizmoMaterial = new();
+        readonly GizmoMaterial gridMaterial = new();
+        readonly GizmoMaterial octreeMaterial = new();
 
         public bool MarkAllGeometryStatic = false;
         public bool GenerateExtents = false;
-        public bool Regenerate = false;
+        public bool RebuildProbeLayout = false;
+        public bool BakeGI = false;
+
         public Vector3 Min;
         public Vector3 Max;
-        public float ProbeSpacing = 2f;
-        public float MaxProbeDistance = 4f;
-        public int MaxProbes = 2000;
+
+        public float ProbeSpacing = 2.0f;
+        public float MaxProbeDistance = 4.0f;
+        public int MaxProbes = 1500;
+        public int BounceCount = 3;
 
         public bool DrawGrid = false;
+        public bool DrawProbes = false;
 
-
-        private readonly List<SurfacePoint> subDividedPoints = [];
-        private readonly List<Vector3> positions = [];
-        private readonly List<(int x, int y, int z)> validCells = [];
-
-
-        private Vector3 gridMin;
-        private int xCount;
-        private int yCount;
-        private int zCount;
-        private float spacing;
+        ProbeGISystem ProbeGISystem => Engine.Renderer.ProbeGI;
 
         public ProbeGI()
         {
-            GizmoMaterial.Color = new Vector4(0, 1, 0, 1);
-            GizmoMaterialGrid.Color = new Vector4(0.5f, 0.5f, 0.5f, 1);
-            GizmoMaterialOctree.Color = new Vector4(0, 1, 1, 1);
+            gizmoMaterial.Color =
+                new Vector4(0, 1, 0, 1);
+
+            gridMaterial.Color =
+                new Vector4(0.5f, 0.5f, 0.5f, 1);
+
+            octreeMaterial.Color =
+                new Vector4(0, 1, 1, 1);
         }
 
         public override void OnStart()
         {
-            RegeneratePoints();
+            ApplyProbeSettings();
+
+            ProbeGISystem.RegenerateVisualPoints();
         }
 
-        public void RegeneratePoints()
+        void ApplyProbeSettings()
         {
-            subDividedPoints.Clear();
-            positions.Clear();
-            validCells.Clear();
+            ProbeGISystem.SetVolume(
+                Min,
+                Max);
 
-            if (ProbeSpacing <= 0 || MaxProbes <= 0)
+            ProbeGISystem.SetProbeParameters(
+                ProbeSpacing,
+                MaxProbeDistance,
+                MaxProbes);
+
+            ProbeGISystem.BounceCount =
+                BounceCount;
+        }
+
+        void GenerateWorldExtents()
+        {
+            List<RenderMeshData> meshes = [];
+            gameObject.Scene.World.GetStaticMeshes(meshes);
+            if (meshes.Count == 0)
                 return;
-
-            List<RenderMeshData> data_meshes = [];
-            gameObject.Scene.World.GetStaticMeshes(data_meshes);
-
-            Stopwatch stopwatch = Stopwatch.StartNew();
-
-            Vector3 boundsMin = Vector3.Min(Min, Max);
-            Vector3 boundsMax = Vector3.Max(Min, Max);
-
-            Vector3 size = boundsMax - boundsMin;
-
-            spacing = ProbeSpacing;
-
-            xCount = Math.Max(1, (int)MathF.Floor(size.X / spacing));
-            yCount = Math.Max(1, (int)MathF.Floor(size.Y / spacing));
-            zCount = Math.Max(1, (int)MathF.Floor(size.Z / spacing));
-
-            long totalProbes = (long)xCount * yCount * zCount;
-
-            if (totalProbes > MaxProbes)
+            BoundingBox worldBounds = BoundingBox.CreateEmptyBounds();
+            foreach (RenderMeshData mesh in meshes)
             {
-                float scale = MathF.Pow((float)totalProbes / MaxProbes, 1f / 3f);
-                spacing *= scale;
-
-                xCount = Math.Max(1, (int)MathF.Floor(size.X / spacing));
-                yCount = Math.Max(1, (int)MathF.Floor(size.Y / spacing));
-                zCount = Math.Max(1, (int)MathF.Floor(size.Z / spacing));
-
-                while ((long)xCount * yCount * zCount > MaxProbes)
-                {
-                    spacing *= 1.001f;
-
-                    xCount = Math.Max(1, (int)MathF.Floor(size.X / spacing));
-                    yCount = Math.Max(1, (int)MathF.Floor(size.Y / spacing));
-                    zCount = Math.Max(1, (int)MathF.Floor(size.Z / spacing));
-                }
+                BoundingBox localBounds = mesh.render_mesh.LocalBounds;
+                BoundingBox.TransformAABB(localBounds.min, localBounds.max, mesh.render_transform, out Vector3 worldMin, out Vector3 worldMax);
+                BoundingBox transformedBounds = new(worldMin, worldMax); worldBounds = BoundingBox.Union(worldBounds, transformedBounds);
             }
+            Min = worldBounds.min;
+            Max = worldBounds.max;
+        }
 
-            Vector3 gridSize = new(
-                xCount * spacing,
-                yCount * spacing,
-                zCount * spacing);
+        public void MarkAllGeometry() 
+        { 
+            for (int i = 0; i < gameObject.Scene.GameObjects.Count; i++) 
+            { 
+                GameObject obj = gameObject.Scene.GameObjects[i]; 
+                MeshRenderer? meshRenderer = obj.GetComponent<MeshRenderer>(); 
+                if (meshRenderer != null) 
+                    meshRenderer.IsStatic = true; 
+            } 
+        }
 
-            Vector3 offset = (size - gridSize) * 0.5f;
-
-            gridMin = boundsMin + offset;
-
-            positions.Capacity = Math.Min(MaxProbes, (int)((long)xCount * yCount * zCount));
-
-            for (int z = 0; z < zCount; z++)
-            {
-                for (int y = 0; y < yCount; y++)
-                {
-                    for (int x = 0; x < xCount; x++)
-                    {
-                        Vector3 position = new(
-                            gridMin.X + (x + 0.5f) * spacing,
-                            gridMin.Y + (y + 0.5f) * spacing,
-                            gridMin.Z + (z + 0.5f) * spacing);
-
-                        positions.Add(position);
-                        validCells.Add((x, y, z));
-                    }
-                }
-            }
+        public void Bake()
+        {
+            ApplyProbeSettings();
 
             BVH? bvh = gameObject.Scene.World.StaticBVH;
 
             if (bvh == null)
                 return;
 
+            ProbeGISystem.Bake(gameObject.Scene.World);
 
-            int beforeCount = positions.Count;
-
-            for (int i = positions.Count - 1; i >= 0; i--)
-            {
-                Vector3 position = positions[i];
-
-
-                int insideVotes = 0;
-
-                for (int j = 0; j < ProbeGISystem.ProbeDirections.Length; j++)
-                {
-                    int intersections = bvh.CountIntersections(
-                        position,
-                        ProbeGISystem.ProbeDirections[j],
-                        10000.0f);
-
-                    if ((intersections & 1) != 0)
-                        insideVotes++;
-                }
-
-                if (insideVotes < 4)
-                {
-                    positions.RemoveAt(i);
-                    validCells.RemoveAt(i);
-                    continue;
-                }
-
-                if (!bvh.ClosestPoint(
-                    position,
-                    out _,
-                    out float distanceSquared))
-                {
-                    positions.RemoveAt(i);
-                    validCells.RemoveAt(i);
-                    continue;
-                }
-
-                if (distanceSquared > MaxProbeDistance * MaxProbeDistance)
-                {
-                    positions.RemoveAt(i);
-                    validCells.RemoveAt(i);
-                    continue;
-                }
-            }
-
-            stopwatch.Stop();
-
-            Console.WriteLine($"Input points: {beforeCount}");
-            Console.WriteLine($"Output points: {positions.Count}");
-            Console.WriteLine($"Eliminated points: {beforeCount - positions.Count}");
-            Console.WriteLine($"Grid: {xCount} x {yCount} x {zCount}");
-            Console.WriteLine($"Probe spacing: {spacing:F3}");
-            Console.WriteLine($"Generation time: {stopwatch.Elapsed.TotalMilliseconds:F3} ms");
+            ProbeGISystem.Upload();
         }
 
-        public void MarkAllGeometry()
+        public void BuildProbeLayout()
         {
-            for (int i = 0; i < gameObject.Scene.GameObjects.Count; i++)
+            BVH? bvh =
+                    gameObject.Scene.World.StaticBVH;
+
+            if (bvh != null)
             {
-                GameObject obj = gameObject.Scene.GameObjects[i];
-                MeshRenderer? mr = obj.GetComponent<MeshRenderer>();
-                if (mr != null)
-                    mr.IsStatic = true;
+                ApplyProbeSettings();
+
+                ProbeGISystem.Regenerate(bvh);
+
+                ProbeGISystem.RegenerateVisualPoints();
             }
         }
-        void GenerateWorldExtents()
+
+        void DrawProbesGizmo(GizmoContext context)
         {
-            List<RenderMeshData> meshes = [];
+            if (!DrawProbes)
+                return;
+            ProbeGISystem.DrawProbes(
+                context,
+                gridMaterial);
+        }
 
-            gameObject.Scene.World.GetStaticMeshes(meshes);
-
-            if (meshes.Count == 0)
+        void DrawGridGizmo(GizmoContext context)
+        {
+            if (!DrawGrid)
                 return;
 
-            BoundingBox worldBounds = BoundingBox.CreateEmptyBounds();
-
-            foreach (RenderMeshData mesh in meshes)
-            {
-                BoundingBox localBounds = mesh.render_mesh.LocalBounds;
-
-                BoundingBox.TransformAABB(
-                    localBounds.min,
-                    localBounds.max,
-                    mesh.render_transform,
-                    out Vector3 worldMin,
-                    out Vector3 worldMax);
-
-                BoundingBox transformedBounds =
-                    new(worldMin, worldMax);
-
-                worldBounds =
-                    BoundingBox.Union(worldBounds, transformedBounds);
-            }
-
-            Min = worldBounds.min;
-            Max = worldBounds.max;
+            ProbeGISystem.DrawGrid(
+                context,
+                gridMaterial);
         }
+
         public void OnDrawGizmos(GizmoContext context)
         {
-            if (Regenerate)
+            if (Engine.Instance.FrameCount == 1)
             {
-                RegeneratePoints();
-                Regenerate = false;
+                GenerateWorldExtents();
+                //Min = new Vector3(-1.3f, 14.2f, -1.8f);
+                //Max = new Vector3(1.8f, 15.4f, 1.3f);
+                BuildProbeLayout();
+                Bake();
+            }
+
+            if (RebuildProbeLayout)
+            {
+                BuildProbeLayout();
+                RebuildProbeLayout = false;
+            }
+
+            if (BakeGI)
+            {
+                Bake();
+                BakeGI = false;
             }
 
             if (MarkAllGeometryStatic)
@@ -255,51 +182,11 @@ namespace DevoidEngine.Components
                 GenerateExtents = false;
             }
 
-
-            //foreach (var gameObject in gameObjects)
-            //{
-            //    foreach (var component in gameObject.Components)
-            //    {
-            //        if (component is MeshRenderer mr)
-            //        {
-            //            if (mr.mesh == null)
-            //                continue;
-
-            //            for (int i = 0; i < mr.mesh.Positions!.Length; i++)
-            //            {
-            //                Vector3 position = Vector3.Transform(mr.mesh.Positions![i], mr.gameObject.Transform.WorldMatrix);
-            //                context.DrawList.AddCircle(position, 0.5f, Vector3.UnitY, GizmoMaterial);
-
-            //            }
-
-            //        }
-            //    }
-            //}
-
-            for (int i = 0; i < positions.Count; i++)
-            {
-                context.DrawList.AddCircle(positions[i], 0.5f, Vector3.UnitY, GizmoMaterialGrid);
-            }
-
-            context.DrawList.AddWireBox(Min, Max, GizmoMaterial);
-
             if (DrawGrid)
-            {
-                for (int i = 0; i < validCells.Count; i++)
-                {
-                    (int x, int y, int z) = validCells[i];
+                context.DrawList.AddWireBox(Min, Max, gizmoMaterial);
 
-                    Vector3 cellMin = new(
-                        gridMin.X + x * spacing,
-                        gridMin.Y + y * spacing,
-                        gridMin.Z + z * spacing
-                    );
-
-                    Vector3 cellMax = cellMin + new Vector3(spacing);
-
-                    context.DrawList.AddWireBox(cellMin, cellMax, GizmoMaterialGrid);
-                }
-            }
+            DrawProbesGizmo(context);
+            DrawGridGizmo(context);
         }
     }
 }

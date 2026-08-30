@@ -233,6 +233,15 @@ dotnet_naming_style.begins_with_i.required_suffix =
 dotnet_naming_style.begins_with_i.word_separator = 
 dotnet_naming_style.begins_with_i.capitalization = pascal_case
 
+# Keep object initializers compact
+csharp_new_line_before_members_in_object_initializers = false
+
+# Keep anonymous types compact
+csharp_new_line_before_members_in_anonymous_types = false
+
+# Allman braces
+csharp_new_line_before_open_brace = all
+
 
 # # Field naming rule
 
