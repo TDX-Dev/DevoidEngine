@@ -228,16 +228,15 @@ namespace DevoidEngine.Rendering.ProbeGI
             return Vector3.Dot(direction, normal) > 0.0f;
         }
         public List<ProbeInfo> RunProbeRelocation(
-            ProbeGISettings settings,
-            BVH bvh,
-            int iterations = 8)
+    ProbeGISettings settings,
+    BVH bvh,
+    int iterations = 24)
         {
             int countX = (int)settings.ProbeCount.X;
             int countY = (int)settings.ProbeCount.Y;
             int countZ = (int)settings.ProbeCount.Z;
 
             int probeCount = countX * countY * countZ;
-
             int traceResolution = (int)settings.ProbeTraceResolution;
 
             List<ProbeInfo> probeInfo = new(probeCount);
@@ -251,8 +250,7 @@ namespace DevoidEngine.Rendering.ProbeGI
                 });
             }
 
-            ProbeInfo[] nextProbeInfo =
-                new ProbeInfo[probeCount];
+            ProbeInfo[] nextProbeInfo = new ProbeInfo[probeCount];
 
             for (int iteration = 0; iteration < iterations; iteration++)
             {
@@ -276,6 +274,8 @@ namespace DevoidEngine.Rendering.ProbeGI
                                     z,
                                     current.Offset);
 
+                            const float SomeLargeValue = 10000.0f;
+
                             Vector3 averageHitOffset =
                                 Vector3.Zero;
 
@@ -283,30 +283,31 @@ namespace DevoidEngine.Rendering.ProbeGI
                                 Vector3.Zero;
 
                             float closestBackfaceDistance =
-                                10000.0f;
+                                SomeLargeValue;
 
                             float closestFrontfaceDistance =
-                                10000.0f;
+                                SomeLargeValue;
 
                             Vector3 closestBackfaceDirection =
                                 Vector3.Zero;
 
                             int backfaceCount = 0;
-                            int hitCount = 0;
 
-                            for (int py = 0; py < traceResolution; py++)
+                            for (int py = 0;
+                                 py < traceResolution;
+                                 py++)
                             {
-                                for (int px = 0; px < traceResolution; px++)
+                                for (int px = 0;
+                                     px < traceResolution;
+                                     px++)
                                 {
                                     Vector2 uv =
                                         new(
-                                            (px + 0.5f) /
-                                            traceResolution,
+                                            (px + 0.5f) / traceResolution,
+                                            (py + 0.5f) / traceResolution);
 
-                                            (py + 0.5f) /
-                                            traceResolution);
-
-                                    Vector3 rayDirection = OctahedralDirection(uv);
+                                    Vector3 rayDirection =
+                                        OctahedralDirection(uv);
 
                                     AccumulateRelocationRay(
                                         bvh,
@@ -318,15 +319,12 @@ namespace DevoidEngine.Rendering.ProbeGI
                                         ref closestBackfaceDistance,
                                         ref closestBackfaceDirection,
                                         ref closestFrontfaceDistance,
-                                        ref backfaceCount,
-                                        ref hitCount
-                                    );
+                                        ref backfaceCount);
                                 }
                             }
 
                             averageHitOffset /=
-                                traceResolution *
-                                traceResolution;
+                                traceResolution * traceResolution;
 
                             if (backfaceCount > 0)
                             {
@@ -334,6 +332,8 @@ namespace DevoidEngine.Rendering.ProbeGI
                                     backfaceCount;
                             }
 
+                            // Timberdoodle calculates the spring from the
+                            // previous iteration's probe-info snapshot.
                             Vector3 springForce =
                                 CalculateSpringForce(
                                     x,
@@ -341,6 +341,11 @@ namespace DevoidEngine.Rendering.ProbeGI
                                     z,
                                     settings,
                                     probeInfo);
+
+                            // IMPORTANT:
+                            // Timberdoodle increments validity BEFORE calculating
+                            // relocation forces.
+                            current.Validity += 0.05f;
 
                             Vector3 adjustment =
                                 CalculateRelocationAdjustment(
@@ -351,31 +356,20 @@ namespace DevoidEngine.Rendering.ProbeGI
                                     closestFrontfaceDistance,
                                     backfaceCount,
                                     springForce,
-                                    current.Validity,
-                                    true);
+                                    current.Validity);
 
-                            float validity =
-                                MathF.Min(
-                                    1.0f,
-                                    current.Validity + 0.05f);
-
-                            //Console.WriteLine(
-                            //    $"Probe {index}: " +
-                            //    $"hits={hitCount}, " +
-                            //    $"backfaces={backfaceCount}, " +
-                            //    $"front={closestFrontfaceDistance:F3}, " +
-                            //    $"back={closestBackfaceDistance:F3}, " +
-                            //    $"avg={averageHitOffset}, " +
-                            //    $"spring={springForce}"
-                            //);
-
-                            if (closestBackfaceDistance != 10000.0f ||
+                            // Invalidate probes that are either too close to a
+                            // surface or see backfaces.
+                            if (closestBackfaceDistance != SomeLargeValue ||
                                 closestFrontfaceDistance <
                                 AcceptableSurfaceDistance)
                             {
-                                validity = 0.0f;
+                                current.Validity = 0.0f;
                             }
 
+                            // Border probes don't converge in position.
+                            // Timberdoodle still allows the calculated adjustment
+                            // to exist here, but the probe is invalidated.
                             bool isBorderProbe =
                                 x == 0 ||
                                 y == 0 ||
@@ -386,8 +380,7 @@ namespace DevoidEngine.Rendering.ProbeGI
 
                             if (isBorderProbe)
                             {
-                                validity = 0.0f;
-                                adjustment = Vector3.Zero;
+                                current.Validity = 0.0f;
                             }
 
                             Vector3 newOffset =
@@ -402,12 +395,14 @@ namespace DevoidEngine.Rendering.ProbeGI
                                 new ProbeInfo
                                 {
                                     Offset = newOffset,
-                                    Validity = validity
+                                    Validity = current.Validity
                                 };
                         }
                     }
                 }
 
+                // Equivalent to the next-frame / probe_info_copy separation
+                // used by Timberdoodle.
                 for (int i = 0; i < probeCount; i++)
                 {
                     probeInfo[i] = nextProbeInfo[i];
@@ -418,57 +413,87 @@ namespace DevoidEngine.Rendering.ProbeGI
         }
 
         void AccumulateRelocationRay(
-            BVH bvh, 
-            Vector3 probePosition, 
-            Vector3 rayDirection, 
-            ProbeGISettings settings, 
-            ref Vector3 averageHitOffset,
-            ref Vector3 averageBackfaceHitOffset,
-            ref float closestBackfaceDistance,
-            ref Vector3 closestBackfaceDirection,
-            ref float closestFrontfaceDistance,
-            ref int backfaceCount,
-            ref int hitCount
-        )
+    BVH bvh,
+    Vector3 probePosition,
+    Vector3 rayDirection,
+    ProbeGISettings settings,
+    ref Vector3 averageHitOffset,
+    ref Vector3 averageBackfaceHitOffset,
+    ref float closestBackfaceDistance,
+    ref Vector3 closestBackfaceDirection,
+    ref float closestFrontfaceDistance,
+    ref int backfaceCount)
         {
-            //const float SomeLargeValue = 10000.0f;
-            const float ProbeViewDistance = 1.0f;
-            const float BackfaceEscapeRange = 0.9f;
-
-            if (!bvh.Raycast(probePosition, rayDirection, settings.MaxVisibilityDistance, out float distance, out _, out Vector3 normal))
+            if (!bvh.Raycast(
+                probePosition,
+                rayDirection,
+                settings.MaxVisibilityDistance,
+                out float distance,
+                out _,
+                out Vector3 normal))
             {
                 return;
             }
-            hitCount++;
 
-            bool isBackface = Vector3.Dot(rayDirection, normal) > 0.0f;
+            bool isBackface =
+                Vector3.Dot(rayDirection, normal) > 0.0f;
 
-            Vector3 probeSpaceHit = distance * rayDirection * settings.ProbeSpacingRCP;
+            // Timberdoodle:
+            //
+            // trace_distance * ray_dir * probe_spacing_rcp
+            //
+            // This is explicitly probe-space.
+            Vector3 probeSpaceHit =
+                distance *
+                rayDirection *
+                settings.ProbeSpacingRCP;
 
-            float probeSpaceDistance = MathF.Min(ProbeViewDistance, probeSpaceHit.Length());
+            float probeSpaceDistance =
+                MathF.Min(
+                    ProbeViewDistance,
+                    probeSpaceHit.Length());
 
-            Vector3 probeSpaceDirection = Vector3.Normalize(rayDirection * settings.ProbeSpacingRCP);
+            Vector3 probeSpaceDirection =
+                Vector3.Normalize(
+                    rayDirection *
+                    settings.ProbeSpacingRCP);
 
-            averageHitOffset += probeSpaceDirection * MathF.Max(0.5f, probeSpaceDistance);
+            // Average of hit points gives the estimated freedom direction.
+            averageHitOffset +=
+                probeSpaceDirection *
+                MathF.Max(
+                    0.5f,
+                    probeSpaceDistance);
 
             if (isBackface)
             {
-                if (probeSpaceDistance < BackfaceEscapeRange)
+                // Only move out probes that are close to a surface.
+                if (probeSpaceDistance <
+                    BackfaceEscapeRange)
                 {
-                    if (probeSpaceDistance < closestBackfaceDistance)
+                    if (probeSpaceDistance <
+                        closestBackfaceDistance)
                     {
-                        closestBackfaceDistance = probeSpaceDistance;
-                        closestBackfaceDirection = probeSpaceDirection;
+                        closestBackfaceDistance =
+                            probeSpaceDistance;
+
+                        closestBackfaceDirection =
+                            probeSpaceDirection;
                     }
 
-                    averageBackfaceHitOffset += probeSpaceDirection * probeSpaceDistance;
+                    averageBackfaceHitOffset +=
+                        probeSpaceDirection *
+                        probeSpaceDistance;
 
                     backfaceCount++;
                 }
             }
             else
             {
-                closestFrontfaceDistance = MathF.Min(closestFrontfaceDistance, probeSpaceDistance);
+                closestFrontfaceDistance =
+                    MathF.Min(
+                        closestFrontfaceDistance,
+                        probeSpaceDistance);
             }
         }
 
@@ -521,27 +546,29 @@ namespace DevoidEngine.Rendering.ProbeGI
         }
 
         Vector3 CalculateRelocationAdjustment(
-            int traceResolution,
-            Vector3 averageHitOffset,
-            float closestBackfaceDistance,
-            Vector3 closestBackfaceDirection,
-            float closestFrontfaceDistance,
-            int backfaceCount,
-            Vector3 springForce,
-            float validity,
-            bool springEnabled
-        )
+    int traceResolution,
+    Vector3 averageHitOffset,
+    float closestBackfaceDistance,
+    Vector3 closestBackfaceDirection,
+    float closestFrontfaceDistance,
+    int backfaceCount,
+    Vector3 springForce,
+    float validity)
         {
             const float SomeLargeValue = 10000.0f;
 
+            // Calculate backface attraction.
             bool tooFewBackfaceHits =
                 backfaceCount <
                 MathF.Ceiling(traceResolution * 0.1f);
 
             if (tooFewBackfaceHits)
             {
-                closestBackfaceDistance = SomeLargeValue;
-                closestBackfaceDirection = Vector3.Zero;
+                closestBackfaceDistance =
+                    SomeLargeValue;
+
+                closestBackfaceDirection =
+                    Vector3.Zero;
             }
 
             float backfaceEscapeDistance =
@@ -550,6 +577,11 @@ namespace DevoidEngine.Rendering.ProbeGI
                     : closestBackfaceDistance +
                       AcceptableSurfaceDistance * 0.5f;
 
+            float backfaceEscapePower =
+                backfaceEscapeDistance /
+                BackfaceEscapeRange;
+
+            // Calculate frontface attraction / repulsion.
             Vector3 estimatedFreedomDirection =
                 averageHitOffset.LengthSquared() > 1e-12f
                     ? Vector3.Normalize(averageHitOffset)
@@ -572,11 +604,11 @@ namespace DevoidEngine.Rendering.ProbeGI
                     DesiredRelativeDistance;
             }
 
+            // Calculate probe grid spring attraction / repulsion.
             float springForceDistance = 0.0f;
             Vector3 springForceDirection = Vector3.Zero;
 
-            if (backfaceEscapeDistance == 0.0f &&
-                springEnabled)
+            if (backfaceEscapeDistance == 0.0f)
             {
                 springForceDistance =
                     springForce.Length();
@@ -588,13 +620,22 @@ namespace DevoidEngine.Rendering.ProbeGI
                 {
                     springForceDirection =
                         Vector3.Normalize(springForce);
+                }
 
+                // Prevent spring force from moving the probe toward geometry.
+                if (springForceDistance > 0.001f)
+                {
                     Vector3 towardsGeometryDirection =
                         -estimatedFreedomDirection;
 
                     float projected =
-                        MathF.Max(0.0f, Vector3.Dot(towardsGeometryDirection, springForceDirection));
+                        MathF.Max(
+                            0.0f,
+                            Vector3.Dot(
+                                towardsGeometryDirection,
+                                springForceDirection));
 
+                    // Deflect the spring force away from geometry.
                     springForceDirection -=
                         projected *
                         towardsGeometryDirection;
@@ -603,12 +644,16 @@ namespace DevoidEngine.Rendering.ProbeGI
                         1e-12f)
                     {
                         springForceDirection =
-                            Vector3.Normalize(springForceDirection);
+                            Vector3.Normalize(
+                                springForceDirection);
                     }
                     else
                     {
-                        springForceDirection = Vector3.Zero;
-                        springForceDistance = 0.0f;
+                        springForceDirection =
+                            Vector3.Zero;
+
+                        springForceDistance =
+                            0.0f;
                     }
 
                     springForceDistance *=
@@ -616,6 +661,8 @@ namespace DevoidEngine.Rendering.ProbeGI
                 }
             }
 
+            // IMPORTANT:
+            // Timberdoodle checks validity AFTER adding 0.05.
             if (validity >= 1.0f)
             {
                 backfaceEscapeDistance = 0.0f;
