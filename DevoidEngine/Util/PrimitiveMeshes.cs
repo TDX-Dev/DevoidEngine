@@ -14,6 +14,7 @@ namespace DevoidEngine.Util
         private static Mesh? fullscreenMesh;
         private static Mesh? uvsphereMesh;
         private static Mesh? cylinderMesh;
+        private static Mesh? icoSphere;
 
 
         public static Mesh GetQuad()
@@ -55,6 +56,11 @@ namespace DevoidEngine.Util
         {
             uvsphereMesh ??= CreateSphere();
             return uvsphereMesh;
+        }
+        public static Mesh GetIcoSphere()
+        {
+            icoSphere ??= CreateIcosphere();
+            return icoSphere;
         }
         public static Mesh GetCylinder()
         {
@@ -732,12 +738,7 @@ namespace DevoidEngine.Util
 
             return mesh;
         }
-        public static Mesh CreateCylinder(
-            float radius = 0.5f,
-            float height = 1.0f,
-            int slices = 32,
-            int stacks = 1
-        )
+        public static Mesh CreateCylinder(float radius = 0.5f, float height = 1.0f, int slices = 32, int stacks = 1)
         {
             Mesh mesh = new();
 
@@ -865,7 +866,6 @@ namespace DevoidEngine.Util
 
             return mesh;
         }
-
         public static Mesh CreateCircle(int segments = 16)
         {
             Mesh mesh = new();
@@ -918,6 +918,140 @@ namespace DevoidEngine.Util
             mesh.UVs = uvs;
             mesh.Normals = normals;
             mesh.Indices = indices;
+
+            mesh.Upload();
+
+            return mesh;
+        }
+        public static Mesh CreateIcosphere(int subdivisions = 2, float radius = 0.5f)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(subdivisions);
+
+            Mesh mesh = new();
+
+            float t = (1.0f + MathF.Sqrt(5.0f)) / 2.0f;
+
+            List<Vector3> positions =
+            [
+                new(-1,  t,  0),
+                new( 1,  t,  0),
+                new(-1, -t,  0),
+                new( 1, -t,  0),
+
+                new( 0, -1,  t),
+                new( 0,  1,  t),
+                new( 0, -1, -t),
+                new( 0,  1, -t),
+
+                new( t,  0, -1),
+                new( t,  0,  1),
+                new(-t,  0, -1),
+                new(-t,  0,  1)
+            ];
+
+            for (int i = 0; i < positions.Count; i++)
+                positions[i] = Vector3.Normalize(positions[i]) * radius;
+
+            List<uint> indices =
+            [
+                0, 11, 5,
+                0, 5, 1,
+                0, 1, 7,
+                0, 7, 10,
+                0, 10, 11,
+
+                1, 5, 9,
+                5, 11, 4,
+                11, 10, 2,
+                10, 7, 6,
+                7, 1, 8,
+
+                3, 9, 4,
+                3, 4, 2,
+                3, 2, 6,
+                3, 6, 8,
+                3, 8, 9,
+
+                4, 9, 5,
+                2, 4, 11,
+                6, 2, 10,
+                8, 6, 7,
+                9, 8, 1
+            ];
+
+            for (int subdivision = 0; subdivision < subdivisions; subdivision++)
+            {
+                Dictionary<(int, int), uint> midpointCache = [];
+                List<uint> newIndices = new(indices.Count * 4);
+
+                uint GetMidpoint(int a, int b)
+                {
+                    int min = Math.Min(a, b);
+                    int max = Math.Max(a, b);
+                    var key = (min, max);
+
+                    if (midpointCache.TryGetValue(key, out uint index))
+                        return index;
+
+                    Vector3 midpoint = Vector3.Normalize(
+                        (positions[a] + positions[b]) * 0.5f) * radius;
+
+                    index = (uint)positions.Count;
+                    positions.Add(midpoint);
+                    midpointCache[key] = index;
+
+                    return index;
+                }
+
+                for (int i = 0; i < indices.Count; i += 3)
+                {
+                    uint a = indices[i];
+                    uint b = indices[i + 1];
+                    uint c = indices[i + 2];
+
+                    uint ab = GetMidpoint((int)a, (int)b);
+                    uint bc = GetMidpoint((int)b, (int)c);
+                    uint ca = GetMidpoint((int)c, (int)a);
+
+                    newIndices.Add(a);
+                    newIndices.Add(ab);
+                    newIndices.Add(ca);
+
+                    newIndices.Add(b);
+                    newIndices.Add(bc);
+                    newIndices.Add(ab);
+
+                    newIndices.Add(c);
+                    newIndices.Add(ca);
+                    newIndices.Add(bc);
+
+                    newIndices.Add(ab);
+                    newIndices.Add(bc);
+                    newIndices.Add(ca);
+                }
+
+                indices = newIndices;
+            }
+
+            List<Vector3> normals = new(positions.Count);
+            List<Vector2> uvs = new(positions.Count);
+
+            foreach (Vector3 position in positions)
+            {
+                Vector3 normal = Vector3.Normalize(position);
+
+                normals.Add(normal);
+
+                float u = 0.5f + MathF.Atan2(normal.Z, normal.X) / (2.0f * MathF.PI);
+                float v = 0.5f - MathF.Asin(normal.Y) / MathF.PI;
+
+                uvs.Add(new Vector2(u, v));
+            }
+
+            mesh.Positions = [.. positions];
+            mesh.Normals = [.. normals];
+            mesh.UVs = [.. uvs];
+            mesh.Indices = [.. indices];
 
             mesh.Upload();
 

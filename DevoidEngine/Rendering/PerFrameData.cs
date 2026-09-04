@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DevoidEngine.Rendering.ProbeGI;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -13,5 +14,6 @@ namespace DevoidEngine.Rendering
     {
         public int FrameIndex;
         public Vector3 _padding;
+        public ProbeGISettings ProbeGISettings;
     }
 }

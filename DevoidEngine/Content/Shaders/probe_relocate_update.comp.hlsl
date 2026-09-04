@@ -1,0 +1,52 @@
+#include "./Common/SH9.hlsl"
+
+StructuredBuffer<SH9> InputSH : register(t0);
+RWStructuredBuffer<SH9> OutputSH : register(u0);
+
+cbuffer ReduceData : register(b0)
+{
+    uint InputCount;
+    uint FinalPass;
+    uint OutputOffset;
+    uint Padding;
+}
+
+[numthreads(64, 1, 1)]
+void CSMain(uint3 DTid : SV_DispatchThreadID)
+{
+    uint id = DTid.x;
+
+    uint a = id * 2;
+    uint b = a + 1;
+
+    if (a >= InputCount)
+        return;
+
+    SH9 result = InputSH[a];
+
+    if (b < InputCount)
+    {
+        [unroll]
+        for (uint i = 0; i < 9; i++)
+        {
+            result.C[i] += InputSH[b].C[i];
+        }
+    }
+
+    if (FinalPass != 0)
+    {
+        result.C[0] *= 1.0;
+
+        result.C[1] *= 2.0 / 3.0;
+        result.C[2] *= 2.0 / 3.0;
+        result.C[3] *= 2.0 / 3.0;
+
+        result.C[4] *= 0.25;
+        result.C[5] *= 0.25;
+        result.C[6] *= 0.25;
+        result.C[7] *= 0.25;
+        result.C[8] *= 0.25;
+    }
+
+    OutputSH[id + OutputOffset] = result;
+}

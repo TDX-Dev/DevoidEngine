@@ -245,10 +245,7 @@ namespace DevoidEngine.Core
             layerManager.RenderLayers(cmd);
             Engine.Instance.SceneTree.RenderScenes();
 
-            Engine.Renderer.UpdatePerFrameData(new PerFrameData()
-            {
-                FrameIndex = (int)Engine.Instance.FrameCount
-            });
+            Engine.Renderer.PrepareGlobalFrame(cmd);
             Engine.Instance.ViewportManager.RenderAll(cmd);
 
             layerManager.PostRenderLayers(cmd);

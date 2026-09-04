@@ -15,7 +15,6 @@
 
         void Update(ReadOnlySpan<byte> data);
 
-        void Update<T>(ReadOnlySpan<T> data)
-            where T : unmanaged;
+        void Update<T>(ReadOnlySpan<T> data) where T : unmanaged;
     }
 }

@@ -22,5 +22,16 @@
 
         // Add Formats at the end due to serialization logic
         RG8_UNorm,
+        R32_UInt,
+
+        R8_SInt,
+        R16_SInt,
+        R32_SInt,
+        RG8_SInt,
+        RG16_SInt,
+        RG32_SInt,
+        RGBA8_SInt,
+        RGBA16_SInt,
+        RGBA32_SInt,
     }
 }

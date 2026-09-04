@@ -146,6 +146,23 @@ namespace DevoidEngine.Core
 
         }
 
+        public void DrawInstanced(ICommandList cmd, int instanceCount)
+        {
+            if (VB == null)
+                return;
+
+            cmd.SetVertexBuffer(VB.GPU);
+            if (IB != null)
+            {
+                cmd.SetIndexBuffer(IB.GPU);
+                cmd.DrawInstancedIndexed(IB.Count, instanceCount, 0, 0, 0);
+            }
+            else
+            {
+                Console.WriteLine("Requested mesh does not have index buffer for instanced drawing");
+            }
+        }
+
         public override void Dispose()
         {
             VB?.Dispose();

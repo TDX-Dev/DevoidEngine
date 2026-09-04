@@ -21,32 +21,22 @@ SamplerState PointSampler
     AddressV = Clamp;
 };
 
-#define DirectionCount 1
-#define SampleCount    8
-#define SectorCount    32
+#define SliceCount 3
+#define StepsPerSlice 3
 
-static const float VBAOThickness = 0.7;
-static const float VBAORadius = 2;
-static const float RadiusSq = VBAORadius * VBAORadius;
+static const float GTAORadius = 1.0;
+static const float GTAOFalloffRange = 0.5;
+static const float GTAOSampleDistributionPower = 2.0;
+static const float GTAOThinOccluderCompensation = 0.0;
 
-#define ACOS_QUALITY_MODE 1
+static const float PixelTooCloseThreshold = 1.3;
+
+static const float RadiusSq = GTAORadius * GTAORadius;
 
 float ACosPoly(float x)
 {
-#if ACOS_QUALITY_MODE == 1
     return 1.5707963267948966
          - 0.1565827644218014 * x;
-#else
-    return 1.5707963267948966
-         + (-0.20491203466059038
-         + 0.04832927023878897 * x) * x;
-#endif
-}
-
-float ACos01_Approx(float x)
-{
-    x = saturate(x);
-    return ACosPoly(x) * sqrt(1.0 - x);
 }
 
 float ACos_Approx(float x)
@@ -59,252 +49,456 @@ float ACos_Approx(float x)
     return x >= 0.0 ? u : PI - u;
 }
 
-float3 ReconstructViewPosition(float2 uv, float depth)
-{
-    float4 ndc;
-    ndc.x = uv.x * 2.0 - 1.0;
-    ndc.y = 1.0 - uv.y * 2.0;
-    ndc.z = depth;
-    ndc.w = 1.0;
+/*
+    DepthTexture contains positive linear view-space depth:
 
-    float4 view = mul(InverseProjection, ndc);
-    return view.xyz / view.w;
+        viewPos.z = -3
+        viewDepth = 3
+
+    Therefore the reconstructed view-space position is:
+
+        x = ndc.x * depth / P00
+        y = ndc.y * depth / P11
+        z = -depth
+*/
+float3 ReconstructViewPosition(float2 uv, float viewDepth)
+{
+    float2 ndc = uv * 2.0 - 1.0;
+
+    ndc.y = -ndc.y;
+
+    return float3(
+        ndc.x * viewDepth / Projection[0][0],
+        ndc.y * viewDepth / Projection[1][1],
+        viewDepth
+    );
 }
 
 float2 ViewToUV(float3 positionVS)
 {
-    float4 clip = mul(Projection, float4(positionVS, 1.0));
-    float2 ndc = clip.xy / clip.w;
+    float4 clip =
+        mul(
+            Projection,
+            float4(positionVS, 1.0));
+
+    float2 ndc =
+        clip.xy / clip.w;
+
     return float2(
         ndc.x * 0.5 + 0.5,
         0.5 - ndc.y * 0.5
     );
 }
 
-uint CountBits(uint v)
-{
-    v = v - ((v >> 1u) & 0x55555555u);
-    v = (v & 0x33333333u) + ((v >> 2u) & 0x33333333u);
-    return ((v + (v >> 4u)) & 0x0F0F0F0Fu) * 0x01010101u >> 24u;
-}
-
 float2 SampleBlueNoise(uint2 pixel, uint frame)
 {
-    uint2 noisePixel = pixel & 63;
+    uint2 noisePixel =
+        pixel & 63;
 
     float2 noise =
-        BlueNoiseTexture.Load(uint3(noisePixel, 0)).rg;
+        BlueNoiseTexture.Load(
+            uint3(noisePixel, 0)).rg;
 
     float frameOffset =
-        frac((float) frame * 0.61803398875);
+        frac(
+            (float) frame *
+            0.61803398875);
 
-    noise.x = frac(noise.x + frameOffset);
-    noise.y = frac(noise.y + frameOffset * 0.75487766);
+    noise.x =
+        frac(
+            noise.x +
+            frameOffset);
+
+    noise.y =
+        frac(
+            noise.y +
+            frameOffset *
+            0.75487766);
 
     return noise;
 }
 
-uint AddOcclusionInterval(
-    float minHorizon,
-    float maxHorizon,
-    uint globalOccludedBitfield)
-{
-    minHorizon = saturate(minHorizon);
-    maxHorizon = saturate(maxHorizon);
-
-    if (maxHorizon <= minHorizon)
-        return globalOccludedBitfield;
-
-    uint startHorizonInt =
-        (uint) (minHorizon * SectorCount);
-
-    uint angleHorizonInt =
-        (uint) ceil(
-            (maxHorizon - minHorizon) *
-            SectorCount
-        );
-
-    if (angleHorizonInt == 0)
-        return globalOccludedBitfield;
-
-    uint angleHorizonBitfield =
-        angleHorizonInt >= SectorCount
-            ? 0xFFFFFFFFu
-            : (0xFFFFFFFFu >>
-               (SectorCount - angleHorizonInt));
-
-    uint currentOccludedBitfield =
-        angleHorizonBitfield <<
-        startHorizonInt;
-
-    return globalOccludedBitfield |
-           currentOccludedBitfield;
-}
-
-float3 GetSliceViewDirection(float2 screenDir, float3 V)
-{
-    float3 up = (abs(V.y) < 0.99) ? float3(0, 1, 0) : float3(1, 0, 0);
-    float3 right = normalize(cross(up, V));
-    float3 tangentUp = normalize(cross(V, right));
-
-    return normalize(right * screenDir.x + tangentUp * screenDir.y);
-}
-
-float ComputeVBAO(
+float ComputeGTAO(
     float3 positionVS,
     float3 normalVS,
-    uint2 pixel
-)
+    uint2 pixel)
 {
-    
-    float2 halfScreen = ScreenSize / 2;
-    // View vector pointing from pixel towards camera
-    float3 V = normalize(-positionVS);
+    float2 halfScreen =
+        ScreenSize * 0.5;
 
-    float2 uv0 = ViewToUV(positionVS);
-    float projectedRadius = (0.5 * Projection[0][0] * halfScreen.x * VBAORadius) / max(abs(positionVS.z), 0.001);
-    float rayStep = projectedRadius / (SampleCount + 1.0);
+    float3 viewVec =
+        normalize(-positionVS);
 
-    if (projectedRadius < 1.0)
+    float2 uv =
+        ViewToUV(positionVS);
+
+    /*
+        Approximate view-space pixel size.
+
+        Projection[0][0] maps view-space X to NDC.
+    */
+    float pixelSizeVS =
+        abs(positionVS.z) /
+        max(
+            Projection[0][0] *
+            halfScreen.x,
+            1e-5);
+
+    float screenRadius =
+        GTAORadius /
+        max(
+            pixelSizeVS,
+            1e-5);
+
+    if (screenRadius < PixelTooCloseThreshold)
         return 1.0;
 
-    float totalAO = 0.0;
-    
-    uint2 fullResPixel = pixel * 2;
-    float2 noise = SampleBlueNoise(fullResPixel, FrameIndex);
-   
+    float minS =
+        PixelTooCloseThreshold /
+        screenRadius;
+
+    float falloffDistance =
+        GTAORadius *
+        GTAOFalloffRange;
+
+    float falloffFrom =
+        GTAORadius *
+        (1.0 - GTAOFalloffRange);
+
+    float falloffMul =
+        -1.0 /
+        max(
+            falloffDistance,
+            1e-5);
+
+    float falloffAdd =
+        falloffFrom /
+        max(
+            falloffDistance,
+            1e-5) +
+        1.0;
+
+    float2 noise =
+        SampleBlueNoise(
+            pixel,
+            FrameIndex);
+
+    float visibility = 0.0;
+
     [unroll]
-    for (uint d = 0; d < DirectionCount; ++d)
+    for (uint slice = 0;
+         slice < SliceCount;
+         ++slice)
     {
-        float angle = (noise.x + (float) d) * (PI / (float) DirectionCount);
-        float2 rayDir = float2(cos(angle), sin(angle));
+        float sliceK =
+            ((float) slice + noise.x) /
+            (float) SliceCount;
 
-        float3 sliceDir = float3(rayDir, 0.0);
+        float phi =
+            sliceK * PI;
 
-        float3 sliceN = normalize(cross(sliceDir, V));
+        float cosPhi =
+            cos(phi);
 
-        float3 projN = normalVS - sliceN * dot(normalVS, sliceN);
+        float sinPhi =
+            sin(phi);
 
-        float projNSqrLen = dot(projN, projN);
+        float2 omega =
+            float2(
+                cosPhi,
+                -sinPhi);
 
-        if (projNSqrLen < 1e-6)
+        omega *=
+            screenRadius;
+
+        float3 directionVec =
+            float3(
+                cosPhi,
+                sinPhi,
+                0.0);
+
+        float3 orthoDirectionVec =
+            directionVec -
+            dot(
+                directionVec,
+                viewVec) *
+            viewVec;
+
+        float3 axisVec =
+            normalize(
+                cross(
+                    orthoDirectionVec,
+                    viewVec));
+
+        float3 projectedNormalVec =
+            normalVS -
+            axisVec *
+            dot(
+                normalVS,
+                axisVec);
+
+        float projectedNormalLength =
+            length(
+                projectedNormalVec);
+
+        if (projectedNormalLength < 1e-5)
         {
-            totalAO += 1.0;
+            visibility += 1.0;
             continue;
         }
 
-        float3 projNNormalized =
-    projN * rsqrt(projNSqrLen);
+        float signNorm =
+            sign(
+                dot(
+                    orthoDirectionVec,
+                    projectedNormalVec));
 
-        float cosN = clamp(dot(projNNormalized, V), -1.0, 1.0);
+        float cosNorm =
+            saturate(
+                dot(
+                    projectedNormalVec,
+                    viewVec) /
+                projectedNormalLength);
 
-        float3 T =
-    cross(V, sliceN);
+        float normalAngle =
+            signNorm *
+            ACos_Approx(
+                cosNorm);
 
-        float N_angle = -sign(dot(projN, T)) * ACos_Approx(cosN);
+        float lowHorizonCos0 =
+            cos(
+                normalAngle +
+                HALF_PI);
 
-        float rayOffset = frac(noise.y + (float) d * 0.6180339887498948482);
-        
-        uint globalOccludedBitfield = 0u;
-        for (int side = -1; side <= 1; side += 2)
+        float lowHorizonCos1 =
+            cos(
+                normalAngle -
+                HALF_PI);
+
+        float horizonCos0 =
+            lowHorizonCos0;
+
+        float horizonCos1 =
+            lowHorizonCos1;
+
+        [unroll]
+        for (uint step = 0;
+             step < StepsPerSlice;
+             ++step)
         {
-            float samplingDirection = (float) side;
-            float t = (rayOffset + 1.0) * rayStep;
+            float stepBaseNoise =
+                (float) (
+                    slice +
+                    step * SliceCount)
+                *
+                0.6180339887498948482;
 
-            for (uint i = 0; i < SampleCount; ++i)
+            float stepNoise =
+                frac(
+                    noise.y +
+                    stepBaseNoise);
+
+            float s =
+                ((float) step +
+                 stepNoise) /
+                (float) StepsPerSlice;
+
+            s =
+                s * s;
+
+            s += minS;
+
+            float2 sampleOffset =
+                s * omega;
+
+            float2 sampleOffsetPixels =
+                round(
+                    sampleOffset);
+
+            sampleOffset =
+                sampleOffsetPixels /
+                halfScreen;
+
+            float2 sampleUV0 =
+                saturate(
+                    uv +
+                    sampleOffset);
+
+            float2 sampleUV1 =
+                saturate(
+                    uv -
+                    sampleOffset);
+
+            /*
+                These are now LINEAR VIEW DEPTH values.
+
+                Example:
+
+                    sample = 3
+                    sample = 8
+                    sample = 16
+
+                They are NOT [0,1] hardware depth.
+            */
+            float viewDepth0 =
+                DepthTexture.SampleLevel(
+                    PointSampler,
+                    sampleUV0,
+                    0);
+
+            float viewDepth1 =
+                DepthTexture.SampleLevel(
+                    PointSampler,
+                    sampleUV1,
+                    0);
+
+            /*
+                Zero means no geometry/background.
+            */
+            if (viewDepth0 > 0.0)
             {
+                float3 samplePos0 =
+                    ReconstructViewPosition(
+                        sampleUV0,
+                        viewDepth0);
 
-                float2 sampleOffset = rayDir * samplingDirection * t;
+                float3 delta0 =
+                    samplePos0 -
+                    positionVS;
 
-                float2 samplePixel = uv0 * halfScreen + sampleOffset;
+                float distSq0 =
+                    dot(
+                        delta0,
+                        delta0);
 
-                if (samplePixel.x < 0.0 || samplePixel.y < 0.0 ||
-                    samplePixel.x >= halfScreen.x || samplePixel.y >= halfScreen.y)
+                if (distSq0 <= RadiusSq &&
+                    distSq0 > 1e-8)
                 {
-                    break;
+                    float dist0 =
+                        sqrt(distSq0);
+
+                    float3 horizonVec0 =
+                        delta0 /
+                        dist0;
+
+                    float horizonCos0Sample =
+                        dot(
+                            horizonVec0,
+                            viewVec);
+
+                    float weight0 =
+                        saturate(
+                            dist0 *
+                            falloffMul +
+                            falloffAdd);
+
+                    horizonCos0Sample =
+                        lerp(
+                            lowHorizonCos0,
+                            horizonCos0Sample,
+                            weight0);
+
+                    horizonCos0 =
+                        max(
+                            horizonCos0,
+                            horizonCos0Sample);
                 }
+            }
 
-                float2 sampleUV = samplePixel / halfScreen;
-                float sampleDepth = DepthTexture.SampleLevel(PointSampler, sampleUV, 0);
+            if (viewDepth1 > 0.0)
+            {
+                float3 samplePos1 =
+                    ReconstructViewPosition(
+                        sampleUV1,
+                        viewDepth1);
 
-                if (sampleDepth >= 0.999999)
-                    continue;
+                float3 delta1 =
+                    samplePos1 -
+                    positionVS;
 
-                float3 samplePosVS = ReconstructViewPosition(sampleUV, sampleDepth);
-                float3 deltaPos = samplePosVS - positionVS;
+                float distSq1 =
+                    dot(
+                        delta1,
+                        delta1);
 
-                float deltaLenSq = dot(deltaPos, deltaPos);
-
-                if (deltaLenSq > RadiusSq)
-                    continue;
-
-                float frontCos =
-    dot(deltaPos, V) *
-    rsqrt(max(deltaLenSq, 1e-8));
-
-                float3 backDelta =
-    deltaPos - V * VBAOThickness;
-
-                float backLenSq =
-    dot(backDelta, backDelta);
-
-                float backCos =
-    dot(backDelta, V) *
-    rsqrt(max(backLenSq, 1e-8));
-
-                float frontAngle =
-    ACos01_Approx(saturate(frontCos));
-
-                float backAngle =
-    ACos01_Approx(saturate(backCos));
-
-                float2 frontBackHorizon =
-    float2(frontAngle, backAngle);
-                frontBackHorizon =
-    saturate(
-        ((samplingDirection * -frontBackHorizon)
-        - N_angle
-        + HALF_PI) / PI
-    );
-                if (samplingDirection >= 0.0)
+                if (distSq1 <= RadiusSq &&
+                    distSq1 > 1e-8)
                 {
-                    frontBackHorizon = frontBackHorizon.yx;
-                }
+                    float dist1 =
+                        sqrt(distSq1);
 
-                globalOccludedBitfield =
-    AddOcclusionInterval(
-        frontBackHorizon.x,
-        frontBackHorizon.y,
-        globalOccludedBitfield
-    );
-                t += rayStep;
+                    float3 horizonVec1 =
+                        delta1 /
+                        dist1;
+
+                    float horizonCos1Sample =
+                        dot(
+                            horizonVec1,
+                            viewVec);
+
+                    float weight1 =
+                        saturate(
+                            dist1 *
+                            falloffMul +
+                            falloffAdd);
+
+                    horizonCos1Sample =
+                        lerp(
+                            lowHorizonCos1,
+                            horizonCos1Sample,
+                            weight1);
+
+                    horizonCos1 =
+                        max(
+                            horizonCos1,
+                            horizonCos1Sample);
+                }
             }
         }
 
-        uint occludedBits = CountBits(globalOccludedBitfield);
-        float sliceAO = 1.0 - ((float) occludedBits / (float) SectorCount);
-        totalAO += sliceAO;
+        float h0 =
+            -ACos_Approx(
+                horizonCos1);
+
+        float h1 =
+            ACos_Approx(
+                horizonCos0);
+
+        float iarc0 =
+            (
+                cosNorm +
+                2.0 * h0 *
+                sin(normalAngle) -
+                cos(
+                    2.0 * h0 -
+                    normalAngle)
+            ) * 0.25;
+
+        float iarc1 = (cosNorm + 2.0 * h1 * sin(normalAngle) - cos(2.0 * h1 - normalAngle)) * 0.25;
+
+        float localVisibility = projectedNormalLength * (iarc0 + iarc1);
+
+        visibility += localVisibility;
     }
 
-    return totalAO / (float) DirectionCount;
+    visibility /= (float) SliceCount;
+
+    return saturate(visibility);
 }
 
 float PSMain(PSInput input) : SV_TARGET
 {
-    float depth = DepthTexture.SampleLevel(PointSampler, input.UV, 0);
+    float viewDepth = DepthTexture.SampleLevel(PointSampler, input.UV, 0);
+    if (viewDepth <= 0.0)
+        return 1.0;
 
-    if (depth >= 0.999999)
-        return float4(1, 1, 1, 1);
+    float3 positionVS = ReconstructViewPosition(input.UV, viewDepth);
 
-    float3 positionVS = ReconstructViewPosition(input.UV, depth);
-    float3 normalSample = NormalTexture.SampleLevel(PointSampler, input.UV, 0).xyz;
-    float3 normalVS = normalize(normalSample);
-    
-    float3 biasedPositionVS = positionVS + normalVS * 0.002;
+    float3 normalVS = normalize(NormalTexture.SampleLevel(PointSampler, input.UV, 0).xyz);
 
     uint2 pixel = uint2(input.Position.xy);
 
-    float ao = ComputeVBAO(biasedPositionVS, normalVS, pixel);
+    float ao = ComputeGTAO(positionVS, normalVS, pixel);
 
     return ao;
 }

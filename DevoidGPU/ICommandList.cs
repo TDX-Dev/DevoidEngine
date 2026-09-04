@@ -26,8 +26,10 @@ namespace DevoidGPU
         void SetDescriptorSet(uint binding, IDescriptorSet set);
         void Draw(int vertexCount, int startVertexLocation);
         void DrawIndexed(int indexCount, int startIndexLocation, int baseVertexLocation);
+        void DrawInstancedIndexed(int indexCountPerInstance, int instanceCount, int startIndexLocation, int baseVertexLocation, int startInstanceLocation);
         void Dispatch(uint groupX, uint groupY, uint groupZ);
         void MemoryBarrier(MemoryBarrierFlags flags);
         void ResolveSubresource(ITexture multisampled, ITexture single);
+        void ClearTextureResource(ITexture texture, ClearValue value);
     }
 }

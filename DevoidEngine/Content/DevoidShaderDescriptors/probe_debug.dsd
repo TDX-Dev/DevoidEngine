@@ -1,0 +1,25 @@
+{
+  "$schema": "./dsdschema.json",
+  "Name": "Probe Debug",
+
+  "DefaultPass": "Forward",
+
+  "MaterialParameters": {
+    "BufferName": "Material"
+  },
+  "Passes": [
+    {
+      "Name": "Forward",
+      "MaterialBuffer": "Material",
+      "Shaders": {
+        "VS": "../Shaders/probe_debug.vert.hlsl",
+        "FS": "../Shaders/probe_debug.frag.hlsl"
+      },
+      "States": {
+        "Blend": "Off",
+        "Cull": "Back",
+        "Depth": "LessEqual"
+      }
+    }
+  ]
+}

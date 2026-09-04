@@ -74,59 +74,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Update="Content\DevoidShaderDescriptors\gizmo.dsd">
+		<None Update="Content\DevoidShaderDescriptors\probe_debug.dsd">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		  <Visible>true</Visible>
 		</None>
-		<None Update="Content\DevoidShaderDescriptors\gtvbao.dsd">
-		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		  <Visible>true</Visible>
-		</None>
-		<None Update="Content\DevoidShaderDescriptors\imgui_shader.dsd">
-		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		  <Visible>true</Visible>
-		</None>
-		<None Update="Content\DevoidShaderDescriptors\bloom_process_pass.dsd">
-		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		  <Visible>true</Visible>
-		</None>
-		<None Update="Content\DevoidShaderDescriptors\bloom_upsample_pass.dsd">
-		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		  <Visible>true</Visible>
-		</None>
-		<None Update="Content\DevoidShaderDescriptors\bloom_downsample_pass.dsd">
-		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		  <Visible>true</Visible>
-		</None>
-		<None Update="Content\DevoidShaderDescriptors\tonemap_pass.dsd">
-		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		  <Visible>true</Visible>
-		</None>
-		<None Update="Content\DevoidShaderDescriptors\brdfLUT.dsd">
-		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		  <Visible>true</Visible>
-		</None>
-		<None Update="Content\DevoidShaderDescriptors\sh9_reduce.dsd">
-		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		  <Visible>true</Visible>
-		</None>
-		<None Update="Content\DevoidShaderDescriptors\prefilter.dsd">
-		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		  <Visible>true</Visible>
-		</None>
-		<None Update="Content\DevoidShaderDescriptors\sky_panoramatocubemap.dsd">
-		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		  <Visible>true</Visible>
-		</None>
-		<None Update="Content\DevoidShaderDescriptors\sh9_project.dsd">
-		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		  <Visible>true</Visible>
-		</None>
-		<None Update="Content\DevoidShaderDescriptors\sky_cubemap.dsd">
-		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		  <Visible>true</Visible>
-		</None>
-		<None Update="Content\DevoidShaderDescriptors\ui_textsdf_mat.dsd">
+		<None Update="Content\Shaders\Common\ProbeGI.hlsl">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		  <Visible>true</Visible>
 		</None>
@@ -143,6 +95,10 @@
 		  <Visible>true</Visible>
 		</None>
 		<None Update="Content\Shaders\bloom_process.frag.hlsl">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  <Visible>true</Visible>
+		</None>
+		<None Update="Content\Shaders\probe_relocate_update.comp.hlsl">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		  <Visible>true</Visible>
 		</None>
@@ -182,6 +138,14 @@
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		  <Visible>true</Visible>
 		</None>
+		<None Update="Content\Shaders\probe_debug.frag.hlsl">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  <Visible>true</Visible>
+		</None>
+		<None Update="Content\Shaders\probe_debug.vert.hlsl">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  <Visible>true</Visible>
+		</None>
 		<None Update="Lib\SharpFont.dll">
 			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
 		</None>
@@ -189,14 +153,6 @@
 
 
 	<ItemGroup>
-	  <None Update="Content\DevoidShaderDescriptors\ui_mat.dsd">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	    <Visible>true</Visible>
-	  </None>
-	  <None Update="Content\DevoidShaderDescriptors\pbr_mat.dsd">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	    <Visible>true</Visible>
-	  </None>
 	  <None Update="Content\Shaders\ui.frag.hlsl">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	    <Visible>true</Visible>

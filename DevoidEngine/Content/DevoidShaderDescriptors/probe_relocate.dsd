@@ -1,0 +1,15 @@
+{
+  "$schema": "./dsdschema.json",
+  "Name": "Vertex Lit",
+  "DefaultPass": "Forward",
+
+  "Passes": [
+    {
+      "Name": "Forward",
+      "MaterialBuffer": "Material",
+      "Shaders": {
+        "CS": "Content/Shaders/probe_relocate_update.comp.hlsl"
+      }
+    }
+  ]
+}

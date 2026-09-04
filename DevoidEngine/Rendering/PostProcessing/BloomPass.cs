@@ -135,15 +135,9 @@ namespace DevoidEngine.Rendering.PostProcessing
                 filterRadius = BloomRadius
             });
 
-            material.DescriptorSet.SetSampler(
-                0,
-                upsample
-                    ? upsampleBloomSampler.GPU
-                    : downsampleBloomSampler.GPU);
+            material.DescriptorSet.SetSampler(0, upsample ? upsampleBloomSampler.GPU : downsampleBloomSampler.GPU);
 
-            material.DescriptorSet.SetUniformBuffer(
-                2,
-                mipShaderDataBuffer.GPU);
+            material.DescriptorSet.SetUniformBuffer(5, mipShaderDataBuffer.GPU);
         }
 
         private void RenderPrefilter(PostProcessContext ctx)
@@ -168,24 +162,15 @@ namespace DevoidEngine.Rendering.PostProcessing
                 BloomMip mip = bloomMipList[i];
                 BloomMip previousMip = bloomMipList[i - 1];
 
-                BeginPass(
-                    ctx,
-                    mip.Texture,
-                    mip.Size);
+                BeginPass(ctx, mip.Texture, mip.Size);
 
-                downsampleMaterial.SetTexture(
-                    "INPUT_TEXTURE",
-                    previousMip.Texture);
+                downsampleMaterial.SetTexture("INPUT_TEXTURE", previousMip.Texture);
 
                 BindMipData(downsampleMaterial, mip.Size);
 
-                ctx.Renderer.API.RenderToScreen(
-                    ctx.CommandList,
-                    downsampleMaterial);
+                ctx.Renderer.API.RenderToScreen(ctx.CommandList, downsampleMaterial);
 
-                EndPass(
-                    ctx,
-                    i == bloomMipList.Count - 1);
+                EndPass(ctx, i == bloomMipList.Count - 1);
             }
         }
 

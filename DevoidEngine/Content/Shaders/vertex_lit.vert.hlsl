@@ -14,6 +14,7 @@ struct PSInput
     float2 UV : TEXCOORD0;
     float4 Tangent : TANGENT;
     float3 WorldspacePosition : TEXCOORD1;
+    float3 ViewspacePosition : TEXCOORD3;
 };
 
 #include "./Common/RenderConstants.hlsl"
@@ -22,8 +23,10 @@ PSInput VSMain(VSInput input)
 {
     PSInput output;
     float4 worldPos = mul(Model, float4(input.Position, 1.0));
-    output.Position = mul(Projection, mul(View, worldPos));
+    float4 viewPos = mul(View, worldPos);
+    output.Position = mul(Projection, viewPos);
     output.WorldspacePosition = worldPos.xyz;
+    output.ViewspacePosition = viewPos.xyz;
     output.UV = input.UV;
     
     float3x3 normalMatrix = transpose((float3x3) invModel);

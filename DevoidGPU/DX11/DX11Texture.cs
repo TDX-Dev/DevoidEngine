@@ -429,29 +429,50 @@ namespace DevoidGPU.DX11
         {
             unsafe
             {
+                int rowPitch = GetRowPitch();
+                int slicePitch = GetSlicePitch();
+
+                int expectedSize =
+                    slicePitch *
+                    Description.ArraySize;
+
+                if (data.Length < expectedSize)
+                {
+                    throw new ArgumentException(
+                        $"Insufficient texture data. " +
+                        $"Expected at least {expectedSize} bytes, " +
+                        $"got {data.Length} bytes.");
+                }
+
                 fixed (byte* ptr = data)
                 {
-                    DataBox box = new(
-                        (IntPtr)ptr,
-                        GetRowPitch(),
-                        GetSlicePitch());
+                    for (int slice = 0;
+                         slice < Description.ArraySize;
+                         slice++)
+                    {
+                        byte* slicePtr =
+                            ptr + slice * slicePitch;
 
-                    //Console.WriteLine(
-                    //    string.Join(" ",
-                    //        bytes.Select(x => x.ToString("X2"))));
+                        DataBox box = new(
+                            (IntPtr)slicePtr,
+                            rowPitch,
+                            slicePitch);
 
-                    deviceContext.UpdateSubresource(
-                        box,
-                        TextureResource,
-                        0);
+                        int subresource =
+                            slice * Description.MipLevels;
+
+                        deviceContext.UpdateSubresource(
+                            box,
+                            TextureResource,
+                            subresource);
+                    }
                 }
             }
         }
-        public void Update<T>(ReadOnlySpan<T> data)
-    where T : unmanaged
+
+        public void Update<T>(ReadOnlySpan<T> data) where T : unmanaged
         {
-            Update(
-                MemoryMarshal.AsBytes(data));
+            Update(MemoryMarshal.AsBytes(data));
         }
 
 

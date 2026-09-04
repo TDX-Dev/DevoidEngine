@@ -1,4 +1,5 @@
 ﻿using SharpDX.Direct3D11;
+using SharpDX.Mathematics.Interop;
 using System.Diagnostics;
 using System.Numerics;
 using static System.Net.Mime.MediaTypeNames;
@@ -106,6 +107,9 @@ namespace DevoidGPU.DX11
             dx11Fb.Dirty = false;
 
             dx11Fb.ValidateFrameBuffer();
+
+            Array.Clear(boundRTVs);
+            boundDSV = null;
 
             for (int i = 0; i < dx11Fb.ColorAttachments.Count; i++)
             {
@@ -311,6 +315,10 @@ namespace DevoidGPU.DX11
         {
             deviceContext.DrawIndexed(indexCount, startIndexLocation, baseVertexLocation);
         }
+        public void DrawInstancedIndexed(int indexCountPerInstance, int instanceCount, int startIndexLocation, int baseVertexLocation, int startInstanceLocation)
+        {
+            deviceContext.DrawIndexedInstanced(indexCountPerInstance, instanceCount, startIndexLocation, baseVertexLocation, startInstanceLocation);
+        }
 
         public void Dispatch(uint groupX, uint groupY, uint groupZ)
         {
@@ -333,6 +341,21 @@ namespace DevoidGPU.DX11
             deviceContext.ResolveSubresource(multisampled.TextureResource, 0, singlesampled.TextureResource, 0, singlesampled.DX11Format);
         }
 
+        public void ClearTextureResource(ITexture texture, ClearValue value)
+        {
+            var dx11Texture = (DX11Texture)texture;
+
+            if (dx11Texture.UAV == null)
+            {
+                Console.WriteLine("[DX11]: Texture must have UAV to clear.");
+                return;
+            }
+            if (value.Format == ClearValueFormat.Float)
+                deviceContext.ClearUnorderedAccessView(dx11Texture.UAV, new RawVector4(value.X, value.Y, value.Z, value.W));
+            else
+                deviceContext.ClearUnorderedAccessView(dx11Texture.UAV, new RawInt4((int)value.X, (int)value.Y, (int)value.Z, (int)value.W));
+        }
+        
         // InternalMethods
 
         internal void BindConstantBuffer(uint slot, ShaderStage stages, Buffer buffer)
@@ -686,5 +709,6 @@ namespace DevoidGPU.DX11
                 }
             }
         }
+    
     }
 }

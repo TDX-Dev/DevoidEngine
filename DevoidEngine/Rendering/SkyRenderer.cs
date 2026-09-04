@@ -333,9 +333,7 @@ namespace DevoidEngine.Rendering
                     InputCount = count,
                     FinalPass = finalPass ? 1u : 0u
                 });
-                ReduceSHMaterial.DescriptorSet.SetUniformBuffer(
-                    0,
-                ReduceInputBuffer.GPU);
+                ReduceSHMaterial.DescriptorSet.SetUniformBuffer(0, ReduceInputBuffer.GPU);
 
                 cmd.SetComputePipeline(ReduceSHPipeline);
                 cmd.SetDescriptorSet(0, ReduceSHMaterial.DescriptorSet);

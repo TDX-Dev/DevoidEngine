@@ -32,7 +32,8 @@ namespace DevoidEngine.Core
                 1,
                 1,
                 TextureFormat.RGBA16_Float,
-                TextureUsage.ShaderResource);
+                TextureUsage.ShaderResource
+            );
 
             Default.GPU.Update<Half>(
             [

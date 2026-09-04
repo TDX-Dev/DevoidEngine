@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace DevoidEngine.Util
 {
@@ -15,7 +16,6 @@ namespace DevoidEngine.Util
         {
             return radians * (180f / PI);
         }
-
         public static Quaternion EulerToQuaternion(Vector3 eulerDegrees)
         {
             Vector3 radians = eulerDegrees * (MathF.PI / 180f);
@@ -25,7 +25,6 @@ namespace DevoidEngine.Util
                 radians.X,
                 radians.Z);
         }
-
         public static Vector3 QuaternionToEuler(Quaternion q)
         {
             // Basic conversion (sufficient for gameplay)
@@ -49,6 +48,19 @@ namespace DevoidEngine.Util
             euler.Z = MathF.Atan2(sinr_cosp, cosr_cosp);
 
             return euler * (180f / MathF.PI);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static uint MsbIndex(uint value)
+        {
+            return 31u - (uint)BitOperations.LeadingZeroCount(value | 1u);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static uint RoundUpToPo2(uint value)
+        {
+            uint valueM1 = Math.Max(1u, value) - 1u;
+            return 1u << (int)(MsbIndex(valueM1) + 1u);
         }
     }
 }

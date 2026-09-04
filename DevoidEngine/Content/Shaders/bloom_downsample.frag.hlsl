@@ -7,7 +7,7 @@ struct PSInput
     float3 WorldspacePosition : TEXCOORD1;
 };
 
-cbuffer BloomMipShaderData : register(b2)
+cbuffer BloomMipShaderData : register(b5)
 {
     float2 mipSize;
     float filterRadius;

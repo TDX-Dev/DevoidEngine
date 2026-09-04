@@ -32,9 +32,7 @@ namespace DevoidEngine.Core
             passes.Clear();
         }
 
-        public static Shader FromDescriptorFile(
-            IGraphicsDevice device,
-            string path)
+        public static Shader FromDescriptorFile(IGraphicsDevice device, string path, IReadOnlyDictionary<string, string>? defines = null)
         {
             string json = File.ReadAllText(path);
 
@@ -48,8 +46,7 @@ namespace DevoidEngine.Core
                 Name = descriptor.Name
             };
 
-            string baseDirectory =
-                Path.GetDirectoryName(path)!;
+            string baseDirectory = Path.GetDirectoryName(path)!;
 
             foreach (var passDesc in descriptor.Passes)
             {
@@ -78,11 +75,8 @@ namespace DevoidEngine.Core
                         passDesc.Shaders.CS);
                 }
 
-                ShaderPass pass = new(
-                    device,
-                    vertexPath,
-                    fragmentPath,
-                    computePath);
+                ShaderPass pass = new(device, vertexPath, fragmentPath, computePath);
+                
 
                 if (passDesc.States != null)
                 {

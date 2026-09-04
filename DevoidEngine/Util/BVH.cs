@@ -408,10 +408,11 @@ namespace DevoidEngine.Util
             return true;
         }
 
-        public bool Raycast(Vector3 origin, Vector3 direction, float maxDistance, out float distance, out int triangleIndex)
+        public bool Raycast(Vector3 origin, Vector3 direction, float maxDistance, out float distance, out int triangleIndex, out Vector3 normal)
         {
             distance = maxDistance;
             triangleIndex = -1;
+            normal = Vector3.Zero;
 
             if (nodes.Count == 0)
                 return false;
@@ -421,10 +422,10 @@ namespace DevoidEngine.Util
                 return false;
             }
 
-            return RaycastNode(0, origin, direction, ref distance, ref triangleIndex);
+            return RaycastNode(0, origin, direction, ref distance, ref triangleIndex, ref normal);
         }
 
-        bool RaycastNode(int nodeIndex, Vector3 origin, Vector3 direction, ref float closestDistance, ref int closestTriangle)
+        bool RaycastNode(int nodeIndex, Vector3 origin, Vector3 direction, ref float closestDistance, ref int closestTriangle, ref Vector3 closestNormal)
         {
             BVHNode node = nodes[nodeIndex];
 
@@ -465,6 +466,11 @@ namespace DevoidEngine.Util
                     closestDistance = triangleDistance;
                     closestTriangle = triangle.TriangleIndex;
 
+                    closestNormal = Vector3.Normalize(
+                        Vector3.Cross(
+                            triangle.V1 - triangle.V0,
+                            triangle.V2 - triangle.V0));
+
                     leafHit = true;
                 }
 
@@ -502,7 +508,8 @@ namespace DevoidEngine.Util
                         origin,
                         direction,
                         ref closestDistance,
-                        ref closestTriangle);
+                        ref closestTriangle,
+                        ref closestNormal);
 
                     if (rightDistance <= closestDistance)
                     {
@@ -511,7 +518,8 @@ namespace DevoidEngine.Util
                             origin,
                             direction,
                             ref closestDistance,
-                            ref closestTriangle);
+                            ref closestTriangle,
+                            ref closestNormal);
                     }
                 }
                 else
@@ -521,7 +529,8 @@ namespace DevoidEngine.Util
                         origin,
                         direction,
                         ref closestDistance,
-                        ref closestTriangle);
+                        ref closestTriangle,
+                        ref closestNormal);
 
                     if (leftDistance <= closestDistance)
                     {
@@ -530,7 +539,8 @@ namespace DevoidEngine.Util
                             origin,
                             direction,
                             ref closestDistance,
-                            ref closestTriangle);
+                            ref closestTriangle,
+                            ref closestNormal);
                     }
                 }
             }
@@ -541,7 +551,8 @@ namespace DevoidEngine.Util
                     origin,
                     direction,
                     ref closestDistance,
-                    ref closestTriangle);
+                    ref closestTriangle,
+                    ref closestNormal);
             }
             else
             {
@@ -550,7 +561,8 @@ namespace DevoidEngine.Util
                     origin,
                     direction,
                     ref closestDistance,
-                    ref closestTriangle);
+                    ref closestTriangle,
+                    ref closestNormal);
             }
 
             return hit;

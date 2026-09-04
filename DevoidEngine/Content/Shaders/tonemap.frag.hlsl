@@ -7,7 +7,7 @@ struct PSInput
     float3 WorldspacePosition : TEXCOORD1;
 };
 
-cbuffer Material : register(b2)
+cbuffer Material : register(b5)
 {
     float exposure;
     float bloomIntensity;

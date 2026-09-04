@@ -235,6 +235,15 @@ float4 PSMain(PSInput input) : SV_TARGET
     );
 
     float3 color = (ambient) * (ao) + (Lo + emission);
+    
+    //if (ao == 1)
+    //{
+    //    color = float3(0, 0, 1);
+    //}
+    //else
+    //{
+    //    color = color * 0.0001 + ao;
+    //}
 
     return float4(color, 1.0);
 }
