@@ -191,6 +191,8 @@ namespace Elemental
             map.Bind("Grab", new InputBinding { DeviceType = InputDeviceType.Keyboard, Control = (ushort)Keys.G });
             map.Bind("Pickup", new InputBinding { DeviceType = InputDeviceType.Keyboard, Control = (ushort)Keys.E });
 
+            map.Bind("Primary", new InputBinding { DeviceType = InputDeviceType.Mouse, Control = (ushort)MouseButton.Left });
+
             // Mouse Look & Navigation
             map.Bind("LookX", new InputBinding { DeviceType = InputDeviceType.Mouse, Control = (ushort)MouseAxis.DeltaX, IsClamped = false });
             map.Bind("LookY", new InputBinding { DeviceType = InputDeviceType.Mouse, Control = (ushort)MouseAxis.DeltaY, IsClamped = false });
@@ -275,6 +277,14 @@ namespace Elemental
             ImGui.SameLine();
 
             ToolbarButton("Spline", LucideIconFont.IconSpline, "Spline");
+            ImGui.SameLine();
+
+            if (ToolbarButton("Gizmos", LucideIconFont.IconEye, "Gizmos"))
+            {
+                ImGui.OpenPopup("GizmoCategories");
+            }
+
+            DrawGizmoMenu();
 
             EndToolbarSection();
 
@@ -337,10 +347,83 @@ namespace Elemental
 
             ImGui.End();
 
+            DrawGizmoMenu();
+
             ImGui.PopStyleColor(2);
             ImGui.PopStyleVar(2);
         }
+        private void DrawGizmoMenu()
+        {
+            if (!ImGui.BeginPopup("GizmoCategories"))
+                return;
 
+            GizmoContext context =
+                sceneViewPanel.Viewport.GizmoContext;
+
+            bool enabled = context.GizmosEnabled;
+
+            if (ImGui.MenuItem("Enabled", null, enabled))
+            {
+                context.GizmosEnabled = !enabled;
+            }
+
+            ImGui.Separator();
+
+            DrawGizmoCategoryMenuItem(
+                "Lighting",
+                GizmoCategory.Lighting);
+
+            DrawGizmoCategoryMenuItem(
+                "Physics",
+                GizmoCategory.Physics);
+
+            DrawGizmoCategoryMenuItem(
+                "Cameras",
+                GizmoCategory.Cameras);
+
+            DrawGizmoCategoryMenuItem(
+                "Audio",
+                GizmoCategory.Audio);
+
+            DrawGizmoCategoryMenuItem(
+                "AI",
+                GizmoCategory.AI);
+
+            DrawGizmoCategoryMenuItem(
+                "Gameplay",
+                GizmoCategory.Gameplay);
+
+            DrawGizmoCategoryMenuItem(
+                "Navigation",
+                GizmoCategory.Navigation);
+
+            DrawGizmoCategoryMenuItem(
+                "Custom",
+                GizmoCategory.Custom);
+
+            ImGui.EndPopup();
+        }
+
+        private void DrawGizmoCategoryMenuItem(string name, GizmoCategory category)
+        {
+            GizmoContext context =
+                sceneViewPanel.Viewport.GizmoContext;
+
+            bool enabled =
+                (context.EnabledCategories & category) != 0;
+
+            if (!ImGui.MenuItem(name, null, enabled))
+                return;
+
+            if (enabled)
+            {
+                context.EnabledCategories &= ~category;
+            }
+            else
+            {
+                context.EnabledCategories |= category;
+            }
+        }
         private void PlayScene()
         {
             if (IsPlaying)

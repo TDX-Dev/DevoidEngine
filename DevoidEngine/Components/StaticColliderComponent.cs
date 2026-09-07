@@ -1,9 +1,10 @@
-﻿using DevoidEngine.Physics;
+﻿using DevoidEngine.Gizmos;
+using DevoidEngine.Physics;
 using System.Numerics;
 
 namespace DevoidEngine.Components
 {
-    public class StaticColliderComponent : Component
+    public class StaticColliderComponent : Component, IGizmoProviderComponent
     {
         public override string Type => nameof(StaticColliderComponent);
 
@@ -46,30 +47,6 @@ namespace DevoidEngine.Components
             CreateStatic();
         }
 
-        //private void CreateDebugVisual()
-        //{
-        //    if (Shape.Type != PhysicsShapeType.Box)
-        //        return;
-
-        //    // Create child object
-        //    _debugObject = gameObject.Scene.addGameObject("StaticCollider_Debug");
-
-        //    _debugObject.transform.Position = gameObject.transform.Position;
-        //    _debugObject.transform.Rotation = gameObject.transform.Rotation;
-        //    _debugObject.transform.Scale = Shape.Size;
-
-        //    // Create cube mesh
-        //    Mesh cubeMesh = new Mesh();
-        //    cubeMesh.SetVertices(Primitives.GetCubeVertex());
-
-        //    // Add MeshRenderer
-        //    var meshRenderer = _debugObject.AddComponent<MeshRenderer>();
-        //    meshRenderer.AddMesh(cubeMesh);
-
-        //    // Optional: assign debug material if needed
-        //    // meshRenderer.SetMaterial(DebugMaterial);
-        //}
-
         private void CreateStatic()
         {
             if (internalStatic != null)
@@ -102,6 +79,42 @@ namespace DevoidEngine.Components
             {
                 gameObject.Scene.Physics.RemoveStatic(internalStatic);
                 internalStatic = null;
+            }
+        }
+
+        public void OnDrawGizmos(GizmoContext context)
+        {
+            switch (Shape.Type)
+            {
+                case PhysicsShapeType.Box:
+                    {
+                        Vector3 halfSize = Shape.Size * 0.5f;
+                        Vector3 position = gameObject.Transform.Position;
+
+                        context.DrawList.AddWireBox(position - halfSize, position + halfSize, GizmoCategory.Physics);
+
+                        break;
+                    }
+
+                case PhysicsShapeType.Sphere:
+                    {
+                        // Draw sphere gizmo here.
+                        break;
+                    }
+
+                case PhysicsShapeType.Capsule:
+                    {
+                        // Draw capsule gizmo here.
+                        break;
+                    }
+
+                case PhysicsShapeType.Mesh:
+                    {
+
+
+                        // Draw mesh gizmo here.
+                        break;
+                    }
             }
         }
     }

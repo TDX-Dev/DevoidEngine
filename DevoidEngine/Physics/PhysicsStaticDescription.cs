@@ -17,5 +17,9 @@ namespace DevoidEngine.Physics
 
         [Key(3)]
         public PhysicsMaterial Material;
+        [Key(4)]
+        public Vector3 ShapePosition;
+        [Key(5)]
+        public Quaternion ShapeRotation;
     }
 }

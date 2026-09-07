@@ -429,7 +429,7 @@ namespace DevoidEngine.AssetPipeline.Importers
                     0,
                     out var tex);
 
-                Guid texGuid = ImportTexture(tex.FilePath, modelPath, true);
+                Guid texGuid = ImportTexture(tex, modelPath, true);
 
                 asset.Textures["MAT_AlbedoMap"] = texGuid;
             }
@@ -441,7 +441,7 @@ namespace DevoidEngine.AssetPipeline.Importers
                     0,
                     out var tex);
 
-                Guid texGuid = ImportTexture(tex.FilePath, modelPath, true);
+                Guid texGuid = ImportTexture(tex, modelPath, true);
 
                 asset.Textures["MAT_EmissiveMap"] = texGuid;
             }
@@ -453,7 +453,7 @@ namespace DevoidEngine.AssetPipeline.Importers
                     0,
                     out var tex);
 
-                Guid texGuid = ImportTexture(tex.FilePath, modelPath);
+                Guid texGuid = ImportTexture(tex, modelPath);
 
                 asset.Textures["MAT_NormalMap"] = texGuid;
 
@@ -478,7 +478,9 @@ namespace DevoidEngine.AssetPipeline.Importers
                     out var tex);
 
 
-                Guid texGuid = ImportTexture(tex.FilePath, modelPath);
+                Guid texGuid = ImportTexture(tex, modelPath);
+
+                
 
                 asset.Textures["MAT_RoughnessMap"] = texGuid;
             }
@@ -490,47 +492,53 @@ namespace DevoidEngine.AssetPipeline.Importers
             //    Console.WriteLine(slot.TextureType);
             //}
 
-            MaterialProperty[] mps = mat.GetAllProperties();
-            foreach (MaterialProperty mp in mps)
-            {
-                Console.WriteLine(mp.FullyQualifiedName + " : " + mp.GetFloatValue());
-                //if (mp.FullyQualifiedName == "$clr.diffuse,0,0")
-                //{
-                //    Console.WriteLine("DIFFUSE: " + mp.GetVector4Value());
-                //}
-            }
+            //MaterialProperty[] mps = mat.GetAllProperties();
+            //foreach (MaterialProperty mp in mps)
+            //{
+            //    Console.WriteLine(mp.FullyQualifiedName + " : " + mp.GetFloatValue());
+            //    //if (mp.FullyQualifiedName == "$clr.diffuse,0,0")
+            //    //{
+            //    //    Console.WriteLine("DIFFUSE: " + mp.GetVector4Value());
+            //    //}
+            //}
 
             //Console.WriteLine(mat.Opacity);
 
             return asset;
         }
 
-        Guid ImportTexture(string texturePath, string currentModelPath, bool srgb = false)
+        WrapMode GetWrap(TextureWrapMode mode)
         {
-            string absolutePath = Path.Combine(
-                Path.GetDirectoryName(currentModelPath)!,
-                texturePath);
+            return mode switch
+            {
+                TextureWrapMode.Wrap => WrapMode.Repeat,
+                TextureWrapMode.Mirror => WrapMode.Mirror,
+                TextureWrapMode.Clamp => WrapMode.ClampToEdge,
+                _ => WrapMode.Repeat,
+            };
+        }
+
+        Guid ImportTexture(TextureSlot tex, string currentModelPath, bool srgb = false)
+        {
+            string absolutePath = Path.Combine(Path.GetDirectoryName(currentModelPath)!, tex.FilePath);
 
             absolutePath = Path.GetFullPath(absolutePath);
 
-            string assetPath = Path.GetRelativePath(
-                Engine.Instance.ProjectSystem.AssetPath,
-                absolutePath);
+            string assetPath = Path.GetRelativePath(Engine.Instance.ProjectSystem.AssetPath, absolutePath);
 
             assetPath = assetPath.Replace('\\', '/');
 
             if (Engine.Instance.AssetDatabase.TryGetGuid(assetPath, out var guid))
             {
-                if (srgb)
+                if (!_processedTextures.Contains(guid))
                 {
-                    if (!_processedTextures.Contains(guid))
+                    Engine.Instance.AssetDatabase.Reimport(guid, MessagePackSerializer.Serialize<TextureImportSettings>(new TextureImportSettings()
                     {
-                        Engine.Instance.AssetDatabase.Reimport(guid, MessagePackSerializer.Serialize<TextureImportSettings>(new TextureImportSettings()
-                        {
-                            Format = TextureFormat.RGBA8_UNorm_SRGB
-                        }));
-                        _processedTextures.Add(guid);
-                    }
+                        Format = srgb ? TextureFormat.RGBA8_UNorm_SRGB : TextureFormat.RGBA8_UNorm,
+                        WrapU = GetWrap(tex.WrapModeU),
+                        WrapV = GetWrap(tex.WrapModeV),
+                    }));
+                    _processedTextures.Add(guid);
                 }
 
                 return guid;

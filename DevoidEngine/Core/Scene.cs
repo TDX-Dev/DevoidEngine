@@ -109,8 +109,8 @@ namespace DevoidEngine.Core
             // Physics simulation itself remains Play-only.
             if (IsPlaying && Engine.Instance.SimulatePhysics)
             {
-                Physics.Step(deltaTime);
-                Physics.SyncTransforms(deltaTime);
+                Physics.Step(/*deltaTime*/1/Engine.Instance.TargetFramerate);
+                Physics.SyncTransforms(/*deltaTime*/ 1 / Engine.Instance.TargetFramerate);
                 Physics.ResolveFrameCollisions();
             }
         }
@@ -142,6 +142,10 @@ namespace DevoidEngine.Core
             {
                 GameObjects[i].OnStart();
             }
+            foreach (var transform in transforms)
+            {
+                transform.InitializeInterpolation();
+            }
         }
 
         public GameObject AddGameObject(string name = "GameObject")
@@ -156,7 +160,10 @@ namespace DevoidEngine.Core
             transforms.Add(gameObject.Transform);
 
             if (IsRunning)
+            {
                 gameObject.OnStart();
+                gameObject.Transform.InitializeInterpolation();
+            }
 
             return gameObject;
         }
@@ -169,7 +176,10 @@ namespace DevoidEngine.Core
             transforms.Add(gameObject.Transform);
 
             if (IsRunning)
+            {
                 gameObject.OnStart();
+                gameObject.Transform.InitializeInterpolation();
+            }
 
             return gameObject;
         }

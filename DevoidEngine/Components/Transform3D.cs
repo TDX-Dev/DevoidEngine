@@ -178,7 +178,7 @@ namespace DevoidEngine.Components
         public bool hasMoved = false;
 
         private Matrix4x4 interpolatedWorldMatrix;
-        private uint interpolatedFrame = 0; // cache guard
+        private uint interpolatedFrame = uint.MaxValue;
 
         public Transform3D()
         {
@@ -258,6 +258,16 @@ namespace DevoidEngine.Components
             prevLocalPosition = localPosition;
             prevLocalRotation = localRotation;
             prevLocalScale = localScale;
+        }
+
+        internal void InitializeInterpolation()
+        {
+            prevLocalPosition = localPosition;
+            prevLocalRotation = localRotation;
+            prevLocalScale = localScale;
+
+            interpolatedWorldMatrix = WorldMatrix;
+            interpolatedFrame = uint.MaxValue;
         }
         public Matrix4x4 GetGlobalTransformInterpolated(uint frameIndex, float alpha)
         {

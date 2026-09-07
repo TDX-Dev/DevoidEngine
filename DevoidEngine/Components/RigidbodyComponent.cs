@@ -1,9 +1,10 @@
-﻿using DevoidEngine.Physics;
+﻿using DevoidEngine.Gizmos;
+using DevoidEngine.Physics;
 using System.Numerics;
 
 namespace DevoidEngine.Components
 {
-    public class RigidBodyComponent : Component
+    public class RigidBodyComponent : Component, IGizmoProviderComponent
     {
         public override string Type => nameof(RigidBodyComponent);
 
@@ -216,6 +217,42 @@ namespace DevoidEngine.Components
         public void WakeUp()
         {
             internalBody?.WakeUp();
+        }
+
+        public void OnDrawGizmos(GizmoContext context)
+        {
+            switch (Shape.Type)
+            {
+                case PhysicsShapeType.Box:
+                    {
+                        Vector3 halfSize = Shape.Size * 0.5f;
+                        Vector3 position = gameObject.Transform.Position;
+
+                        context.DrawList.AddWireBox(position - halfSize, position + halfSize, GizmoCategory.Physics);
+
+                        break;
+                    }
+
+                case PhysicsShapeType.Sphere:
+                    {
+                        // Draw sphere gizmo here.
+                        break;
+                    }
+
+                case PhysicsShapeType.Capsule:
+                    {
+                        // Draw capsule gizmo here.
+                        break;
+                    }
+
+                case PhysicsShapeType.Mesh:
+                    {
+
+
+                        // Draw mesh gizmo here.
+                        break;
+                    }
+            }
         }
     }
 }

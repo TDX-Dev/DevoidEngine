@@ -35,7 +35,7 @@ namespace DevoidEngine.AssetPipeline.Loaders
                 Format = asset.Format,
                 MipLevels = asset.GenerateMipmaps ? (int)(Math.Log2(asset.Width) + 1) : 1,
                 Samples = new TextureSampleDescription(1, 0),
-                Usage = TextureUsage.ShaderResource
+                Usage = TextureUsage.ShaderResource,
             };
 
             if (asset.GenerateMipmaps)

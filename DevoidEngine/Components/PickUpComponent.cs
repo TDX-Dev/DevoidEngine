@@ -1,4 +1,6 @@
-﻿using DevoidEngine.Core;
+﻿using DevoidEngine.Components.PickUpBehavior;
+using DevoidEngine.Core;
+using DevoidEngine.InputSystem;
 using DevoidEngine.Physics;
 using DevoidEngine.Util;
 using System.Numerics;
@@ -9,198 +11,261 @@ namespace DevoidEngine.Components
     {
         public override string Type => nameof(PickupComponent);
 
-        public float PickupDistance = 5.0f;
-        public float HoldDistance = 3.0f;
+        public float PickupDistance = 5f;
+        public float HoldSpring = 950f;
+        public float HoldDamping = 40f;
 
-        public Vector3 HoldOffset = new(1, 0, 2);
+        public float HoldAngularSpring = 950f;
+        public float HoldAngularDamping = 40f;
 
-        public float SpringStrength = 420.0f;
-        public float Damping = 17.5f;
-        public float MaxForce = 750;
+        private GameObject? heldObject;
+        private PickupItem? heldItem;
 
-        public float ThrowHoldTime = 1.0f;
-        public float ThrowForce = 35.0f;
+        private Camera3D? camera;
+        private GameObject? holdPoint;
+        private FirstPersonController? controller;
 
-        public float ShakeAmplitude = 0.08f;
-        public float ShakeFrequency = 18.0f;
-
-        private RigidBodyComponent? _heldBody;
-
-        private Camera3D _camera = null!;
-
-        private float _holdTime;
-
-        private bool _isCharging;
-
-        public bool IsHolding => _heldBody != null;
-
-        public float MaxSpinSpeed = 60.0f;
-        public float SpinRampPower = 4.0f;
-        public Vector3 SpinAxis = new(0.3f, 1.0f, 0.2f);
+        public bool IsHolding => heldObject != null;
+        public GameObject? HeldObject => heldObject;
 
         public void SetCamera(Camera3D camera)
         {
-            _camera = camera;
+            this.camera = camera;
         }
-
-        public void TryPickup()
+        public void SetHoldPoint(GameObject holdPoint)
         {
-            if (_heldBody != null)
-            {
-                _isCharging = true;
-                _holdTime = 0.0f;
-                return;
-            }
-
-            Ray ray = new(
-                _camera.gameObject.Transform.Position,
-                _camera.gameObject.Transform.Forward);
-
-            var filter =
-                new IgnoreGameObjectRaycastFilter(gameObject);
-
-            bool hitSomething =
-                gameObject.Scene!.Physics.Raycast(
-                    ray,
-                    PickupDistance,
-                    out RaycastHit hit,
-                    filter);
-
-            if (!hitSomething)
-                return;
-
-            RigidBodyComponent? body =
-                hit.HitObject.GetComponent<RigidBodyComponent>();
-
-            if (body == null)
-                return;
-
-            _heldBody = body;
-
-            _isCharging = false;
-            _holdTime = 0.0f;
+            this.holdPoint = holdPoint;
         }
-
-        public void Release()
+        public void SetController(FirstPersonController controller)
         {
-            _heldBody = null;
-            _isCharging = false;
-            _holdTime = 0.0f;
+            this.controller = controller;
         }
 
         public override void OnUpdate(float dt)
         {
-            if (_heldBody == null)
+            if (camera == null)
                 return;
 
-            UpdateHeldObject(dt);
+            if (Engine.InputSystem.GetActionDown("Pickup"))
+                TryPickup();
 
-            if (!_isCharging)
+            if (heldItem == null)
                 return;
 
-            _holdTime += dt;
+            if (Engine.InputSystem.GetActionDown("Primary"))
+                heldItem.OnPrimary();
 
-            bool held =
-                Engine.InputSystem.GetAction("Pickup") > 0.5f;
+            if (Engine.InputSystem.GetActionDown("Secondary"))
+                heldItem.OnSecondary();
 
-            if (!held)
-            {
-                if (_holdTime >= ThrowHoldTime)
-                    Throw();
-                else
-                    Release();
-            }
+            if (Engine.InputSystem.GetActionDown("Use"))
+                heldItem.OnUse();
         }
 
-        private void UpdateHeldObject(float dt)
+        public override void OnFixedUpdate(float dt)
         {
-            Vector3 shake = CalculateShake();
+            if (heldObject == null ||
+                heldItem == null ||
+                holdPoint == null)
+            {
+                return;
+            }
 
-            Vector3 localOffset =
-                HoldOffset + shake;
+            RigidBodyComponent? rb = heldObject.GetComponent<RigidBodyComponent>();
+
+            if (rb == null || controller == null)
+                return;
+
+            // ============================================================
+            // Position spring
+            // ============================================================
 
             Vector3 targetPosition =
-                _camera.gameObject.Transform.Position +
-                Vector3.Transform(
-                    localOffset,
-                    _camera.gameObject.Transform.Rotation);
+                holdPoint.Transform.Position;
 
             Vector3 currentPosition =
-                _heldBody!.gameObject.Transform.Position;
+                heldObject.Transform.Position;
 
-            Vector3 error =
+            Vector3 positionError =
                 targetPosition - currentPosition;
 
-            Vector3 velocity =
-                _heldBody.LinearVelocity;
+            Vector3 springForce =
+                positionError * HoldSpring;
 
-            Vector3 acceleration =
-                error * SpringStrength -
-                velocity * Damping;
+            Vector3 dampingForce =
+                -rb.LinearVelocity * HoldDamping;
 
-            float maxAcceleration = MaxForce;
+            rb.LinearVelocity +=
+                (springForce + dampingForce) * dt;
 
-            if (acceleration.LengthSquared() >
-                maxAcceleration * maxAcceleration)
+
+            // ============================================================
+            // Rotation spring
+            // ============================================================
+
+            // ============================================================
+            // Rotation spring
+            // ============================================================
+
+            Vector3 offset =  heldItem.HoldEulerOffset;
+
+            Quaternion offsetRotation =
+                Quaternion.CreateFromYawPitchRoll(
+                    offset.Y,
+                    offset.X,
+                    offset.Z);
+
+            Quaternion yawRotation = Quaternion.CreateFromAxisAngle(Vector3.UnitY, controller.GetYaw());
+
+            Quaternion targetRotation =
+                Quaternion.Normalize(
+                    yawRotation *
+                    offsetRotation);
+
+            Quaternion currentRotation =
+                heldObject.Transform.Rotation;
+
+            // Rotation needed to go from current -> target.
+            Quaternion rotationDifference =
+                targetRotation *
+                Quaternion.Inverse(currentRotation);
+
+            rotationDifference =
+                Quaternion.Normalize(rotationDifference);
+
+            // Take the shortest path.
+            if (rotationDifference.W < 0f)
             {
-                acceleration =
-                    Vector3.Normalize(acceleration) *
-                    maxAcceleration;
+                rotationDifference.X *= -1f;
+                rotationDifference.Y *= -1f;
+                rotationDifference.Z *= -1f;
+                rotationDifference.W *= -1f;
             }
 
-            velocity += acceleration * dt;
+            // Quaternion:
+            // q = [axis * sin(angle / 2), cos(angle / 2)]
 
-            _heldBody.LinearVelocity = velocity;
+            float w =
+                Math.Clamp(
+                    rotationDifference.W,
+                    -1f,
+                    1f);
 
-            if (_isCharging)
+            float angle =
+                2f * MathF.Acos(w);
+
+            float sinHalfAngle =
+                MathF.Sqrt(
+                    MathF.Max(
+                        0f,
+                        1f - w * w));
+
+            Vector3 axis;
+
+            if (sinHalfAngle > 0.0001f)
             {
-                float charge =
-                    Math.Clamp(
-                        _holdTime / ThrowHoldTime,
-                        0.0f,
-                        1.0f);
+                axis = new Vector3(
+                    rotationDifference.X,
+                    rotationDifference.Y,
+                    rotationDifference.Z);
 
-                float spin =
-                    MathF.Pow(charge, SpinRampPower);
+                axis /= sinHalfAngle;
+            }
+            else
+            {
+                axis = Vector3.Zero;
+            }
 
-                Vector3 axis = SpinAxis;
+            if (axis.LengthSquared() > 0.0001f)
+            {
+                axis = Vector3.Normalize(axis);
 
-                if (axis.LengthSquared() > 0.0001f)
-                    axis = Vector3.Normalize(axis);
+                Vector3 angularSpring =
+                    axis *
+                    angle *
+                    HoldAngularSpring;
 
-                _heldBody.AngularVelocity =
-                    axis * (MaxSpinSpeed * spin);
+                Vector3 angularDamping =
+                    -rb.AngularVelocity *
+                    HoldAngularDamping;
+
+                rb.AngularVelocity +=
+                    (angularSpring + angularDamping) * dt;
+            }
+            else
+            {
+                rb.AngularVelocity = Vector3.Zero;
             }
         }
 
-        private Vector3 CalculateShake()
+        public void TryPickup()
         {
-            float t = _holdTime;
+            if (heldObject != null)
+            {
+                Drop();
+                return;
+            }
 
-            float x =
-                MathF.Sin(t * ShakeFrequency) *
-                ShakeAmplitude;
+            if (!TryFindPickup(out GameObject? target))
+                return;
 
-            float y =
-                MathF.Cos(t * ShakeFrequency * 1.37f) *
-                ShakeAmplitude;
+            PickupItem? item = target?.GetComponent<PickupItem>();
 
-            float z =
-                MathF.Sin(t * ShakeFrequency * 0.83f) *
-                ShakeAmplitude;
+            if (item == null || !item.CanPickup)
+                return;
 
-            return new Vector3(x, y, z);
+            heldObject = target;
+            heldItem = item;
+
+            RigidBodyComponent? rb = heldObject?.GetComponent<RigidBodyComponent>();
+
+            if (rb != null)
+            {
+                rb.LinearVelocity = Vector3.Zero;
+                rb.AngularVelocity = Vector3.Zero;
+            }
+
+            heldItem.HeldCamera = camera;
+            heldItem.HeldBy = gameObject;
+            heldItem.OnPickup(gameObject);
         }
 
-        private void Throw()
+        public void Drop()
         {
-            Vector3 throwVelocity =
-                _camera.gameObject.Transform.Forward *
-                ThrowForce;
+            if (heldItem == null)
+                return;
 
-            _heldBody!.LinearVelocity += throwVelocity;
+            heldItem.OnDrop();
 
-            Release();
+            heldItem = null;
+            heldObject = null;
+        }
+
+        private bool TryFindPickup(out GameObject? target)
+        {
+            target = null;
+
+            if (camera == null)
+                return false;
+
+            Vector3 origin = camera.gameObject.Transform.Position;
+
+            Vector3 direction = camera.gameObject.Transform.Forward;
+
+            Ray ray = new(origin, direction);
+
+            if (!gameObject.Scene!.Physics.Raycast(ray, PickupDistance, out RaycastHit hit, new IgnoreGameObjectRaycastFilter(gameObject)))
+            {
+                return false;
+            }
+
+
+
+            target = hit.HitObject;
+
+            Console.WriteLine(target.Name);
+
+            return target != null;
         }
     }
 }

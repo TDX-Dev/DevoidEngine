@@ -7,6 +7,9 @@ namespace DevoidEngine.Physics
         public Vector3 Position;
         public Quaternion Rotation;
 
+        public Vector3 ShapePosition;
+        public Quaternion ShapeRotation;
+
         public bool AllowSleep;
         public float Mass;
         public bool IsKinematic;

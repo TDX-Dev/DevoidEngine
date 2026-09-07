@@ -9,6 +9,8 @@ namespace DevoidEngine.Physics.Bepu
         private readonly Simulation simulation;
 
         internal PhysicsMaterial Material;
+        private Vector3 accumulatedForce;
+        private Vector3 accumulatedTorque;
 
 
         private readonly BepuPhysicsBackend backend;
@@ -16,11 +18,7 @@ namespace DevoidEngine.Physics.Bepu
         private static int nextId = 1;
         public int Id { get; }
 
-        public BepuPhysicsBody(
-            BodyHandle handle,
-            Simulation simulation,
-            PhysicsMaterial material,
-            BepuPhysicsBackend backend)
+        public BepuPhysicsBody(BodyHandle handle, Simulation simulation, PhysicsMaterial material, BepuPhysicsBackend backend)
         {
             Id = Interlocked.Increment(ref nextId);
             Handle = handle;
@@ -129,6 +127,27 @@ namespace DevoidEngine.Physics.Bepu
             }
         }
 
+        internal void ApplyAccumulatedForces(float dt)
+        {
+            var body = GetBody();
+
+            if (body.Kinematic)
+            {
+                accumulatedForce = Vector3.Zero;
+                accumulatedTorque = Vector3.Zero;
+                return;
+            }
+
+            if (accumulatedForce != Vector3.Zero)
+                body.ApplyLinearImpulse(accumulatedForce * dt);
+
+            if (accumulatedTorque != Vector3.Zero)
+                body.ApplyAngularImpulse(accumulatedTorque * dt);
+
+            accumulatedForce = Vector3.Zero;
+            accumulatedTorque = Vector3.Zero;
+        }
+
         public void AddImpulse(Vector3 impulse)
         {
             var body = GetBody();
@@ -138,23 +157,14 @@ namespace DevoidEngine.Physics.Bepu
 
         public void AddForce(Vector3 force)
         {
-            var body = GetBody();
-
-            // If inverse mass is zero → kinematic body
-            if (body.LocalInertia.InverseMass == 0f)
-                return;
-
-            Vector3 impulse = force;
-
-            body.ApplyLinearImpulse(impulse);
-            body.Awake = true;
+            accumulatedForce += force;
+            WakeUp();
         }
 
         public void AddTorque(Vector3 torque)
         {
-            var body = GetBody();
-            body.ApplyAngularImpulse(torque);
-            body.Awake = true;
+            accumulatedTorque += torque;
+            WakeUp();
         }
 
         public void AddImpulseAtPoint(Vector3 impulse, Vector3 worldOffset)

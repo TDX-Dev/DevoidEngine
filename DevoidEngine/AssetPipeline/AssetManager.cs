@@ -94,10 +94,18 @@ namespace DevoidEngine.AssetPipeline
             }
         }
 
+        public T RegisterPersistentResource<T>(T asset) where T : AssetType
+        {
+            asset.PersistentResource = true;
+            return asset;
+        }
+
         public void Unload<T>(T asset) where T : class?
         {
             if (asset is AssetType assetType)
             {
+                if (assetType.PersistentResource)
+                    return;
                 // Decrement the count. If it hits 0, returns true.
                 bool shouldDestroy = assetType.Release();
 

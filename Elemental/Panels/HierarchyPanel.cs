@@ -1,6 +1,7 @@
 ﻿using DevoidEngine.Components;
 using DevoidEngine.Core;
 using DevoidEngine.Serialization;
+using DevoidEngine.Util;
 using ImGuiNET;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,7 @@ namespace Elemental.Panels
     {
         private readonly EditorContext _context;
 
+        private readonly List<Action> deferredActionQueue = [];
         private readonly List<GameObject> deleteQueue = [];
         private readonly List<GameObject> duplicateQueue = [];
         private GCHandle? dragHandle;
@@ -86,12 +88,9 @@ namespace Elemental.Panels
             ImGui.EndChild();
             ImGui.PopStyleVar(2);
 
-            foreach (var obj in deleteQueue)
+            foreach (var obj in deferredActionQueue)
             {
-                _context.ActiveScene.RemoveGameObject(obj);
-
-                if (_context.SelectedObject == obj)
-                    _context.SelectedObject = null;
+                obj.Invoke();
             }
 
             foreach (var obj in duplicateQueue)
@@ -106,18 +105,15 @@ namespace Elemental.Panels
                 GameObjectSerializer.ResolveGameObjectReferences(_context.ActiveScene);
             }
 
+            deferredActionQueue.Clear();
             duplicateQueue.Clear();
-            deleteQueue.Clear();
         }
 
         private void DrawGameObjectNode(GameObject obj)
         {
             bool selected = _context.SelectedObject == obj;
 
-            ImGuiTreeNodeFlags flags =
-                ImGuiTreeNodeFlags.OpenOnArrow |
-                ImGuiTreeNodeFlags.SpanFullWidth |
-                ImGuiTreeNodeFlags.FramePadding;
+            ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.OpenOnArrow | ImGuiTreeNodeFlags.SpanFullWidth | ImGuiTreeNodeFlags.FramePadding;
 
             if (selected)
                 flags |= ImGuiTreeNodeFlags.Selected;
@@ -207,9 +203,14 @@ namespace Elemental.Panels
             {
                 if (ImGui.MenuItem("Create Child"))
                 {
-                    var child = _context.ActiveScene!.AddGameObject("GameObject");
-                    child.SetParent(obj);
+                    deferredActionQueue.Add(() =>
+                    {
+                        if (_context.ActiveScene == null) return;
+                        var child = _context.ActiveScene.AddGameObject("GameObject");
+                        child.SetParent(obj);
+                    });
                 }
+
 
                 if (ImGui.MenuItem("Duplicate"))
                 {
@@ -218,11 +219,26 @@ namespace Elemental.Panels
 
                 if (ImGui.MenuItem("Delete"))
                 {
-                    deleteQueue.Add(obj);
+                    deferredActionQueue.Add(() =>
+                    {
+                        if (_context.ActiveScene == null) return;
+                        _context.ActiveScene.RemoveGameObject(obj);
+
+                        if (_context.SelectedObject == obj)
+                            _context.SelectedObject = null;
+                    });
                 }
 
                 ImGui.EndPopup();
             }
+        }
+
+        private GameObject CreateMeshObject(Mesh mesh, Scene scene)
+        {
+            GameObject meshObject = scene.AddGameObject("MeshObj");
+            MeshRenderer mr = meshObject.AddComponent<MeshRenderer>();
+            mr.Mesh = mesh;
+            return meshObject;
         }
 
         private void DrawContextMenu()
@@ -232,6 +248,17 @@ namespace Elemental.Panels
                 if (ImGui.MenuItem("Create Empty"))
                 {
                     _context.ActiveScene?.AddGameObject("GameObject");
+                }
+
+
+                if (ImGui.BeginMenu("Primitives"))
+                {
+                    if (ImGui.MenuItem("Cube"))
+                    {
+                        CreateMeshObject(PrimitiveMeshes.GetCube(), _context.ActiveScene!);
+                    }
+
+                    ImGui.EndMenu();
                 }
 
                 ImGui.EndPopup();

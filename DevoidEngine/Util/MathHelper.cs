@@ -8,6 +8,11 @@ namespace DevoidEngine.Util
         public const float PI = (float)Math.PI;
         public const float TwoPI = (float)(Math.PI * 2.0);
 
+
+        public static float Lerp(float start, float end, float t)
+        {
+            return start + (end - start) * t;
+        }
         public static float DegToRad(float degrees)
         {
             return degrees * (PI / 180f);

@@ -29,6 +29,18 @@ namespace DevoidEngine.Gizmos
 
         public bool IsMouseDown { get; internal set; }
 
+        public bool GizmosEnabled
+        {
+            get => DrawList.Enabled;
+            set => DrawList.Enabled = value;
+        }
+
+        public GizmoCategory EnabledCategories
+        {
+            get => DrawList.EnabledCategories;
+            set => DrawList.EnabledCategories = value;
+        }
+
         public Ray GetMouseRay(Vector2 mousePosition)
         {
             return Camera.ScreenToWorldRay(

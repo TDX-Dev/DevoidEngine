@@ -15,7 +15,7 @@ namespace DevoidEngine.Physics.Bepu
 
         public readonly AngularIntegrationMode AngularIntegrationMode => AngularIntegrationMode.Nonconserving;
 
-        public readonly bool AllowSubstepsForUnconstrainedBodies => false;
+        public readonly bool AllowSubstepsForUnconstrainedBodies => true;
 
         public readonly bool IntegrateVelocityForKinematics => false;
 

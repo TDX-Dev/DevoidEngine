@@ -8,7 +8,12 @@ struct PSInput
 };
 
 TextureCube MAT_Skybox : register(t0);
-SamplerState MAT_Skybox_Sampler : register(s0);
+SamplerState MAT_Skybox_Sampler
+{
+    Filter = MIN_MAG_MIP_LINEAR;
+    AddressU = Clamp;
+    AddressV = Clamp;
+};
 
 Texture2D BlueNoise : register(t1);
 

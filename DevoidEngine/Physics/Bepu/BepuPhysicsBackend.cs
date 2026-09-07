@@ -18,8 +18,8 @@ namespace DevoidEngine.Physics.Bepu
         private readonly Dictionary<BodyHandle, PhysicsMaterial> bodyMaterials = [];
         private readonly Dictionary<StaticHandle, PhysicsMaterial> staticMaterials = [];
 
-        private readonly Dictionary<BodyHandle, IPhysicsBody> bodyWrappers = [];
-        private readonly Dictionary<StaticHandle, IPhysicsStatic> staticWrappers = [];
+        private readonly Dictionary<BodyHandle, BepuPhysicsBody> bodyWrappers = [];
+        private readonly Dictionary<StaticHandle, BepuPhysicsStatic> staticWrappers = [];
 
         private readonly Dictionary<BodyHandle, bool> bodyTriggers = [];
 
@@ -85,6 +85,9 @@ namespace DevoidEngine.Physics.Bepu
 
         public void Step(float deltaTime)
         {
+            foreach (var body in bodyWrappers.Values)
+                body.ApplyAccumulatedForces(deltaTime);
+
             simulation.Timestep(deltaTime);
 
 
@@ -138,10 +141,7 @@ namespace DevoidEngine.Physics.Bepu
 
         public IPhysicsBody CreateBody(PhysicsBodyDescription desc, GameObject owner)
         {
-            TypedIndex shapeIndex = CreateShape(
-                desc.Shape,
-                desc.Mass,
-                out BodyInertia inertia);
+            TypedIndex shapeIndex = CreateShape(desc.Shape, desc.Mass, out BodyInertia inertia);
 
             var pose = new RigidPose(desc.Position, desc.Rotation);
 
@@ -231,19 +231,13 @@ namespace DevoidEngine.Physics.Bepu
 
 
 
-        private TypedIndex CreateShape(
-            PhysicsShapeDescription shapeDesc,
-            float mass,
-            out BodyInertia inertia)
+        private TypedIndex CreateShape(PhysicsShapeDescription shapeDesc, float mass, out BodyInertia inertia)
         {
             switch (shapeDesc.Type)
             {
                 case PhysicsShapeType.Box:
                     {
-                        var shape = new Box(
-                            shapeDesc.Size.X,
-                            shapeDesc.Size.Y,
-                            shapeDesc.Size.Z);
+                        var shape = new Box(shapeDesc.Size.X, shapeDesc.Size.Y, shapeDesc.Size.Z);
 
                         inertia = shape.ComputeInertia(mass);
                         return simulation.Shapes.Add(shape);
@@ -259,9 +253,7 @@ namespace DevoidEngine.Physics.Bepu
 
                 case PhysicsShapeType.Capsule:
                     {
-                        var shape = new Capsule(
-                            shapeDesc.Radius,
-                            shapeDesc.Height);
+                        var shape = new Capsule(shapeDesc.Radius, shapeDesc.Height);
 
                         inertia = shape.ComputeInertia(mass);
                         return simulation.Shapes.Add(shape);
@@ -269,10 +261,7 @@ namespace DevoidEngine.Physics.Bepu
 
                 case PhysicsShapeType.ConvexHull:
                     {
-                        var shape = new ConvexHull(
-                            shapeDesc.Vertices,
-                            bufferPool,
-                            out _);
+                        var shape = new ConvexHull(shapeDesc.Vertices, bufferPool, out _);
 
                         inertia = shape.ComputeInertia(mass);
                         return simulation.Shapes.Add(shape);
@@ -301,11 +290,7 @@ namespace DevoidEngine.Physics.Bepu
             {
                 case PhysicsShapeType.Box:
                     {
-                        var shape = new Box(
-                            shapeDesc.Size.X,
-                            shapeDesc.Size.Y,
-                            shapeDesc.Size.Z);
-
+                        var shape = new Box(shapeDesc.Size.X, shapeDesc.Size.Y, shapeDesc.Size.Z);
                         return simulation.Shapes.Add(shape);
                     }
 
@@ -317,20 +302,13 @@ namespace DevoidEngine.Physics.Bepu
 
                 case PhysicsShapeType.Capsule:
                     {
-                        var shape = new Capsule(
-                            shapeDesc.Radius,
-                            shapeDesc.Height);
-
+                        var shape = new Capsule(shapeDesc.Radius, shapeDesc.Height);
                         return simulation.Shapes.Add(shape);
                     }
 
                 case PhysicsShapeType.ConvexHull:
                     {
-                        var shape = new ConvexHull(
-                            shapeDesc.Vertices,
-                            bufferPool,
-                            out _);
-
+                        var shape = new ConvexHull(shapeDesc.Vertices, bufferPool, out _);
                         return simulation.Shapes.Add(shape);
                     }
 
@@ -344,16 +322,10 @@ namespace DevoidEngine.Physics.Bepu
 
                         int triangleCount = indices.Length / 3;
 
-                        // Allocate triangle buffer
-                        bufferPool.Take<BepuPhysics.Collidables.Triangle>(triangleCount, out var triangles);
+                        bufferPool.Take<Triangle>(triangleCount, out var triangles);
 
                         for (int i = 0; i < triangleCount; i++)
                         {
-                            //triangles[i] = new Triangle(
-                            //    vertices[indices[i * 3 + 0]],
-                            //    vertices[indices[i * 3 + 1]],
-                            //    vertices[indices[i * 3 + 2]]
-                            //);
                             triangles[i] = new BepuPhysics.Collidables.Triangle(
                                 vertices[indices[i * 3 + 0]],
                                 vertices[indices[i * 3 + 2]],
@@ -361,9 +333,7 @@ namespace DevoidEngine.Physics.Bepu
                             );
                         }
 
-                        // IMPORTANT: scale handled here
                         var mesh = new BepuPhysics.Collidables.Mesh(triangles, scale, bufferPool);
-
                         return simulation.Shapes.Add(mesh);
                     }
                 default:
@@ -381,8 +351,8 @@ namespace DevoidEngine.Physics.Bepu
 
                 bodyToGameObject.Remove(b.Handle);
                 bodyMaterials.Remove(b.Handle);
-                bodyTriggers.Remove(b.Handle);   // ADD THIS
-                bodyWrappers.Remove(b.Handle);   // also remove wrapper
+                bodyTriggers.Remove(b.Handle);
+                bodyWrappers.Remove(b.Handle);
             }
             else
             {
@@ -419,15 +389,9 @@ namespace DevoidEngine.Physics.Bepu
         {
             hit = default;
 
-            var handler = new BepuRayHitHandler<TFilter>(
-                this,
-                filter);
+            var handler = new BepuRayHitHandler<TFilter>(this, filter);
 
-            simulation.RayCast(
-                ray.Origin,
-                ray.Direction,
-                maxDistance,
-                ref handler);
+            simulation.RayCast(ray.Origin, ray.Direction, maxDistance, ref handler);
 
             if (!handler.Hit)
                 return false;
@@ -436,9 +400,7 @@ namespace DevoidEngine.Physics.Bepu
             hit.Point = ray.GetPoint(handler.Distance);
             hit.Normal = handler.Normal;
 
-            if (!TryGetGameObject(
-                    handler.Collidable,
-                    out var gameObject))
+            if (!TryGetGameObject(handler.Collidable, out var gameObject))
             {
                 return false;
             }
@@ -450,17 +412,12 @@ namespace DevoidEngine.Physics.Bepu
 
         public bool TryGetGameObject(CollidableReference collidable, out GameObject gameObject)
         {
-            if (collidable.Mobility == CollidableMobility.Dynamic ||
-                collidable.Mobility == CollidableMobility.Kinematic)
+            if (collidable.Mobility == CollidableMobility.Dynamic || collidable.Mobility == CollidableMobility.Kinematic)
             {
-                return bodyToGameObject.TryGetValue(
-                    collidable.BodyHandle,
-                    out gameObject!);
+                return bodyToGameObject.TryGetValue(collidable.BodyHandle, out gameObject!);
             }
 
-            return staticToGameObject.TryGetValue(
-                collidable.StaticHandle,
-                out gameObject!);
+            return staticToGameObject.TryGetValue(collidable.StaticHandle, out gameObject!);
         }
 
     }

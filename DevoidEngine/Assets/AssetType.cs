@@ -8,6 +8,7 @@ namespace DevoidEngine.Assets
         public Guid Guid;
         private int _refCount;
         public int RefCount => _refCount;
+        public bool PersistentResource = false;
 
         public void Retain()
         {

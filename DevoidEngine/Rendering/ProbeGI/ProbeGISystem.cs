@@ -228,9 +228,9 @@ namespace DevoidEngine.Rendering.ProbeGI
             return Vector3.Dot(direction, normal) > 0.0f;
         }
         public List<ProbeInfo> RunProbeRelocation(
-    ProbeGISettings settings,
-    BVH bvh,
-    int iterations = 24)
+     ProbeGISettings settings,
+     BVH bvh,
+     int iterations = 24)
         {
             int countX = (int)settings.ProbeCount.X;
             int countY = (int)settings.ProbeCount.Y;
@@ -239,177 +239,146 @@ namespace DevoidEngine.Rendering.ProbeGI
             int probeCount = countX * countY * countZ;
             int traceResolution = (int)settings.ProbeTraceResolution;
 
-            List<ProbeInfo> probeInfo = new(probeCount);
-
-            for (int i = 0; i < probeCount; i++)
-            {
-                probeInfo.Add(new ProbeInfo
-                {
-                    Offset = Vector3.Zero,
-                    Validity = 0.0f
-                });
-            }
-
+            ProbeInfo[] probeInfo = new ProbeInfo[probeCount];
             ProbeInfo[] nextProbeInfo = new ProbeInfo[probeCount];
+
+            const float SomeLargeValue = 10000.0f;
 
             for (int iteration = 0; iteration < iterations; iteration++)
             {
-                for (int z = 0; z < countZ; z++)
-                {
-                    for (int y = 0; y < countY; y++)
+                Parallel.For(
+                    0,
+                    probeCount,
+                    index =>
                     {
-                        for (int x = 0; x < countX; x++)
+                        int x = index % countX;
+                        int yz = index / countX;
+
+                        int y = yz % countY;
+                        int z = yz / countY;
+
+                        ProbeInfo current = probeInfo[index];
+
+                        Vector3 probePosition =
+                            GetProbePosition(
+                                settings,
+                                x,
+                                y,
+                                z,
+                                current.Offset);
+
+                        Vector3 averageHitOffset = Vector3.Zero;
+                        Vector3 averageBackfaceHitOffset = Vector3.Zero;
+
+                        float closestBackfaceDistance = SomeLargeValue;
+                        float closestFrontfaceDistance = SomeLargeValue;
+
+                        Vector3 closestBackfaceDirection = Vector3.Zero;
+
+                        int backfaceCount = 0;
+
+                        for (int py = 0; py < traceResolution; py++)
                         {
-                            int index =
-                                GetProbeIndex(x, y, z, settings);
+                            for (int px = 0; px < traceResolution; px++)
+                            {
+                                Vector2 uv =
+                                    new(
+                                        (px + 0.5f) / traceResolution,
+                                        (py + 0.5f) / traceResolution);
 
-                            ProbeInfo current =
-                                probeInfo[index];
+                                Vector3 rayDirection =
+                                    OctahedralDirection(uv);
 
-                            Vector3 probePosition =
-                                GetProbePosition(
+                                AccumulateRelocationRay(
+                                    bvh,
+                                    probePosition,
+                                    rayDirection,
                                     settings,
-                                    x,
-                                    y,
-                                    z,
-                                    current.Offset);
-
-                            const float SomeLargeValue = 10000.0f;
-
-                            Vector3 averageHitOffset =
-                                Vector3.Zero;
-
-                            Vector3 averageBackfaceHitOffset =
-                                Vector3.Zero;
-
-                            float closestBackfaceDistance =
-                                SomeLargeValue;
-
-                            float closestFrontfaceDistance =
-                                SomeLargeValue;
-
-                            Vector3 closestBackfaceDirection =
-                                Vector3.Zero;
-
-                            int backfaceCount = 0;
-
-                            for (int py = 0;
-                                 py < traceResolution;
-                                 py++)
-                            {
-                                for (int px = 0;
-                                     px < traceResolution;
-                                     px++)
-                                {
-                                    Vector2 uv =
-                                        new(
-                                            (px + 0.5f) / traceResolution,
-                                            (py + 0.5f) / traceResolution);
-
-                                    Vector3 rayDirection =
-                                        OctahedralDirection(uv);
-
-                                    AccumulateRelocationRay(
-                                        bvh,
-                                        probePosition,
-                                        rayDirection,
-                                        settings,
-                                        ref averageHitOffset,
-                                        ref averageBackfaceHitOffset,
-                                        ref closestBackfaceDistance,
-                                        ref closestBackfaceDirection,
-                                        ref closestFrontfaceDistance,
-                                        ref backfaceCount);
-                                }
+                                    ref averageHitOffset,
+                                    ref averageBackfaceHitOffset,
+                                    ref closestBackfaceDistance,
+                                    ref closestBackfaceDirection,
+                                    ref closestFrontfaceDistance,
+                                    ref backfaceCount);
                             }
-
-                            averageHitOffset /=
-                                traceResolution * traceResolution;
-
-                            if (backfaceCount > 0)
-                            {
-                                averageBackfaceHitOffset /=
-                                    backfaceCount;
-                            }
-
-                            // Timberdoodle calculates the spring from the
-                            // previous iteration's probe-info snapshot.
-                            Vector3 springForce =
-                                CalculateSpringForce(
-                                    x,
-                                    y,
-                                    z,
-                                    settings,
-                                    probeInfo);
-
-                            // IMPORTANT:
-                            // Timberdoodle increments validity BEFORE calculating
-                            // relocation forces.
-                            current.Validity += 0.05f;
-
-                            Vector3 adjustment =
-                                CalculateRelocationAdjustment(
-                                    traceResolution,
-                                    averageHitOffset,
-                                    closestBackfaceDistance,
-                                    closestBackfaceDirection,
-                                    closestFrontfaceDistance,
-                                    backfaceCount,
-                                    springForce,
-                                    current.Validity);
-
-                            // Invalidate probes that are either too close to a
-                            // surface or see backfaces.
-                            if (closestBackfaceDistance != SomeLargeValue ||
-                                closestFrontfaceDistance <
-                                AcceptableSurfaceDistance)
-                            {
-                                current.Validity = 0.0f;
-                            }
-
-                            // Border probes don't converge in position.
-                            // Timberdoodle still allows the calculated adjustment
-                            // to exist here, but the probe is invalidated.
-                            bool isBorderProbe =
-                                x == 0 ||
-                                y == 0 ||
-                                z == 0 ||
-                                x == countX - 1 ||
-                                y == countY - 1 ||
-                                z == countZ - 1;
-
-                            if (isBorderProbe)
-                            {
-                                current.Validity = 0.0f;
-                            }
-
-                            Vector3 newOffset =
-                                current.Offset + adjustment;
-
-                            newOffset = Vector3.Clamp(
-                                newOffset,
-                                new Vector3(-MaxRelativeRepositioning),
-                                new Vector3(MaxRelativeRepositioning));
-
-                            nextProbeInfo[index] =
-                                new ProbeInfo
-                                {
-                                    Offset = newOffset,
-                                    Validity = current.Validity
-                                };
                         }
-                    }
-                }
 
-                // Equivalent to the next-frame / probe_info_copy separation
-                // used by Timberdoodle.
-                for (int i = 0; i < probeCount; i++)
-                {
-                    probeInfo[i] = nextProbeInfo[i];
-                }
+                        int rayCount =
+                            traceResolution * traceResolution;
+
+                        averageHitOffset /= rayCount;
+
+                        if (backfaceCount > 0)
+                        {
+                            averageBackfaceHitOffset /= backfaceCount;
+                        }
+
+                        Vector3 springForce =
+                            CalculateSpringForce(
+                                x,
+                                y,
+                                z,
+                                settings,
+                                probeInfo);
+
+                        current.Validity += 0.05f;
+
+                        Vector3 adjustment =
+                            CalculateRelocationAdjustment(
+                                traceResolution,
+                                averageHitOffset,
+                                closestBackfaceDistance,
+                                closestBackfaceDirection,
+                                closestFrontfaceDistance,
+                                backfaceCount,
+                                springForce,
+                                current.Validity);
+
+                        if (closestBackfaceDistance != SomeLargeValue ||
+                            closestFrontfaceDistance <
+                            AcceptableSurfaceDistance)
+                        {
+                            current.Validity = 0.0f;
+                        }
+
+                        bool isBorderProbe =
+                            x == 0 ||
+                            y == 0 ||
+                            z == 0 ||
+                            x == countX - 1 ||
+                            y == countY - 1 ||
+                            z == countZ - 1;
+
+                        if (isBorderProbe)
+                        {
+                            current.Validity = 0.0f;
+                        }
+
+                        Vector3 newOffset =
+                            current.Offset + adjustment;
+
+                        newOffset = Vector3.Clamp(
+                            newOffset,
+                            new Vector3(-MaxRelativeRepositioning),
+                            new Vector3(MaxRelativeRepositioning));
+
+                        nextProbeInfo[index] =
+                            new ProbeInfo
+                            {
+                                Offset = newOffset,
+                                Validity = current.Validity
+                            };
+                    });
+
+                // Synchronization barrier.
+                //
+                // Only after EVERY probe has finished do we make
+                // nextProbeInfo the input for the next iteration.
+                (probeInfo, nextProbeInfo) =
+                    (nextProbeInfo, probeInfo);
             }
 
-            return probeInfo;
+            return [.. probeInfo];
         }
 
         void AccumulateRelocationRay(
@@ -577,9 +546,9 @@ namespace DevoidEngine.Rendering.ProbeGI
                     : closestBackfaceDistance +
                       AcceptableSurfaceDistance * 0.5f;
 
-            float backfaceEscapePower =
-                backfaceEscapeDistance /
-                BackfaceEscapeRange;
+            //float backfaceEscapePower =
+            //    backfaceEscapeDistance /
+            //    BackfaceEscapeRange;
 
             // Calculate frontface attraction / repulsion.
             Vector3 estimatedFreedomDirection =

@@ -198,6 +198,8 @@ namespace DevoidEngine.Rendering
             NullMaterial = new Material(NullShader);
             NullMaterialInstance = new MaterialInstance(NullMaterial);
 
+            Engine.Instance.AssetManager.RegisterPersistentResource(NullMaterial);
+
             InformationShader = Shader.FromDescriptorFile(Engine.GraphicsDevice, Path.Combine(Engine.BasePath, "Content/DevoidShaderDescriptors/information_pass.dsd"));
             InformationMaterialInstance = new MaterialInstance(new Material(InformationShader));
 
@@ -411,7 +413,7 @@ namespace DevoidEngine.Rendering
             );
 
             GizmoRenderer.Render(context, viewport, viewportResources);
-            RenderDebug(cmd, context, viewportResources);
+            //RenderDebug(cmd, context, viewportResources);
             RenderUI(cmd, viewport, viewportResources);
 
             ViewportBlitTarget.SetColorAttachment(0, viewport.OutputTexture!);

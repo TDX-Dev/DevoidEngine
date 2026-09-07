@@ -389,9 +389,7 @@ namespace DevoidGPU.DX11
                     MapDXGIComponentCountToFormat(attr),
                     attr.Offset,
                     attr.Slot,
-                    isInstance
-                        ? InputClassification.PerInstanceData
-                        : InputClassification.PerVertexData,
+                    isInstance ? InputClassification.PerInstanceData : InputClassification.PerVertexData,
                     isInstance ? 1 : 0
                 );
             }
@@ -437,8 +435,10 @@ namespace DevoidGPU.DX11
 
         public static TextureAddressMode ToDXTextureAddressMode(WrapMode wrap)
         {
+
             return wrap switch
             {
+                WrapMode.Repeat => TextureAddressMode.Wrap,
                 WrapMode.ClampToEdge => TextureAddressMode.Clamp,
                 WrapMode.ClampToBorder => TextureAddressMode.Border,
                 WrapMode.Mirror => TextureAddressMode.MirrorOnce,

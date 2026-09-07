@@ -29,7 +29,7 @@ namespace DevoidEngine.Gizmos
 
         public override void Draw(GizmoContext context)
         {
-            context.DrawList.AddWireBox(min, max, Vector4.One);
+            context.DrawList.AddWireBox(min, max, GizmoCategory.Custom);
 
             for (int i = 0; i < 6; i++)
             {

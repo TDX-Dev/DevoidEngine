@@ -2,6 +2,7 @@
 {
     public enum WrapMode
     {
+        Repeat,
         Mirror,
         MirrorRepeat,
         ClampToEdge,

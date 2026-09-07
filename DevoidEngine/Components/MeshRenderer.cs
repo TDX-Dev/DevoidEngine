@@ -21,6 +21,7 @@ namespace DevoidEngine.Components
                 mesh = value;
                 instance_id = gameObject.Scene.World.CreateMeshInstance(mesh);
                 gameObject.Scene.World.InstanceSetTransform(instance_id, gameObject.Transform.WorldMatrix);
+                just_spawned = true;
             }
         }
 
@@ -58,6 +59,7 @@ namespace DevoidEngine.Components
 
         private RID instance_id;
         private bool has_moved_current_frame = true;
+        private bool just_spawned = false;
 
         public override void OnAttach()
         {
@@ -79,6 +81,7 @@ namespace DevoidEngine.Components
                 instance_id = gameObject.Scene.World.CreateMeshInstance(mesh);
                 gameObject.Scene.World.InstanceSetTransform(instance_id, gameObject.Transform.WorldMatrix);
                 gameObject.Scene.World.InstanceSetStatic(instance_id, is_static);
+                just_spawned = true;
 
             }
 
@@ -96,11 +99,23 @@ namespace DevoidEngine.Components
         {
             if (Engine.Instance.FrameCount == 0)
                 return;
-            
-            if ((!has_moved_current_frame || mesh == null || !IsInitialized))
+
+            if (mesh == null || !IsInitialized)
                 return;
+
+            bool interpolate = Engine.Instance.UseInterpolation && !IsStatic;
+
+            if (!interpolate && !has_moved_current_frame)
+                return;
+
+
             Matrix4x4 worldMatrixInterpolated;
-            if (Engine.Instance.UseInterpolation && !IsStatic)
+            if (just_spawned)
+            {
+                worldMatrixInterpolated = gameObject.Transform.WorldMatrix;
+                just_spawned = false;
+            }
+            else if (Engine.Instance.UseInterpolation && !IsStatic)
             {
                 worldMatrixInterpolated = gameObject.Transform.GetGlobalTransformInterpolated(Engine.Instance.FrameCount, Engine.Instance.InterpolationAlpha);
             }

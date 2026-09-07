@@ -40,8 +40,15 @@ SamplerState MAT_AlbedoSampler : register(s0);
 SamplerState MAT_NormalSampler : register(s1);
 SamplerState MAT_MetallicSampler : register(s2);
 SamplerState MAT_RoughnessSampler : register(s3);
-SamplerState MAT_AOSampler : register(s4);
 SamplerState MAT_EmissiveSampler : register(s5);
+
+SamplerState MAT_AOSampler
+{
+    Filter = MIN_MAG_MIP_POINT;
+    AddressU = Clamp;
+    AddressV = Clamp;
+};
+
 
 float3 GetNormalFromMap(PSInput input)
 {

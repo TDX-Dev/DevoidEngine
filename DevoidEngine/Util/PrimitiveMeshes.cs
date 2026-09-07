@@ -218,7 +218,7 @@ namespace DevoidEngine.Util
 
             mesh.Upload();
 
-            return mesh;
+            return Engine.Instance.AssetManager.RegisterPersistentResource(mesh);
         }
         public static Mesh CreateWireCube()
         {
@@ -266,7 +266,7 @@ namespace DevoidEngine.Util
 
             mesh.Upload();
 
-            return mesh;
+            return Engine.Instance.AssetManager.RegisterPersistentResource(mesh);
         }
         public static Mesh CreateInvertedUVCube()
         {
@@ -418,7 +418,7 @@ namespace DevoidEngine.Util
 
             mesh.Upload();
 
-            return mesh;
+            return Engine.Instance.AssetManager.RegisterPersistentResource(mesh);
         }
         public static Mesh CreateFullscreenTriangle()
         {
@@ -448,7 +448,7 @@ namespace DevoidEngine.Util
 
             mesh.Upload();
 
-            return mesh;
+            return Engine.Instance.AssetManager.RegisterPersistentResource(mesh);
         }
         public static Mesh CreateQuad()
         {
@@ -486,7 +486,7 @@ namespace DevoidEngine.Util
 
             mesh.Upload();
 
-            return mesh;
+            return Engine.Instance.AssetManager.RegisterPersistentResource(mesh);
         }
         public static Mesh CreateCenteredQuad()
         {
@@ -524,7 +524,7 @@ namespace DevoidEngine.Util
 
             mesh.Upload();
 
-            return mesh;
+            return Engine.Instance.AssetManager.RegisterPersistentResource(mesh);
         }
         public static Mesh CreateSphere(float radius = 0.5f, int slices = 64, int stacks = 32)
         {
@@ -587,7 +587,7 @@ namespace DevoidEngine.Util
 
             mesh.Upload();
 
-            return mesh;
+            return Engine.Instance.AssetManager.RegisterPersistentResource(mesh);
         }
         public static Mesh CreateCapsule(float radius = 0.5f, float height = 2.0f, int slices = 32, int hemisphereStacks = 8, int cylinderStacks = 1)
         {
@@ -736,7 +736,7 @@ namespace DevoidEngine.Util
 
             mesh.Upload();
 
-            return mesh;
+            return Engine.Instance.AssetManager.RegisterPersistentResource(mesh);
         }
         public static Mesh CreateCylinder(float radius = 0.5f, float height = 1.0f, int slices = 32, int stacks = 1)
         {
@@ -864,7 +864,7 @@ namespace DevoidEngine.Util
 
             mesh.Upload();
 
-            return mesh;
+            return Engine.Instance.AssetManager.RegisterPersistentResource(mesh);
         }
         public static Mesh CreateCircle(int segments = 16)
         {
@@ -921,7 +921,7 @@ namespace DevoidEngine.Util
 
             mesh.Upload();
 
-            return mesh;
+            return Engine.Instance.AssetManager.RegisterPersistentResource(mesh);
         }
         public static Mesh CreateIcosphere(int subdivisions = 2, float radius = 0.5f)
         {
@@ -1055,7 +1055,7 @@ namespace DevoidEngine.Util
 
             mesh.Upload();
 
-            return mesh;
+            return Engine.Instance.AssetManager.RegisterPersistentResource(mesh);
         }
     }
 }

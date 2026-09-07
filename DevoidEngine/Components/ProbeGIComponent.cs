@@ -204,10 +204,7 @@ namespace DevoidEngine.Components
 
         public void OnDrawGizmos(GizmoContext context)
         {
-            context.DrawList.AddWireBox(
-                volumeMin,
-                volumeMax,
-                gizmoMaterial);
+            context.DrawList.AddWireBox(volumeMin, volumeMax, gizmoMaterial, GizmoCategory.Custom);
         }
     }
 }

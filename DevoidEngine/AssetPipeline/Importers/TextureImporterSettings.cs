@@ -18,10 +18,14 @@ namespace DevoidEngine.AssetPipeline.Importers
         [Key(3)]
         public FilterMode Filter = FilterMode.Linear;
         [Key(4)]
-        public WrapMode Wrap = WrapMode.MirrorRepeat;
+        public WrapMode WrapU = WrapMode.Repeat;
         [Key(5)]
-        public int Anisotropy = 8;
+        public WrapMode WrapV = WrapMode.Repeat;
         [Key(6)]
+        public WrapMode WrapW = WrapMode.Repeat;
+        [Key(7)]
+        public int Anisotropy = 8;
+        [Key(8)]
         public TextureFormat Format = TextureFormat.RGBA8_UNorm;
     }
 }

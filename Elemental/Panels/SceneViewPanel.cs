@@ -17,14 +17,12 @@ namespace Elemental.Panels
 
         public Action<string>? AssetDropRequested;
 
-
-
-        public SceneViewPanel(Scene activeScene, EditorContext context) : base("Scene View", activeScene)
+        public SceneViewPanel(Scene activeScene, EditorContext context)
+            : base("Scene View", activeScene)
         {
             _context = context;
             _context.EditorCamera = new EditorCamera();
 
-            // Direct assignment to Viewport
             Viewport.CameraOverride = context.EditorCamera!.Camera;
         }
 
@@ -39,7 +37,6 @@ namespace Elemental.Panels
             bool isRmb = ImGui.IsMouseDown(ImGuiMouseButton.Right);
             bool isMmb = ImGui.IsMouseDown(ImGuiMouseButton.Middle);
 
-            // Start navigation session if clicking inside the viewport
             if (IsHovered &&
                 (ImGui.IsMouseClicked(ImGuiMouseButton.Right) ||
                  ImGui.IsMouseClicked(ImGuiMouseButton.Middle)))
@@ -48,13 +45,11 @@ namespace Elemental.Panels
                 ImGui.SetWindowFocus();
             }
 
-            // End navigation session when both camera buttons are released
             if (!isRmb && !isMmb)
             {
                 _isNavigating = false;
             }
 
-            // Scene View owns input while focused or actively navigating.
             _context.IsSceneViewFocused =
                 IsFocused || _isNavigating;
 
@@ -80,6 +75,7 @@ namespace Elemental.Panels
 
         protected override void OnViewportOverlayRender()
         {
+
             if (!ImGui.BeginDragDropTarget())
                 return;
 

@@ -76,7 +76,12 @@ TextureCube PrefilterMap : register(t16);
 Texture2D BRDFLUT : register(t18);
 Texture2D ScreenAO : register(t19);
 
-SamplerState EnvironmentSampler : register(s10);
+SamplerState EnvironmentSampler
+{
+    Filter = MIN_MAG_MIP_LINEAR;
+    AddressU = Clamp;
+    AddressV = Clamp;
+};
 
 SamplerState ScreenAOSampler
 {
