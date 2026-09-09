@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "Elemental": {
-      "commandName": "Project",
-      "nativeDebugging": true
-    }
-  }
-}

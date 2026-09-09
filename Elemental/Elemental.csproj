@@ -5,17 +5,8 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <PublishAot>true</PublishAot>
     <InvariantGlobalization>true</InvariantGlobalization>
-    <Platforms>AnyCPU;x64</Platforms>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\DevoidEngine\DevoidEngine.csproj" />
-  </ItemGroup>
-
-	<ItemGroup>
-		<None Include="./Assets/**/*.*" CopyToOutputDirectory="PreserveNewest" Visible="true" />
-	</ItemGroup>
 
 </Project>
