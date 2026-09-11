@@ -100,11 +100,11 @@ namespace DevoidEngine.Core
 
 
 #if DISPLAY_DEBUG_INFO
-            Console.WriteLine("==============================================");
-            Console.WriteLine($"Devoid Version: {Engine.Instance.EngineVersion}");
-            Console.WriteLine($"Renderer: {Engine.Renderer.ActiveTechnique}");
-            Console.WriteLine($"Rendering Backend: {specification.API}");
-            Console.WriteLine("==============================================");
+            Console.WriteLine( "████  █████ █   █  ███  ███ ████ \t");
+            Console.WriteLine($"█   █ █     █   █ █   █  █  █   █ \tDevoid Version: {Engine.Instance.EngineVersion}");
+            Console.WriteLine($"█   █ ████  █   █ █   █  █  █   █ \tRenderer: {Engine.Renderer.ActiveTechnique}");
+            Console.WriteLine($"█   █ █      █ █  █   █  █  █   █ \tRendering Backend: {specification.API}");
+            Console.WriteLine( "████  █████   █    ███  ███ ████ \t");
 #endif
 
 

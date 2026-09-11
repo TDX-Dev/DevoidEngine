@@ -3,6 +3,7 @@ using DevoidEngine.Audio;
 using DevoidEngine.Audio.SoLoud;
 using DevoidEngine.Gizmos;
 using DevoidEngine.InputSystem;
+using DevoidEngine.Logging;
 using DevoidEngine.Physics;
 using DevoidEngine.Physics.Bepu;
 using DevoidEngine.Profiling;

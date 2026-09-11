@@ -100,6 +100,8 @@ namespace DevoidEngine.AssetPipeline
 
             var data = MessagePack.MessagePackSerializer.Serialize(state);
 
+            if (DatabasePath == string.Empty)
+                return;
             File.WriteAllBytes(DatabasePath, data);
         }
 

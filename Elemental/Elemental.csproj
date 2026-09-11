@@ -7,6 +7,15 @@
     <Nullable>enable</Nullable>
     <PublishAot>true</PublishAot>
     <InvariantGlobalization>true</InvariantGlobalization>
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DevoidEngine\DevoidEngine.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Tools\Panels\" />
+  </ItemGroup>
 
 </Project>

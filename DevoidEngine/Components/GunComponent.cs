@@ -100,7 +100,7 @@ namespace DevoidEngine.Components
                 // Apply damage.
             }
 
-            GameObject bulletObj = new GameObject();
+            GameObject bulletObj = new();
 
             bulletObj.Transform.Position = origin + direction * 2f;
 

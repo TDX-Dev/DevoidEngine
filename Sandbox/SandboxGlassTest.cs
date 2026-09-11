@@ -38,12 +38,6 @@ namespace Sandbox
 
         public override void OnGUIRender()
         {
-            if (ImGui.Begin("Hey!"))
-            {
-
-            }
-            ImGui.End();
-
             if (ImGui.Begin("H1!"))
             {
 
@@ -53,6 +47,7 @@ namespace Sandbox
 
         public override void OnAttach()
         {
+
             BoundsGizmo transformGizmo = new()
             {
 
