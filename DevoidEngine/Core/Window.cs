@@ -30,6 +30,8 @@ namespace DevoidEngine.Core
 
         public event Action<int, int>? OnWindowResize;
         public event Action<char>? OnWindowTextInput;
+        public event Action<Keys, int, KeyModifiers, bool>? OnWindowKeyDown;
+        public event Action<Keys, int, KeyModifiers, bool>? OnWindowKeyUp;
 
         public Window(WindowSpecification specification) : base(new NativeWindowSettings()
         {
@@ -58,6 +60,18 @@ namespace DevoidEngine.Core
 
             this.Resize += Window_Resize;
             this.TextInput += Window_TextInput;
+            this.KeyDown += Window_KeyDown;
+            this.KeyUp += Window_KeyUp;
+        }
+
+        private void Window_KeyUp(KeyboardKeyEventArgs obj)
+        {
+            OnWindowKeyUp?.Invoke(obj.Key, obj.ScanCode, obj.Modifiers, obj.IsRepeat);
+        }
+
+        private void Window_KeyDown(KeyboardKeyEventArgs obj)
+        {
+            OnWindowKeyDown?.Invoke(obj.Key, obj.ScanCode, obj.Modifiers, obj.IsRepeat);
         }
 
         private void Window_Resize(ResizeEventArgs obj)

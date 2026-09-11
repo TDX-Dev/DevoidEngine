@@ -1,4 +1,5 @@
-﻿using DevoidGPU;
+﻿using DevoidEngine.InputSystem.InputDevices;
+using DevoidGPU;
 
 namespace DevoidEngine.Core
 {
@@ -72,6 +73,22 @@ namespace DevoidEngine.Core
             for (int i = 0; i < layers.Count; i++)
             {
                 layers[i].OnPostRender(cmd);
+            }
+        }
+
+        public void KeyDownLayers(Keys keys, int scancode, KeyModifiers modifiers, bool isRepeated)
+        {
+            for (int i = 0; i < layers.Count; i++)
+            {
+                layers[i].OnKeyDown(keys, scancode, modifiers, isRepeated);
+            }
+        }
+
+        public void KeyUpLayers(Keys keys, int scancode, KeyModifiers modifiers, bool isRepeated)
+        {
+            for (int i = 0; i < layers.Count; i++)
+            {
+                layers[i].OnKeyUp(keys, scancode, modifiers, isRepeated);
             }
         }
 

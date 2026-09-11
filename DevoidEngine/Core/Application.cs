@@ -97,6 +97,8 @@ namespace DevoidEngine.Core
             ImguiRenderer.Initialize(mainSurface);
             ImguiRenderer.OnGUI += () => { layerManager.OnGUILayers(); };
             mainSurface.OnTextInput += ImguiRenderer.OnTextInput;
+            mainSurface.OnKeyDown += layerManager.KeyDownLayers;
+            mainSurface.OnKeyUp += layerManager.KeyUpLayers;
 
 
 #if DISPLAY_DEBUG_INFO

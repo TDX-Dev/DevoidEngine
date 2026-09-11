@@ -1,4 +1,5 @@
-﻿using DevoidGPU;
+﻿using DevoidEngine.InputSystem.InputDevices;
+using DevoidGPU;
 
 namespace DevoidEngine.Core
 {
@@ -24,5 +25,7 @@ namespace DevoidEngine.Core
         public virtual void OnResize(int width, int height) { }
         // This method is called before the imgui renderer commences rendering
         public virtual void OnGUIRender() { }
+        public virtual void OnKeyDown(Keys keys, int Scancode, KeyModifiers modifiers, bool isRepeated) { }
+        public virtual void OnKeyUp(Keys keys, int Scancode, KeyModifiers modifiers, bool isRepeated) { }
     }
 }

@@ -1,4 +1,5 @@
-﻿using DevoidGPU;
+﻿using DevoidEngine.InputSystem.InputDevices;
+using DevoidGPU;
 
 namespace DevoidEngine.Core
 {
@@ -15,6 +16,8 @@ namespace DevoidEngine.Core
         public event Action<int, int>? OnResize;
 
         public event Action<char>? OnTextInput;
+        public event Action<Keys, int, KeyModifiers, bool>? OnKeyDown;
+        public event Action<Keys, int, KeyModifiers, bool>? OnKeyUp;
 
         private bool isMinimized;
         private bool resizePending;
@@ -35,9 +38,21 @@ namespace DevoidEngine.Core
             Window.OnWindowResize += Window_Resize;
             Window.Minimized += Window_Minimized;
             window.OnWindowTextInput += Window_OnWindowTextInput;
+            window.OnWindowKeyDown += Window_OnWindowKeyDown;
+            window.OnWindowKeyUp += Window_OnWindowKeyUp;
 
             prevWidth = Window.ClientSize.X;
             prevHeight = Window.ClientSize.Y;
+        }
+
+        private void Window_OnWindowKeyUp(OpenTK.Windowing.GraphicsLibraryFramework.Keys arg1, int arg2, OpenTK.Windowing.GraphicsLibraryFramework.KeyModifiers arg3, bool arg4)
+        {
+            OnKeyUp?.Invoke((Keys)arg1, arg2, (KeyModifiers)arg3, arg4);
+        }
+
+        private void Window_OnWindowKeyDown(OpenTK.Windowing.GraphicsLibraryFramework.Keys arg1, int arg2, OpenTK.Windowing.GraphicsLibraryFramework.KeyModifiers arg3, bool arg4)
+        {
+            OnKeyDown?.Invoke((Keys)arg1, arg2, (KeyModifiers)arg3, arg4);
         }
 
         private void Window_OnWindowTextInput(char obj)
