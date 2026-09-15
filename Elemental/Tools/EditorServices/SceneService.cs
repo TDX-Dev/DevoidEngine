@@ -1,4 +1,6 @@
-﻿using DevoidEngine.Core;
+﻿using BepuPhysics.CollisionDetection;
+using DevoidEngine.Components;
+using DevoidEngine.Core;
 using System.Numerics;
 using System.Text;
 
@@ -23,6 +25,9 @@ namespace Elemental.Tools.EditorServices
             GameObject go3 = testScene.AddGameObject("MyObject1111");
 
             go1.Transform.Position = new Vector3(1, 10, 20);
+            go1.AddComponent<MeshRenderer>();
+
+            go3.AddComponent<SerializerTestComponent>();
 
             ResourceFormatText.Save("scene.dscn", testScene);
 

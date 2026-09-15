@@ -20,6 +20,7 @@
         Input,
         UI,
         Scene,
+        Serialization,
         Scripting,
         Editor
     }

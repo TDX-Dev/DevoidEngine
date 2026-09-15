@@ -15,10 +15,17 @@ namespace DevoidEngine.Metadata
             classes.Add(classInfo.ClassType, classInfo);
         }
 
+        public static void PrintAllTypes()
+        {
+            foreach (ClassInfo classInfo in classes.Values)
+            {
+                Console.WriteLine(classInfo.ClassType);
+            }
+        }
+
         public static ClassInfo? GetClass(Type type)
         {
             classes.TryGetValue(type, out ClassInfo? classInfo);
-
             return classInfo;
         }
         public static IEnumerable<ClassInfo> GetDerivedClasses(Type baseType)

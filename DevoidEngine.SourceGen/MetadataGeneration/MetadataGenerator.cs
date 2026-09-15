@@ -106,16 +106,38 @@ namespace DevoidEngine.SourceGen.MetadataGeneration
                     IsSupportedType(property.Type))
                 .ToArray();
 
+            var fields = symbol
+                .GetMembers()
+                .OfType<IFieldSymbol>()
+                .Where(field =>
+                    field.DeclaredAccessibility == Accessibility.Public &&
+                    !field.IsConst &&
+                    !field.IsStatic &&
+                    IsSupportedType(field.Type))
+                .ToArray();
+
             string propertyInfos = string.Join(
                 ",\n",
                 properties.Select((property, index) =>
                     GeneratePropertyInfo(property, index))
             );
 
+            string fieldInfos = string.Join(
+                ",\n",
+                fields.Select((field, index) =>
+                    GenerateFieldInfo(field, index))
+            );
+
             string accessors = string.Join(
                 "\n\n",
                 properties.Select((property, index) =>
                     GenerateAccessors(symbol, property, index))
+            );
+
+            string fieldAccessors = string.Join(
+                "\n\n",
+                fields.Select((field, index) =>
+                    GenerateFieldAccessors(symbol, field, index))
             );
 
             string source = $$"""
@@ -136,10 +158,15 @@ namespace DevoidEngine.SourceGen.MetadataGeneration
                         Properties =
                         [
                             {{propertyInfos}}
+                        ],
+                        Fields =
+                        [
+                            {{fieldInfos}}
                         ]
                     };
 
                     {{accessors}}
+                    {{fieldAccessors}}
                 }
                 """;
 
@@ -172,7 +199,66 @@ namespace DevoidEngine.SourceGen.MetadataGeneration
                 }
                 """;
         }
+        private static string GenerateFieldInfo(IFieldSymbol field, int index)
+        {
+            string fieldType = GetTypeOfName(field.Type);
 
+            string getter = $"GetField_{field.Name}_{index}";
+
+            string setter = !field.IsReadOnly
+                ? $"SetField_{field.Name}_{index}"
+                : "null";
+
+            return $$"""
+                new FieldInfo
+                {
+                    Name = "{{field.Name}}",
+                    FieldType = typeof({{fieldType}}),
+                    Getter = {{getter}},
+                    Setter = {{setter}}
+                }
+                """;
+        }
+
+        private static string GenerateFieldAccessors(INamedTypeSymbol classSymbol, IFieldSymbol field, int index)
+        {
+            string className = classSymbol.ToDisplayString(
+                SymbolDisplayFormat.FullyQualifiedFormat);
+
+            string fieldType = GetTypeOfName(field.Type);
+
+            string getterName = $"GetField_{field.Name}_{index}";
+            string setterName = $"SetField_{field.Name}_{index}";
+
+            var output = new System.Text.StringBuilder();
+
+            output.AppendLine($$"""
+                private static object? {{getterName}}(object instance)
+                {
+                    {{className}} self = ({{className}})instance;
+
+                    return self.{{field.Name}};
+                }
+                """);
+
+            if (!field.IsReadOnly)
+            {
+                output.AppendLine();
+
+                output.AppendLine($$"""
+                    private static void {{setterName}}(
+                        object instance,
+                        object? value)
+                    {
+                        {{className}} self = ({{className}})instance;
+
+                        self.{{field.Name}} = ({{fieldType}})value!;
+                    }
+                    """);
+            }
+
+            return output.ToString();
+        }
         private static string GenerateAccessors(INamedTypeSymbol classSymbol, IPropertySymbol property, int index)
         {
             string className = classSymbol.ToDisplayString(

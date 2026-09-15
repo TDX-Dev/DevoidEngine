@@ -10,9 +10,7 @@ namespace DevoidEngine.Assets
         public int RefCount => _refCount;
         public bool PersistentResource = false;
 
-
-
-
+        public bool IsExternalResource() => Guid == Guid.Empty;
 
         public void Retain()
         {

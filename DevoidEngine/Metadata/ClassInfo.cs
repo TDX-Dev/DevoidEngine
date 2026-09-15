@@ -9,6 +9,7 @@
         public ClassInfo? BaseClass { get; init; }
         public MethodInfo[] Methods { get; init; } = [];
         public PropertyInfo[] Properties { get; init; } = [];
+        public FieldInfo[] Fields { get; init; } = [];
 
         public bool IsDerivedFrom(ClassInfo baseClass)
         {
