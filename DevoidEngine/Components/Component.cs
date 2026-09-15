@@ -1,4 +1,5 @@
-﻿using DevoidEngine.Core;
+﻿using DevoidEngine.Attributes;
+using DevoidEngine.Core;
 using DevoidEngine.Serialization;
 using System.Diagnostics;
 
@@ -14,7 +15,7 @@ namespace DevoidEngine.Components
 
         All = Play | Edit
     }
-
+    [DevoidClass(typeof(Component))]
     public abstract partial class Component
     {
         public override string ToString() => Type;

@@ -7,17 +7,30 @@
 	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 	<Platforms>AnyCPU;x64</Platforms>
+	
+	<PublishAot>true</PublishAot>
+	<IsAotCompatible>true</IsAotCompatible>
+	<EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+	<PermitDynamicIL>false</PermitDynamicIL>
   </PropertyGroup>
+	
+	<!--IMPORTANT FOR SHARPDX-->
+	<ItemGroup>
+		<TrimmerRootDescriptor Include="rd.xml" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="SharpDX" Version="4.2.0" />
-    <PackageReference Include="SharpDX.D3DCompiler" Version="4.2.0" />
-    <PackageReference Include="SharpDX.Direct3D11" Version="4.2.0" />
-    <PackageReference Include="SharpDX.Mathematics" Version="4.2.0" />
-  </ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="SharpDX" Version="4.2.0" />
+		<PackageReference Include="SharpDX.DXGI" Version="4.2.0" />
+		<PackageReference Include="SharpDX.Direct3D11" Version="4.2.0" />
+		<PackageReference Include="SharpDX.D3DCompiler" Version="4.2.0" />
+		<PackageReference Include="SharpDX.Mathematics" Version="4.2.0" />
+	</ItemGroup>
 
   <ItemGroup>
     <EditorConfigFiles Remove="D:\Devoid Engine\DevoidGPU\.editorconfig" />
   </ItemGroup>
+
 
 </Project>

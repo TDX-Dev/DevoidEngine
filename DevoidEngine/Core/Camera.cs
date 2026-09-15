@@ -52,11 +52,7 @@ namespace DevoidEngine.Core
 
         public void UpdateProjectionMatrix(float aspectRatio)
         {
-            Projection = Matrix4x4.CreatePerspectiveFieldOfViewLeftHanded(
-                fov_radians,
-                aspectRatio,
-                Near,
-                Far);
+            Projection = Matrix4x4.CreatePerspectiveFieldOfViewLeftHanded(fov_radians, aspectRatio, Near, Far);
 
             Matrix4x4.Invert(Projection, out InverseProjection);
 

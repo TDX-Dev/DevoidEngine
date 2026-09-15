@@ -12,7 +12,6 @@ namespace Elemental
             DevoidLog.Info(LogCategory.Editor, "Initializing Engine");
 
             EditorConfig config = EditorConfig.Load();
-            SanitizeEditorConfig(ref config);
 
             ApplicationSpecification engineDescription = new()
             {
@@ -29,14 +28,12 @@ namespace Elemental
             DevoidLog.Info(LogCategory.Editor, "Initialized Engine");
 
             DevoidLog.Info(LogCategory.Editor, "Launching Editor");
-            devoidApplication.AddLayer(new EditorLayer());
+            EditorLayer editor = new();
+            devoidApplication.AddLayer(editor);
+
+            Engine.Instance.ProjectSystem.Load("D:/Devoid Engine/DevoidProject/new_project.devoid");
 
             devoidApplication.Run();
-        }
-
-        static void SanitizeEditorConfig(ref EditorConfig config)
-        {
-            
         }
     }
 }

@@ -10,29 +10,19 @@ namespace DevoidEngine.SourceGen.ComponentSerialization
 
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
-            //if (!Debugger.IsAttached)
-            //    Debugger.Launch();
 
-            var components = context.SyntaxProvider
-                .CreateSyntaxProvider(
-                    predicate: static (node, _) => node is ClassDeclarationSyntax,
-                    transform: ComponentCollector.GetComponent)
-                .Where(static symbol => symbol is not null)
-                .Select(static (symbol, _) => symbol!);
+            var components = context.SyntaxProvider.CreateSyntaxProvider( predicate: static (node, _) => node is ClassDeclarationSyntax, transform: ComponentCollector.GetComponent).Where(static symbol => symbol is not null).Select(static (symbol, _) => symbol!);
 
-            context.RegisterSourceOutput(
-                components,
-                (spc, component) =>
+            context.RegisterSourceOutput(components, (spc, component) =>
                 {
                     SerializerEmitter.Emit(spc, component!);
-                });
+                }
+            );
 
-            context.RegisterSourceOutput(
-                components.Collect(),
-                (spc, componentsList) =>
-                {
+            context.RegisterSourceOutput(components.Collect(), (spc, componentsList) => 
+            {
                     RegistryEmitter.Emit(spc, componentsList);
-                });
+            });
         }
     }
 }

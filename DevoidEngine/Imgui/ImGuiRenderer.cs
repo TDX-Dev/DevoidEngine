@@ -102,7 +102,7 @@ namespace DevoidEngine.Imgui
         private readonly List<nint> _glyphRanges = [];
         public Action? OnGUI { get; set; }
         public float FooterHeight { get; set; } = 24f;
-        public float ToolbarHeight { get; set; } = 70f;
+        public float ToolbarHeight { get; set; } = 0f;
 
         public ImGuiRenderer()
         {

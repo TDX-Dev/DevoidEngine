@@ -10,6 +10,10 @@ namespace DevoidEngine.Assets
         public int RefCount => _refCount;
         public bool PersistentResource = false;
 
+
+
+
+
         public void Retain()
         {
             Interlocked.Increment(ref _refCount);

@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using DevoidEngine.Logging;
+using System.Text.Json;
 
 namespace DevoidEngine.Core
 {
@@ -43,11 +44,12 @@ namespace DevoidEngine.Core
 
         public void Load(string path)
         {
+            if (!File.Exists(path))
+                DevoidLog.Error(LogCategory.Core, $"Unable to open project file ({path}).");
+
             using FileStream stream = File.OpenRead(path);
 
-            ProjectData? project = JsonSerializer.Deserialize(
-                stream,
-                ProjectJsonContext.Default.ProjectData) ?? throw new Exception("Project file does not exist or is corrupted");
+            ProjectData? project = JsonSerializer.Deserialize(stream, ProjectJsonContext.Default.ProjectData) ?? throw new Exception("Project file does not exist or is corrupted");
 
             RootPath = Path.GetDirectoryName(path)!;
             AssetPath = Path.Combine(RootPath, project.AssetPath);
@@ -99,17 +101,11 @@ namespace DevoidEngine.Core
                 ProjectJsonContext.Default.ProjectSettings);
         }
 
-        public void Create(
-            ProjectData data,
-            string path
-        )
+        public void Create(ProjectData data, string path)
         {
             using FileStream stream = File.Create(path);
 
-            JsonSerializer.Serialize(
-                stream,
-                data,
-                ProjectJsonContext.Default.ProjectData);
+            JsonSerializer.Serialize(stream, data, ProjectJsonContext.Default.ProjectData);
         }
     }
 }

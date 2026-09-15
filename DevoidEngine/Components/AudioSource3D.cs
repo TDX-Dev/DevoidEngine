@@ -1,7 +1,9 @@
-﻿using DevoidEngine.Audio;
+﻿using DevoidEngine.Attributes;
+using DevoidEngine.Audio;
 
 namespace DevoidEngine.Components
 {
+    [DevoidClass]
     public class AudioSource3D : Component
     {
         public override string Type => nameof(AudioSource3D);

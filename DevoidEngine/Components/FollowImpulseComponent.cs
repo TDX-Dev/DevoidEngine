@@ -1,8 +1,10 @@
-﻿using DevoidEngine.Core;
+﻿using DevoidEngine.Attributes;
+using DevoidEngine.Core;
 using System.Numerics;
 
 namespace DevoidEngine.Components
 {
+    [DevoidClass]
     public class FollowImpulseComponent : Component
     {
         public override string Type => nameof(FollowImpulseComponent);

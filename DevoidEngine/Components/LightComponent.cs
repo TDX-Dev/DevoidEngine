@@ -6,6 +6,7 @@ using System.Numerics;
 
 namespace DevoidEngine.Components
 {
+    [DevoidClass]
     public class LightComponent : Component
     {
         public override string Type => nameof(LightComponent);

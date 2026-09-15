@@ -1,9 +1,11 @@
-﻿using DevoidEngine.Core;
+﻿using DevoidEngine.Attributes;
+using DevoidEngine.Core;
 using DevoidEngine.Util;
 using System.Numerics;
 
 namespace DevoidEngine.Components
 {
+    [DevoidClass]
     public class ClockComponent : Component
     {
         public override string Type => nameof(ClockComponent);

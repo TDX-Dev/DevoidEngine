@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<linker>
+	<assembly fullname="SharpDX" preserve="all" />
+	<assembly fullname="SharpDX.Direct3D11" preserve="all" />
+	<assembly fullname="SharpDX.D3DCompiler" preserve="all" />
+	<assembly fullname="SharpDX.Mathematics" preserve="all" />
+</linker>

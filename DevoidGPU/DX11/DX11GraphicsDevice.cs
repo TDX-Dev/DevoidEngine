@@ -47,6 +47,7 @@ namespace DevoidGPU.DX11
                 , levels
             );
 
+
             using var dxgiDevice = device.QueryInterface<SharpDX.DXGI.Device>();
             adapter = dxgiDevice.Adapter.QueryInterface<Adapter3>();
 

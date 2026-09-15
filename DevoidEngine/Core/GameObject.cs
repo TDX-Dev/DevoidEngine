@@ -1,8 +1,10 @@
-﻿using DevoidEngine.Components;
+﻿using DevoidEngine.Attributes;
+using DevoidEngine.Components;
 using DevoidEngine.Physics;
 
 namespace DevoidEngine.Core
 {
+    [DevoidClass(typeof(GameObject))]
     public class GameObject
     {
         public Guid Id { get; set; } = Guid.NewGuid();

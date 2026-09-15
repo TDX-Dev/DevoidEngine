@@ -72,16 +72,16 @@ namespace DevoidEngine.SourceGen.ComponentSerialization
                 string full = comp.ToDisplayString();
 
                 sb.AppendLine($@"
-    static byte[] Serialize_{name}(Component c)
-    {{
-        return {name}Serializer.Serialize(({full})c);
-    }}
+                    static byte[] Serialize_{name}(Component c)
+                    {{
+                        return {name}Serializer.Serialize(({full})c);
+                    }}
 
-    static Component Deserialize_{name}(byte[] data)
-    {{
-        return {name}Serializer.Deserialize(data);
-    }}
-");
+                    static Component Deserialize_{name}(byte[] data)
+                    {{
+                        return {name}Serializer.Deserialize(data);
+                    }}
+                ");
             }
 
             sb.AppendLine("}");

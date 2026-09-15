@@ -1,9 +1,11 @@
-﻿using DevoidEngine.Core;
+﻿using DevoidEngine.Attributes;
+using DevoidEngine.Core;
 using DevoidEngine.Rendering;
 using System.Numerics;
 
 namespace DevoidEngine.Components
 {
+    [DevoidClass]
     public class Camera3D : Component
     {
         public override string Type => nameof(Camera3D);

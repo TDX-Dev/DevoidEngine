@@ -1,4 +1,5 @@
 ﻿using DevoidEngine.AssetPipeline;
+using DevoidEngine.Attributes;
 using DevoidEngine.Audio;
 using DevoidEngine.Core;
 using DevoidEngine.InputSystem;
@@ -9,6 +10,7 @@ using System.Numerics;
 
 namespace DevoidEngine.Components
 {
+    [DevoidClass]
     public class FirstPersonController : Component
     {
         public override string Type => nameof(FirstPersonController);

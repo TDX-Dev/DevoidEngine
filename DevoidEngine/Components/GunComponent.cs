@@ -1,4 +1,5 @@
-﻿using DevoidEngine.Core;
+﻿using DevoidEngine.Attributes;
+using DevoidEngine.Core;
 using DevoidEngine.Physics;
 using DevoidEngine.Rendering;
 using DevoidEngine.Util;
@@ -6,6 +7,7 @@ using System.Numerics;
 
 namespace DevoidEngine.Components
 {
+    [DevoidClass]
     public class GunComponent : PickupItem
     {
         public override string Type => nameof(GunComponent);

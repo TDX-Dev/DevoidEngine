@@ -1,10 +1,12 @@
 ﻿using DevoidEngine.Assets;
+using DevoidEngine.Attributes;
 using DevoidEngine.Util;
 using DevoidGPU;
 using System.Numerics;
 
 namespace DevoidEngine.Core
 {
+    [DevoidClass(typeof(Mesh))]
     public sealed class Mesh : AssetType
     {
         public ResourceUsage Usage { get; }

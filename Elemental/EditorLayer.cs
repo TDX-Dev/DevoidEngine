@@ -1,11 +1,17 @@
 ﻿using DevoidEngine.Core;
 using DevoidEngine.InputSystem.InputDevices;
 using DevoidEngine.Logging;
+using DevoidEngine.Metadata;
 using Elemental.Tools.EditorServices;
+using Elemental.Tools.Menu;
+using Elemental.Tools.Panels;
 using Elemental.Tools.Shortcuts;
+using Elemental.Tools.Themes;
+using ImGuiNET;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -22,15 +28,20 @@ namespace Elemental
                 Services = new(),
                 PanelManager = new(),
                 Menu = new(),
+                Toolbar = new(),
                 Shortcuts = new(),
                 EditorActions = new(),
+                SceneService = new(),
             };
 
+            Context.PanelManager.AddPanel(new SceneViewPanel());
         }
 
         // The init method.
         public override void OnAttach()
         {
+            SetupEditorTheme();
+
             RegisterPanels(Context);
 
 
@@ -42,12 +53,20 @@ namespace Elemental
                 Shortcut = new Shortcut(KeyModifiers.Shift, Keys.I),
                 Execute = () =>
                 {
-                    DevoidLog.Info(LogCategory.Editor, "This shortcut was triggered");
+                    DevoidLog.Info(LogCategory.Editor, "Saving scene");
+                    Context.SceneService.SaveScene();
                 },
             };
 
             Context.EditorActions.Register(action);
             Context.Shortcuts.Register(action.Shortcut ?? new Shortcut(), action.Id);
+
+            Context.Menu.Register("File/Save", new MenuItem()
+            {
+                Name = "Save Scene",
+                EditorAction = action
+            });
+
         }
 
         void RegisterPanels(EditorContext context)
@@ -62,6 +81,10 @@ namespace Elemental
 
         public override void OnGUIRender()
         {
+            Application.ImguiRenderer.SetCustomToolbarHeight(Context.Toolbar.ToolbarHeight);
+
+            Context.Menu.OnImguiRender(Context);
+            Context.Toolbar.OnImguiRender(Context);
             Context.PanelManager.OnImGuiRender(Context);
         }
 
@@ -69,7 +92,13 @@ namespace Elemental
         {
             Context.PanelManager.Clear();
         }
+        public void SetupEditorTheme()
+        {
+            ImFontPtr font = Application.ImguiRenderer.AddFontFromFile("Assets/arial.ttf", 14);
+            Application.ImguiRenderer.SetDefaultFont(font);
 
+            DefaultTheme.Apply();
+        }
         public override void OnKeyDown(Keys keys, int Scancode, KeyModifiers modifiers, bool isRepeated)
         {
             if (isRepeated)

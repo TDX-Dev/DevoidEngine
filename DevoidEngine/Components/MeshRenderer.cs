@@ -5,6 +5,7 @@ using System.Numerics;
 
 namespace DevoidEngine.Components
 {
+    [DevoidClass(typeof(MeshRenderer), typeof(Component))]
     public class MeshRenderer : Component
     {
         public override string Type => nameof(MeshRenderer);
