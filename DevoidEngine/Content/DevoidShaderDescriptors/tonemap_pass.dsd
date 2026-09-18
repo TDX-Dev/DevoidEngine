@@ -15,6 +15,11 @@
       "Name": "MAT_BloomColor",
       "Type": "Texture2D",
       "Kind": "SampledTexture"
+    },
+    {
+      "Name": "MAT_AnamorphicBloomColor",
+      "Type": "Texture2D",
+      "Kind": "SampledTexture"
     }
   ],
 

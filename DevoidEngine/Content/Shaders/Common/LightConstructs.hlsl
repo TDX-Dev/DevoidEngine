@@ -202,32 +202,31 @@ float3 ComputeBRDF(
     return (baseLayer + coatSpecular) * radiance * NoL;
 }
 
-float ComputeAttenuation(GPUPointLight light, float distance)
+float ComputeAttenuation(float distanceSq, float range)
 {
-    float radius = light.range.x;
+    float inverseRadius = 1.0 / range;
 
-    if (distance > radius)
-        return 0.0;
+    float factor = distanceSq * inverseRadius * inverseRadius;
 
-    float attenuationType = light.range.y;
-    float linearD = light.range.z;
-    float quadratic = light.range.w;
+    float smoothFactor = max(1.0 - factor * factor, 0.0);
 
-    if (attenuationType == 0) // Custom
-        return 1.0 / (1.0 + linearD * distance + quadratic * distance * distance);
-    else if (attenuationType == 1) // Constant
-        return 1.0;
-    else if (attenuationType == 2) // Linear
-        return saturate(1.0 - distance / radius);
-    else if (attenuationType == 3) // Quadratic
-    {
-        float norm = distance / radius;
-        return saturate(1.0 - norm * norm);
-    }
-
-    return 1.0;
+    return (smoothFactor * smoothFactor) / max(distanceSq, 0.0001);
 }
 
+float ComputeSpotAttenuation(float3 L, float3 lightDirection, float innerAngle, float outerAngle)
+{
+    float cosOuter = cos(outerAngle);
+
+    float spotScale = 1.0 / max(cos(innerAngle) - cosOuter, 0.0001);
+
+    float spotOffset = -cosOuter * spotScale;
+
+    float cd = dot(-lightDirection, L);
+
+    float attenuation = saturate(cd * spotScale + spotOffset);
+
+    return attenuation * attenuation;
+}
 
 
 float3 ComputeDirectionalLight(
@@ -261,93 +260,82 @@ float3 ComputeDirectionalLight(
 }
 
 
-float3 ComputePointLight(
-    GPUPointLight light,
-    float3 worldPos,
-    float3 N,
-    float3 V,
-    float3 albedo,
-    float metallic,
-    float roughness,
-    float3 F0,
-    float clearcoat,
-    float clearcoatRoughness
-)
+float3 ComputePointLight(GPUPointLight light, float3 worldPos, float3 N, float3 V, float3 albedo, float metallic, float roughness, float3 F0, float clearcoat, float clearcoatRoughness)
 {
     float3 toLight = light.position.xyz - worldPos;
 
-    float distance = length(toLight);
+    float distanceSq = dot(toLight, toLight);
 
-    float attenuation = ComputeAttenuation(light, distance);
+    if (distanceSq <= 0.000001)
+        return 0.0;
 
-    if (attenuation <= 0)
-        return 0;
+    float distance = sqrt(distanceSq);
 
-    float3 L = normalize(toLight);
-
-    float3 lightColor = light.color.rgb * light.color.w;
-
-    float3 radiance = lightColor * attenuation;
-    
-    return ComputeBRDF(
-        N, V, L,
-        albedo,
-        metallic,
-        roughness,
-        F0,
-        radiance,
-        clearcoat,
-        clearcoatRoughness
-    );
-}
-
-float3 ComputeSpotLight(
-    GPUSpotLight light,
-    float3 worldPos,
-    float3 N,
-    float3 V,
-    float3 albedo,
-    float metallic,
-    float roughness,
-    float3 F0,
-    float clearcoat,
-    float clearcoatRoughness
-)
-{
-    float3 toLight = light.position.xyz - worldPos;
-
-    float distance = length(toLight);
-
-    float range = light.direction.w;
+    float range = light.range.x;
 
     if (distance > range)
-        return 0;
+        return 0.0;
 
-    float3 L = normalize(toLight);
+    float3 L = toLight / distance;
 
-    float3 lightDir = normalize(light.direction.xyz);
+    float attenuation = ComputeAttenuation(distanceSq, range);
 
-    float theta = dot(-L, lightDir);
+    float3 radiance = light.color.rgb * light.color.w * attenuation;
 
-    float cosInner = cos(light.innerCutoff);
-    float cosOuter = cos(light.outerCutoff);
+    return ComputeBRDF(N, V, L, albedo, metallic, roughness, F0, radiance, clearcoat, clearcoatRoughness);
+}
 
-    float epsilon = cosInner - cosOuter;
+float3 ComputeSpotLight(GPUSpotLight light, float3 worldPos, float3 N, float3 V, float3 albedo, float metallic, float roughness, float3 F0, float clearcoat, float clearcoatRoughness)
+{
+    float3 toLight =
+        light.position.xyz - worldPos;
 
-    float coneAtten = saturate((theta - cosOuter) / epsilon);
+    float distanceSq =
+        dot(toLight, toLight);
 
-    if (coneAtten <= 0)
-        return 0;
+    if (distanceSq <= 0.000001)
+        return 0.0;
 
-    // distance falloff
-    float norm = distance / range;
-    float distanceAtten = saturate(1.0 - norm * norm);
+    float distance =
+        sqrt(distanceSq);
 
-    float attenuation = coneAtten * distanceAtten;
+    float range =
+        light.direction.w;
 
-    float3 lightColor = light.color.rgb * light.color.w;
+    if (distance > range)
+        return 0.0;
 
-    float3 radiance = lightColor * attenuation;
+    float3 L =
+        toLight / distance;
+
+    float3 lightDirection =
+        normalize(light.direction.xyz);
+
+    float coneAttenuation =
+        ComputeSpotAttenuation(
+            L,
+            lightDirection,
+            light.innerCutoff,
+            light.outerCutoff
+        );
+
+    if (coneAttenuation <= 0.0)
+        return 0.0;
+
+    float distanceAttenuation =
+        ComputeAttenuation(
+            distanceSq,
+            range
+        );
+
+    float attenuation =
+        coneAttenuation *
+        distanceAttenuation;
+
+    float3 radiance =
+        light.color.rgb *
+        light.color.w *
+        attenuation;
 
     return ComputeBRDF(
         N, V, L,

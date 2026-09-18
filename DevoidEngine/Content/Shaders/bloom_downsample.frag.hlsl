@@ -16,16 +16,6 @@ cbuffer BloomMipShaderData : register(b5)
 Texture2D INPUT_TEXTURE : register(t0);
 SamplerState INPUT_TEXTURESampler : register(s0);
 
-//float Luma(float3 c)
-//{
-//    return dot(c, float3(0.2126, 0.7152, 0.0722));
-//}
-
-//float KarisAverage(float3 col)
-//{
-//    float luma = Luma(col) * 0.25;
-//    return 1.0 / (1.0 + luma);
-//}
 
 float3 Downsample(float2 uv, float2 pixelSize)
 {
@@ -56,17 +46,17 @@ float3 Downsample(float2 uv, float2 pixelSize)
         0.125,
         0.125,
 
-        0.0555555,
-        0.0555555,
-        0.0555555,
+        0.05555555555,
+        0.05555555555,
+        0.05555555555,
 
-        0.0555555,
-        0.0555555,
-        0.0555555,
+        0.05555555555,
+        0.05555555555,
+        0.05555555555,
 
-        0.0555555,
-        0.0555555,
-        0.0555555
+        0.05555555555,
+        0.05555555555,
+        0.05555555555
     };
 
     float3 result = 0.0;
@@ -84,9 +74,16 @@ float3 Downsample(float2 uv, float2 pixelSize)
 
 float4 PSMain(PSInput input) : SV_TARGET
 {
-    float2 pixelSize = (1.0 / mipSize) * 0.5;
 
+    #if ANAMORPHIC
+    //float2 pixelSize = 1.0 / mipSize;
+    //float3 result = DownsampleVertical(input.UV, pixelSize);
+    float2 pixelSize = (1.0 / mipSize) * 0.5;
     float3 result = Downsample(input.UV, pixelSize);
+    #else
+    float2 pixelSize = (1.0 / mipSize) * 0.5;
+    float3 result = Downsample(input.UV, pixelSize);
+    #endif
 
     return float4(result, 1.0);
 }

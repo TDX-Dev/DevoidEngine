@@ -16,6 +16,7 @@ namespace DevoidEngine.Core
         public void SetCursorPosition(Vector2 position)
         {
             mousePosition = position;
+            posDirty = true;
         }
 
         public void SetCursorState(CursorState state)

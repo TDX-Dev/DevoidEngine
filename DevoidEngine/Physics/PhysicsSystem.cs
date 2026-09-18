@@ -1,4 +1,5 @@
 ﻿using DevoidEngine.Core;
+using DevoidEngine.Nodes;
 using DevoidEngine.Util;
 using System.Numerics;
 namespace DevoidEngine.Physics
@@ -7,7 +8,7 @@ namespace DevoidEngine.Physics
     {
         private readonly IPhysicsBackend backend;
 
-        private readonly Dictionary<IPhysicsObject, GameObject> objectMap = [];
+        private readonly Dictionary<IPhysicsObject, Node3D> objectMap = [];
 
         private readonly HashSet<(IPhysicsObject, IPhysicsObject)> currentPairs = [];
 
@@ -161,14 +162,14 @@ namespace DevoidEngine.Physics
                 filter);
         }
 
-        public IPhysicsBody CreateBody(PhysicsBodyDescription desc, GameObject owner)
+        public IPhysicsBody CreateBody(PhysicsBodyDescription desc, RigidbodyNode owner)
         {
             var body = backend.CreateBody(desc, owner);
             objectMap[body] = owner;
             return body;
         }
 
-        public IPhysicsStatic CreateStatic(PhysicsStaticDescription desc, GameObject owner)
+        public IPhysicsStatic CreateStatic(PhysicsStaticDescription desc, StaticbodyNode owner)
         {
             var stat = backend.CreateStatic(desc, owner);
             objectMap[stat] = owner;
@@ -188,32 +189,32 @@ namespace DevoidEngine.Physics
         }
         private void DispatchEnter((IPhysicsObject, IPhysicsObject) pair)
         {
-            if (objectMap.TryGetValue(pair.Item1, out var goA) &&
-                objectMap.TryGetValue(pair.Item2, out var goB))
-            {
-                goA.InvokeCollisionEnter(goB);
-                goB.InvokeCollisionEnter(goA);
-            }
+            //if (objectMap.TryGetValue(pair.Item1, out var goA) &&
+            //    objectMap.TryGetValue(pair.Item2, out var goB))
+            //{
+            //    goA.InvokeCollisionEnter(goB);
+            //    goB.InvokeCollisionEnter(goA);
+            //}
         }
 
         private void DispatchStay((IPhysicsObject, IPhysicsObject) pair)
         {
-            if (objectMap.TryGetValue(pair.Item1, out var goA) &&
-                objectMap.TryGetValue(pair.Item2, out var goB))
-            {
-                goA.InvokeCollisionStay(goB);
-                goB.InvokeCollisionStay(goA);
-            }
+            //if (objectMap.TryGetValue(pair.Item1, out var goA) &&
+            //    objectMap.TryGetValue(pair.Item2, out var goB))
+            //{
+            //    goA.InvokeCollisionStay(goB);
+            //    goB.InvokeCollisionStay(goA);
+            //}
         }
 
         private void DispatchExit((IPhysicsObject, IPhysicsObject) pair)
         {
-            if (objectMap.TryGetValue(pair.Item1, out var goA) &&
-                objectMap.TryGetValue(pair.Item2, out var goB))
-            {
-                goA.InvokeCollisionExit(goB);
-                goB.InvokeCollisionExit(goA);
-            }
+            //if (objectMap.TryGetValue(pair.Item1, out var goA) &&
+            //    objectMap.TryGetValue(pair.Item2, out var goB))
+            //{
+            //    goA.InvokeCollisionExit(goB);
+            //    goB.InvokeCollisionExit(goA);
+            //}
         }
     }
 }

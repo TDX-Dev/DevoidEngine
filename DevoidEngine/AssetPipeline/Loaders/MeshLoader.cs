@@ -1,25 +1,21 @@
 ﻿using DevoidEngine.Assets;
 using DevoidEngine.Core;
 using MessagePack;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DevoidEngine.AssetPipeline.Loaders
 {
-    internal class MeshLoader : IAssetLoader<Mesh>
+    internal sealed class MeshLoader : IAssetLoader<Mesh>
     {
         public string RuntimeExtension => "mesh";
+
         public Mesh Load(byte[] data)
         {
             MeshAsset asset;
 
             try
             {
-                asset = MessagePackSerializer.Deserialize<MeshAsset>(data.ToArray());
+                asset = MessagePackSerializer.Deserialize<MeshAsset>(data);
             }
             catch (Exception e)
             {
@@ -29,66 +25,84 @@ namespace DevoidEngine.AssetPipeline.Loaders
 
             Mesh mesh = new();
 
-            int vertexCount = asset.Positions.Length / 3;
+            MeshSurface[] surfaces = new MeshSurface[asset.Surfaces.Length];
 
-            mesh.Positions = new Vector3[vertexCount];
-            mesh.Normals = new Vector3[vertexCount];
-            mesh.UVs = new Vector2[vertexCount];
-            mesh.Tangents = new Vector4[vertexCount];
-
-            for (int i = 0; i < vertexCount; i++)
+            for (int surfaceIndex = 0; surfaceIndex < asset.Surfaces.Length; surfaceIndex++)
             {
-                mesh.Positions[i] = new Vector3(
-                    asset.Positions[i * 3 + 0],
-                    asset.Positions[i * 3 + 1],
-                    asset.Positions[i * 3 + 2]);
+                MeshSurfaceAsset assetSurface = asset.Surfaces[surfaceIndex];
 
-                if (asset.Normals.Length >= (i + 1) * 3)
+                int vertexCount = assetSurface.Positions.Length / 3;
+
+                Vector3[] positions = new Vector3[vertexCount];
+                Vector3[] normals = new Vector3[vertexCount];
+                Vector2[] uvs = new Vector2[vertexCount];
+                Vector4[] tangents = new Vector4[vertexCount];
+
+                for (int vertexIndex = 0; vertexIndex < vertexCount; vertexIndex++)
                 {
-                    mesh.Normals[i] = new Vector3(
-                        asset.Normals[i * 3 + 0],
-                        asset.Normals[i * 3 + 1],
-                        asset.Normals[i * 3 + 2]);
-                }
+                    int positionIndex = vertexIndex * 3;
 
-                if (asset.UVs.Length >= (i + 1) * 2)
-                {
-                    mesh.UVs[i] = new Vector2(
-                        asset.UVs[i * 2 + 0],
-                        asset.UVs[i * 2 + 1]);
-                }
+                    positions[vertexIndex] = new Vector3(
+                        assetSurface.Positions[positionIndex],
+                        assetSurface.Positions[positionIndex + 1],
+                        assetSurface.Positions[positionIndex + 2]);
 
-                if (asset.Tangents.Length >= (i + 1) * 3)
-                {
-
-                    Vector3 tangent = new(
-                        asset.Tangents[i * 3 + 0],
-                        asset.Tangents[i * 3 + 1],
-                        asset.Tangents[i * 3 + 2]);
-
-                    Vector3 bitangent = Vector3.UnitY;
-
-                    if (asset.Bitangents.Length >= (i + 1) * 3)
+                    if (assetSurface.Normals.Length >= positionIndex + 3)
                     {
-                        bitangent = new Vector3(
-                            asset.Bitangents[i * 3 + 0],
-                            asset.Bitangents[i * 3 + 1],
-                            asset.Bitangents[i * 3 + 2]);
+                        normals[vertexIndex] = new Vector3(
+                            assetSurface.Normals[positionIndex],
+                            assetSurface.Normals[positionIndex + 1],
+                            assetSurface.Normals[positionIndex + 2]);
                     }
 
-                    float handedness =
-                        Vector3.Dot(
-                            Vector3.Cross(mesh.Normals[i], tangent),
-                            bitangent) < 0f ? -1f : 1f;
+                    int uvIndex = vertexIndex * 2;
 
-                    mesh.Tangents[i] = new Vector4(
-                        tangent,
-                        handedness);
+                    if (assetSurface.UVs.Length >= uvIndex + 2)
+                    {
+                        uvs[vertexIndex] = new Vector2(
+                            assetSurface.UVs[uvIndex],
+                            assetSurface.UVs[uvIndex + 1]);
+                    }
+
+                    if (assetSurface.Tangents.Length >= positionIndex + 3)
+                    {
+                        Vector3 tangent = new(
+                            assetSurface.Tangents[positionIndex],
+                            assetSurface.Tangents[positionIndex + 1],
+                            assetSurface.Tangents[positionIndex + 2]);
+
+                        Vector3 bitangent = Vector3.UnitY;
+
+                        if (assetSurface.Bitangents.Length >= positionIndex + 3)
+                        {
+                            bitangent = new Vector3(
+                                assetSurface.Bitangents[positionIndex],
+                                assetSurface.Bitangents[positionIndex + 1],
+                                assetSurface.Bitangents[positionIndex + 2]);
+                        }
+
+                        float handedness =
+                            Vector3.Dot(
+                                Vector3.Cross(
+                                    normals[vertexIndex],
+                                    tangent),
+                                bitangent) < 0f
+                                    ? -1f
+                                    : 1f;
+
+                        tangents[vertexIndex] = new Vector4(
+                            tangent,
+                            handedness);
+                    }
                 }
+
+                MeshSurface surface = new();
+
+                surface.SetGeometry(positions, normals, uvs, tangents, assetSurface.Indices);
+                surfaces[surfaceIndex] = surface;
             }
 
-            mesh.Indices = asset.Indices;
-
+            mesh.Surfaces = surfaces;
             mesh.Upload();
 
             return mesh;

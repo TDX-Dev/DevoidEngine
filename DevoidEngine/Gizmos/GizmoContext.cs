@@ -1,13 +1,7 @@
-﻿using DevoidEngine.Components;
-using DevoidEngine.Core;
+﻿using DevoidEngine.Core;
 using DevoidEngine.Rendering;
 using DevoidEngine.Util;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DevoidEngine.Gizmos
 {

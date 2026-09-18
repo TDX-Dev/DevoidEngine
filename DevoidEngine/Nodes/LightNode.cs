@@ -1,35 +1,13 @@
-﻿using DevoidEngine.Attributes;
-using DevoidEngine.Core;
+﻿using DevoidEngine.Core;
 using DevoidEngine.Rendering;
 using DevoidEngine.Util;
 using System.Numerics;
 
-namespace DevoidEngine.Components
+namespace DevoidEngine.Nodes
 {
-    [DevoidClass]
-    public class LightComponent : Component
+    public class LightNode : Node3D
     {
-        public override string Type => nameof(LightComponent);
-        public override ComponentTickMode TickMode => ComponentTickMode.All;
-
-        private RID lightRID;
-        private bool dirty = true;
-
-        internal bool enabled = true;
-        internal Vector3 color = Vector3.One;
-        internal float intensity = 10f;
-        internal float radius = 30f;
-
-        internal bool castShadows = false;
-
-        internal float outerCutoff = MathHelper.DegToRad(71);
-        internal float innerCutoff = MathHelper.DegToRad(52);
-
-        internal LightType lightType = LightType.PointLight;
-        internal LightAttenuationType attenuationType = LightAttenuationType.Custom;
-
-        internal float linearFactor = 0.7f;
-        internal float quadraticFactor = 1.8f;
+        public override NodeTickMode TickMode => NodeTickMode.All;
 
         #region Properties
 
@@ -127,20 +105,39 @@ namespace DevoidEngine.Components
 
         #endregion
 
-        public override void OnAttach()
+        private RID lightRID;
+        private bool dirty = true;
+
+        internal bool enabled = true;
+        internal Vector3 color = Vector3.One;
+        internal float intensity = 10f;
+        internal float radius = 30f;
+
+        internal bool castShadows = false;
+
+        internal float outerCutoff = MathHelper.DegToRad(71);
+        internal float innerCutoff = MathHelper.DegToRad(52);
+
+        internal LightType lightType = LightType.PointLight;
+        internal LightAttenuationType attenuationType = LightAttenuationType.Custom;
+
+        internal float linearFactor = 0.7f;
+        internal float quadraticFactor = 1.8f;
+
+        protected override void OnAttach()
         {
             CreateRenderLight();
-            gameObject.Transform.TransformChanged += () => dirty = true;
+            Transform.TransformChanged += () => dirty = true;
         }
 
-        public override void OnDestroy()
+        protected override void OnDestroy()
         {
             DestroyRenderLight();
         }
 
         private void CreateRenderLight()
         {
-            RenderWorld world = gameObject.Scene.World;
+            RenderWorld world = Scene.World;
 
             switch (lightType)
             {
@@ -162,7 +159,7 @@ namespace DevoidEngine.Components
 
         private void DestroyRenderLight()
         {
-            RenderWorld world = gameObject.Scene.World;
+            RenderWorld world = Scene.World;
 
             switch (lightType)
             {
@@ -180,7 +177,7 @@ namespace DevoidEngine.Components
             }
         }
 
-        public override void OnUpdate(float dt)
+        protected override void OnUpdate(float dt)
         {
             if (dirty)
                 RebuildGPUData();
@@ -188,11 +185,12 @@ namespace DevoidEngine.Components
 
         private void RebuildGPUData()
         {
-            //Console.WriteLine("Rebuilt light data");
-            RenderWorld world = gameObject.Scene.World;
 
-            Vector3 position = gameObject.Transform.Position;
-            Vector3 forward = gameObject.Transform.Forward;
+            //Console.WriteLine("Rebuilt light data");
+            RenderWorld world = Scene.World;
+
+            Vector3 position = Transform.Position;
+            Vector3 forward = Transform.Forward;
 
             switch (lightType)
             {

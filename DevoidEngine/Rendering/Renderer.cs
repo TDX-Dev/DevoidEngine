@@ -328,6 +328,7 @@ namespace DevoidEngine.Rendering
 
             PostProcessor.AddPass(new TonemapPass());
             PostProcessor.AddPass(new BloomPass());
+            PostProcessor.AddPass(new AnamorphicBloomPass());
 
             ProbeGISystem = new ProbeGISystem();
             probeGISettings = new ProbeGISettings();
@@ -756,58 +757,71 @@ namespace DevoidEngine.Rendering
         // Method to draw a single mesh, i made it for the sky dome. expensive.
         public void Execute(ICommandList cmd, RenderMeshData item)
         {
-            MaterialInstance material = item.render_material ?? NullMaterialInstance;
-            ShaderPass pass = material.BaseMaterial.DefaultPass;
-            cmd.SetPipeline(pass.GetPipeline(material.BaseMaterial.Variant, item.render_mesh.VertexInfo));
-            cmd.SetDescriptorSet(0, PerCameraDescriptor);
-            cmd.SetDescriptorSet(1, material.DescriptorSet);
-
             UpdatePerObjectData(item.render_transform, item.render_mesh.UniqueIdentifier);
+
+            cmd.SetDescriptorSet(0, PerCameraDescriptor);
             cmd.SetDescriptorSet(2, PerObjectDescriptor);
 
-            item.render_mesh.Draw(cmd);
+            foreach (MeshSurface surface in item.render_mesh.Surfaces)
+            {
+                MaterialInstance material = surface.Material ?? item.render_material ?? NullMaterialInstance;
+
+                ShaderPass pass = material.BaseMaterial.DefaultPass;
+
+                cmd.SetPipeline(pass.GetPipeline(material.BaseMaterial.Variant, surface.VertexInfo));
+
+                cmd.SetDescriptorSet(1, material.DescriptorSet);
+
+                surface.Draw(cmd);
+            }
         }
 
         public void Execute(ICommandList cmd, List<RenderMeshData> objects, MaterialInstance? overrideMaterial = null, PrimitiveType primitiveType = PrimitiveType.Triangles)
         {
             ShaderPass? currentPass = null;
             MaterialInstance? currentMaterial = null;
-            //Mesh? currentMesh = null;
+            VertexInfo? currentVertexInfo = null;
 
             cmd.SetDescriptorSet(2, PerObjectDescriptor);
 
-            foreach (var item in objects)
+            foreach (RenderMeshData renderMeshData in objects)
             {
-
-                MaterialInstance material = overrideMaterial ?? item.render_material ?? NullMaterialInstance;
-
-
-                ShaderPass pass = material.BaseMaterial.DefaultPass;
-
-                if (pass != currentPass)
+                foreach (MeshSurface surface in renderMeshData.render_mesh.Surfaces)
                 {
-                    currentPass = pass;
+                    MaterialInstance material =
+                        overrideMaterial ??
+                        surface.Material ??
+                        renderMeshData.render_material ??
+                        NullMaterialInstance;
 
-                    cmd.SetPipeline(pass.GetPipeline(material.BaseMaterial.Variant, item.render_mesh.VertexInfo, primitiveType));
+                    ShaderPass pass = material.BaseMaterial.DefaultPass;
 
-                    cmd.SetDescriptorSet(
-                        0,
-                        PerCameraDescriptor);
+                    if (pass != currentPass || surface.VertexInfo != currentVertexInfo)
+                    {
+                        currentPass = pass;
+                        currentVertexInfo = surface.VertexInfo;
+
+                        cmd.SetPipeline(
+                            pass.GetPipeline(
+                                material.BaseMaterial.Variant,
+                                surface.VertexInfo,
+                                primitiveType));
+
+                        cmd.SetDescriptorSet(0, PerCameraDescriptor);
+                    }
+
+                    if (material != currentMaterial)
+                    {
+                        currentMaterial = material;
+                        cmd.SetDescriptorSet(1, material.DescriptorSet);
+                    }
+
+                    UpdatePerObjectData(
+                        renderMeshData.render_transform,
+                        renderMeshData.render_mesh.UniqueIdentifier);
+
+                    surface.Draw(cmd);
                 }
-
-                if (material != currentMaterial)
-                {
-                    currentMaterial = material;
-
-                    cmd.SetDescriptorSet(
-                        1,
-                        material.DescriptorSet);
-                }
-
-                UpdatePerObjectData(item.render_transform, item.render_mesh.UniqueIdentifier);
-
-
-                item.render_mesh.Draw(cmd);
             }
         }
 

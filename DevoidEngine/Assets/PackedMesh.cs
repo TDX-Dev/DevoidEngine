@@ -8,12 +8,12 @@ using System.Threading.Tasks;
 namespace DevoidEngine.Assets
 {
     [MessagePackObject]
-    public struct PackedMesh
+    public class PackedMesh
     {
         [Key(0)]
         public int MeshIndex;
 
         [Key(1)]
-        public int MaterialIndex;
+        public Guid[] MaterialGuids = [];
     }
 }

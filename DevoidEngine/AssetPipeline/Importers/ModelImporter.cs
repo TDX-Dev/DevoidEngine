@@ -36,7 +36,6 @@ namespace DevoidEngine.AssetPipeline.Importers
 
         public override void Import(ImportContext importContext, ModelImportSettings settings)
         {
-
             AssimpContext ctx = new();
 
             var scene = ctx.ImportFile(importContext.AssetPath,
@@ -61,10 +60,7 @@ namespace DevoidEngine.AssetPipeline.Importers
 
             ImportMaterials(scene, importContext);
 
-            ImportMeshes(scene, importContext);
-
-            PackedScene packed =
-                BuildPackedScene(scene, settings, axis);
+            PackedScene packed = BuildPackedScene(scene, importContext, settings, axis);
 
             packed.MeshGuids = [.. _meshGuids];
             packed.MaterialGuids = [.. _materialGuids];
@@ -83,10 +79,7 @@ namespace DevoidEngine.AssetPipeline.Importers
             return File.Exists(importContext.GetRootOutputPath(OutputExtension));
         }
 
-        private PackedScene BuildPackedScene(
-    AssimpScene scene,
-    ModelImportSettings settings,
-    Matrix4x4 axis)
+        private PackedScene BuildPackedScene(AssimpScene scene, ImportContext ctx, ModelImportSettings settings, Matrix4x4 axis)
         {
             Dictionary<string, PackedLight> lights = [];
 
@@ -96,13 +89,7 @@ namespace DevoidEngine.AssetPipeline.Importers
             List<PackedSceneNode> nodes = [];
 
 
-            ProcessNode(
-                scene.RootNode,
-                -1,
-                nodes,
-                scene,
-                axis,
-                lights);
+            ProcessNode(scene.RootNode, -1, nodes, scene, ctx, axis, lights);
 
 
 
@@ -114,20 +101,11 @@ namespace DevoidEngine.AssetPipeline.Importers
             };
         }
 
-        private void ProcessNode(
-    Node node,
-    int parent,
-    List<PackedSceneNode> nodes,
-    AssimpScene scene,
-    Matrix4x4 axis,
-    Dictionary<string, PackedLight> lights)
+        private void ProcessNode(Node node, int parent, List<PackedSceneNode> nodes, AssimpScene scene, ImportContext ctx, Matrix4x4 axis, Dictionary<string, PackedLight> lights)
         {
             int nodeIndex = nodes.Count;
 
             Matrix4x4 local = Matrix4x4.Transpose(node.Transform);
-
-            //if (parent == -1)
-            //    local = axis * local;
 
             Matrix4x4.Decompose(
                 local,
@@ -135,29 +113,37 @@ namespace DevoidEngine.AssetPipeline.Importers
                 out Quaternion rotation,
                 out Vector3 translation);
 
-            PackedMesh[] meshes =
-    [.. node.MeshIndices
-        .Select(meshIndex => new PackedMesh
-        {
-            MeshIndex = meshIndex,
-            MaterialIndex = scene.Meshes[meshIndex].MaterialIndex
-        })];
-
-
             PackedSceneNode packed = new()
             {
                 Name = node.Name,
                 Parent = parent,
                 Translation = translation,
                 Rotation = rotation,
-                Scale = scale,
-                Meshes = meshes
+                Scale = scale
             };
 
-            if (lights.TryGetValue(node.Name, out var light))
+            if (node.MeshIndices.Count > 0)
             {
-                packed.Light = light;
+                MeshAsset mesh = ConvertNodeMesh(node, scene);
+
+                ulong subAssetId = (ulong)nodeIndex;
+
+                Guid meshGuid = Engine.Instance.AssetDatabase.RegisterSubAsset(ctx.Guid, subAssetId);
+
+                int meshIndex = _meshGuids.Count;
+                _meshGuids.Add(meshGuid);
+
+                File.WriteAllBytes(ctx.GetOutputPath(subAssetId, "mesh"), MessagePackSerializer.Serialize(mesh));
+
+                packed.Mesh = new()
+                {
+                    MeshIndex = meshIndex,
+                    MaterialGuids = [.. mesh.Surfaces.Select(x => x.MaterialGuid)]
+                };
             }
+
+            if (lights.TryGetValue(node.Name, out var light))
+                packed.Light = light;
 
             nodes.Add(packed);
 
@@ -168,6 +154,7 @@ namespace DevoidEngine.AssetPipeline.Importers
                     nodeIndex,
                     nodes,
                     scene,
+                    ctx,
                     axis,
                     lights);
             }
@@ -196,37 +183,17 @@ namespace DevoidEngine.AssetPipeline.Importers
                     MessagePackSerializer.Serialize(material));
             }
         }
-        private void ImportMeshes(
-    AssimpScene scene,
-    ImportContext ctx)
-        {
-            for (int i = 0; i < scene.MeshCount; i++)
-            {
-                Guid guid = Engine.Instance.AssetDatabase.RegisterSubAsset(
-                    ctx.Guid,
-                    (ulong)i);
-
-                _meshGuids.Add(guid);
-
-                MeshAsset mesh = ConvertMesh(scene.Meshes[i]);
-
-                //mesh.Material = _materialGuids[mesh.MaterialIndex];
-
-                File.WriteAllBytes(
-                    ctx.GetOutputPath((ulong)i, "mesh"),
-                    MessagePackSerializer.Serialize(mesh));
-            }
-        }
 
         private static PackedLight ConvertLight(Assimp.Light light)
         {
+            float intensityLuminance = (0.2126f * light.ColorDiffuse.X) + (0.7152f * light.ColorDiffuse.Y) + (0.0722f * light.ColorDiffuse.Z);
+            intensityLuminance /= 54.351413f;
+            Console.WriteLine("Intensity Luminance: " + intensityLuminance);
+
             PackedLight packed = new()
             {
                 Name = light.Name,
-                Color = new Vector3(
-                    light.ColorDiffuse.X,
-                    light.ColorDiffuse.Y,
-                    light.ColorDiffuse.Z),
+                Color = new Vector3(light.ColorDiffuse.X, light.ColorDiffuse.Y, light.ColorDiffuse.Z),
 
                 Range = light.AttenuationLinear > 0
                     ? 1.0f / light.AttenuationLinear
@@ -235,8 +202,9 @@ namespace DevoidEngine.AssetPipeline.Importers
                 InnerCone = light.AngleInnerCone,
                 OuterCone = light.AngleOuterCone,
 
-                Intensity = 1.0f
+                Intensity = intensityLuminance
             };
+
 
             switch (light.LightType)
             {
@@ -261,93 +229,127 @@ namespace DevoidEngine.AssetPipeline.Importers
             return packed;
         }
 
-        private static MeshAsset ConvertMesh(AssimpMesh mesh)
+        private MeshAsset ConvertNodeMesh(Node node, AssimpScene scene)
+        {
+            List<MeshSurfaceAsset> surfaces = new(node.MeshIndices.Count);
+
+            foreach (int meshIndex in node.MeshIndices)
+            {
+                AssimpMesh mesh = scene.Meshes[meshIndex];
+
+                Guid materialGuid = _materialGuids[mesh.MaterialIndex];
+
+                MeshSurfaceAsset surface = ConvertMeshSurface(mesh, materialGuid);
+
+                surfaces.Add(surface);
+            }
+
+            return new MeshAsset
+            {
+                Surfaces = [.. surfaces]
+            };
+        }
+
+        private static MeshSurfaceAsset ConvertMeshSurface(AssimpMesh mesh, Guid materialGuid)
         {
             int vertexCount = mesh.VertexCount;
 
             float[] positions = new float[vertexCount * 3];
-            if (mesh.HasVertices)
+
+            for (int i = 0; i < vertexCount; i++)
             {
-                var vertices = mesh.Vertices;
-                for (int i = 0; i < vertexCount; i++)
-                {
-                    var v = vertices[i];
-                    int idx = i * 3;
-                    positions[idx] = v.X;
-                    positions[idx + 1] = v.Y;
-                    positions[idx + 2] = v.Z;
-                }
+                var v = mesh.Vertices[i];
+                int idx = i * 3;
+
+                positions[idx] = v.X;
+                positions[idx + 1] = v.Y;
+                positions[idx + 2] = v.Z;
             }
-            float[] normals = mesh.HasNormals ? new float[vertexCount * 3] : [];
+
+            float[] normals = mesh.HasNormals
+                ? new float[vertexCount * 3]
+                : [];
+
             if (mesh.HasNormals)
             {
-                var normList = mesh.Normals;
                 for (int i = 0; i < vertexCount; i++)
                 {
-                    var n = normList[i];
+                    var n = mesh.Normals[i];
                     int idx = i * 3;
+
                     normals[idx] = n.X;
                     normals[idx + 1] = n.Y;
                     normals[idx + 2] = n.Z;
                 }
             }
 
-            float[] uvs = mesh.HasTextureCoords(0) ? new float[vertexCount * 2] : [];
+            float[] uvs = mesh.HasTextureCoords(0)
+                ? new float[vertexCount * 2]
+                : [];
+
             if (mesh.HasTextureCoords(0))
             {
                 var uvList = mesh.TextureCoordinateChannels[0];
+
                 for (int i = 0; i < vertexCount; i++)
                 {
                     var uv = uvList[i];
                     int idx = i * 2;
+
                     uvs[idx] = uv.X;
                     uvs[idx + 1] = uv.Y;
                 }
             }
 
-            bool hasTangents = mesh.Tangents.Count > 0 && mesh.BiTangents.Count > 0;
-            float[] tangents = hasTangents ? new float[vertexCount * 3] : [];
-            float[] bitangents = hasTangents ? new float[vertexCount * 3] : [];
+            bool hasTangents =
+                mesh.Tangents.Count > 0 &&
+                mesh.BiTangents.Count > 0;
+
+            float[] tangents = hasTangents
+                ? new float[vertexCount * 3]
+                : [];
+
+            float[] bitangents = hasTangents
+                ? new float[vertexCount * 3]
+                : [];
 
             if (hasTangents)
             {
-                var tanList = mesh.Tangents;
-                var bitanList = mesh.BiTangents;
                 for (int i = 0; i < vertexCount; i++)
                 {
-                    var t = tanList[i];
-                    var b = bitanList[i];
+                    var tangent = mesh.Tangents[i];
+                    var bitangent = mesh.BiTangents[i];
+
                     int idx = i * 3;
 
-                    tangents[idx] = t.X;
-                    tangents[idx + 1] = t.Y;
-                    tangents[idx + 2] = t.Z;
+                    tangents[idx] = tangent.X;
+                    tangents[idx + 1] = tangent.Y;
+                    tangents[idx + 2] = tangent.Z;
 
-                    bitangents[idx] = b.X;
-                    bitangents[idx + 1] = b.Y;
-                    bitangents[idx + 2] = b.Z;
+                    bitangents[idx] = bitangent.X;
+                    bitangents[idx + 1] = bitangent.Y;
+                    bitangents[idx + 2] = bitangent.Z;
                 }
             }
 
-            int faceCount = mesh.FaceCount;
             int totalIndices = 0;
-            for (int i = 0; i < faceCount; i++)
-            {
+
+            for (int i = 0; i < mesh.FaceCount; i++)
                 totalIndices += mesh.Faces[i].IndexCount;
-            }
 
             uint[] indices = new uint[totalIndices];
+
             int indexPtr = 0;
-            for (int i = 0; i < faceCount; i++)
+
+            for (int i = 0; i < mesh.FaceCount; i++)
             {
-                var faceIndices = mesh.Faces[i].Indices;
-                for (int j = 0; j < faceIndices.Count; j++)
-                {
-                    indices[indexPtr++] = (uint)faceIndices[j];
-                }
+                var face = mesh.Faces[i];
+
+                for (int j = 0; j < face.IndexCount; j++)
+                    indices[indexPtr++] = (uint)face.Indices[j];
             }
 
-            return new MeshAsset
+            return new MeshSurfaceAsset
             {
                 Positions = positions,
                 Normals = normals,
@@ -355,6 +357,7 @@ namespace DevoidEngine.AssetPipeline.Importers
                 Tangents = tangents,
                 Bitangents = bitangents,
                 Indices = indices,
+                MaterialGuid = materialGuid
             };
         }
         MaterialAsset ConvertMaterial(Assimp.Material mat, string modelPath)

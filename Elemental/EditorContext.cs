@@ -3,6 +3,7 @@ using Elemental.Tools.EditorServices;
 using Elemental.Tools.Menu;
 using Elemental.Tools.Shortcuts;
 using Elemental.Tools.Toolbar;
+using System.Numerics;
 
 namespace Elemental
 {
@@ -15,5 +16,7 @@ namespace Elemental
         public ShortcutManager Shortcuts = null!;
         public EditorActionRegistry EditorActions = null!;
         public SceneService SceneService = null!;
+
+        public Vector2 MousePosition = new();
     }
 }

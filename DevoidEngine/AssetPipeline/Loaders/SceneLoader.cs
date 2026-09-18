@@ -15,17 +15,18 @@ namespace DevoidEngine.AssetPipeline.Loaders
 
         public Scene Load(byte[] data)
         {
-            Scene scene;
-            try
-            {
-                scene = SceneSerializer.Deserialize(MessagePackSerializer.Deserialize<SceneData>(data.ToArray()));
-            } catch (Exception ex)
-            {
-                scene = new Scene();
-                Console.WriteLine($"[Scene Loader]: Error Loading Scene {ex.Message}");
-            }
+            //Scene scene;
+            throw new NotImplementedException();
+            //try
+            //{
+            //    //scene = SceneSerializer.Deserialize(MessagePackSerializer.Deserialize<SceneData>(data.ToArray()));
+            //} catch (Exception ex)
+            //{
+            //    scene = new Scene();
+            //    Console.WriteLine($"[Scene Loader]: Error Loading Scene {ex.Message}");
+            //}
 
-            return scene;
+            //return scene;
         }
     }
 }

@@ -41,10 +41,11 @@ namespace DevoidEngine.Rendering
 
         public void BuildStaticBVH()
         {
-
             ReadOnlySpan<Slot<RenderMeshData>> entries = meshIdAllocator.AsSpan();
 
             BVH bvh = new(12);
+
+            int triangleId = 0;
 
             for (int i = 0; i < entries.Length; i++)
             {
@@ -59,30 +60,41 @@ namespace DevoidEngine.Rendering
                     continue;
 
                 Mesh mesh = data.render_mesh;
-
                 Matrix4x4 transform = data.render_transform;
 
-                if (mesh.Indices == null)
+                foreach (MeshSurface surface in mesh.Surfaces)
                 {
-                    Console.WriteLine("[BVH Build]: Mesh was skipped due to not having indices.");
-                    continue;
-                }
+                    if (surface.Indices == null)
+                    {
+                        Console.WriteLine("[BVH Build]: Surface was skipped due to not having indices.");
+                        continue;
+                    }
 
-                if (mesh.Positions == null)
-                {
-                    Console.WriteLine("[BVH Build]: Mesh was skipped due to not having any vertex positions.");
-                    continue;
-                }
+                    if (surface.Positions == null)
+                    {
+                        Console.WriteLine("[BVH Build]: Surface was skipped due to not having vertex positions.");
+                        continue;
+                    }
 
-                for (int j = 0; j < mesh.Indices.Length; j += 3)
-                {
-                    Vector3 v0 = Vector3.Transform(mesh.Positions[mesh.Indices[j]], transform);
+                    uint[] indices = surface.Indices;
+                    Vector3[] positions = surface.Positions;
 
-                    Vector3 v1 = Vector3.Transform(mesh.Positions[mesh.Indices[j + 1]], transform);
+                    if (indices.Length % 3 != 0)
+                    {
+                        Console.WriteLine("[BVH Build]: Surface was skipped due to invalid index count.");
+                        continue;
+                    }
 
-                    Vector3 v2 = Vector3.Transform(mesh.Positions[mesh.Indices[j + 2]], transform);
+                    for (int j = 0; j < indices.Length; j += 3)
+                    {
+                        Vector3 v0 = Vector3.Transform(positions[indices[j]], transform);
 
-                    bvh.AddTriangle(j / 3, v0, v1, v2);
+                        Vector3 v1 = Vector3.Transform(positions[indices[j + 1]], transform);
+
+                        Vector3 v2 = Vector3.Transform(positions[indices[j + 2]], transform);
+
+                        bvh.AddTriangle(triangleId++, v0, v1, v2);
+                    }
                 }
             }
 
@@ -116,11 +128,6 @@ namespace DevoidEngine.Rendering
         {
             RenderMeshData data = meshIdAllocator.Get(instance_id);
             data.render_mesh = mesh;
-        }
-        public void InstanceSetMaterial(RID instance_id, MaterialInstance material)
-        {
-            RenderMeshData data = meshIdAllocator.GetRef(instance_id);
-            data.render_material = material;
         }
         public void InstanceSetStatic(RID instance_id, bool is_static)
         {
@@ -275,8 +282,7 @@ namespace DevoidEngine.Rendering
 
         public void SpotLightSetRadius(RID rid, float radius)
         {
-            ref GPUSpotLight light =
-                ref spotLights.GetRef(rid);
+            ref GPUSpotLight light = ref spotLights.GetRef(rid);
 
             light.direction.W = radius;
         }

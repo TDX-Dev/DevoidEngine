@@ -11,7 +11,7 @@ namespace DevoidEngine.Assets
         [Key(1)]
         public int Parent = -1;
         [Key(2)]
-        public PackedMesh[] Meshes = [];
+        public PackedMesh? Mesh;
         [Key(3)]
         public int Camera = -1;
         [Key(4)]

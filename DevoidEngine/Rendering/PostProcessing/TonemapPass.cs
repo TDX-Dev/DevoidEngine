@@ -34,6 +34,7 @@ namespace DevoidEngine.Rendering.PostProcessing
         {
             Read("SceneColor");
             Read("Bloom");
+            Read("AnamorphicBloom");
 
             Write("ToneMapped");
         }
@@ -42,17 +43,17 @@ namespace DevoidEngine.Rendering.PostProcessing
         {
             Texture scene = ctx.GetTexture("SceneColor");
             Texture bloom = ctx.GetTexture("Bloom");
+            Texture anamorphicBloom = ctx.GetTexture("AnamorphicBloom");
 
             TextureDescription desc = scene.GPU.Description;
 
-            Texture output = ctx.RenderContext.Resources.GetOrCreateTexture(
-                "PP_TONEMAP",
-                desc);
+            Texture output = ctx.RenderContext.Resources.GetOrCreateTexture("PP_TONEMAP", desc);
 
             target.SetColorAttachment(0, output);
 
             material.SetTexture("MAT_SceneColor", scene);
             material.SetTexture("MAT_BloomColor", bloom);
+            material.SetTexture("MAT_AnamorphicBloomColor", anamorphicBloom);
             ctx.CommandList.SetFramebuffer(target.GPU);
 
             ctx.CommandList.ClearColor(0, new Vector4(0, 0, 0, 1));

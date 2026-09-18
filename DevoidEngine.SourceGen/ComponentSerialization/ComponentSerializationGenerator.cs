@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace DevoidEngine.SourceGen.ComponentSerialization
 {
-    [Generator]
+    //[Generator]
     internal class ComponentSerializationGenerator : IIncrementalGenerator
     {
 

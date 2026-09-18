@@ -1,7 +1,5 @@
 ﻿using DevoidEngine.AssetPipeline;
 using DevoidEngine.Assets;
-using DevoidEngine.Audio;
-using DevoidEngine.Components;
 using DevoidEngine.Core;
 using DevoidEngine.InputSystem;
 using DevoidEngine.InputSystem.InputDevices;
@@ -96,8 +94,8 @@ namespace Sandbox
             PBRMaterial.SetTexture("MAT_AlbedoMap", dvsTex);
             PBRMaterial.SetFloat("Roughness", 0f);
 
-            GameObject go1 = scene.AddGameObject("Player");
-            go1.AddComponent<FirstPersonController>();
+            //GameObject go1 = scene.AddGameObject("Player");
+            //go1.AddComponent<FirstPersonController>();
 
             // Movement
             Engine.InputSystem.Map.Bind("Forward", new InputBinding()
@@ -185,22 +183,22 @@ namespace Sandbox
             //audio1.SetLooping(true);
             //audio1.Play();
 
-            GameObject ballDyn = scene.GetGameObject("Ball:Dynamic")!;
-            ballDyn.RemoveComponent(ballDyn.GetComponent<StaticColliderComponent>()!);
-            RigidBodyComponent rbS = ballDyn.AddComponent<RigidBodyComponent>();
-            rbS.Shape = new DevoidEngine.Physics.PhysicsShapeDescription()
-            {
-                Type = DevoidEngine.Physics.PhysicsShapeType.Box,
-                Size = ballDyn.Transform.Scale
-            };
+            //GameObject ballDyn = scene.GetGameObject("Ball:Dynamic")!;
+            //ballDyn.RemoveComponent(ballDyn.GetComponent<StaticColliderComponent>()!);
+            //RigidBodyComponent rbS = ballDyn.AddComponent<RigidBodyComponent>();
+            //rbS.Shape = new DevoidEngine.Physics.PhysicsShapeDescription()
+            //{
+            //    Type = DevoidEngine.Physics.PhysicsShapeType.Box,
+            //    Size = ballDyn.Transform.Scale
+            //};
 
-            AudioSource3D as3d = ballDyn.AddComponent<AudioSource3D>();
-            as3d.Audio = Asset.Load<AudioClip>("Sounds/SBH.wav");
-            as3d.PlayOnStart = true;
-            as3d.Volume = 1f;
-            as3d.MaxDistance = 40;
-            as3d.SetLooping(true);
-            as3d.Play();
+            //AudioSource3D as3d = ballDyn.AddComponent<AudioSource3D>();
+            //as3d.Audio = Asset.Load<AudioClip>("Sounds/SBH.wav");
+            //as3d.PlayOnStart = true;
+            //as3d.Volume = 1f;
+            //as3d.MaxDistance = 40;
+            //as3d.SetLooping(true);
+            //as3d.Play();
 
             //FollowImpulseComponent fic = ballDyn.AddComponent<FollowImpulseComponent>();
             //fic.FollowTarget = go1;

@@ -2,12 +2,12 @@
 using DevoidEngine.AssetPipeline.Importers;
 using DevoidEngine.Assets;
 using DevoidEngine.Audio;
-using DevoidEngine.Components;
 using DevoidEngine.Core;
 using DevoidEngine.Gizmos;
 using DevoidEngine.Gizmos.DevoidEngine.Gizmos;
 using DevoidEngine.InputSystem;
 using DevoidEngine.InputSystem.InputDevices;
+using DevoidEngine.Nodes;
 using DevoidEngine.Rendering;
 using DevoidEngine.Serialization;
 using DevoidEngine.UI;
@@ -82,7 +82,8 @@ namespace Sandbox
             //scene.GameObjects[0].Transform.Position = new Vector3(0, 5, 0);
 
             Engine.Instance.SceneTree.LoadScene(scene);
-            scene.SetMode(SceneMode.Play);
+
+            scene.CreateNode<Node3D>();
 
             //Engine.Instance.AssetDatabase.TryGetGuid("HDRIs/puresky.hdr", out Guid puresky);
             //Engine.Instance.AssetDatabase.Reimport(puresky, MessagePackSerializer.Serialize<TextureImportSettings>(new TextureImportSettings()
@@ -114,17 +115,30 @@ namespace Sandbox
             PBRMaterial.SetTexture("MAT_AlbedoMap", dvsTex);
             PBRMaterial.SetFloat("Roughness", 0f);
 
-            GameObject target = scene.AddGameObject("CameraTarget");
-            target.Transform.Position = Vector3.Zero;
+            //OrbitalCameraController orbit = cameraObject.AddComponent<OrbitalCameraController>();
+            Camera3D cam = scene.CreateNode<Camera3D>();
+            cam.Transform.Position = new Vector3(0, 10, -10);
+            cam.Transform.EulerAngles = new Vector3(0, 0, 0);
 
-            GameObject cameraObject = scene.AddGameObject("EditorCamera");
+            Console.WriteLine(scene.Nodes.Count);
 
-            OrbitalCameraController orbit =
-                cameraObject.AddComponent<OrbitalCameraController>();
+            for (int i = 0; i < scene.Nodes.Count; i++)
+            {
+                Node node = scene.Nodes[i];
 
-            //orbit.Target = target;
-            //orbit.Distance = 5.0f;
+                int depth = 0;
+                Node? parent = node.Parent;
 
+                while (parent != null)
+                {
+                    depth++;
+                    parent = parent.Parent;
+                }
+
+                Console.WriteLine($"{new string('\t', depth)}{node.Name} : {node.GetType()}");
+            }
+
+            #region INPUTS
             // Movement
             Engine.InputSystem.Map.Bind("Forward", new InputBinding()
             {
@@ -204,52 +218,10 @@ namespace Sandbox
                 Control = (ushort)MouseAxis.ScrollY
             });
 
-
+            #endregion
             SetupUI();
-            //GameObject sketchModel = scene.GetGameObject("Sketchfab_model")!;
-            //AudioSource3D audio = sketchModel.AddComponent<AudioSource3D>();
-            //audio.Audio = Asset.Load<AudioClip>("Sounds/PortalRadio.wav");
-            //audio.PlayOnStart = true;
-            //audio.Volume = 0.5f;
-            //audio.MaxDistance = 20;
-            //audio.SetLooping(true);
-            //audio.Play();
 
-            //GameObject sublimModel = scene.GetGameObject("Sublim")!;
-            //AudioSource3D audio1 = sublimModel.AddComponent<AudioSource3D>();
-            //audio1.Audio = Asset.Load<AudioClip>("Sounds/SBH.wav");
-            //audio1.PlayOnStart = true;
-            //audio1.Volume = 0.5f;
-            //audio1.MaxDistance = 20;
-            //audio1.SetLooping(true);
-            //audio1.Play();
-
-            //GameObject ballDyn = scene.GetGameObject("Ball:Dynamic")!;
-            //ballDyn.RemoveComponent(ballDyn.GetComponent<StaticColliderComponent>()!);
-            //RigidBodyComponent rbS = ballDyn.AddComponent<RigidBodyComponent>();
-            //rbS.Shape = new DevoidEngine.Physics.PhysicsShapeDescription()
-            //{
-            //    Type = DevoidEngine.Physics.PhysicsShapeType.Box,
-            //    Size = ballDyn.Transform.Scale
-            //};
-
-            //AudioSource3D as3d = ballDyn.AddComponent<AudioSource3D>();
-            //as3d.Audio = Asset.Load<AudioClip>("Sounds/SBH.wav");
-            //as3d.PlayOnStart = true;
-            //as3d.Volume = 1f;
-            //as3d.MaxDistance = 40;
-            //as3d.SetLooping(true);
-            //as3d.Play();
-
-            //FollowImpulseComponent fic = ballDyn.AddComponent<FollowImpulseComponent>();
-            //fic.FollowTarget = go1;
-
-            //GameObject go = gameObject.Scene.AddGameObject("Debug");
-            //MeshRenderer mr = sketchModel.AddComponent<MeshRenderer>();
-            //mr.Mesh = PrimitiveMeshes.GetCube();
-            //go.SetParent(gameObject);
-            //go.Transform.LocalPosition = new Vector3(0, -1, 0);
-
+            scene.SetMode(SceneMode.Play);
         }
 
         LabelNode GPUInfo = null!;

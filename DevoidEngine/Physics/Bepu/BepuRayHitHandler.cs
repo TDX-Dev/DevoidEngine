@@ -2,12 +2,12 @@
 using BepuPhysics.Collidables;
 using BepuPhysics.Trees;
 using DevoidEngine.Core;
+using DevoidEngine.Nodes;
 using System.Numerics;
 
 namespace DevoidEngine.Physics.Bepu
 {
-    internal struct BepuRayHitHandler<TFilter> : IRayHitHandler
-        where TFilter : struct, IRaycastFilter
+    internal struct BepuRayHitHandler<TFilter> : IRayHitHandler where TFilter : struct, IRaycastFilter
     {
         public bool Hit;
         public float Distance;
@@ -17,23 +17,18 @@ namespace DevoidEngine.Physics.Bepu
         private readonly IPhysicsBackend backend;
         private readonly TFilter filter;
 
-        public BepuRayHitHandler(
-            IPhysicsBackend backend,
-            TFilter filter)
+        public BepuRayHitHandler(IPhysicsBackend backend, TFilter filter)
         {
             this.backend = backend;
             this.filter = filter;
         }
 
-        public readonly bool AllowTest(
-            CollidableReference collidable)
+        public readonly bool AllowTest(CollidableReference collidable)
         {
             if (backend.IsTrigger(collidable))
                 return false;
 
-            if (!backend.TryGetGameObject(
-                    collidable,
-                    out GameObject gameObject))
+            if (!backend.TryGetGameObject(collidable, out Node3D gameObject))
             {
                 return false;
             }

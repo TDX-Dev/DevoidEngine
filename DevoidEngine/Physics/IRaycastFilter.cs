@@ -1,14 +1,10 @@
 ﻿using DevoidEngine.Core;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using DevoidEngine.Nodes;
 
 namespace DevoidEngine.Physics
 {
     public interface IRaycastFilter
     {
-        bool Allow(GameObject gameObject);
+        bool Allow(Node3D node);
     }
 }

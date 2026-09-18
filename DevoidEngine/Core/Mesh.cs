@@ -2,178 +2,74 @@
 using DevoidEngine.Attributes;
 using DevoidEngine.Util;
 using DevoidGPU;
-using System.Numerics;
 
 namespace DevoidEngine.Core
 {
-    [DevoidClass(typeof(Mesh))]
+    [DevoidClass]
     public sealed class Mesh : AssetType
     {
         public ResourceUsage Usage { get; }
 
-        public bool HasBones => false;
         public float UniqueIdentifier = float.MaxValue;
 
-        public VertexInfo VertexInfo => HasBones ? Vertex.VertexInfo : Vertex.VertexInfo;
-
-        public Vector3[]? Positions { get => positions; set => positions = value; }
-        public Vector2[]? UVs { get => uvs; set => uvs = value; }
-        public Vector3[]? Normals { get => normals; set => normals = value; }
-        public Vector4[]? Tangents { get => tangents; set => tangents = value; }
-
-        public uint[]? Indices { get => indices; set => indices = value; }
+        public MeshSurface[] Surfaces { get; set; } = [];
 
         public BoundingBox LocalBounds { get; private set; }
-
-        private IndexBuffer? IB;
-        private VertexBuffer<Vertex>? VB;
-        //private readonly VertexBuffer<Vertex>? VB_Skinned;
-
-        private Vector3[]? positions;
-        private Vector2[]? uvs;
-        private Vector3[]? normals;
-        private Vector4[]? tangents;
-        private uint[]? indices;
 
         public Mesh(ResourceUsage usage = ResourceUsage.Default)
         {
             Usage = usage;
-            positions = [];
-            normals = [];
-            uvs = [];
-            tangents = [];
-        }
-
-        public void SetVertices(Vector3[] positions)
-        {
-            Positions = positions;
         }
 
         public void Upload(bool computeLocalBounds = true)
         {
-            if (Positions == null || Positions.Length == 0)
-                throw new InvalidOperationException("Mesh must have positions");
+            if (Surfaces.Length == 0)
+                throw new InvalidOperationException("Mesh must have at least one surface");
 
-
-            int count = Positions.Length;
-
-            Vertex[] vertices = new Vertex[count];
-
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < Surfaces.Length; i++)
             {
-                var pos = Positions[i];
-
-                var normal = (Normals != null && Normals.Length == count)
-                    ? Normals[i]
-                    : Vector3.UnitY;
-
-                var uv = (UVs != null && UVs.Length == count)
-                    ? UVs[i]
-                    : Vector2.Zero;
-
-                var tangent = (Tangents != null && Tangents.Length == count)
-                    ? Tangents[i]
-                    : new Vector4(1, 0, 0, 1); // safe default
-
-                vertices[i] = new Vertex(pos, normal, uv, tangent);
+                MeshSurface? surface = Surfaces[i] ?? throw new InvalidOperationException($"Mesh contains null surface at index {i}");
+                surface.Upload(computeLocalBounds);
             }
 
             if (computeLocalBounds)
                 ComputeLocalBounds();
-
-            if (VB == null)
-            {
-                VB = new VertexBuffer<Vertex>(Engine.GraphicsDevice, vertices.AsSpan(), Vertex.VertexInfo, Usage);
-            }
-            else
-            {
-                VB.Update(vertices);
-            }
-
-            if (indices != null && indices.Length > 0)
-            {
-                if (IB == null)
-                {
-                    IB = new IndexBuffer(Engine.GraphicsDevice, indices.AsSpan(), Usage);
-                }
-                else
-                {
-                    IB.Update(indices);
-                }
-            }
-
-            //Positions = null;
-            Normals = null;
-            Tangents = null;
-            UVs = null;
-            //Indices = null;
         }
 
         private void ComputeLocalBounds()
         {
-            if (Positions == null || Positions.Length == 0)
+            if (Surfaces.Length == 0)
             {
                 LocalBounds = BoundingBox.Empty;
                 return;
             }
 
-            Vector3 min = Positions[0];
-            Vector3 max = Positions[0];
+            BoundingBox bounds = Surfaces[0].LocalBounds;
 
-            for (int i = 1; i < Positions.Length; i++)
-            {
-                min = Vector3.Min(min, Positions[i]);
-                max = Vector3.Max(max, Positions[i]);
-            }
+            for (int i = 1; i < Surfaces.Length; i++)
+                bounds = BoundingBox.Union(bounds, Surfaces[i].LocalBounds);
 
-            LocalBounds = new BoundingBox(min, max);
+            LocalBounds = bounds;
         }
 
         public void Draw(ICommandList cmd)
         {
-
-            if (VB == null)
-                return;
-            cmd.SetVertexBuffer(VB.GPU);
-
-            if (IB != null)
-            {
-                cmd.SetIndexBuffer(IB.GPU);
-                cmd.DrawIndexed(IB.Count, 0, 0);
-            }
-            else
-            {
-                cmd.Draw(VB.Count, 0);
-            }
-
+            foreach (MeshSurface surface in Surfaces)
+                surface.Draw(cmd);
         }
 
         public void DrawInstanced(ICommandList cmd, int instanceCount)
         {
-            if (VB == null)
-                return;
-
-            cmd.SetVertexBuffer(VB.GPU);
-            if (IB != null)
-            {
-                cmd.SetIndexBuffer(IB.GPU);
-                cmd.DrawInstancedIndexed(IB.Count, instanceCount, 0, 0, 0);
-            }
-            else
-            {
-                Console.WriteLine("Requested mesh does not have index buffer for instanced drawing");
-            }
+            foreach (MeshSurface surface in Surfaces)
+                surface.DrawInstanced(cmd, instanceCount);
         }
 
         public override void Dispose()
         {
-            VB?.Dispose();
-            IB?.Dispose();
-            Positions = [];
-            Normals = [];
-            UVs = [];
-            Tangents = [];
-            Indices = [];
+            foreach (MeshSurface surface in Surfaces)
+                surface.Dispose();
+
+            Surfaces = [];
         }
     }
 }

@@ -48,7 +48,7 @@
             }
         }
 
-        private void ProcessPendingChanges(EditorContext context)
+        public void ProcessPendingChanges(EditorContext context)
         {
             if (panelsToAdd.Count > 0)
             {

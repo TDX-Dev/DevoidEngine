@@ -2,6 +2,7 @@
 using BepuPhysics.Collidables;
 using BepuUtilities.Memory;
 using DevoidEngine.Core;
+using DevoidEngine.Nodes;
 using DevoidEngine.Util;
 using System.Numerics;
 
@@ -12,8 +13,8 @@ namespace DevoidEngine.Physics.Bepu
         private Simulation simulation = null!;
         private BufferPool bufferPool = null!;
 
-        private readonly Dictionary<BodyHandle, GameObject> bodyToGameObject = [];
-        private readonly Dictionary<StaticHandle, GameObject> staticToGameObject = [];
+        private readonly Dictionary<BodyHandle, Node3D> bodyToSceneNode = [];
+        private readonly Dictionary<StaticHandle, Node3D> staticToSceneNode = [];
 
         private readonly Dictionary<BodyHandle, PhysicsMaterial> bodyMaterials = [];
         private readonly Dictionary<StaticHandle, PhysicsMaterial> staticMaterials = [];
@@ -139,7 +140,7 @@ namespace DevoidEngine.Physics.Bepu
 
 
 
-        public IPhysicsBody CreateBody(PhysicsBodyDescription desc, GameObject owner)
+        public IPhysicsBody CreateBody(PhysicsBodyDescription desc, RigidbodyNode owner)
         {
             TypedIndex shapeIndex = CreateShape(desc.Shape, desc.Mass, out BodyInertia inertia);
 
@@ -196,7 +197,7 @@ namespace DevoidEngine.Physics.Bepu
 
             bodyRef.Awake = true;
 
-            bodyToGameObject[handle] = owner;
+            bodyToSceneNode[handle] = owner;
             bodyMaterials[handle] = desc.Material;
 
             var wrapper = new BepuPhysicsBody(handle, simulation, desc.Material, this);
@@ -209,7 +210,7 @@ namespace DevoidEngine.Physics.Bepu
 
 
 
-        public IPhysicsStatic CreateStatic(PhysicsStaticDescription desc, GameObject owner)
+        public IPhysicsStatic CreateStatic(PhysicsStaticDescription desc, StaticbodyNode owner)
         {
             TypedIndex shapeIndex = CreateShapeStatic(desc.Shape, owner.Transform.Scale);
 
@@ -218,7 +219,7 @@ namespace DevoidEngine.Physics.Bepu
 
             StaticHandle handle = simulation.Statics.Add(staticDescription);
 
-            staticToGameObject[handle] = owner;
+            staticToSceneNode[handle] = owner;
             staticMaterials[handle] = desc.Material;
 
             var wrapper = new BepuPhysicsStatic(handle, simulation, this);
@@ -349,7 +350,7 @@ namespace DevoidEngine.Physics.Bepu
             {
                 simulation.Bodies.Remove(b.Handle);
 
-                bodyToGameObject.Remove(b.Handle);
+                bodyToSceneNode.Remove(b.Handle);
                 bodyMaterials.Remove(b.Handle);
                 bodyTriggers.Remove(b.Handle);
                 bodyWrappers.Remove(b.Handle);
@@ -367,7 +368,7 @@ namespace DevoidEngine.Physics.Bepu
                 simulation.Statics.Remove(b.Handle);
 
                 staticWrappers.Remove(b.Handle);
-                staticToGameObject.Remove(b.Handle);
+                staticToSceneNode.Remove(b.Handle);
                 staticMaterials.Remove(b.Handle);
             }
             else
@@ -410,14 +411,14 @@ namespace DevoidEngine.Physics.Bepu
             return true;
         }
 
-        public bool TryGetGameObject(CollidableReference collidable, out GameObject gameObject)
+        public bool TryGetGameObject(CollidableReference collidable, out Node3D node)
         {
             if (collidable.Mobility == CollidableMobility.Dynamic || collidable.Mobility == CollidableMobility.Kinematic)
             {
-                return bodyToGameObject.TryGetValue(collidable.BodyHandle, out gameObject!);
+                return bodyToSceneNode.TryGetValue(collidable.BodyHandle, out node!);
             }
 
-            return staticToGameObject.TryGetValue(collidable.StaticHandle, out gameObject!);
+            return staticToSceneNode.TryGetValue(collidable.StaticHandle, out node!);
         }
 
     }

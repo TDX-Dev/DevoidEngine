@@ -1,25 +1,19 @@
-﻿using DevoidEngine.Attributes;
-using DevoidEngine.Core;
-using DevoidEngine.Rendering;
+﻿using DevoidEngine.Core;
 using System.Numerics;
 
-namespace DevoidEngine.Components
+namespace DevoidEngine.Nodes
 {
-    [DevoidClass]
-    public class Camera3D : Component
+    public class Camera3D : Node3D
     {
-        public override string Type => nameof(Camera3D);
-        public override ComponentTickMode TickMode => ComponentTickMode.All;
-
         public bool IsCurrent
         {
             get => is_current_camera;
             set
             {
                 is_current_camera = value;
-                if (is_current_camera && gameObject?.Scene != null)
+                if (is_current_camera && Scene != null)
                 {
-                    gameObject.Scene.SetMainCamera(this);
+                    Scene.SetMainCamera(this);
                 }
             }
         }
@@ -55,7 +49,6 @@ namespace DevoidEngine.Components
         }
 
 
-
         private bool is_current_camera;
         private readonly Camera camera;
 
@@ -67,45 +60,33 @@ namespace DevoidEngine.Components
         {
             camera = new Camera();
         }
-
-        public override void OnAttach()
+        protected override void OnAttach()
         {
-            if (gameObject?.Scene != null)
-            {
-                gameObject.Scene.RegisterCamera(this);
-            }
+            Scene?.RegisterCamera(this);
         }
 
-        public override void OnDestroy()
+        protected override void OnDestroy()
         {
-            if (gameObject?.Scene != null)
-            {
-                gameObject.Scene.UnregisterCamera(this);
-            }
+            Scene?.UnregisterCamera(this);
         }
 
         internal void SetIsCurrentInternal(bool isCurrent)
         {
             is_current_camera = isCurrent;
         }
-
-        public override void OnStart()
+        protected override void OnStart()
         {
-            UpdateCameraView(gameObject.Transform.WorldMatrix);
+            UpdateCameraView(Transform.WorldMatrix);
         }
-
-        public override void OnRender()
+        protected override void OnRender()
         {
-            if (Engine.Instance.FrameCount == 0)
-                return;
-            Transform3D transform = gameObject.Transform;
 
             Matrix4x4 world =
                 Engine.Instance.UseInterpolation
-                ? transform.GetGlobalTransformInterpolated(
+                ? Transform.GetGlobalTransformInterpolated(
                     Engine.Instance.FrameCount,
                     Engine.Instance.InterpolationAlpha)
-                : transform.WorldMatrix;
+                : Transform.WorldMatrix;
 
             UpdateCameraView(world);
         }
@@ -136,5 +117,7 @@ namespace DevoidEngine.Components
         {
             camera.UpdateProjectionMatrix(aspectRatio);
         }
+
+
     }
 }

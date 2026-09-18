@@ -193,12 +193,11 @@ namespace DevoidEngine.Rendering.ProbeGI
         public void DrawProbeSpheres(ICommandList cmd, ProbeGISettings settings)
         {
             DebugSphereMaterialInstance.DescriptorSet.SetTexture(8, ProbeInfoImage.GPU);
-            cmd.SetPipeline(DebugSphereMaterialInstance.BaseMaterial.DefaultPass.GetPipeline(DebugSphereMaterialInstance.BaseMaterial.Variant, DebugSphereMesh.VertexInfo));
+            cmd.SetPipeline(DebugSphereMaterialInstance.BaseMaterial.DefaultPass.GetPipeline(DebugSphereMaterialInstance.BaseMaterial.Variant, DebugSphereMesh.Surfaces[0].VertexInfo));
 
             cmd.SetDescriptorSet(1, DebugSphereMaterialInstance.DescriptorSet);
             Engine.Renderer.UpdatePerObjectData(Matrix4x4.CreateScale(ProbeDebugSize));
             DebugSphereMesh.DrawInstanced(cmd, (int)(settings.ProbeCount.X * settings.ProbeCount.Y * settings.ProbeCount.Z));
-
         }
 
         

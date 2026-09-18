@@ -1,10 +1,9 @@
-﻿using Assimp;
-using Assimp.Unmanaged;
-using DevoidEngine.Assets;
+﻿using DevoidEngine.Assets;
 using DevoidEngine.Audio;
-using DevoidEngine.Components;
+using DevoidEngine.Nodes;
 using DevoidEngine.Physics;
 using DevoidEngine.Rendering;
+using System.ComponentModel;
 
 namespace DevoidEngine.Core
 {
@@ -17,8 +16,8 @@ namespace DevoidEngine.Core
 
     public sealed class Scene : AssetType, IDisposable
     {
-        public event Action<Component>? OnComponentAdded;
-        public event Action<Component>? OnComponentRemoved;
+        public event Action<Node>? OnNodeAdded;
+        public event Action<Node>? OnNodeRemoved;
 
         public string SceneName { get; set; } = "Empty Scene";
         public bool IsPlaying => SceneMode == SceneMode.Play;
@@ -26,7 +25,7 @@ namespace DevoidEngine.Core
         public bool IsRunning => SceneMode is SceneMode.Play or SceneMode.Edit;
         public SceneMode SceneMode { get; private set; } = SceneMode.None;
 
-        public List<GameObject> GameObjects { get; private set; }
+        public List<Node> Nodes { get; private set; }
         public RenderWorld World { get; private set; } = null!;
         public PhysicsSystem Physics { get; internal set; } = null!;
         public AudioManager Audio { get; internal set; } = null!;
@@ -34,15 +33,12 @@ namespace DevoidEngine.Core
         public List<Camera3D> Cameras { get; private set; } = [];
         public Camera3D? MainCamera { get; private set; }
 
-
         private readonly List<Transform3D> transforms;
-        private readonly List<IRenderComponent> renderables;
 
         public Scene()
         {
-            GameObjects = [];
+            Nodes = [];
             transforms = [];
-            renderables = [];
 
             World = new();
         }
@@ -52,24 +48,17 @@ namespace DevoidEngine.Core
             if (!IsRunning)
                 return;
 
-            for (int i = 0; i < GameObjects.Count; i++)
+            for (int i = 0; i < Nodes.Count; i++)
             {
-                GameObjects[i].OnUpdate(deltaTime);
+                if (Nodes[i].Parent != null)
+                    continue;
+
+                Nodes[i].Update(deltaTime);
             }
-
-            //for (int i = 0; i < transforms.Count; i++)
-            //{
-            //    Transform3D transform = transforms[i];
-
-            //    if (!transform.hasMoved)
-            //        continue;
-
-            //    _ = transform.WorldMatrix;
-            //}
 
             if (MainCamera != null)
             {
-                Transform3D camTransform = MainCamera.gameObject.Transform;
+                Transform3D camTransform = MainCamera.Transform;
 
                 Audio?.SetListener(
                     camTransform.Position,
@@ -101,16 +90,19 @@ namespace DevoidEngine.Core
             if (!IsRunning)
                 return;
 
-            for (int i = 0; i < GameObjects.Count; i++)
+            for (int i = 0; i < Nodes.Count; i++)
             {
-                GameObjects[i].OnFixedUpdate(deltaTime);
+                if (Nodes[i].Parent != null)
+                    continue;
+
+                Nodes[i].FixedUpdate(deltaTime);
             }
 
             // Physics simulation itself remains Play-only.
             if (IsPlaying && Engine.Instance.SimulatePhysics)
             {
-                Physics.Step(/*deltaTime*/1/Engine.Instance.TargetFramerate);
-                Physics.SyncTransforms(/*deltaTime*/ 1 / Engine.Instance.TargetFramerate);
+                Physics.Step(1 / Engine.Instance.TargetFramerate);
+                Physics.SyncTransforms(1 / Engine.Instance.TargetFramerate);
                 Physics.ResolveFrameCollisions();
             }
         }
@@ -120,9 +112,12 @@ namespace DevoidEngine.Core
             if (!IsRunning)
                 return;
 
-            for (int i = 0; i < GameObjects.Count; i++)
+            for (int i = 0; i < Nodes.Count; i++)
             {
-                GameObjects[i].OnRender();
+                if (Nodes[i].Parent != null)
+                    continue;
+
+                Nodes[i].Render();
             }
         }
 
@@ -136,92 +131,82 @@ namespace DevoidEngine.Core
             if (mode == SceneMode.None)
                 return;
 
-            // Let components decide whether they should start
-            // based on the new scene mode.
-            for (int i = 0; i < GameObjects.Count; i++)
+            for (int i = 0; i < Nodes.Count; i++)
             {
-                GameObjects[i].OnStart();
+                if (Nodes[i].Parent != null)
+                    continue;
+
+                Nodes[i].Start();
             }
-            foreach (var transform in transforms)
+
+            for (int i = 0; i < transforms.Count; i++)
             {
-                transform.InitializeInterpolation();
+                transforms[i].InitializeInterpolation();
             }
         }
 
-        public GameObject AddGameObject(string name = "GameObject")
+        public T CreateNode<T>(string name = "Node") where T : Node, new()
         {
-            GameObject gameObject = new()
+            T node = new()
             {
                 Scene = this,
                 Name = name
             };
 
-            GameObjects.Add(gameObject);
-            transforms.Add(gameObject.Transform);
+            Nodes.Add(node);
+
+            if (node is Node3D node3D)
+                transforms.Add(node3D.Transform);
+
+            node.Attach();
 
             if (IsRunning)
             {
-                gameObject.OnStart();
-                gameObject.Transform.InitializeInterpolation();
+                node.Start();
+                node.InitializeTransforms();
             }
 
-            return gameObject;
+            return node;
         }
 
-        public GameObject AddGameObject(GameObject gameObject)
+        public Node AddNode(Node node)
         {
-            gameObject.Scene = this;
+            Nodes.Add(node);
 
-            GameObjects.Add(gameObject);
-            transforms.Add(gameObject.Transform);
+            if (node is Node3D node3D)
+                transforms.Add(node3D.Transform);
+
+            node.Attach();
 
             if (IsRunning)
             {
-                gameObject.OnStart();
-                gameObject.Transform.InitializeInterpolation();
+                node.Start();
+                node.InitializeTransforms();
             }
 
-            return gameObject;
+            return node;
         }
 
-        public GameObject? GetGameObject(Guid id)
+        public Node? GetNode(Guid id)
         {
-            for (int i = 0; i < GameObjects.Count; i++)
+            for (int i = 0; i < Nodes.Count; i++)
             {
-                if (GameObjects[i].Id == id)
-                    return GameObjects[i];
+                if (Nodes[i].Id == id)
+                    return Nodes[i];
             }
+
             return null;
         }
 
-        public GameObject? GetGameObject(string name)
+        public Node? GetNode(string name)
         {
-            for (int i = 0; i < GameObjects.Count; i++)
+            for (int i = 0; i < Nodes.Count; i++)
             {
-                if (GameObjects[i].Name == name)
-                    return GameObjects[i];
+                if (Nodes[i].Name == name)
+                    return Nodes[i];
             }
+
             return null;
-        }
-        public void RemoveGameObject(GameObject gameObject)
-        {
-            if (!GameObjects.Contains(gameObject))
-                return;
-
-            // Copy because destroying children modifies the hierarchy.
-            var children = gameObject.Children.ToArray();
-
-            for (int i = 0; i < children.Length; i++)
-            {
-                RemoveGameObject(children[i]);
-            }
-
-            gameObject.SetParent(null);
-
-            transforms.Remove(gameObject.Transform);
-            GameObjects.Remove(gameObject);
-
-            gameObject.OnDestroy();
         }
 
         public void RegisterCamera(Camera3D camera)
@@ -250,41 +235,33 @@ namespace DevoidEngine.Core
         public void SetMainCamera(Camera3D camera)
         {
             MainCamera = camera;
+
             foreach (var cam in Cameras)
             {
                 cam.SetIsCurrentInternal(cam == camera);
             }
         }
-        public void ComponentAdded(Component component)
+        public void NodeAdded(Node node)
         {
-            if (component is IRenderComponent renderComponent)
-                renderables.Add(renderComponent);
-
-            if (IsRunning)
-                component.InternalStart();
-
-            OnComponentAdded?.Invoke(component);
+            OnNodeAdded?.Invoke(node);
         }
 
-        public void ComponentRemoved(Component component)
+        public void NodeRemoved(Node node)
         {
-            if (component is IRenderComponent renderComponent)
-                renderables.Remove(renderComponent);
-
-
-            OnComponentRemoved?.Invoke(component);
+            OnNodeRemoved?.Invoke(node);
         }
-
         public override void Dispose()
         {
-            for (int i = 0; i < GameObjects.Count; i++)
+            for (int i = 0; i < Nodes.Count; i++)
             {
-                GameObjects[i].OnDestroy();
+                if (Nodes[i].Parent != null)
+                    continue;
+
+                Nodes[i].Destroy();
             }
 
-            GameObjects.Clear();
+            Nodes.Clear();
             transforms.Clear();
-            renderables.Clear();
             Cameras.Clear();
             MainCamera = null;
         }

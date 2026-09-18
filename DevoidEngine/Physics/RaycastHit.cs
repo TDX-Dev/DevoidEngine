@@ -1,4 +1,5 @@
 ﻿using DevoidEngine.Core;
+using DevoidEngine.Nodes;
 using System.Numerics;
 
 namespace DevoidEngine.Physics
@@ -9,6 +10,6 @@ namespace DevoidEngine.Physics
         public Vector3 Normal;
         public float Distance;
 
-        public GameObject HitObject;
+        public Node3D HitObject;
     }
 }

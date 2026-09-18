@@ -1,4 +1,5 @@
 ﻿using DevoidEngine.Core;
+using DevoidEngine.Nodes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,16 +10,16 @@ namespace DevoidEngine.Physics
 {
     public readonly struct IgnoreGameObjectRaycastFilter : IRaycastFilter
     {
-        private readonly GameObject _ignored;
+        private readonly Node3D _ignored;
 
-        public IgnoreGameObjectRaycastFilter(GameObject ignored)
+        public IgnoreGameObjectRaycastFilter(Node3D ignored)
         {
             _ignored = ignored;
         }
 
-        public bool Allow(GameObject gameObject)
+        public bool Allow(Node3D node)
         {
-            return gameObject != _ignored;
+            return node != _ignored;
         }
     }
 }

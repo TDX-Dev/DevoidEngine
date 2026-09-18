@@ -55,6 +55,8 @@ float3 Upsample(float2 uv, float2 pixelSize)
     return result;
 }
 
+
+
 float4 PSMain(PSInput input) : SV_TARGET
 {
     float2 uv = input.UV;

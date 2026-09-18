@@ -67,13 +67,12 @@ namespace DevoidEngine.Gizmos
             HoveredContext = null;
         }
 
-        private void ProcessMouseMove(
-            GizmoContext context,
-            Viewport viewport,
-            Vector2 globalMouse)
+        private void ProcessMouseMove(GizmoContext context, Viewport viewport, Vector2 globalMouse)
         {
-            Vector2 mouse =
-                globalMouse - viewport.Bounds.Position;
+            if (context.Camera == null)
+                return;
+
+            Vector2 mouse = globalMouse - viewport.Bounds.Position;
 
             context.MouseDelta =
                 mouse - context.MousePosition;

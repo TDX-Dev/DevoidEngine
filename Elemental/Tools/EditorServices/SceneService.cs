@@ -1,16 +1,44 @@
-﻿using BepuPhysics.CollisionDetection;
-using DevoidEngine.Components;
-using DevoidEngine.Core;
-using System.Numerics;
-using System.Text;
+﻿using DevoidEngine.Core;
+using DevoidEngine.Logging;
+using DevoidEngine.Nodes;
+using Elemental.Tools.Documents;
 
 namespace Elemental.Tools.EditorServices
 {
     public class SceneService : IEditorService
     {
-        public void LoadScene()
+        public event Action<Scene>? OnSceneChanged;
+
+        public SceneDocument? SceneDocument { get; private set; }
+
+        public SceneService()
         {
 
+        }
+
+        public void NewScene()
+        {
+            if (SceneDocument != null)
+            {
+                if (SceneDocument.HasFile)
+                {
+                    DevoidLog.Warning(LogCategory.Editor, "Scene has no file, save work?");
+                }
+                else if (SceneDocument.HasUnsavedChanges)
+                {
+                    DevoidLog.Warning(LogCategory.Editor, "Scene had unsaved changes, moving to a new scene will erase work.");
+                }
+                return;
+            }
+
+            SceneDocument = new SceneDocument(new Scene());
+            OnSceneChanged?.Invoke(SceneDocument.Scene);
+        }
+
+        public void LoadScene(EditorContext context, Scene scene)
+        {
+            SceneDocument = new SceneDocument(scene);
+            OnSceneChanged?.Invoke(SceneDocument.Scene);
         }
 
         public void SaveScene()
@@ -18,16 +46,12 @@ namespace Elemental.Tools.EditorServices
             // for starters lets try saving to the root directory of the project.
 
             Scene testScene = new();
+            Engine.Instance.SceneTree.LoadScene(testScene);
 
-            GameObject go = testScene.AddGameObject("MyObject1");
-            GameObject go1 = testScene.AddGameObject("MyObject11");
-            GameObject go2 = testScene.AddGameObject("MyObject111");
-            GameObject go3 = testScene.AddGameObject("MyObject1111");
+            testScene.CreateNode<Camera3D>("A");
+            testScene.CreateNode<Node3D>("B");
+            testScene.CreateNode<Node3D>("C");
 
-            go1.Transform.Position = new Vector3(1, 10, 20);
-            go1.AddComponent<MeshRenderer>();
-
-            go3.AddComponent<SerializerTestComponent>();
 
             ResourceFormatText.Save("scene.dscn", testScene);
 

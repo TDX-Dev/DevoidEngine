@@ -10,29 +10,25 @@ namespace DevoidEngine.SourceGen.MetadataGeneration
     [Generator]
     internal sealed class MetadataGenerator : IIncrementalGenerator
     {
+        private static readonly string[] AllowedBaseClasses =
+        [
+            "DevoidEngine.Nodes.Node"
+        ];
+
+
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
-            var classes = context.SyntaxProvider
-                .ForAttributeWithMetadataName(
-                    "DevoidEngine.Attributes.DevoidClass",
-                    static (node, _) => node is ClassDeclarationSyntax,
-                    static (ctx, _) => ctx.TargetSymbol as INamedTypeSymbol
-                )
-                .Where(static symbol => symbol is not null)
-                .Select(static (symbol, _) => symbol!);
-
-            var input = context.CompilationProvider.Combine(classes.Collect());
+            var input = context.CompilationProvider;
 
             context.RegisterSourceOutput(
                 input,
-                static (spc, source) =>
+                static (spc, compilation) =>
                 {
-                    var compilation = source.Left;
-                    var attributedClasses = source.Right;
+                    var allowedBaseClasses = GetAllowedBaseClasses(compilation);
 
                     var classes = CollectClasses(
                         compilation,
-                        attributedClasses);
+                        allowedBaseClasses);
 
                     foreach (INamedTypeSymbol symbol in classes)
                     {
@@ -43,19 +39,61 @@ namespace DevoidEngine.SourceGen.MetadataGeneration
                 });
         }
 
-        private static INamedTypeSymbol[] CollectClasses(Compilation compilation, ImmutableArray<INamedTypeSymbol> roots)
+        private static INamedTypeSymbol[] CollectClasses(
+            Compilation compilation,
+            INamedTypeSymbol[] allowedBaseClasses)
         {
             var classes = new HashSet<INamedTypeSymbol>(
                 SymbolEqualityComparer.Default);
 
-            foreach (INamedTypeSymbol root in roots)
+            foreach (SyntaxTree syntaxTree in compilation.SyntaxTrees)
             {
-                CollectClass(compilation, root, classes);
+                SemanticModel semanticModel = compilation.GetSemanticModel(syntaxTree);
+
+                var typeDeclarations = syntaxTree.GetRoot()
+                    .DescendantNodes()
+                    .OfType<ClassDeclarationSyntax>();
+
+                foreach (ClassDeclarationSyntax declaration in typeDeclarations)
+                {
+                    if (semanticModel.GetDeclaredSymbol(declaration) is not INamedTypeSymbol symbol)
+                        continue;
+
+                    if (symbol.IsGenericType)
+                        continue;
+
+                    if (IsDerivedFromAllowedBase(symbol, allowedBaseClasses))
+                    {
+                        classes.Add(symbol);
+                    }
+                }
             }
 
-            return [.. classes.OrderBy(static symbol => symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat))];
+            return
+            [
+                .. classes.OrderBy(static symbol =>
+            symbol.ToDisplayString(
+                SymbolDisplayFormat.FullyQualifiedFormat))
+            ];
         }
 
+        private static bool IsDerivedFromAllowedBase(INamedTypeSymbol symbol, INamedTypeSymbol[] allowedBaseClasses)
+        {
+            INamedTypeSymbol? current = symbol;
+
+            while (current is not null)
+            {
+                foreach (INamedTypeSymbol allowedBase in allowedBaseClasses)
+                {
+                    if (SymbolEqualityComparer.Default.Equals(current, allowedBase))
+                        return true;
+                }
+
+                current = current.BaseType;
+            }
+
+            return false;
+        }
         private static void CollectClass(Compilation compilation, INamedTypeSymbol symbol, HashSet<INamedTypeSymbol> classes)
         {
             if (symbol.SpecialType == SpecialType.System_Object)
@@ -326,6 +364,21 @@ namespace DevoidEngine.SourceGen.MetadataGeneration
             string baseClassName = baseType.Name;
 
             return $"{baseClassName}_ClassDB.Info";
+        }
+
+        private static INamedTypeSymbol[] GetAllowedBaseClasses(Compilation compilation)
+        {
+            var result = new List<INamedTypeSymbol>();
+
+            foreach (string name in AllowedBaseClasses)
+            {
+                INamedTypeSymbol? symbol = compilation.GetTypeByMetadataName(name);
+
+                if (symbol is not null)
+                    result.Add(symbol);
+            }
+
+            return [.. result];
         }
     }
 }

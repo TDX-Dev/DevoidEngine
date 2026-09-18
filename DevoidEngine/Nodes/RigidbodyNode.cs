@@ -1,13 +1,12 @@
-﻿using DevoidEngine.Gizmos;
+﻿using DevoidEngine.Core;
+using DevoidEngine.Gizmos;
 using DevoidEngine.Physics;
 using System.Numerics;
 
-namespace DevoidEngine.Components
+namespace DevoidEngine.Nodes
 {
-    public class RigidBodyComponent : Component, IGizmoProviderComponent
+    public class RigidbodyNode : Node3D
     {
-        public override string Type => nameof(RigidBodyComponent);
-
         public float Mass = 100f;
 
         public bool StartKinematic = false;
@@ -44,7 +43,6 @@ namespace DevoidEngine.Components
             Size = new Vector3(1, 1, 1)
         };
 
-
         public Vector3 LinearVelocity
         {
             get => internalBody != null ? internalBody.LinearVelocity : SavedLinearVelocity;
@@ -77,7 +75,7 @@ namespace DevoidEngine.Components
 
         public Vector3 Position
         {
-            get => internalBody != null ? internalBody.Position : gameObject.Transform.Position;
+            get => internalBody != null ? internalBody.Position : Transform.Position;
             set
             {
                 if (internalBody != null)
@@ -87,7 +85,7 @@ namespace DevoidEngine.Components
 
         public Quaternion Rotation
         {
-            get => internalBody != null ? internalBody.Rotation : gameObject.Transform.Rotation;
+            get => internalBody != null ? internalBody.Rotation : Transform.Rotation;
             set
             {
                 if (internalBody != null)
@@ -98,7 +96,7 @@ namespace DevoidEngine.Components
         public bool IsKinematic =>
             internalBody != null && internalBody.IsKinematic;
 
-        public override void OnStart()
+        protected override void OnStart()
         {
             CreateBody();
 
@@ -131,12 +129,12 @@ namespace DevoidEngine.Components
 
         private void CreateBody()
         {
-            if (gameObject.Scene == null)
+            if (Scene == null)
                 return;
 
             if (internalBody != null)
             {
-                gameObject.Scene.Physics.RemoveBody(internalBody);
+                Scene.Physics.RemoveBody(internalBody);
             }
 
             if (Shape.Type == PhysicsShapeType.Box && Shape.Size == Vector3.Zero)
@@ -146,8 +144,8 @@ namespace DevoidEngine.Components
 
             var desc = new PhysicsBodyDescription
             {
-                Position = gameObject.Transform.Position,
-                Rotation = gameObject.Transform.Rotation,
+                Position = Transform.Position,
+                Rotation = Transform.Rotation,
                 Mass = Mass,
                 IsKinematic = StartKinematic,
                 Shape = Shape,
@@ -160,31 +158,23 @@ namespace DevoidEngine.Components
                 CollisionDetectionSettings = PhysicsCollisionDetectionSettings.Continuous
             };
 
-            internalBody = gameObject.Scene.Physics.CreateBody(desc, gameObject);
+            internalBody = Scene.Physics.CreateBody(desc, this);
         }
 
-        public override void OnUpdate(float dt)
+        protected override void OnUpdate(float dt)
         {
             if (internalBody == null)
                 return;
         }
 
-        public override void OnFixedUpdate(float dt)
-        {
-        }
-
-        public override void OnRender()
-        {
-        }
-
-        public override void OnDestroy()
+        protected override void OnDestroy()
         {
             if (internalBody != null)
             {
                 SavedLinearVelocity = internalBody.LinearVelocity;
                 SavedAngularVelocity = internalBody.AngularVelocity;
 
-                gameObject.Scene.Physics.RemoveBody(internalBody);
+                Scene.Physics.RemoveBody(internalBody);
                 internalBody = null;
             }
         }
@@ -226,7 +216,7 @@ namespace DevoidEngine.Components
                 case PhysicsShapeType.Box:
                     {
                         Vector3 halfSize = Shape.Size * 0.5f;
-                        Vector3 position = gameObject.Transform.Position;
+                        Vector3 position = Transform.Position;
 
                         context.DrawList.AddWireBox(position - halfSize, position + halfSize, GizmoCategory.Physics);
 

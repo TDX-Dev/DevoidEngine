@@ -35,6 +35,7 @@ namespace Elemental
             };
 
             Context.PanelManager.AddPanel(new SceneViewPanel());
+            Context.PanelManager.ProcessPendingChanges(Context);
         }
 
         // The init method.
@@ -43,7 +44,6 @@ namespace Elemental
             SetupEditorTheme();
 
             RegisterPanels(Context);
-
 
             EditorAction action = new()
             {
@@ -67,6 +67,13 @@ namespace Elemental
                 EditorAction = action
             });
 
+            Context.SceneService.OnSceneChanged += scene =>
+            {
+                Context.PanelManager.GetPanel<SceneViewPanel>()!.Viewport.TargetScene = scene;
+            };
+
+
+            EditorTestingScene.LoadTestScene(Context);
         }
 
         void RegisterPanels(EditorContext context)

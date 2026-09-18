@@ -1,13 +1,12 @@
-﻿using DevoidEngine.Gizmos;
+﻿using DevoidEngine.Core;
+using DevoidEngine.Gizmos;
 using DevoidEngine.Physics;
 using System.Numerics;
 
-namespace DevoidEngine.Components
+namespace DevoidEngine.Nodes
 {
-    public class StaticColliderComponent : Component, IGizmoProviderComponent
+    public class StaticbodyNode : Node3D
     {
-        public override string Type => nameof(StaticColliderComponent);
-
         internal PhysicsShapeDescription internalShape = new()
         {
             Type = PhysicsShapeType.Box,
@@ -42,7 +41,7 @@ namespace DevoidEngine.Components
 
         public bool DebugDraw = false;
 
-        public override void OnStart()
+        protected override void OnStart()
         {
             CreateStatic();
         }
@@ -51,33 +50,25 @@ namespace DevoidEngine.Components
         {
             if (internalStatic != null)
             {
-                gameObject.Scene.Physics.RemoveStatic(internalStatic);
+                Scene.Physics.RemoveStatic(internalStatic);
                 internalStatic = null;
             }
 
             var desc = new PhysicsStaticDescription
             {
-                Position = gameObject.Transform.Position,
-                Rotation = gameObject.Transform.Rotation,
+                Position = Transform.Position,
+                Rotation = Transform.Rotation,
                 Shape = internalShape,
                 Material = internalMaterial
             };
 
-            internalStatic = gameObject.Scene.Physics.CreateStatic(desc, gameObject);
+            internalStatic = Scene.Physics.CreateStatic(desc, this);
         }
-
-        public override void OnRender()
-        {
-            //Matrix4x4 model = Matrix4x4.CreateFromQuaternion(gameObject.Transform.Rotation) * Matrix4x4.CreateScale(Shape.Size) * Matrix4x4.CreateTranslation(gameObject.Transform.Position);
-
-            //Gizmos.DrawCube(model, GizmoCategory.Physics);
-        }
-
-        public override void OnDestroy()
+        protected override void OnDestroy()
         {
             if (internalStatic != null)
             {
-                gameObject.Scene.Physics.RemoveStatic(internalStatic);
+                Scene.Physics.RemoveStatic(internalStatic);
                 internalStatic = null;
             }
         }
@@ -89,7 +80,7 @@ namespace DevoidEngine.Components
                 case PhysicsShapeType.Box:
                     {
                         Vector3 halfSize = Shape.Size * 0.5f;
-                        Vector3 position = gameObject.Transform.Position;
+                        Vector3 position = Transform.Position;
 
                         context.DrawList.AddWireBox(position - halfSize, position + halfSize, GizmoCategory.Physics);
 

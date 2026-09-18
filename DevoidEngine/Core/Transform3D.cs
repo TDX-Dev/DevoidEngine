@@ -1,13 +1,13 @@
-﻿using DevoidEngine.Serialization;
+﻿using DevoidEngine.Attributes;
+using DevoidEngine.Serialization;
 using DevoidEngine.Util;
 using System.Numerics;
 
-namespace DevoidEngine.Components
+namespace DevoidEngine.Core
 {
-    public class Transform3D : Component
+    [DevoidDataClass]
+    public class Transform3D
     {
-        public override string Type => nameof(Transform3D);
-
         public event Action? TransformChanged;
 
         public Vector3 LocalPosition
@@ -133,10 +133,7 @@ namespace DevoidEngine.Components
                 MarkDirty();
             }
         }
-        public Matrix4x4 LocalMatrix =>
-            Matrix4x4.CreateScale(localScale) *
-            Matrix4x4.CreateFromQuaternion(localRotation) *
-            Matrix4x4.CreateTranslation(localPosition);
+        public Matrix4x4 LocalMatrix => Matrix4x4.CreateScale(localScale) * Matrix4x4.CreateFromQuaternion(localRotation) * Matrix4x4.CreateTranslation(localPosition);
 
         public Matrix4x4 WorldMatrix
         {

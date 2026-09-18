@@ -1,99 +1,86 @@
-﻿using DevoidEngine.Components;
+﻿using System;
 using System.Numerics;
+using System.Text.Json;
 
 namespace DevoidEngine.Serialization
 {
     public static class ValueWriter
     {
-        static Type[] SupportedTypes = [
-            typeof(int),
-            typeof(long),
-            typeof(float),
-            typeof(double),
-            typeof(string),
-            typeof(bool),
-            typeof(Vector2),
-            typeof(Vector3),
-            typeof(Vector4),
-            typeof(Matrix4x4),
-            typeof(byte),
-        ];
-
-
-
-        public static bool IsValueSerializable(Type type)
+        public static void Write(Utf8JsonWriter writer, Guid value)
         {
-            if (type.IsEnum)
-                return true;
-
-            if (type.IsArray)
-                return IsValueSerializable(type.GetElementType()!);
-
-            return Array.IndexOf(SupportedTypes, type) >= 0;
+            writer.WriteStringValue(value.ToString());
         }
 
-        public static string SerializeType(Type type, object value)
+        public static void Write(Utf8JsonWriter writer, Vector2 value)
         {
-            if (type.IsArray)
-            {
-                Array array = (Array)value;
+            writer.WriteStartObject();
 
-                string[] values = new string[array.Length];
+            writer.WriteNumber("X", value.X);
+            writer.WriteNumber("Y", value.Y);
 
-                for (int i = 0; i < array.Length; i++)
-                {
-                    object element = array.GetValue(i)!;
-                    values[i] = SerializeType(type.GetElementType()!, element);
-                }
-
-                return $"[{string.Join(",", values)}]";
-            }
-
-            if (type.IsEnum)
-                return Convert.ToInt32(value).ToString();
-
-            if (type == typeof(int))
-                return ((int)value).ToString();
-
-            if (type == typeof(long))
-                return ((long)value).ToString();
-
-            if (type == typeof(float))
-                return ((float)value).ToString();
-
-            if (type == typeof(double))
-                return ((double)value).ToString();
-
-            if (type == typeof(string))
-                return (string)value;
-
-            if (type == typeof(bool))
-                return ((bool)value).ToString();
-
-            if (type == typeof(Vector2))
-            {
-                Vector2 v = (Vector2)value;
-                return $"{v.X},{v.Y}";
-            }
-
-            if (type == typeof(Vector3))
-            {
-                Vector3 v = (Vector3)value;
-                return $"{v.X},{v.Y},{v.Z}";
-            }
-
-            if (type == typeof(Vector4))
-            {
-                Vector4 v = (Vector4)value;
-                return $"{v.X},{v.Y},{v.Z},{v.W}";
-            }
-
-            throw new NotSupportedException(
-                $"Type '{type.FullName}' is not serializable.");
+            writer.WriteEndObject();
         }
 
+        public static void Write(Utf8JsonWriter writer, Vector3 value)
+        {
+            writer.WriteStartObject();
 
+            writer.WriteNumber("X", value.X);
+            writer.WriteNumber("Y", value.Y);
+            writer.WriteNumber("Z", value.Z);
 
+            writer.WriteEndObject();
+        }
 
+        public static void Write(Utf8JsonWriter writer, Vector4 value)
+        {
+            writer.WriteStartObject();
+
+            writer.WriteNumber("X", value.X);
+            writer.WriteNumber("Y", value.Y);
+            writer.WriteNumber("Z", value.Z);
+            writer.WriteNumber("W", value.W);
+
+            writer.WriteEndObject();
+        }
+
+        public static void Write(Utf8JsonWriter writer, Quaternion value)
+        {
+            writer.WriteStartObject();
+
+            writer.WriteNumber("X", value.X);
+            writer.WriteNumber("Y", value.Y);
+            writer.WriteNumber("Z", value.Z);
+            writer.WriteNumber("W", value.W);
+
+            writer.WriteEndObject();
+        }
+
+        public static void Write(Utf8JsonWriter writer, Matrix4x4 value)
+        {
+            writer.WriteStartObject();
+
+            writer.WriteNumber("M11", value.M11);
+            writer.WriteNumber("M12", value.M12);
+            writer.WriteNumber("M13", value.M13);
+            writer.WriteNumber("M14", value.M14);
+
+            writer.WriteNumber("M21", value.M21);
+            writer.WriteNumber("M22", value.M22);
+            writer.WriteNumber("M23", value.M23);
+            writer.WriteNumber("M24", value.M24);
+
+            writer.WriteNumber("M31", value.M31);
+            writer.WriteNumber("M32", value.M32);
+            writer.WriteNumber("M33", value.M33);
+            writer.WriteNumber("M34", value.M34);
+
+            writer.WriteNumber("M41", value.M41);
+            writer.WriteNumber("M42", value.M42);
+            writer.WriteNumber("M43", value.M43);
+            writer.WriteNumber("M44", value.M44);
+
+            writer.WriteEndObject();
+        }
     }
 }

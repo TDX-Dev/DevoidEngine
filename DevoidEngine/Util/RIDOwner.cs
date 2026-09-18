@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace DevoidEngine.Util
 {
@@ -56,15 +57,16 @@ namespace DevoidEngine.Util
         public T Get(RID rid)
         {
             if (!Owns(rid))
+            {
                 throw new InvalidOperationException();
+            }
 
             return entries[rid.Index].Value;
         }
 
         public ref T GetRef(RID rid)
         {
-            Span<Slot<T>> span =
-                CollectionsMarshal.AsSpan(entries);
+            Span<Slot<T>> span = CollectionsMarshal.AsSpan(entries);
 
             if ((uint)rid.Index >= (uint)span.Length)
                 throw new InvalidOperationException();
