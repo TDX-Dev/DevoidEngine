@@ -1,18 +1,23 @@
 ﻿using DevoidEngine.Attributes;
 using DevoidEngine.Core;
+using DevoidEngine.Serialization;
 
 namespace DevoidEngine.Nodes
 {
     [DevoidClass]
     public class Node
     {
+        [HideInInspector]
         public Guid Id { get; set; } = Guid.NewGuid();
+        [HideInInspector]
         public virtual NodeTickMode TickMode { get; set; } = NodeTickMode.Play;
+        [DontSerialize]
         public bool IsInitialized;
-
+        [HideInInspector]
         public string Name = string.Empty;
+        [HideInInspector]
         public bool Active = true;
-
+        [HideInInspector]
         public Scene Scene
         {
             get => scene; 
@@ -22,8 +27,9 @@ namespace DevoidEngine.Nodes
                 SetSceneInChildren(scene);
             }
         }
-
+        [HideInInspector]
         public Node? Parent;
+        [HideInInspector]
         public List<Node> Children;
 
         private Scene scene = null!;

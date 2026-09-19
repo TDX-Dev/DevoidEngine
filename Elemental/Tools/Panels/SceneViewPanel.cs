@@ -13,8 +13,14 @@ namespace Elemental.Tools.Panels
     {
         public EditorCamera EditorViewCamera;
 
-        private Vector3 position;
-        private Vector3 rotation;
+        private Vector2 windowPosition;
+        private Vector2 windowSize;
+        private Vector2 mousePosition;
+        private bool windowHovered;
+        private bool middleMouse;
+        private bool rightMouse;
+        private float mouseWheel;
+
         private bool wasHovering = false;
 
         public SceneViewPanel() : base("Scene View")
@@ -22,92 +28,75 @@ namespace Elemental.Tools.Panels
             EditorViewCamera = new EditorCamera();
 
             this.Viewport.CameraOverride = EditorViewCamera.Camera;
-
-            position = EditorViewCamera.Camera.Position;
-
         }
 
         public override void OnUpdate(EditorContext context, float deltaTime)
         {
+            context.Camera = EditorViewCamera;
 
+            bool interacting = middleMouse || rightMouse;
 
+            if (windowHovered)
+                wasHovering = true;
 
-            EditorViewCamera.Update(context, deltaTime);
+            if (!wasHovering)
+            {
+                EditorViewCamera.CanInteract = false;
+                return;
+            }
+
+            EditorViewCamera.CanInteract = true;
+
+            mouseWheel = windowHovered ? mouseWheel : 0.0f;
+
+            EditorViewCamera.Update(context, deltaTime, mouseWheel);
+
+            if (!interacting)
+                return;
+
+            Vector2 finalMousePosition = mousePosition;
+            bool wrapped = false;
+
+            if (mousePosition.X <= windowPosition.X)
+            {
+                finalMousePosition.X = windowPosition.X + windowSize.X - 1.0f;
+                wrapped = true;
+            }
+            else if (mousePosition.X + 1 >= windowPosition.X + windowSize.X)
+            {
+                finalMousePosition.X = windowPosition.X + 1.0f;
+                wrapped = true;
+            }
+
+            if (mousePosition.Y <= windowPosition.Y)
+            {
+                finalMousePosition.Y = windowPosition.Y + windowSize.Y - 1.0f;
+                wrapped = true;
+            }
+            else if (mousePosition.Y >= windowPosition.Y + windowSize.Y)
+            {
+                finalMousePosition.Y = windowPosition.Y + 1.0f;
+                wrapped = true;
+            }
+
+            if (wrapped)
+            {
+                Engine.Cursor.SetCursorPosition(finalMousePosition);
+                EditorViewCamera.NotifyMouseWarp();
+            }
         }
 
         protected override void OnViewportOverlayRender()
         {
-            Vector2 windowPosition = ImGui.GetWindowPos();
-            Vector2 windowSize = ImGui.GetWindowSize();
-            Vector2 mousePosition = ImGui.GetMousePos();
-            bool windowHovered = ImGui.IsWindowHovered();
-            bool isMiddleDragging = ImGui.IsMouseDragging(ImGuiMouseButton.Middle);
-            bool isRightDragging = ImGui.IsMouseDragging(ImGuiMouseButton.Right);
+            windowPosition = ImGui.GetWindowPos();
+            windowSize = ImGui.GetWindowSize();
+            mousePosition = ImGui.GetMousePos();
 
-            if (isMiddleDragging || isRightDragging)
-            {
-                if (windowHovered)
-                    wasHovering = true;
+            windowHovered = ImGui.IsWindowHovered();
 
-                if (!wasHovering)
-                    return;
-
-                // Orbital camera when dragging with middle mouse button, similar to godot.
-                if (isMiddleDragging)
-                {
-
-
-
-                }
-                // Camera look when right button dragging
-                else if (isRightDragging)
-                {
-
-                }
-
-
-                // Apply mouse wrap
-                Vector2 finalMousePosition = mousePosition;
-
-                if (mousePosition.X <= windowPosition.X)
-                    finalMousePosition.X = windowPosition.X + windowSize.X;
-
-                if (mousePosition.Y <= windowPosition.Y)
-                    finalMousePosition.Y = windowPosition.Y + windowSize.Y;
-
-                if (mousePosition.X > windowPosition.X + windowSize.X)
-                    finalMousePosition.X = windowPosition.X;
-
-                if (mousePosition.Y > windowPosition.Y + windowSize.Y)
-                    finalMousePosition.Y = windowPosition.Y;
-
-                Engine.Cursor.SetCursorPosition(finalMousePosition);
-            } else
-            {
-                wasHovering = false;
-            }
-
-
-                ImGui.Begin("Editor Camera");
-
-            Camera camera = EditorViewCamera.Camera;
-
-            Vector3 position = camera.Position;
-            Vector3 front = camera.Front;
-            Vector3 up = camera.Up;
-
-            bool positionChanged = ImGui.DragFloat3("Position", ref position, 0.1f);
-
-            bool frontChanged = ImGui.DragFloat3("Front", ref front, 0.01f);
-
-            bool upChanged = ImGui.DragFloat3("Up", ref up, 0.01f);
-
-            if (positionChanged || frontChanged || upChanged)
-            {
-                camera.UpdateView(position, front, up);
-            }
-
-            ImGui.End();
+            middleMouse = ImGui.IsMouseDown(ImGuiMouseButton.Middle);
+            rightMouse = ImGui.IsMouseDown(ImGuiMouseButton.Right);
+            mouseWheel = ImGui.GetIO().MouseWheel;
         }
     }
 }

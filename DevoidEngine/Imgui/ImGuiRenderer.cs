@@ -650,7 +650,7 @@ namespace DevoidEngine.Imgui
 
         public bool Handle(ref InputEvent e)
         {
-            if (Engine.Cursor.GetCursorState() == OpenTK.Windowing.Common.CursorState.Grabbed)
+            if ((OpenTK.Windowing.Common.CursorState)Engine.Cursor.GetCursorState() == OpenTK.Windowing.Common.CursorState.Grabbed)
                 return false;
 
             if (e.DeviceType == InputDeviceType.Mouse)

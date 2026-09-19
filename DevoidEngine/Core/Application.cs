@@ -269,7 +269,7 @@ namespace DevoidEngine.Core
         {
             if (Cursor.stateDirty)
             {
-                MainWindow.Window!.CursorState = Cursor.cursorState;
+                MainWindow.Window!.CursorState = (OpenTK.Windowing.Common.CursorState)Cursor.cursorState;
 
                 Cursor.stateDirty = false;
             }

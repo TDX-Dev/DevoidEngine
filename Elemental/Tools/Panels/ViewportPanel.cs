@@ -38,7 +38,7 @@ namespace Elemental.Tools.Panels
             return visible;
         }
 
-        protected override void OnImGuiRender()
+        protected override void OnImGuiRender(EditorContext context)
         {
             Vector2 contentSize = ImGui.GetContentRegionAvail();
 

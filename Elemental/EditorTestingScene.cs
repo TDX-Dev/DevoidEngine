@@ -11,7 +11,13 @@ namespace Elemental
         {
             context.SceneService.NewScene();
 
-            PackedScene cubeOnPlatform = Asset.Load<PackedScene>("models/flares_test.gltf")!;
+            Engine.Renderer.SkyRenderer.Sky = new HDRISky()
+            {
+                PanoramaTexture = Asset.Load<Texture>("HDRIs/soil_puresky.hdr")!
+            };
+
+
+            PackedScene cubeOnPlatform = Asset.Load<PackedScene>("models/p2_wall.gltf")!;
             Scene scene = cubeOnPlatform.Instantiate(context.SceneService.SceneDocument?.Scene);
             Engine.Instance.SceneTree.LoadScene(scene);
 

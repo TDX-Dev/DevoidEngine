@@ -1,12 +1,13 @@
-﻿using DevoidEngine.Core;
+﻿using DevoidEngine.Attributes;
+using DevoidEngine.Core;
 using System.Numerics;
 
 namespace DevoidEngine.Nodes
 {
     public class Node3D : Node
     {
+        [HideInInspector]
         public Transform3D Transform { get; set; }
-        public Vector3[] Positions = [new(1, 2, 3), new(4, 5, 6)];
 
         public Node3D()
         {

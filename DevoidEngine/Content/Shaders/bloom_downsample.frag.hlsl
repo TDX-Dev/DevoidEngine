@@ -75,15 +75,7 @@ float3 Downsample(float2 uv, float2 pixelSize)
 float4 PSMain(PSInput input) : SV_TARGET
 {
 
-    #if ANAMORPHIC
-    //float2 pixelSize = 1.0 / mipSize;
-    //float3 result = DownsampleVertical(input.UV, pixelSize);
     float2 pixelSize = (1.0 / mipSize) * 0.5;
     float3 result = Downsample(input.UV, pixelSize);
-    #else
-    float2 pixelSize = (1.0 / mipSize) * 0.5;
-    float3 result = Downsample(input.UV, pixelSize);
-    #endif
-
     return float4(result, 1.0);
 }

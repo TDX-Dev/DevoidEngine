@@ -1,5 +1,4 @@
-﻿using OpenTK.Windowing.Common;
-using System.Numerics;
+﻿using System.Numerics;
 
 namespace DevoidEngine.Core
 {

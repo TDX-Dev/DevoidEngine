@@ -35,6 +35,8 @@ namespace Elemental
             };
 
             Context.PanelManager.AddPanel(new SceneViewPanel());
+            Context.PanelManager.AddPanel(new OutlinerPanel());
+            Context.PanelManager.AddPanel(new InspectorPanel());
             Context.PanelManager.ProcessPendingChanges(Context);
         }
 
@@ -101,10 +103,19 @@ namespace Elemental
         }
         public void SetupEditorTheme()
         {
-            ImFontPtr font = Application.ImguiRenderer.AddFontFromFile("Assets/arial.ttf", 14);
+            ImFontPtr font = Application.ImguiRenderer.AddFontFromFile("Assets/Arimo-Regular.ttf", 14);
+
+            Application.ImguiRenderer.LoadIconFont("Assets/lucide.ttf", 16, (LucideIconFont.FontUnicodeMin, LucideIconFont.FontUnicodeMax));
+
+            ImFontPtr boldFont = Application.ImguiRenderer.AddFontFromFile("Assets/Arimo-Bold.ttf", 14);
+
+            Application.ImguiRenderer.LoadIconFont("Assets/lucide.ttf", 16, (LucideIconFont.FontUnicodeMin, LucideIconFont.FontUnicodeMax));
             Application.ImguiRenderer.SetDefaultFont(font);
 
             DefaultTheme.Apply();
+
+            Context.DefaultFont = font;
+            Context.BoldFont = boldFont;
         }
         public override void OnKeyDown(Keys keys, int Scancode, KeyModifiers modifiers, bool isRepeated)
         {
