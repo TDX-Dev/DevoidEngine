@@ -1,6 +1,7 @@
 ﻿using DevoidEngine.AssetPipeline;
 using DevoidEngine.Assets;
 using DevoidEngine.Core;
+using DevoidEngine.Nodes;
 using DevoidEngine.Rendering;
 
 namespace Elemental
@@ -17,8 +18,14 @@ namespace Elemental
             };
 
 
-            PackedScene cubeOnPlatform = Asset.Load<PackedScene>("models/p2_wall.gltf")!;
+            PackedScene cubeOnPlatform = Asset.Load<PackedScene>("models/backrooms_light_flare_test.gltf")!;
             Scene scene = cubeOnPlatform.Instantiate(context.SceneService.SceneDocument?.Scene);
+
+            WorldEnvironmentNode wen = scene.CreateNode<WorldEnvironmentNode>();
+            Camera3D cameraNode = scene.CreateNode<Camera3D>();
+
+            cameraNode.SetParent(wen);
+
             Engine.Instance.SceneTree.LoadScene(scene);
 
             scene.SetMode(SceneMode.Play);

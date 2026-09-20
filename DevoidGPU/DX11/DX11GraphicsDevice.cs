@@ -254,7 +254,6 @@ namespace DevoidGPU.DX11
         {
 
         }
-    
         public void Dispose()
         {
             var debug = device.QueryInterface<DeviceDebug>();

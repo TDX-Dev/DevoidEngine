@@ -36,7 +36,7 @@ namespace DevoidGPU.DX11
             {
                 SizeInBytes = (int)description.Size,
                 BindFlags = BindFlags.VertexBuffer,
-                Usage = DX11StateMapper.ToDXBufferUsage(description.Usage),
+                Usage = DX11StateMapper.ToDXResourceUsage(description.Usage),
                 CpuAccessFlags = description.Usage == ResourceUsage.Dynamic ? CpuAccessFlags.Write : DX11StateMapper.ToDXCpuAccess(description.CpuAccess),
                 OptionFlags = ResourceOptionFlags.None,
                 StructureByteStride = 0
@@ -82,7 +82,7 @@ namespace DevoidGPU.DX11
                 var box = deviceContext.MapSubresource(
                     Buffer,
                     0,
-                    MapMode.WriteDiscard,
+                    SharpDX.Direct3D11.MapMode.WriteDiscard,
                     MapFlags.None);
 
                 System.Buffer.MemoryCopy(

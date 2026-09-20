@@ -38,7 +38,7 @@ namespace DevoidGPU.DX11
             {
                 SizeInBytes = (int)Size,
                 BindFlags = bindFlags,
-                Usage = DX11StateMapper.ToDXBufferUsage(description.Usage),
+                Usage = DX11StateMapper.ToDXResourceUsage(description.Usage),
                 CpuAccessFlags = DX11StateMapper.ToDXCpuAccess(description.CpuAccess),
                 OptionFlags = ResourceOptionFlags.BufferStructured,
                 StructureByteStride = description.Stride
@@ -98,7 +98,7 @@ namespace DevoidGPU.DX11
                 var box = deviceContext.MapSubresource(
                     Buffer,
                     0,
-                    MapMode.WriteDiscard,
+                    SharpDX.Direct3D11.MapMode.WriteDiscard,
                     MapFlags.None);
 
                 unsafe

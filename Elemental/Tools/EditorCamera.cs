@@ -91,7 +91,7 @@ namespace Elemental.Tools
             // RMB was just pressed.
             if (looking && !wasLooking)
             {
-                Engine.Cursor.SetCursorState(CursorState.Grabbed);
+                //Engine.Cursor.SetCursorState(CursorState.Grabbed);
             }
 
             // RMB was just released.

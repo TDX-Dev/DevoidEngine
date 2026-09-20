@@ -12,7 +12,11 @@ cbuffer Material : register(b5)
     float exposure;
     float bloomIntensity;
     int tonemapMode;
-    int _pad;
+    
+    int bloomEnabled;
+    int anamorphicBloomEnabled;
+    
+    int2 _pad;
 };
 
 #define AGX_LOOK 2
@@ -205,17 +209,23 @@ float4 PSMain(PSInput input) : SV_Target0
 {
     float3 hdr = MAT_SceneColor.Sample(MAT_SceneColorSampler, input.UV).rgb;
     
-    float3 bloom = MAT_BloomColor.Sample(MAT_BloomColorSampler, input.UV).rgb;
-    
-    float3 anamorphicBloom = MAT_AnamorphicBloomColor.Sample(MAT_BloomColorSampler, input.UV).rgb;
     
     hdr *= exposure;
     
-    float bloomStrength = 0.175;
-    hdr += (bloom) * bloomStrength * bloomIntensity;
+    const float bloomStrength = 0.175;
+    const float anamorphicBloomStrength = 0.175;
     
-    float anamorphicBloomStrength = 0.175;
-    hdr += (anamorphicBloom) * anamorphicBloomStrength * bloomIntensity;
+    if (bloomEnabled)
+    {
+        float3 bloom = MAT_BloomColor.Sample(MAT_BloomColorSampler, input.UV).rgb;
+        hdr += (bloom) * bloomStrength * bloomIntensity;
+    }
+    
+    if (anamorphicBloomEnabled)
+    {
+        float3 anamorphicBloom = MAT_AnamorphicBloomColor.Sample(MAT_BloomColorSampler, input.UV).rgb;
+        hdr += (anamorphicBloom) * anamorphicBloomStrength * bloomIntensity;
+    }
     
     float3 ldr = TonemapFilmic(hdr);
     ldr = LinearToSRGB(ldr);

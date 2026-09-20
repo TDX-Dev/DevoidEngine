@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using SharpDX.Direct3D11;
+using System.Numerics;
 
 namespace DevoidGPU
 {
@@ -31,5 +32,8 @@ namespace DevoidGPU
         void MemoryBarrier(MemoryBarrierFlags flags);
         void ResolveSubresource(ITexture multisampled, ITexture single);
         void ClearTextureResource(ITexture texture, ClearValue value);
+        void CopyTextureSubresourceRegion(ITexture source, ITexture destination, int sourceX, int sourceY, int width, int height);
+        MappedTexture MapTexture(ITexture texture, MapMode mode);
+        void UnmapTexture(ITexture texture);
     }
 }

@@ -16,6 +16,8 @@ namespace DevoidEngine.Rendering.PostProcessing
         public ICommandList CommandList = null!;
         public RenderContext RenderContext;
 
+        public PostProcessSettings Settings { get; internal set; } = null!;
+
         public void Reset()
         {
             textures.Clear();
@@ -26,10 +28,10 @@ namespace DevoidEngine.Rendering.PostProcessing
             textures[name] = texture;
         }
 
-        public Texture GetTexture(string name)
+        public Texture? GetTexture(string name)
         {
             if (!textures.TryGetValue(name, out Texture? texture))
-                throw new InvalidOperationException($"Texture '{name}' does not exist.");
+                return null;
 
             return texture;
         }

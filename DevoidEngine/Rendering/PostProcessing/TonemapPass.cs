@@ -15,19 +15,21 @@ namespace DevoidEngine.Rendering.PostProcessing
         private readonly MaterialInstance material;
 
         private readonly RenderTarget target;
+        private readonly PostProcessSettings state;
 
         public TonemapPass()
         {
-            material = new MaterialInstance(
-                new Material(
-                    Shader.FromDescriptorFile(
-                        Engine.GraphicsDevice,
-                        Path.Combine(Engine.BasePath, "Content/DevoidShaderDescriptors/tonemap_pass.dsd"))));
+            material = new MaterialInstance(new Material(Shader.FromDescriptorFile(Engine.GraphicsDevice, Path.Combine(Engine.BasePath, "Content/DevoidShaderDescriptors/tonemap_pass.dsd"))));
 
             material.SetFloat("exposure", 0.6f);
             material.SetFloat("bloomIntensity", 1f);
 
             target = RenderTarget.Create(1);
+            state = new()
+            {
+                AnamorphicBloomEnabled = false,
+                BloomEnabled = false,
+            };
         }
 
         public override void Setup()
@@ -41,19 +43,24 @@ namespace DevoidEngine.Rendering.PostProcessing
 
         public override void Execute(PostProcessContext ctx)
         {
-            Texture scene = ctx.GetTexture("SceneColor");
-            Texture bloom = ctx.GetTexture("Bloom");
-            Texture anamorphicBloom = ctx.GetTexture("AnamorphicBloom");
+            UpdateMaterialState(ctx.Settings);
 
-            TextureDescription desc = scene.GPU.Description;
+            Texture? scene = ctx.GetTexture("SceneColor");
+            Texture? bloom = ctx.GetTexture("Bloom");
+            Texture? anamorphicBloom = ctx.GetTexture("AnamorphicBloom");
+
+            TextureDescription desc = scene!.GPU.Description;
 
             Texture output = ctx.RenderContext.Resources.GetOrCreateTexture("PP_TONEMAP", desc);
 
             target.SetColorAttachment(0, output);
 
             material.SetTexture("MAT_SceneColor", scene);
-            material.SetTexture("MAT_BloomColor", bloom);
-            material.SetTexture("MAT_AnamorphicBloomColor", anamorphicBloom);
+            if (bloom != null)
+                material.SetTexture("MAT_BloomColor", bloom);
+            if (anamorphicBloom != null)
+                material.SetTexture("MAT_AnamorphicBloomColor", anamorphicBloom);
+
             ctx.CommandList.SetFramebuffer(target.GPU);
 
             ctx.CommandList.ClearColor(0, new Vector4(0, 0, 0, 1));
@@ -65,8 +72,31 @@ namespace DevoidEngine.Rendering.PostProcessing
             ctx.SetTexture("ToneMapped", output);
         }
 
-        public override void Resize(int width, int height)
+        private void UpdateMaterialState(PostProcessSettings settings)
         {
+            if (state.BloomEnabled != settings.BloomEnabled)
+            {
+                material.SetInt("bloomEnabled", settings.BloomEnabled ? 1 : 0);
+                state.BloomEnabled = settings.BloomEnabled;
+            }
+
+            if (state.AnamorphicBloomEnabled != settings.AnamorphicBloomEnabled)
+            {
+                material.SetInt("anamorphicBloomEnabled", settings.AnamorphicBloomEnabled ? 1 : 0);
+                state.AnamorphicBloomEnabled = settings.AnamorphicBloomEnabled;
+            }
+
+            if (state.Exposure != settings.Exposure)
+            {
+                material.SetFloat("exposure", settings.Exposure);
+                state.Exposure = settings.Exposure;
+            }
+
+            if (state.BloomIntensity != settings.BloomIntensity)
+            {
+                material.SetFloat("bloomIntensity", settings.BloomIntensity);
+                state.BloomIntensity = settings.BloomIntensity;
+            }
         }
     }
 }

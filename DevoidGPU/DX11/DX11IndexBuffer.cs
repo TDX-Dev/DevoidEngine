@@ -5,6 +5,7 @@ using Buffer = SharpDX.Direct3D11.Buffer;
 using Device = SharpDX.Direct3D11.Device;
 using DeviceContext = SharpDX.Direct3D11.DeviceContext;
 using MapFlags = SharpDX.Direct3D11.MapFlags;
+using MapMode = SharpDX.Direct3D11.MapMode;
 
 namespace DevoidGPU.DX11
 {
@@ -32,7 +33,7 @@ namespace DevoidGPU.DX11
             SharpDX.Direct3D11.BufferDescription dxDescription = new()
             {
                 SizeInBytes = (int)description.Size,
-                Usage = DX11StateMapper.ToDXBufferUsage(description.Usage),
+                Usage = DX11StateMapper.ToDXResourceUsage(description.Usage),
                 BindFlags = BindFlags.IndexBuffer,
                 CpuAccessFlags = description.Usage == ResourceUsage.Dynamic ? CpuAccessFlags.Write : DX11StateMapper.ToDXCpuAccess(description.CpuAccess),
                 OptionFlags = ResourceOptionFlags.None,
@@ -57,11 +58,7 @@ namespace DevoidGPU.DX11
 
             if ((Usage & ResourceUsage.Dynamic) != 0)
             {
-                var box = deviceContext.MapSubresource(
-                    Buffer,
-                    0,
-                    MapMode.WriteDiscard,
-                    MapFlags.None);
+                var box = deviceContext.MapSubresource(Buffer, 0, SharpDX.Direct3D11.MapMode.WriteDiscard, MapFlags.None);
 
                 System.Buffer.MemoryCopy(
                     (void*)data,

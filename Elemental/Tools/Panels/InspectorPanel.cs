@@ -30,10 +30,8 @@ namespace Elemental.Tools.Panels
             if (context.SelectedNode == null)
                 return;
 
-            const float tableMinHeight = 100.0f;
             Type nodeType = context.SelectedNode.GetType();
-            string nodeIcon = LucideIconFont.IconLineDotRightHorizontal;
-            NodeIcons.NodeIconMapping.TryGetValue(nodeType, out nodeIcon);
+            string nodeIcon = NodeIcons.GetIconOrDefault(nodeType);
 
 
             ImGui.PushStyleVar(ImGuiStyleVar.CellPadding, new Vector2(8, 4));
@@ -41,7 +39,7 @@ namespace Elemental.Tools.Panels
 
             ImGui.PushStyleColor(ImGuiCol.ChildBg, Vector4.Zero);
 
-            ImGui.BeginChild("#inspector_table", new Vector2(-1, tableMinHeight), ImGuiChildFlags.AlwaysUseWindowPadding);
+            ImGui.BeginChild("#inspector_table", new Vector2(-1, 0), ImGuiChildFlags.AlwaysUseWindowPadding | ImGuiChildFlags.AutoResizeY);
             ImGui.PushFont(context.BoldFont);
             if (ImGui.BeginTable("InspectorTable", 2))
             {
@@ -55,15 +53,77 @@ namespace Elemental.Tools.Panels
                 ImGui.TableNextColumn();
                 ImGui.Text("Name");
                 ImGui.TableNextColumn();
-                ImGui.Text(context.SelectedNode.Name);
+                ImGui.TextColored(new Vector4(0.8f), context.SelectedNode.Name);
+
+                ImGui.TableNextColumn();
+                ImGui.Text("ID");
+                ImGui.TableNextColumn();
+                ImGui.TextColored(new Vector4(0.6f), context.SelectedNode.Id.ToString("N"));
 
                 ImGui.EndTable();
             }
 
-            float propertiesHeight = ImGui.GetTextLineHeight();
-            float bottomY = ImGui.GetWindowHeight() - ImGui.GetStyle().WindowPadding.Y - propertiesHeight;
+            if (context.SelectedNode is Node3D node3D)
+            {
+                ImGui.Spacing();
+                ImGui.TextColored(new Vector4(0.8f), "Transform");
+                ImGui.Spacing();
 
-            ImGui.SetCursorPosY(Math.Max(ImGui.GetCursorPosY(), bottomY));
+                ImGui.TreePush("#transformtable_tree");
+
+                if (ImGui.BeginTable("TransformTable", 2, ImGuiTableFlags.SizingStretchProp))
+                {
+                    ImGui.TableSetupColumn("Property", ImGuiTableColumnFlags.WidthFixed, 80.0f);
+                    ImGui.TableSetupColumn("Value", ImGuiTableColumnFlags.WidthStretch);
+
+                    ImGui.TableNextRow();
+
+                    ImGui.TableNextColumn();
+                    ImGui.TextColored(new Vector4(0.6f), "Position");
+
+                    ImGui.TableNextColumn();
+                    ImGui.PushID("Position");
+                    Vector3 position = node3D.Transform.Position;
+                    if (EditorUI.PropertyVector3RGB(ref position))
+                    {
+                        node3D.Transform.Position = position;
+                    }
+                    ImGui.PopID();
+
+                    ImGui.TableNextRow();
+
+                    ImGui.TableNextColumn();
+                    ImGui.TextColored(new Vector4(0.6f), "Scale");
+
+                    ImGui.TableNextColumn();
+                    ImGui.PushID("Scale");
+                    Vector3 scale = node3D.Transform.Scale;
+                    if (EditorUI.PropertyVector3RGB(ref scale))
+                    {
+                        node3D.Transform.Scale = scale;
+                    }
+                    ImGui.PopID();
+
+                    ImGui.TableNextRow();
+
+                    ImGui.TableNextColumn();
+                    ImGui.TextColored(new Vector4(0.6f), "Rotation");
+
+                    ImGui.TableNextColumn();
+                    ImGui.PushID("Rotation");
+                    Vector3 rotation = node3D.Transform.EulerAngles;
+                    if (EditorUI.PropertyVector3RGB(ref rotation))
+                    {
+                        node3D.Transform.EulerAngles = rotation;
+                    }
+                    ImGui.PopID();
+
+                    ImGui.EndTable();
+                }
+                ImGui.TreePop();
+            }
+
+            ImGui.Spacing();
             ImGui.TextColored(new Vector4(0.8f), "Properties");
             ImGui.PopFont();
 

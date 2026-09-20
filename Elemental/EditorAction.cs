@@ -5,6 +5,7 @@ namespace Elemental
     public sealed class EditorAction
     {
         public EditorActionId Id;
+        public bool Enabled = true;
         public string Name = string.Empty;
         public string Label = string.Empty;
 

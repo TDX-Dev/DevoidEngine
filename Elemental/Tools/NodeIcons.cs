@@ -1,21 +1,24 @@
 ﻿using DevoidEngine.Nodes;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Elemental.Tools
 {
-    public class NodeIcons
+    public static class NodeIcons
     {
-        public static Dictionary<Type, string> NodeIconMapping = new Dictionary<Type, string>()
+        public static readonly IReadOnlyDictionary<Type, string> NodeIconMapping =
+            new Dictionary<Type, string>
+            {
+                { typeof(Node), LucideIconFont.IconLineDotRightHorizontal },
+                { typeof(Node3D), LucideIconFont.IconScale3d },
+                { typeof(MeshNode), LucideIconFont.IconBox },
+                { typeof(Camera3D), LucideIconFont.IconVideo },
+            };
+
+        public static string GetIconOrDefault(Type type)
         {
-            { typeof(Node), LucideIconFont.IconLineDotRightHorizontal },
-            { typeof(Node3D), LucideIconFont.IconScale3d },
-            { typeof(MeshNode), LucideIconFont.IconBox },
-        };
-
-
+            NodeIconMapping.TryGetValue(type, out var icon);
+            return icon ?? LucideIconFont.IconLineDotRightHorizontal;
+        }
     }
 }

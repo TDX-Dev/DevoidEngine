@@ -12,7 +12,7 @@ struct PSInput
 struct PSOutput
 {
     float4 NormalViewSpace : SV_RenderTarget0;
-    float Identifier : SV_RenderTarget1;
+    uint Identifier : SV_RenderTarget1;
     float ViewDepth : SV_RenderTarget2;
 };
 
@@ -21,7 +21,7 @@ struct PSOutput
 PSOutput PSMain(PSInput input) : SV_Target0
 {
     PSOutput output;
-    output.Identifier = UniqueIdentifier;
+    output.Identifier = (uint)UniqueIdentifier;
     output.NormalViewSpace = float4(input.NormalViewSpace, 1);
     output.ViewDepth = input.ViewspacePosition.z;
     return output;

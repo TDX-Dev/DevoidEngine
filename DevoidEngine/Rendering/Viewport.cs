@@ -1,5 +1,6 @@
 ﻿using DevoidEngine.Core;
 using DevoidEngine.Gizmos;
+using DevoidEngine.Rendering.PostProcessing;
 using DevoidEngine.UI;
 using DevoidEngine.Util;
 using DevoidGPU;
@@ -14,18 +15,18 @@ namespace DevoidEngine.Rendering
         public Rect Bounds => bounds;
         public int Width { get; private set; }
         public int Height { get; private set; }
-
+        // This will cause a problem where the viewport only targets the main camera, so having multiple cameras for splitscreen for example, will not work.
         public Camera? ActiveCamera => CameraOverride ?? TargetScene?.MainCamera?.GetCamera();
-
         public Scene TargetScene { get; set; } = null!;
         public UIContext UIContext { get; private set; }
         public GizmoContext GizmoContext { get; private set; }
-
         public Camera? CameraOverride { get; set; }
 
         public Texture? OutputTexture { get; private set; } = null;
 
         private Rect bounds;
+        private ObjectPickRequest? pendingPick;
+        private ObjectPickResult? completedPick;
 
         public Viewport(int width = 1280, int height = 720)
         {
@@ -51,7 +52,6 @@ namespace DevoidEngine.Rendering
 
             ReallocateTexture();
         }
-
         private void ReallocateTexture()
         {
             if (OutputTexture != null)
@@ -67,7 +67,6 @@ namespace DevoidEngine.Rendering
                 TextureUsage.ShaderResource | TextureUsage.RenderTarget
             );
         }
-
         public void Resize(int width, int height)
         {
             width = Math.Max(1, width);
@@ -85,7 +84,6 @@ namespace DevoidEngine.Rendering
 
             Engine.Renderer.ResizeViewport(this);
         }
-
         public void Dispose()
         {
             Engine.Renderer.RemoveViewport(this);
@@ -98,6 +96,43 @@ namespace DevoidEngine.Rendering
             }
 
             GC.SuppressFinalize(this);
+        }
+
+
+        public void RequestObjectPick(Vector2 location)
+        {
+            pendingPick = new ObjectPickRequest(location);
+        }
+
+        public bool TryGetObjectPick(out ObjectPickResult result)
+        {
+            if (completedPick.HasValue)
+            {
+                result = completedPick.Value;
+                completedPick = null;
+                return true;
+            }
+
+            result = default;
+            return false;
+        }
+
+        internal bool TryConsumeObjectPickRequest(out ObjectPickRequest request)
+        {
+            if (pendingPick.HasValue)
+            {
+                request = pendingPick.Value;
+                pendingPick = null;
+                return true;
+            }
+
+            request = default;
+            return false;
+        }
+
+        internal void CompleteObjectPick(ObjectPickResult result)
+        {
+            completedPick = result;
         }
     }
 }

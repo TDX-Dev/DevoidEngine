@@ -120,11 +120,11 @@ namespace DevoidEngine.Rendering.PostProcessing
 
                 if (pass.Writes.Count > 0)
                 {
-                    current = context.GetTexture(pass.Writes[^1]);
+                    current = context.GetTexture(pass.Writes[^1])!;
                 }
             }
 
-            return current;
+            return current!;
         }
 
         public void Resize(int width, int height)

@@ -1,19 +1,11 @@
 ﻿using DevoidEngine.Core;
 using DevoidEngine.InputSystem.InputDevices;
 using DevoidEngine.Logging;
-using DevoidEngine.Metadata;
-using Elemental.Tools.EditorServices;
 using Elemental.Tools.Menu;
 using Elemental.Tools.Panels;
 using Elemental.Tools.Shortcuts;
 using Elemental.Tools.Themes;
 using ImGuiNET;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Elemental
 {
@@ -35,8 +27,10 @@ namespace Elemental
             };
 
             Context.PanelManager.AddPanel(new SceneViewPanel());
+            Context.PanelManager.AddPanel(new GameViewPanel());
             Context.PanelManager.AddPanel(new OutlinerPanel());
             Context.PanelManager.AddPanel(new InspectorPanel());
+            Context.PanelManager.AddPanel(new AssetBrowserPanel());
             Context.PanelManager.ProcessPendingChanges(Context);
         }
 
@@ -72,6 +66,7 @@ namespace Elemental
             Context.SceneService.OnSceneChanged += scene =>
             {
                 Context.PanelManager.GetPanel<SceneViewPanel>()!.Viewport.TargetScene = scene;
+                Context.PanelManager.GetPanel<GameViewPanel>()!.Viewport.TargetScene = scene;
             };
 
 

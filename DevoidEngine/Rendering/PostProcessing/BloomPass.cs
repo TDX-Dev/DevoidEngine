@@ -24,9 +24,11 @@ namespace DevoidEngine.Rendering.PostProcessing
 
         public override void Execute(PostProcessContext ctx)
         {
-            Texture scene = ctx.GetTexture("SceneColor");
+            if (!ctx.Settings.BloomEnabled)
+                return;
+            Texture? scene = ctx.GetTexture("SceneColor");
 
-            Texture bloom = bloomUtility.Process(ctx, scene, BloomMipCount, BloomRadius, BloomUtility.MipMode.Normal, "PP_BLOOM");
+            Texture bloom = bloomUtility.Process(ctx, scene!, BloomMipCount, BloomRadius, BloomUtility.MipMode.Normal, "PP_BLOOM");
 
             ctx.SetTexture("Bloom", bloom);
         }

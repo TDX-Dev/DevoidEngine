@@ -1,4 +1,5 @@
 ﻿using DevoidEngine.Core;
+using DevoidEngine.Rendering.PostProcessing;
 using DevoidEngine.Util;
 using System.Diagnostics;
 using System.Numerics;
@@ -15,6 +16,8 @@ namespace DevoidEngine.Rendering
         private readonly RIDOwner<GPUSpotLight> spotLights;
         private readonly RIDOwner<GPUDirectionalLight> directionalLights;
 
+        private readonly Dictionary<Camera, PostProcessSettings> postprocessingSettings;
+
         private BVH? staticBVH;
         private bool staticBVHDirty = true;
 
@@ -25,6 +28,8 @@ namespace DevoidEngine.Rendering
             pointLights = new RIDOwner<GPUPointLight>();
             spotLights = new RIDOwner<GPUSpotLight>();
             directionalLights = new RIDOwner<GPUDirectionalLight>();
+
+            postprocessingSettings = [];
         }
         public void UpdateAccelerationStructures()
         {
@@ -108,6 +113,7 @@ namespace DevoidEngine.Rendering
             RenderMeshData data = new(mesh);
 
             RID instanceId = meshIdAllocator.MakeRID(data);
+            mesh.UniqueIdentifier = instanceId.Index + 1;
 
             return instanceId;
         }
@@ -339,8 +345,22 @@ namespace DevoidEngine.Rendering
 
             light.Color.W = intensity;
         }
-        
-        
+
+        public void AddPostprocessSettings(Camera camera, PostProcessSettings settings)
+        {
+            postprocessingSettings[camera] = settings;
+        }
+        public void RemovePostProcessSettings(Camera camera)
+        {
+            postprocessingSettings.Remove(camera);
+        }
+        public PostProcessSettings? GetPostProcessSettings(Camera camera)
+        {
+            if (postprocessingSettings.TryGetValue(camera, out var ps))
+                return ps;
+            return null;
+        }
+
         public void BuildView(Camera camera, ref RenderView view)
         {
             var meshEntries = meshIdAllocator.AsSpan();

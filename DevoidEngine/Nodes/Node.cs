@@ -97,7 +97,20 @@ namespace DevoidEngine.Nodes
             Parent = node;
             Parent?.Children.Add(this);
         }
+        public T? GetAncestor<T>() where T : Node
+        {
+            Node? current = Parent;
 
+            while (current != null)
+            {
+                if (current is T result)
+                    return result;
+
+                current = current.Parent;
+            }
+
+            return null;
+        }
         protected virtual void OnDestroy()
         {
         }

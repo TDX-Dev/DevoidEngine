@@ -14,6 +14,10 @@
 		<PermitDynamicIL>false</PermitDynamicIL>
 	</PropertyGroup>
 
+	<PropertyGroup>
+		<DefineConstants>TOOL_MODE</DefineConstants>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<ProjectReference Include="..\DevoidEngine.SourceGen\DevoidEngine.SourceGen.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 	</ItemGroup>

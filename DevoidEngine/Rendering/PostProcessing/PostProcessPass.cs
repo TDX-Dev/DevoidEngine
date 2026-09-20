@@ -8,6 +8,7 @@ namespace DevoidEngine.Rendering.PostProcessing
 {
     public abstract class PostProcessPass
     {
+        public bool Enabled = true;
         internal readonly List<string> Reads = [];
         internal readonly List<string> Writes = [];
 

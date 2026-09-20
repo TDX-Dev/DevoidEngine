@@ -1,5 +1,4 @@
 ﻿using DevoidEngine.Core;
-using DevoidEngine.Gizmos;
 using DevoidEngine.Rendering.PostProcessing;
 using DevoidEngine.Rendering.ProbeGI;
 using DevoidEngine.UI;
@@ -7,7 +6,6 @@ using DevoidEngine.Util;
 using DevoidGPU;
 using System.Numerics;
 using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
 
 namespace DevoidEngine.Rendering
 {
@@ -407,11 +405,7 @@ namespace DevoidEngine.Rendering
 
             RenderTarget activeTechniqueTarget = ActiveTechnique.Render(context, renderView);
 
-            Texture finalColor = PostProcessor.Run(
-                this,
-                context,
-                activeTechniqueTarget.ColorTextures[0]!
-            );
+            Texture finalColor = PostProcessor.Run(this, context, activeTechniqueTarget.ColorTextures[0]!, viewport.TargetScene.World.GetPostProcessSettings(viewport.ActiveCamera) ?? viewport.TargetScene.WorldEnvironmentNode?.PostProcessSettings ?? PostProcessSettings.Default);
 
             GizmoRenderer.Render(context, viewport, viewportResources);
             //RenderDebug(cmd, context, viewportResources);
@@ -423,6 +417,51 @@ namespace DevoidEngine.Rendering
             API.RenderToScreen(cmd, UIRenderTarget.ColorTextures[0]!);
             API.RenderToScreen(cmd, DebugRenderTarget.ColorTextures[0]!);
             API.RenderToScreen(cmd, GizmoRenderer.GizmoRenderTarget.ColorTextures[0]!);
+
+
+
+            if (viewport.TryConsumeObjectPickRequest(out ObjectPickRequest request))
+            {
+                viewport.CompleteObjectPick(new ObjectPickResult(GetIdentifierAtLocation(context, request.Location)));
+            }
+        }
+
+        public uint GetIdentifierAtLocation(RenderContext ctx, Vector2 location)
+        {
+            int x = (int)MathF.Floor(location.X);
+            int y = (int)MathF.Floor(location.Y);
+            x = Math.Clamp(x, 0, ctx.Viewport.Width - 1);
+            y = Math.Clamp(y, 0, ctx.Viewport.Height - 1);
+
+            TextureDescription stagingTextureDescription = new()
+            {
+                Width = 1,
+                Height = 1,
+                Depth = 1,
+                Format = TextureFormat.R32_UInt,
+                Dimension = TextureDimension.Texture2D,
+                ArraySize = 1,
+                Samples = new TextureSampleDescription(1, 0),
+                MipLevels = 1,
+                ResourceUsage = ResourceUsage.Staging,
+                CPUAccess = CpuAccess.Read
+            };
+
+            Texture stagingTexture = ctx.Resources.GetOrCreateTexture("IDENTIFIER_STAGING_TEXTURE", stagingTextureDescription);
+            ctx.CommandList.CopyTextureSubresourceRegion(ctx.SceneIdentifier.GPU, stagingTexture.GPU, x, y, 1, 1);
+            MappedTexture textureMap = ctx.CommandList.MapTexture(stagingTexture.GPU, MapMode.Read);
+
+            uint identifier;
+
+            unsafe
+            {
+                identifier = *(uint*)textureMap.Data;
+            }
+
+            ctx.CommandList.UnmapTexture(stagingTexture.GPU);
+
+            Console.WriteLine(identifier);
+            return identifier;
         }
 
         public void RenderUI(ICommandList cmd, Viewport viewport, RenderResourceCache resources)
@@ -572,12 +611,12 @@ namespace DevoidEngine.Rendering
                 Width = context.Viewport.Width,
                 Height = context.Viewport.Height,
                 Depth = 1,
-                Format = TextureFormat.R16_Float,
+                Format = TextureFormat.R32_UInt,
                 Dimension = TextureDimension.Texture2D,
                 ArraySize = 1,
                 Samples = new TextureSampleDescription(1, 0),
                 MipLevels = 1,
-                Usage = TextureUsage.RenderTarget | TextureUsage.ShaderResource
+                Usage = TextureUsage.RenderTarget | TextureUsage.ShaderResource,
             };
 
             TextureDescription textureViewDepthDescription = new()
@@ -590,7 +629,7 @@ namespace DevoidEngine.Rendering
                 ArraySize = 1,
                 Samples = new TextureSampleDescription(1, 0),
                 MipLevels = 1,
-                Usage = TextureUsage.RenderTarget | TextureUsage.ShaderResource
+                Usage = TextureUsage.RenderTarget | TextureUsage.ShaderResource,
             };
 
             TextureDescription textureDepthDescription = new()
@@ -603,7 +642,7 @@ namespace DevoidEngine.Rendering
                 ArraySize = 1,
                 Samples = new TextureSampleDescription(1, 0),
                 MipLevels = 1,
-                Usage = TextureUsage.DepthStencil | TextureUsage.ShaderResource
+                Usage = TextureUsage.DepthStencil | TextureUsage.ShaderResource,
             };
 
             Texture normalTexture = context.Resources.GetOrCreateTexture("RENDERPASSINFO_NORMALS", textureNormalDescription);
@@ -628,6 +667,7 @@ namespace DevoidEngine.Rendering
             context.SceneDepth = depthTexture;
             context.SceneViewDepth = viewDepthTexture;
             context.SceneNormal = normalTexture;
+            context.SceneIdentifier = identifierTexture;
         }
         public void RenderDebug(ICommandList cmd, RenderContext context, RenderResourceCache resources)
         {

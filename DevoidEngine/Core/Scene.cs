@@ -4,6 +4,7 @@ using DevoidEngine.Nodes;
 using DevoidEngine.Physics;
 using DevoidEngine.Rendering;
 using System.ComponentModel;
+using System.Xml.Linq;
 
 namespace DevoidEngine.Core
 {
@@ -30,6 +31,7 @@ namespace DevoidEngine.Core
         public PhysicsSystem Physics { get; internal set; } = null!;
         public AudioManager Audio { get; internal set; } = null!;
 
+        public WorldEnvironmentNode? WorldEnvironmentNode { get; internal set; }
         public List<Camera3D> Cameras { get; private set; } = [];
         public Camera3D? MainCamera { get; private set; }
 
@@ -68,7 +70,6 @@ namespace DevoidEngine.Core
 
             World.UpdateAccelerationStructures();
         }
-
         public void LateUpdate(float deltaTime)
         {
             if (!IsRunning)
@@ -79,7 +80,6 @@ namespace DevoidEngine.Core
                 transforms[i].ClearDirty();
             }
         }
-
         public void FixedUpdate(float deltaTime)
         {
             for (int i = 0; i < transforms.Count; i++)
@@ -106,7 +106,6 @@ namespace DevoidEngine.Core
                 Physics.ResolveFrameCollisions();
             }
         }
-
         public void Render()
         {
             if (!IsRunning)
@@ -120,7 +119,6 @@ namespace DevoidEngine.Core
                 Nodes[i].Render();
             }
         }
-
         public void SetMode(SceneMode mode)
         {
             if (SceneMode == mode)
@@ -144,7 +142,6 @@ namespace DevoidEngine.Core
                 transforms[i].InitializeInterpolation();
             }
         }
-
         public T CreateNode<T>(string name = "Node") where T : Node, new()
         {
             T node = new()
@@ -158,7 +155,9 @@ namespace DevoidEngine.Core
             if (node is Node3D node3D)
                 transforms.Add(node3D.Transform);
 
+
             node.Attach();
+            NodeAdded(node);
 
             if (IsRunning)
             {
@@ -168,7 +167,6 @@ namespace DevoidEngine.Core
 
             return node;
         }
-
         public Node AddNode(Node node)
         {
             Nodes.Add(node);
@@ -186,7 +184,6 @@ namespace DevoidEngine.Core
 
             return node;
         }
-
         public Node? GetNode(Guid id)
         {
             for (int i = 0; i < Nodes.Count; i++)
@@ -197,7 +194,6 @@ namespace DevoidEngine.Core
 
             return null;
         }
-
         public Node? GetNode(string name)
         {
             for (int i = 0; i < Nodes.Count; i++)
@@ -208,7 +204,24 @@ namespace DevoidEngine.Core
 
             return null;
         }
+        public T? GetNode<T>() where T : Node
+        {
+            for (int i = 0; i < Nodes.Count; i++)
+            {
+                if (Nodes[i] is T node)
+                    return node;
+            }
 
+            return null;
+        }
+        public IEnumerable<T> GetNodes<T>() where T : Node
+        {
+            for (int i = 0; i < Nodes.Count; i++)
+            {
+                if (Nodes[i] is T node)
+                    yield return node;
+            }
+        }
         public void RegisterCamera(Camera3D camera)
         {
             if (!Cameras.Contains(camera))
@@ -221,7 +234,6 @@ namespace DevoidEngine.Core
                 SetMainCamera(camera);
             }
         }
-
         public void UnregisterCamera(Camera3D camera)
         {
             Cameras.Remove(camera);
@@ -231,7 +243,6 @@ namespace DevoidEngine.Core
                 MainCamera = Cameras.Count > 0 ? Cameras[0] : null;
             }
         }
-
         public void SetMainCamera(Camera3D camera)
         {
             MainCamera = camera;
@@ -245,10 +256,18 @@ namespace DevoidEngine.Core
         {
             OnNodeAdded?.Invoke(node);
         }
-
         public void NodeRemoved(Node node)
         {
             OnNodeRemoved?.Invoke(node);
+        }
+        public void RegisterWorldEnvironment(WorldEnvironmentNode worldEnvironmentNode)
+        {
+            WorldEnvironmentNode  = worldEnvironmentNode;
+        }
+        public void ClearWorldEnvironment(WorldEnvironmentNode worldEnvironmentNode)
+        {
+            if (WorldEnvironmentNode == worldEnvironmentNode)
+                WorldEnvironmentNode = null;
         }
         public override void Dispose()
         {
@@ -257,6 +276,7 @@ namespace DevoidEngine.Core
                 if (Nodes[i].Parent != null)
                     continue;
 
+                NodeRemoved(Nodes[i]);
                 Nodes[i].Destroy();
             }
 

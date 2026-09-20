@@ -55,6 +55,7 @@ namespace DevoidEngine.Nodes
         internal float fov = 60f;
         internal float nearPlane = 0.1f;
         internal float farPlane = 1000f;
+        internal bool isPostprocessSet = false;
 
         public Camera3D()
         {
@@ -62,9 +63,40 @@ namespace DevoidEngine.Nodes
         }
         protected override void OnAttach()
         {
-            Scene?.RegisterCamera(this);
+            if (Scene == null)
+                return;
+            Scene.RegisterCamera(this);
+            Scene.OnNodeAdded += Camera3D_OnNodeAdded;
+            Scene.OnNodeRemoved += Camera3D_OnNodeRemoved;
+
+            RegisterPostprocessSettings();
         }
 
+        private void Camera3D_OnNodeRemoved(Node obj)
+        {
+            Scene.World.RemovePostProcessSettings(camera);
+        }
+
+        private void Camera3D_OnNodeAdded(Node obj)
+        {
+            RegisterPostprocessSettings();
+        }
+        public void RegisterPostprocessSettings()
+        {
+            WorldEnvironmentNode? node = Scene!.GetNode<WorldEnvironmentNode>();
+            if (node == null)
+            {
+                Scene.World.RemovePostProcessSettings(camera);
+                isPostprocessSet = false;
+                Console.WriteLine("DIDNT FIND POSTPROCESS");
+                return;
+            }
+            if (isPostprocessSet)
+                return;
+            Scene.World.AddPostprocessSettings(camera, node.PostProcessSettings);
+            isPostprocessSet = true;
+            Console.WriteLine("found postprocess");
+        }
         protected override void OnDestroy()
         {
             Scene?.UnregisterCamera(this);

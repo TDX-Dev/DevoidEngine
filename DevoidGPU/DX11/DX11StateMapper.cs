@@ -351,15 +351,20 @@ namespace DevoidGPU.DX11
         }
 
 
-        public static SharpDX.Direct3D11.ResourceUsage ToDXBufferUsage(ResourceUsage usage)
+        public static SharpDX.Direct3D11.ResourceUsage ToDXResourceUsage(ResourceUsage usage)
         {
-            if (usage.HasFlag(ResourceUsage.Dynamic))
-                return SharpDX.Direct3D11.ResourceUsage.Dynamic;
+            return usage switch
+            {
+                ResourceUsage.Default => SharpDX.Direct3D11.ResourceUsage.Default,
 
-            if (usage.HasFlag(ResourceUsage.Staging))
-                return SharpDX.Direct3D11.ResourceUsage.Staging;
+                ResourceUsage.Immutable => SharpDX.Direct3D11.ResourceUsage.Immutable,
 
-            return SharpDX.Direct3D11.ResourceUsage.Default;
+                ResourceUsage.Dynamic => SharpDX.Direct3D11.ResourceUsage.Dynamic,
+
+                ResourceUsage.Staging => SharpDX.Direct3D11.ResourceUsage.Staging,
+
+                _ => throw new ArgumentOutOfRangeException(nameof(usage))
+            };
         }
         public static CpuAccessFlags ToDXCpuAccess(CpuAccess access)
         {

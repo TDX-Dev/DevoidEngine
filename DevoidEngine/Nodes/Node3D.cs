@@ -23,7 +23,10 @@ namespace DevoidEngine.Nodes
             // Then the cast will fail.
             // TODO: Make base class Transform from which Transform2D and Transform3D inherit, and handle in
             // base Node class
-            Transform.SetParent(((Node3D?)node)?.Transform, keepWorldTransform); 
+            if (node is  Node3D node3D)
+            {
+                Transform.SetParent(node3D.Transform, keepWorldTransform);
+            }
         }
 
         public override void InitializeTransforms()

@@ -8,9 +8,8 @@ namespace Elemental.Tools.Panels
     public class OutlinerPanel : Panel
     {
         private EditorContext? context;
-        private Node? selectedNode;
 
-        public Node? SelectedNode => selectedNode;
+        public Node? SelectedNode => context?.SelectedNode;
 
         public OutlinerPanel()
             : base("Outliner")
@@ -27,7 +26,6 @@ namespace Elemental.Tools.Panels
         public override void OnDetach()
         {
             context = null;
-            selectedNode = null;
         }
 
         protected override void OnImGuiRender(EditorContext context)
@@ -69,8 +67,7 @@ namespace Elemental.Tools.Panels
 
         private void DrawNode(Node node)
         {
-            bool selected =
-                selectedNode == node;
+            bool selected = SelectedNode == node;
 
             ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.OpenOnArrow | ImGuiTreeNodeFlags.SpanFullWidth | ImGuiTreeNodeFlags.FramePadding;
 
@@ -111,7 +108,6 @@ namespace Elemental.Tools.Panels
 
             if (ImGui.IsItemHovered() && ImGui.IsMouseReleased(ImGuiMouseButton.Left))
             {
-                selectedNode = node;
 
                 if (context != null)
                     context.SelectedNode = node;
@@ -148,10 +144,9 @@ namespace Elemental.Tools.Panels
 
         private static string GetNodeIcon(Node node)
         {
-            string nodeIcon = LucideIconFont.IconLineDotRightHorizontal;
-            NodeIcons.NodeIconMapping.TryGetValue(node.GetType(), out nodeIcon);
+            NodeIcons.NodeIconMapping.TryGetValue(node.GetType(), out string? nodeIcon);
 
-            return nodeIcon;
+            return nodeIcon ?? LucideIconFont.IconLineDotRightHorizontal;
         }
     }
 }

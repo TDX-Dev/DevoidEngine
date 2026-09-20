@@ -24,9 +24,11 @@ namespace DevoidEngine.Rendering.PostProcessing
 
         public override void Execute(PostProcessContext ctx)
         {
-            Texture scene = ctx.GetTexture("SceneColor");
+            if (!ctx.Settings.AnamorphicBloomEnabled)
+                return;
+            Texture? scene = ctx.GetTexture("SceneColor");
 
-            Texture bloom = bloomUtility.Process(ctx, scene, BloomMipCount, BloomRadius, BloomUtility.MipMode.Vertical, "PP_ANAMORPHICBLOOM");
+            Texture bloom = bloomUtility.Process(ctx, scene!, BloomMipCount, BloomRadius, BloomUtility.MipMode.Vertical, "PP_ANAMORPHICBLOOM");
 
             ctx.SetTexture("AnamorphicBloom", bloom);
         }

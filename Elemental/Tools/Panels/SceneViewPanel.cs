@@ -1,11 +1,8 @@
 ﻿using DevoidEngine.Core;
+using DevoidEngine.Nodes;
+using DevoidEngine.Rendering;
 using ImGuiNET;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Elemental.Tools.Panels
 {
@@ -20,8 +17,7 @@ namespace Elemental.Tools.Panels
         private bool middleMouse;
         private bool rightMouse;
         private float mouseWheel;
-
-        private bool wasHovering = false;
+        private bool wasHovered;
 
         public SceneViewPanel() : base("Scene View")
         {
@@ -32,26 +28,44 @@ namespace Elemental.Tools.Panels
 
         public override void OnUpdate(EditorContext context, float deltaTime)
         {
+            if (context.SceneService.SceneDocument != null)
+            {
+                MeshNode? node = HandleObjectPicking(context.SceneService.SceneDocument.Scene);
+                if (node != null)
+                    context.SelectedNode = node;
+            }
+
+
+
             context.Camera = EditorViewCamera;
 
             bool interacting = middleMouse || rightMouse;
 
-            if (windowHovered)
-                wasHovering = true;
-
-            if (!wasHovering)
+            if (!wasHovered && IsHovered && interacting)
             {
-                EditorViewCamera.CanInteract = false;
-                return;
+                wasHovered = true;
             }
 
-            EditorViewCamera.CanInteract = true;
+            if (wasHovered && !interacting)
+            {
+                wasHovered = false;
+            }
+
+            EditorViewCamera.CanInteract = windowHovered;
+
+            //if (!wasHovering)
+            //{
+            //    EditorViewCamera.CanInteract = false;
+            //    return;
+            //}
+
+            //EditorViewCamera.CanInteract = true;
 
             mouseWheel = windowHovered ? mouseWheel : 0.0f;
 
             EditorViewCamera.Update(context, deltaTime, mouseWheel);
 
-            if (!interacting)
+            if (!wasHovered)
                 return;
 
             Vector2 finalMousePosition = mousePosition;
@@ -97,6 +111,29 @@ namespace Elemental.Tools.Panels
             middleMouse = ImGui.IsMouseDown(ImGuiMouseButton.Middle);
             rightMouse = ImGui.IsMouseDown(ImGuiMouseButton.Right);
             mouseWheel = ImGui.GetIO().MouseWheel;
+
+            if (ImGui.IsMouseClicked(ImGuiMouseButton.Left))
+            {
+                if (!IsHovered)
+                    return;
+
+                Viewport.RequestObjectPick(LocalMousePosition);
+            }
+        }
+        
+        MeshNode? HandleObjectPicking(Scene scene)
+        {
+
+            if (Viewport.TryGetObjectPick(out ObjectPickResult result))
+            {
+                uint objectId = result.ObjectId;
+                foreach (MeshNode meshNode in scene.GetNodes<MeshNode>())
+                {
+                    if (meshNode.Mesh?.UniqueIdentifier == objectId)
+                        return meshNode;
+                }
+            }
+            return null;
         }
     }
 }

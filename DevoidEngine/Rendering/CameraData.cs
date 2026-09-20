@@ -16,4 +16,5 @@ namespace DevoidEngine.Rendering
         public float FarClip;
         public Vector2 ScreenSize;
     }
+
 }

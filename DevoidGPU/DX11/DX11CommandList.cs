@@ -49,7 +49,6 @@ namespace DevoidGPU.DX11
             currentFramebuffer = null;
             currentViewport = default;
 
-            // optional safety reset
             deviceContext.InputAssembler.InputLayout = null;
         }
 
@@ -355,7 +354,65 @@ namespace DevoidGPU.DX11
             else
                 deviceContext.ClearUnorderedAccessView(dx11Texture.UAV, new RawInt4((int)value.X, (int)value.Y, (int)value.Z, (int)value.W));
         }
-        
+        public void CopyTextureSubresourceRegion(
+            ITexture source,
+            ITexture destination,
+            int sourceX,
+            int sourceY,
+            int width,
+            int height)
+        {
+            DX11Texture dx11Source = (DX11Texture)source;
+            DX11Texture dx11Destination = (DX11Texture)destination;
+
+            var sourceRegion = new ResourceRegion
+            {
+                Left = sourceX,
+                Top = sourceY,
+                Front = 0,
+                Right = sourceX + width,
+                Bottom = sourceY + height,
+                Back = 1
+            };
+
+            deviceContext.CopySubresourceRegion(
+                dx11Source.TextureResource,
+                0,
+                sourceRegion,
+                dx11Destination.TextureResource,
+                0,
+                0,
+                0,
+                0);
+        }
+        public MappedTexture MapTexture(ITexture texture, MapMode mode)
+        {
+            if (texture.Description.ResourceUsage != ResourceUsage.Staging)
+                throw new InvalidOperationException(
+                    "[DX11]: Cannot map a non-staging texture.");
+
+            DX11Texture dx11Texture = (DX11Texture)texture;
+
+            SharpDX.Direct3D11.MapMode dxMode = mode switch
+            {
+                MapMode.Read => SharpDX.Direct3D11.MapMode.Read,
+                MapMode.Write => SharpDX.Direct3D11.MapMode.Write,
+                MapMode.ReadWrite => SharpDX.Direct3D11.MapMode.ReadWrite,
+                _ => throw new ArgumentOutOfRangeException(nameof(mode))
+            };
+
+            SharpDX.DataBox data = deviceContext.MapSubresource(dx11Texture.TextureResource, 0, dxMode, MapFlags.None);
+
+            return new MappedTexture(data.DataPointer, data.RowPitch, data.SlicePitch);
+        }
+
+        public void UnmapTexture(ITexture texture)
+        {
+            DX11Texture dx11Texture = (DX11Texture)texture;
+
+            deviceContext.UnmapSubresource(dx11Texture.TextureResource, 0);
+        }
+
         // InternalMethods
 
         internal void BindConstantBuffer(uint slot, ShaderStage stages, Buffer buffer)
