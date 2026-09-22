@@ -20,6 +20,7 @@ namespace Elemental
         public virtual void OnAttach(EditorContext context) { }
         public virtual void OnDetach() { }
         public virtual void OnUpdate(EditorContext context, float deltaTime) { }
+        public virtual void OnRender(EditorContext context) { }
         protected virtual void OnPushStyle() { }
 
         protected virtual void OnPopStyle()

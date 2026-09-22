@@ -189,6 +189,7 @@ namespace DevoidEngine.AssetPipeline.Importers
             float intensityLuminance = (0.2126f * light.ColorDiffuse.X) + (0.7152f * light.ColorDiffuse.Y) + (0.0722f * light.ColorDiffuse.Z);
             intensityLuminance /= 54.351413f;
             Console.WriteLine("Intensity Luminance: " + intensityLuminance);
+            Console.WriteLine("Light Color: " + light.ColorDiffuse / 693);
 
             PackedLight packed = new()
             {

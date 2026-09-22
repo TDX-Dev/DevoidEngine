@@ -40,6 +40,17 @@
             }
         }
 
+        public void OnRender(EditorContext context)
+        {
+            for (int i = 0; i < panels.Count; i++)
+            {
+                if (panels[i].IsOpen)
+                {
+                    panels[i].OnRender(context);
+                }
+            }
+        }
+
         public void OnImGuiRender(EditorContext context)
         {
             for (int i = 0; i < panels.Count; i++)

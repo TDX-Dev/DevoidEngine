@@ -76,6 +76,8 @@ namespace Elemental.Tools.Panels
             Vector2 imageMin = ImGui.GetItemRectMin();
             LocalMousePosition = ImGui.GetMousePos() - imageMin;
 
+            ImGui.SetCursorScreenPos(imageMin);
+
             OnViewportOverlayRender();
         }
 

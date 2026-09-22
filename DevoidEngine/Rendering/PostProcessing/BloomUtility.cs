@@ -86,12 +86,12 @@ namespace DevoidEngine.Rendering.PostProcessing
             });
         }
 
-        public Texture Process(PostProcessContext ctx, Texture input, int mipCount, float filterRadius, MipMode mipMode, string namePrefix, bool usePrefilter = true)
+        public Texture Process(PostProcessContext ctx, Texture input, int mipCount, float filterRadius, MipMode mipMode, string namePrefix, bool usePrefilter = true, float bloomThreshold = 1.0f, float bloomKnee = 0.5f)
         {
             BuildMipChain(ctx, input, mipCount, mipMode, namePrefix);
 
             if (usePrefilter)
-                RenderPrefilter(ctx, input);
+                RenderPrefilter(ctx, input, bloomThreshold, bloomKnee);
 
             RenderDownsamples(ctx, filterRadius);
 
@@ -140,27 +140,20 @@ namespace DevoidEngine.Rendering.PostProcessing
                     ? upsampleBloomSampler.GPU
                     : downsampleBloomSampler.GPU);
 
-            material.DescriptorSet.SetUniformBuffer(
-                5,
-                mipShaderDataBuffer.GPU);
+            material.DescriptorSet.SetUniformBuffer(5, mipShaderDataBuffer.GPU);
         }
 
-        private void RenderPrefilter(PostProcessContext ctx, Texture input)
+        private void RenderPrefilter(PostProcessContext ctx, Texture input, float threshold, float knee)
         {
             BloomMip firstMip = bloomMipList[0];
 
-            BeginPass(
-                ctx,
-                firstMip.Texture,
-                firstMip.Size);
+            BeginPass(ctx, firstMip.Texture, firstMip.Size);
 
-            prefilterMaterial.SetTexture(
-                "INPUT_TEXTURE",
-                input);
+            prefilterMaterial.SetTexture("INPUT_TEXTURE", input);
+            prefilterMaterial.SetFloat("threshold", threshold);
+            prefilterMaterial.SetFloat("knee", knee);
 
-            ctx.Renderer.API.RenderToScreen(
-                ctx.CommandList,
-                prefilterMaterial);
+            ctx.Renderer.API.RenderToScreen(ctx.CommandList, prefilterMaterial);
 
             EndPass(ctx);
         }

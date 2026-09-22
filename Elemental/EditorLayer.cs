@@ -26,6 +26,7 @@ namespace Elemental
                 SceneService = new(),
             };
 
+            Context.PanelManager.AddPanel(new MapEditorPanel());
             Context.PanelManager.AddPanel(new SceneViewPanel());
             Context.PanelManager.AddPanel(new GameViewPanel());
             Context.PanelManager.AddPanel(new OutlinerPanel());

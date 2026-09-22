@@ -14,6 +14,30 @@ namespace DevoidEngine.Nodes
                 PostProcessSettings.BloomEnabled = value;
             }
         }
+        public float BloomIntensity
+        {
+            get => PostProcessSettings.BloomIntensity;
+            set
+            {
+                PostProcessSettings.BloomIntensity = value;
+            }
+        }
+        public float BloomThreshold
+        {
+            get => PostProcessSettings.BloomThreshold;
+            set
+            {
+                PostProcessSettings.BloomThreshold = value;
+            }
+        }
+        public float BloomKnee
+        {
+            get => PostProcessSettings.BloomKnee;
+            set
+            {
+                PostProcessSettings.BloomKnee = value;
+            }
+        }
         public bool AnamorphicBloom
         {
             get => PostProcessSettings.AnamorphicBloomEnabled;
@@ -22,12 +46,12 @@ namespace DevoidEngine.Nodes
                 PostProcessSettings.AnamorphicBloomEnabled = value;
             }
         }
-        public float BloomIntensity
+        public float AnamorphicBloomIntensity
         {
-            get => PostProcessSettings.BloomIntensity;
+            get => PostProcessSettings.AnamorphicBloomIntensity;
             set
             {
-                PostProcessSettings.BloomIntensity = value;
+                PostProcessSettings.AnamorphicBloomIntensity = value;
             }
         }
         public float Exposure

@@ -4,6 +4,8 @@
 
   "DefaultPass": "Forward",
 
+  "MaterialParameters": { "BufferName": "BloomThresholdData" },
+
   "Resources": [
     {
       "Name": "INPUT_TEXTURE",

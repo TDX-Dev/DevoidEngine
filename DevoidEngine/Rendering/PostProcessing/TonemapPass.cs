@@ -13,6 +13,7 @@ namespace DevoidEngine.Rendering.PostProcessing
     public sealed class TonemapPass : PostProcessPass
     {
         private readonly MaterialInstance material;
+        private readonly Sampler textureSampler;
 
         private readonly RenderTarget target;
         private readonly PostProcessSettings state;
@@ -21,15 +22,31 @@ namespace DevoidEngine.Rendering.PostProcessing
         {
             material = new MaterialInstance(new Material(Shader.FromDescriptorFile(Engine.GraphicsDevice, Path.Combine(Engine.BasePath, "Content/DevoidShaderDescriptors/tonemap_pass.dsd"))));
 
-            material.SetFloat("exposure", 0.6f);
-            material.SetFloat("bloomIntensity", 1f);
-
             target = RenderTarget.Create(1);
             state = new()
             {
                 AnamorphicBloomEnabled = false,
                 BloomEnabled = false,
+                BloomIntensity = 0,
+                AnamorphicBloomIntensity = 0,
+                Exposure = 0
             };
+
+
+            textureSampler = Sampler.Create(new SamplerDescription
+            {
+                AddressU = WrapMode.ClampToEdge,
+                AddressV = WrapMode.ClampToEdge,
+                AddressW = WrapMode.ClampToEdge,
+                MagFilter = FilterMode.Linear,
+                MinFilter = FilterMode.Linear,
+                MipFilter = FilterMode.Linear,
+                MinLOD = 0f,
+                MaxLOD = float.MaxValue,
+                MaxAnisotropy = 1
+            });
+
+            material.SetSampler("TonemapSampler", textureSampler);
         }
 
         public override void Setup()
@@ -96,6 +113,12 @@ namespace DevoidEngine.Rendering.PostProcessing
             {
                 material.SetFloat("bloomIntensity", settings.BloomIntensity);
                 state.BloomIntensity = settings.BloomIntensity;
+            }
+
+            if (state.AnamorphicBloomIntensity != settings.AnamorphicBloomIntensity)
+            {
+                material.SetFloat("anamorphicIntensity", settings.AnamorphicBloomIntensity);
+                state.BloomIntensity = settings.AnamorphicBloomIntensity;
             }
         }
     }

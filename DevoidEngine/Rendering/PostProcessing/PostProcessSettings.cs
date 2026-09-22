@@ -19,5 +19,9 @@ namespace DevoidEngine.Rendering.PostProcessing
 
         public float Exposure { get; set; } = 0.6f;
         public float BloomIntensity { get; set; } = 1.0f;
+        public float AnamorphicBloomIntensity { get; set; } = 1.0f;
+
+        public float BloomThreshold = 1f;
+        public float BloomKnee = 0.5f;
     }
 }

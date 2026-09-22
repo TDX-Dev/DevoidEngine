@@ -16,7 +16,13 @@ cbuffer BloomMipShaderData : register(b5)
 Texture2D INPUT_TEXTURE : register(t0);
 Texture2D PREVIOUS_TEXTURE : register(t1);
 
-SamplerState INPUT_TEXTURESampler : register(s0);
+SamplerState INPUT_TEXTURESampler
+{
+    Filter = MIN_MAG_MIP_LINEAR;
+    AddressU = Clamp;
+    AddressV = Clamp;
+    AddressW = Clamp;
+};
 
 float3 Upsample(float2 uv, float2 pixelSize)
 {

@@ -6,8 +6,8 @@ namespace DevoidEngine.Rendering.PostProcessing
 {
     public class AnamorphicBloomPass : PostProcessPass
     {
-        public int BloomMipCount { get; set; } = 6;
-        public float BloomRadius { get; set; } = 0.7f;
+        public int BloomMipCount { get; set; } = 5;
+        public float BloomRadius { get; set; } = 0.5f;
 
         private readonly BloomUtility bloomUtility;
 

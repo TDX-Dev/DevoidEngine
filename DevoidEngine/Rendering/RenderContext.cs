@@ -19,5 +19,8 @@ namespace DevoidEngine.Rendering
         public Texture SceneAO;
 
         public Texture SceneIdentifier;
+
+        public Texture SceneColor;
+        public Texture SceneColorBlurredHalfRes;
     }
 }

@@ -18,6 +18,7 @@ namespace Elemental.Tools.Panels
         private bool rightMouse;
         private float mouseWheel;
         private bool wasHovered;
+        private bool IsControlling => middleMouse || rightMouse;
 
         public SceneViewPanel() : base("Scene View")
         {
@@ -112,6 +113,14 @@ namespace Elemental.Tools.Panels
             rightMouse = ImGui.IsMouseDown(ImGuiMouseButton.Right);
             mouseWheel = ImGui.GetIO().MouseWheel;
 
+            if (windowHovered && IsControlling)
+            {
+                ImGui.SetWindowFocus();
+            }
+
+
+            ShowRendererInfo();
+
             if (ImGui.IsMouseClicked(ImGuiMouseButton.Left))
             {
                 if (!IsHovered)
@@ -119,6 +128,27 @@ namespace Elemental.Tools.Panels
 
                 Viewport.RequestObjectPick(LocalMousePosition);
             }
+        }
+
+        void ShowRendererInfo()
+        {
+            RenderResourceCache? cache = Engine.Renderer.GetViewportResources(Viewport);
+            if (cache == null)
+                return;
+
+            ImGui.PushStyleColor(ImGuiCol.ChildBg, new Vector4(0));
+            ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(8));
+
+            ImGui.BeginChild("#viewport_info", new Vector2(0), ImGuiChildFlags.AlwaysUseWindowPadding, ImGuiWindowFlags.NoInputs);
+
+            ImGui.Text($"Video Memory: {Engine.GraphicsDevice.Info.VideoMemoryUsage / 1048576} / {Engine.GraphicsDevice.Info.DedicatedVideoMemory / 1048576}");
+            ImGui.Text($"Total Shared Video Memory: {Engine.GraphicsDevice.Info.VideoMemoryBudget / 1048576} ");
+            ImGui.Text($"Internal Textures: {cache.NumTextures}");
+
+            ImGui.EndChild();
+
+            ImGui.PopStyleColor();
+            ImGui.PopStyleVar();
         }
         
         MeshNode? HandleObjectPicking(Scene scene)

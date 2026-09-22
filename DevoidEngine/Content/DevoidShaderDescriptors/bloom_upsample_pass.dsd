@@ -17,6 +17,8 @@
     }
   ],
 
+  "MaterialParameters": { "BufferName": "BloomMipShaderData" },
+
   "Passes": [
     {
       "Name": "Forward",

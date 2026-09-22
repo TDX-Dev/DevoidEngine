@@ -14,8 +14,14 @@ cbuffer BloomMipShaderData : register(b5)
 }
 
 Texture2D INPUT_TEXTURE : register(t0);
-SamplerState INPUT_TEXTURESampler : register(s0);
 
+SamplerState INPUT_TEXTURESampler
+{
+    Filter = MIN_MAG_MIP_LINEAR;
+    AddressU = Border;
+    AddressV = Border;
+    AddressW = Border;
+};
 
 float3 Downsample(float2 uv, float2 pixelSize)
 {
@@ -74,7 +80,6 @@ float3 Downsample(float2 uv, float2 pixelSize)
 
 float4 PSMain(PSInput input) : SV_TARGET
 {
-
     float2 pixelSize = (1.0 / mipSize) * 0.5;
     float3 result = Downsample(input.UV, pixelSize);
     return float4(result, 1.0);

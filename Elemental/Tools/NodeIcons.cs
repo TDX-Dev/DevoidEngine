@@ -13,6 +13,7 @@ namespace Elemental.Tools
                 { typeof(Node3D), LucideIconFont.IconScale3d },
                 { typeof(MeshNode), LucideIconFont.IconBox },
                 { typeof(Camera3D), LucideIconFont.IconVideo },
+                { typeof(LightNode), LucideIconFont.IconLightbulb },
             };
 
         public static string GetIconOrDefault(Type type)

@@ -28,7 +28,7 @@ namespace DevoidEngine.Rendering.PostProcessing
                 return;
             Texture? scene = ctx.GetTexture("SceneColor");
 
-            Texture bloom = bloomUtility.Process(ctx, scene!, BloomMipCount, BloomRadius, BloomUtility.MipMode.Normal, "PP_BLOOM");
+            Texture bloom = bloomUtility.Process(ctx, scene!, BloomMipCount, BloomRadius, BloomUtility.MipMode.Normal, "PP_BLOOM", true, ctx.Settings.BloomThreshold, ctx.Settings.BloomKnee);
 
             ctx.SetTexture("Bloom", bloom);
         }

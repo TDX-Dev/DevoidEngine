@@ -10,15 +10,16 @@ namespace DevoidEngine.Rendering
 
         private readonly Dictionary<TextureResourceKey, Texture> textures;
 
+        public IEnumerable<Texture> Textures => textures.Values;
+        public int NumTextures => textures.Count;
+
         public RenderResourceCache(IGraphicsDevice device)
         {
             this.device = device;
             textures = [];
         }
 
-        public Texture GetOrCreateTexture(
-            string name,
-            TextureDescription description)
+        public Texture GetOrCreateTexture(string name, TextureDescription description)
         {
             var key = new TextureResourceKey(name, description);
 
@@ -34,19 +35,14 @@ namespace DevoidEngine.Rendering
             return texture;
         }
 
-        public bool TryGetTexture(
-            string name,
-            TextureDescription description,
-            out Texture texture)
+        public bool TryGetTexture(string name, TextureDescription description, out Texture texture)
         {
             return textures.TryGetValue(
                 new TextureResourceKey(name, description),
                 out texture!);
         }
 
-        public void RemoveTexture(
-            string name,
-            TextureDescription description)
+        public void RemoveTexture(string name, TextureDescription description)
         {
             var key = new TextureResourceKey(name, description);
 
@@ -55,6 +51,11 @@ namespace DevoidEngine.Rendering
 
             texture.Dispose();
             textures.Remove(key);
+        }
+
+        public IEnumerable<Texture> GetTextures()
+        {
+            return textures.Values;
         }
 
         public void Clear()

@@ -413,6 +413,27 @@ namespace DevoidGPU.DX11
             deviceContext.UnmapSubresource(dx11Texture.TextureResource, 0);
         }
 
+        public void WriteTimestamp(IGPUTimestamp timestamp)
+        {
+            DX11GPUTimestamp dxTimestamp = (DX11GPUTimestamp)timestamp;
+
+            deviceContext.End(dxTimestamp.Query);
+        }
+
+        public void BeginTimestampDisjoint(IGPUTimestampDisjoint disjoint)
+        {
+            DX11GPUTimestampDisjoint dxDisjoint = (DX11GPUTimestampDisjoint)disjoint;
+
+            deviceContext.Begin(dxDisjoint.Query);
+        }
+
+        public void EndTimestampDisjoint(IGPUTimestampDisjoint disjoint)
+        {
+            DX11GPUTimestampDisjoint dxDisjoint = (DX11GPUTimestampDisjoint)disjoint;
+
+            deviceContext.End(dxDisjoint.Query);
+        }
+
         // InternalMethods
 
         internal void BindConstantBuffer(uint slot, ShaderStage stages, Buffer buffer)

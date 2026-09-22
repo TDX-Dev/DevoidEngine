@@ -7,20 +7,24 @@ struct PSInput
     float3 WorldspacePosition : TEXCOORD1;
 };
 
-cbuffer BloomMipShaderData : register(b5)
+cbuffer BloomThresholdData : register(b5)
 {
-    float2 mipSize;
-    int mipLevel;
-    float filterRadius;
+    float threshold;
+    float knee;
 }
 
 Texture2D INPUT_TEXTURE : register(t0);
-SamplerState INPUT_TEXTURESampler : register(s0);
+
+SamplerState INPUT_TEXTURESampler
+{
+    Filter = MIN_MAG_MIP_LINEAR;
+    AddressU = Clamp;
+    AddressV = Clamp;
+    AddressW = Clamp;
+};
 
 float3 Prefilter(float3 color)
 {
-    float threshold = 1.0;
-    float knee = 0.5; // 50% soft transition
 
     float brightness = max(color.r, max(color.g, color.b));
 

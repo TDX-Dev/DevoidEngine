@@ -9,13 +9,13 @@ namespace Elemental.Tools.Panels
     {
         private EditorContext? context;
 
+        private string searchBarBuffer = "";
+
         public Node? SelectedNode => context?.SelectedNode;
 
-        public OutlinerPanel()
-            : base("Outliner")
+        public OutlinerPanel() : base("Outliner")
         {
-            WindowFlags =
-                ImGuiWindowFlags.NoScrollbar;
+            WindowFlags = ImGuiWindowFlags.NoScrollbar;
         }
 
         public override void OnAttach(EditorContext context)
@@ -39,6 +39,23 @@ namespace Elemental.Tools.Panels
             if (scene == null)
                 return;
 
+            ImGui.PushStyleColor(ImGuiCol.ChildBg, Vector4.Zero);
+            ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(8, 8));
+            ImGui.PushFont(context.BoldFont);
+
+            ImGui.BeginChild("#outliner_head", new Vector2(-1, 0), ImGuiChildFlags.AlwaysUseWindowPadding | ImGuiChildFlags.AutoResizeY);
+
+            ImGui.Button(LucideIconFont.IconPlus);
+            ImGui.SameLine();
+
+            ImGui.SetNextItemWidth(-1);
+            ImGui.InputTextWithHint("##search_outliner", "Search", ref searchBarBuffer, 32);
+
+            ImGui.EndChild();
+            ImGui.PopFont();
+
+            ImGui.PopStyleColor();
+
             ImGui.BeginChild("#outliner", new Vector2(-1), ImGuiChildFlags.AlwaysUseWindowPadding);
             foreach (Node node in scene.Nodes)
             {
@@ -48,6 +65,7 @@ namespace Elemental.Tools.Panels
                 }
             }
             ImGui.EndChild();
+            ImGui.PopStyleVar();
         }
 
         private void DrawToolbar()

@@ -9,9 +9,9 @@ namespace DevoidEngine.Core
         public ISampler GPU => gpuSampler;
         private static Sampler @default = Create(new SamplerDescription()
         {
-            AddressU = WrapMode.MirrorRepeat,
-            AddressV = WrapMode.MirrorRepeat,
-            AddressW = WrapMode.MirrorRepeat,
+            AddressU = WrapMode.Repeat,
+            AddressV = WrapMode.Repeat,
+            AddressW = WrapMode.Repeat,
             MagFilter = FilterMode.Linear,
             MinFilter = FilterMode.Linear,
             MipFilter = FilterMode.Linear,

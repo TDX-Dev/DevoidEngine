@@ -216,7 +216,14 @@ namespace DevoidGPU.DX11
         {
             return new DX11DescriptorSet(layout);
         }
-
+        public IGPUTimestamp CreateGPUTimestamp()
+        {
+            return new DX11GPUTimestamp(device, device.ImmediateContext);
+        }
+        public IGPUTimestampDisjoint CreateGPUTimestampDisjoint()
+        {
+            return new DX11GPUTimestampDisjoint(device, device.ImmediateContext);
+        }
         public ICommandList GetCommandList()
         {
             cachedCommandList.Reset();

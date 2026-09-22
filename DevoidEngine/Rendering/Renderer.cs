@@ -51,8 +51,9 @@ namespace DevoidEngine.Rendering
         public MaterialInstance NullMaterialInstance { get; private set; } = null!;
         public Shader DefaultShader { get; private set; } = null!;
         public Shader InformationShader { get; private set; } = null!;
+        public Shader DownsampleShader { get; private set; } = null!;
         public MaterialInstance InformationMaterialInstance { get; private set; } = null!;
-
+        public MaterialInstance DownsampleMaterialInstance { get; private set; } = null!;
         public Shader VBAOShader {  get; private set; } = null!;
         public MaterialInstance VBAOMaterialInstance { get; private set; } = null!;
         public RenderTarget ViewportBlitTarget { get; private set; } = null!;
@@ -60,6 +61,7 @@ namespace DevoidEngine.Rendering
         public RenderTarget DebugRenderTarget { get; private set; } = null!;
         public RenderTarget InfoRenderTarget { get; private set; } = null!;
         public RenderTarget VBAORenderTarget { get; private set; } = null!;
+        public RenderTarget BlurRenderTarget { get; private set; } = null!;
         public UniformBuffer CameraBuffer { get; private set; } = null!;
         public UniformBuffer SceneBuffer { get; private set; } = null!;
         public UniformBuffer PerObjectBuffer { get; private set; } = null!;
@@ -109,6 +111,8 @@ namespace DevoidEngine.Rendering
         private Pool<RenderMeshData> gizmoRenderDataPool = null!;
         private readonly List<RenderMeshData> uiRenderCache = [];
         private readonly List<RenderMeshData> gizmoRenderCache = [];
+        
+        private Sampler DownsampleSampler = null!;
 
         private readonly Queue<Action<ICommandList>> pendingGpuCommands = [];
 
@@ -200,6 +204,9 @@ namespace DevoidEngine.Rendering
 
             InformationShader = Shader.FromDescriptorFile(Engine.GraphicsDevice, Path.Combine(Engine.BasePath, "Content/DevoidShaderDescriptors/information_pass.dsd"));
             InformationMaterialInstance = new MaterialInstance(new Material(InformationShader));
+
+            DownsampleShader = Shader.FromDescriptorFile(Engine.GraphicsDevice, Path.Combine(Engine.BasePath, "Content/DevoidShaderDescriptors/bloom_downsample_pass.dsd"));
+            DownsampleMaterialInstance = new MaterialInstance(new Material(DownsampleShader));
 
             VBAOShader = Shader.FromDescriptorFile(Engine.GraphicsDevice, Path.Combine(Engine.BasePath, "Content/DevoidShaderDescriptors/gtvbao.dsd"));
 
@@ -310,6 +317,7 @@ namespace DevoidEngine.Rendering
             DebugRenderTarget = RenderTarget.Create(1);
             InfoRenderTarget = RenderTarget.Create(3);
             VBAORenderTarget = RenderTarget.Create(1);
+            BlurRenderTarget = RenderTarget.Create(1);
 
             renderView = new RenderView();
 
@@ -320,6 +328,21 @@ namespace DevoidEngine.Rendering
             SkyRenderer = new SkyRenderer();
             GizmoRenderer = new GizmoRenderer();
             GizmoRenderer.Initialize(Engine.GraphicsDevice, Engine.BasePath);
+
+            DownsampleSampler = Sampler.Create(new SamplerDescription
+            {
+                AddressU = WrapMode.ClampToBorder,
+                AddressV = WrapMode.ClampToBorder,
+                AddressW = WrapMode.ClampToBorder,
+                MagFilter = FilterMode.Linear,
+                MinFilter = FilterMode.Linear,
+                MipFilter = FilterMode.Linear,
+                MinLOD = 0f,
+                MaxLOD = float.MaxValue,
+                MaxAnisotropy = 1
+            });
+
+            DownsampleMaterialInstance.SetSampler("INPUT_TEXTURESampler", DownsampleSampler);
 
             PostProcessor = new PostProcessor();
 
@@ -405,6 +428,10 @@ namespace DevoidEngine.Rendering
 
             RenderTarget activeTechniqueTarget = ActiveTechnique.Render(context, renderView);
 
+            context.SceneColor = activeTechniqueTarget.ColorTextures[0]!;
+
+            RenderSceneBlurPass(cmd, ref context);
+
             Texture finalColor = PostProcessor.Run(this, context, activeTechniqueTarget.ColorTextures[0]!, viewport.TargetScene.World.GetPostProcessSettings(viewport.ActiveCamera) ?? viewport.TargetScene.WorldEnvironmentNode?.PostProcessSettings ?? PostProcessSettings.Default);
 
             GizmoRenderer.Render(context, viewport, viewportResources);
@@ -459,8 +486,6 @@ namespace DevoidEngine.Rendering
             }
 
             ctx.CommandList.UnmapTexture(stagingTexture.GPU);
-
-            Console.WriteLine(identifier);
             return identifier;
         }
 
@@ -658,6 +683,8 @@ namespace DevoidEngine.Rendering
             context.CommandList.SetFramebuffer(InfoRenderTarget.GPU);
 
             context.CommandList.ClearColor(0, new Vector4(0, 0, 0, 1));
+            context.CommandList.ClearColor(1, new Vector4(0, 0, 0, 1));
+            context.CommandList.ClearColor(2, new Vector4(0, 0, 0, 1));
             context.CommandList.ClearDepthStencil(1, 0);
 
 
@@ -737,6 +764,41 @@ namespace DevoidEngine.Rendering
             context.SceneAO = AOTexture;
 
             PerCameraDescriptor.SetTexture(19, AOTexture.GPU);
+        }
+        public void RenderSceneBlurPass(ICommandList cmd, ref RenderContext context)
+        {
+            TextureDescription textureSceneBlurDescription = new()
+            {
+                Width = context.Viewport.Width / 2,
+                Height = context.Viewport.Height / 2,
+                Depth = 1,
+                Format = TextureFormat.RGBA16_Float,
+                Dimension = TextureDimension.Texture2D,
+                ArraySize = 1,
+                Samples = new TextureSampleDescription(1, 0),
+                MipLevels = 1,
+                Usage = TextureUsage.RenderTarget | TextureUsage.ShaderResource
+            };
+
+            Texture SceneBlurredHalfRes = context.Resources.GetOrCreateTexture("RENDERPASS_SCENE_BLURRED_HALF_RES", textureSceneBlurDescription);
+
+            DownsampleMaterialInstance.SetTexture("INPUT_TEXTURE", context.SceneColor);
+
+            DownsampleMaterialInstance.SetVector2("mipSize", new Vector2(context.Viewport.Width / 2, context.Viewport.Height / 2));
+
+            BlurRenderTarget.SetColorAttachment(0, SceneBlurredHalfRes);
+            PushViewport(cmd, new ViewportRect()
+            {
+                Width = context.Viewport.Width / 2,
+                Height = context.Viewport.Height / 2
+            });
+            cmd.SetFramebuffer(BlurRenderTarget.GPU);
+            API.RenderToScreen(cmd, DownsampleMaterialInstance);
+
+            PopViewport(cmd);
+
+            context.SceneColorBlurredHalfRes = SceneBlurredHalfRes;
+
         }
         public void UpdateCameraBuffer(CameraData cameraData)
         {
@@ -914,7 +976,13 @@ namespace DevoidEngine.Rendering
             throw new InvalidOperationException(
                 "Viewport was not registered, cannot be removed.");
         }
+        public RenderResourceCache? GetViewportResources(Viewport viewport)
+        {
+            if (RenderResources.TryGetValue(viewport, out var cache))
+                return cache;
 
+            return null;
+        }
         public void Dispose()
         {
             ActiveTechnique?.Dispose();

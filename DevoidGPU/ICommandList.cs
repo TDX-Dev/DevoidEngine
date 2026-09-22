@@ -10,6 +10,10 @@ namespace DevoidGPU
         void End();
         void Reset();
 
+        void BeginTimestampDisjoint(IGPUTimestampDisjoint query);
+        void EndTimestampDisjoint(IGPUTimestampDisjoint query);
+        void WriteTimestamp(IGPUTimestamp query);
+
         void SetViewport(int x, int y, int width, int height);
         void SetScissor(int x, int y, int width, int height);
 

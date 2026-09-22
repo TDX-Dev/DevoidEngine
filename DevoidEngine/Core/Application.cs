@@ -4,6 +4,7 @@
 #define DISPLAY_DEBUG_INFO
 
 using DevoidEngine.Imgui;
+using DevoidEngine.Profiling;
 using DevoidEngine.Rendering;
 using DevoidEngine.Util;
 using DevoidGPU;
@@ -109,6 +110,7 @@ namespace DevoidEngine.Core
             Console.WriteLine( "████  █████   █    ███  ███ ████ \t");
 #endif
 
+            Engine.Profiler.Initialize();
 
         }
 
@@ -130,9 +132,13 @@ namespace DevoidEngine.Core
                 systemInfoTimer += deltaTime;
                 Engine.Instance.FrameCount = numFrames;
 
+                bool anySurfaceNeedsRefresh = false;
+
                 foreach (var surface in surfaces)
                 {
                     surface.Window.PumpEvents();
+                    if (surface.SkipRefresh)
+                        anySurfaceNeedsRefresh = true;
                     if (surface == mainSurface)
                         Engine.InputSystem.Update(); // Only update main window, change for multi window support
                 }
@@ -180,6 +186,8 @@ namespace DevoidEngine.Core
 
                 foreach (var surface in surfaces)
                 {
+                    if (surface.SkipRefresh)
+                        continue;
                     surface.Present();
                 }
 
@@ -214,6 +222,9 @@ namespace DevoidEngine.Core
                 }
 
                 Engine.Profiler.CPU.EndScope();
+
+                if (anySurfaceNeedsRefresh)
+                    Thread.Sleep(16);
             }
 
             // Application loop terminated.

@@ -12,13 +12,13 @@ namespace Elemental
         {
             context.SceneService.NewScene();
 
-            Engine.Renderer.SkyRenderer.Sky = new HDRISky()
-            {
-                PanoramaTexture = Asset.Load<Texture>("HDRIs/soil_puresky.hdr")!
-            };
+            //Engine.Renderer.SkyRenderer.Sky = new HDRISky()
+            //{
+            //    PanoramaTexture = Asset.Load<Texture>("HDRIs/soil_puresky.hdr")!
+            //};
 
 
-            PackedScene cubeOnPlatform = Asset.Load<PackedScene>("models/backrooms_light_flare_test.gltf")!;
+            PackedScene cubeOnPlatform = Asset.Load<PackedScene>("models/devoid_map_test.gltf")!;
             Scene scene = cubeOnPlatform.Instantiate(context.SceneService.SceneDocument?.Scene);
 
             WorldEnvironmentNode wen = scene.CreateNode<WorldEnvironmentNode>();

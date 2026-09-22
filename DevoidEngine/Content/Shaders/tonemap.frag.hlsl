@@ -11,12 +11,13 @@ cbuffer Material : register(b5)
 {
     float exposure;
     float bloomIntensity;
-    int tonemapMode;
+    float anamorphicIntensity;
     
+    int tonemapMode;
     int bloomEnabled;
     int anamorphicBloomEnabled;
     
-    int2 _pad;
+    int _pad;
 };
 
 #define AGX_LOOK 2
@@ -202,12 +203,11 @@ Texture2D MAT_SceneColor : register(t0);
 Texture2D MAT_BloomColor : register(t1);
 Texture2D MAT_AnamorphicBloomColor : register(t2);
 
-SamplerState MAT_SceneColorSampler : register(s0);
-SamplerState MAT_BloomColorSampler : register(s1);
+SamplerState TonemapSampler : register(s0);
 
 float4 PSMain(PSInput input) : SV_Target0
 {
-    float3 hdr = MAT_SceneColor.Sample(MAT_SceneColorSampler, input.UV).rgb;
+    float3 hdr = MAT_SceneColor.Sample(TonemapSampler, input.UV).rgb;
     
     
     hdr *= exposure;
@@ -217,14 +217,14 @@ float4 PSMain(PSInput input) : SV_Target0
     
     if (bloomEnabled)
     {
-        float3 bloom = MAT_BloomColor.Sample(MAT_BloomColorSampler, input.UV).rgb;
+        float3 bloom = MAT_BloomColor.Sample(TonemapSampler, input.UV).rgb;
         hdr += (bloom) * bloomStrength * bloomIntensity;
     }
     
     if (anamorphicBloomEnabled)
     {
-        float3 anamorphicBloom = MAT_AnamorphicBloomColor.Sample(MAT_BloomColorSampler, input.UV).rgb;
-        hdr += (anamorphicBloom) * anamorphicBloomStrength * bloomIntensity;
+        float3 anamorphicBloom = MAT_AnamorphicBloomColor.Sample(TonemapSampler, input.UV).rgb;
+        hdr += (anamorphicBloom) * anamorphicBloomStrength * anamorphicIntensity;
     }
     
     float3 ldr = TonemapFilmic(hdr);
