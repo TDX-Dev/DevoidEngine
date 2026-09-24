@@ -1,5 +1,4 @@
-﻿using DevoidEngine.Nodes;
-using Elemental.Tools;
+﻿using Elemental.Tools;
 using Elemental.Tools.EditorActions;
 using Elemental.Tools.EditorServices;
 using Elemental.Tools.Menu;
@@ -21,12 +20,10 @@ namespace Elemental
         public Toolbar Toolbar = null!;
         public ShortcutManager Shortcuts = null!;
         public EditorActionRegistry EditorActions = null!;
-        public SceneService SceneService = null!;
 
         public EditorCamera? Camera;
         
         public Vector2 MousePosition = new();
-        public Node? SelectedNode;
 
     }
 }

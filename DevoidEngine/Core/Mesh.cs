@@ -1,12 +1,11 @@
-﻿using DevoidEngine.Assets;
-using DevoidEngine.Attributes;
+﻿using DevoidEngine.Attributes;
 using DevoidEngine.Util;
 using DevoidGPU;
 
 namespace DevoidEngine.Core
 {
     [DevoidClass]
-    public sealed class Mesh : AssetType
+    public sealed class Mesh : IDisposable
     {
         public ResourceUsage Usage { get; }
 
@@ -64,7 +63,7 @@ namespace DevoidEngine.Core
                 surface.DrawInstanced(cmd, instanceCount);
         }
 
-        public override void Dispose()
+        public void Dispose()
         {
             foreach (MeshSurface surface in Surfaces)
                 surface.Dispose();

@@ -1,14 +1,9 @@
-﻿using DevoidEngine.AssetPipeline;
-using DevoidEngine.Audio;
+﻿using DevoidEngine.Audio;
 using DevoidEngine.Audio.SoLoud;
 using DevoidEngine.Gizmos;
 using DevoidEngine.InputSystem;
-using DevoidEngine.Logging;
-using DevoidEngine.Physics;
-using DevoidEngine.Physics.Bepu;
 using DevoidEngine.Profiling;
 using DevoidEngine.Rendering;
-using DevoidEngine.UI;
 using DevoidGPU;
 using DevoidGPU.DX11;
 
@@ -38,7 +33,6 @@ namespace DevoidEngine.Core
         public static Cursor Cursor => Instance.cursor;
         //public static PhysicsSystem PhysicsSystem => Instance.physicsSystem;
         public static AudioManager AudioSystem => Instance.audioSystem;
-        public static UISystem UISystem => Instance.uiSystem;
         public static GizmoSystem GizmoSystem => Instance.gizmoSystem;
 #if DEBUG
         public static string BasePath => BuildInfo.EngineRoot;
@@ -53,13 +47,10 @@ namespace DevoidEngine.Core
         public bool SimulatePhysics { get; set; } = true;
         public bool UseInterpolation { get; set; } = true;
         public TextureManager TextureManager { get; internal set; } = null!;
-        public SceneTree SceneTree { get; set; } = null!;
         public ViewportManager ViewportManager { get; internal set; } = null!;
         public VirtualFileSystem VirtualFileSystem { get; set; } = null!;
         public Version EngineVersion { get; set; } = null!;
         public Project ProjectSystem { get; set; } = null!;
-        public AssetDatabase AssetDatabase { get; set; } = null!;
-        public AssetManager AssetManager { get; set; } = null!;
 
         public GraphicsDeviceInfo GraphicsDeviceInfo { get; set; }
 
@@ -71,7 +62,6 @@ namespace DevoidEngine.Core
         private Input inputSystem = null!;
         //private PhysicsSystem physicsSystem = null!;
         private AudioManager audioSystem = null!;
-        private UISystem uiSystem = null!;
         private GizmoSystem gizmoSystem = null!;
 
         private Engine(EngineConfig config)
@@ -92,8 +82,6 @@ namespace DevoidEngine.Core
             cursor = new Cursor();
 
             ProjectSystem = new Project();
-            AssetDatabase = new AssetDatabase();
-            AssetManager = new AssetManager();
             TextureManager = new TextureManager();
         }
 
@@ -107,15 +95,11 @@ namespace DevoidEngine.Core
 
             instance.renderer.Initialize(config.RendererConfig);
             instance.ViewportManager = new ViewportManager();
-            instance.SceneTree = new SceneTree();
             instance.inputSystem = new Input();
             instance.audioSystem = new AudioManager(new SoLoudAudioBackend());
-            instance.uiSystem = new UISystem();
             instance.gizmoSystem = new GizmoSystem();
 
             instance.VirtualFileSystem = new VirtualFileSystem();
-
-            instance.uiSystem.Initialize();
             instance.gizmoSystem.Initialize();
 
         }

@@ -31,7 +31,7 @@ namespace Elemental
             EditorLayer editor = new();
             devoidApplication.AddLayer(editor);
 
-            Engine.Instance.ProjectSystem.Load("D:/Devoid Engine/DevoidProject/new_project.devoid");
+            //Engine.Instance.ProjectSystem.Load("D:/Devoid Engine/DevoidProject/new_project.devoid");
 
             devoidApplication.Run();
         }

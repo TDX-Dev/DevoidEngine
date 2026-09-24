@@ -229,7 +229,6 @@ namespace DevoidEngine.Core
 
             // Application loop terminated.
             layerManager.DetachLayers();
-            Engine.Instance.SceneTree.Dispose();
             Engine.Instance.ProjectSystem.Unload();
             Engine.AudioSystem.Dispose();
             Engine.Renderer.Dispose();
@@ -239,7 +238,6 @@ namespace DevoidEngine.Core
         void FixedUpdate(float deltaTime)
         {
             layerManager.FixedUpdateLayers(deltaTime);
-            Engine.Instance.SceneTree.FixedUpdateScenes(deltaTime);
         }
 
         void Update(float deltaTime)
@@ -247,16 +245,13 @@ namespace DevoidEngine.Core
             layerManager.UpdateLayers(deltaTime);
 
             List<Viewport> viewports = Engine.Instance.ViewportManager.GetViewports();
-            Engine.UISystem.Update(deltaTime, viewports);
             Engine.GizmoSystem.Update(deltaTime, viewports);
 
-            Engine.Instance.SceneTree.UpdateScenes(deltaTime);
         }
 
         void Render(ICommandList cmd, WindowSurface surface)
         {
             layerManager.RenderLayers(cmd);
-            Engine.Instance.SceneTree.RenderScenes();
 
             Engine.Renderer.PrepareGlobalFrame(cmd);
             Engine.Instance.ViewportManager.RenderAll(cmd);

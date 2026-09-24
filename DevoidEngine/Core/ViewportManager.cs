@@ -78,13 +78,13 @@ namespace DevoidEngine.Core
 
             for (int i = 0; i < viewports.Count; i++)
             {
-                Viewport viewport = viewports[i];
+                //Viewport viewport = viewports[i];
 
 
-                if (viewport.TargetScene == null || viewport.ActiveCamera == null || !viewport.Render)
-                    continue;
+                //if (viewport.TargetScene == null || viewport.ActiveCamera == null || !viewport.Render)
+                //    continue;
 
-                Engine.Renderer.Render(cmd, viewport);
+                //Engine.Renderer.Render(cmd, viewport);
             }
         }
 

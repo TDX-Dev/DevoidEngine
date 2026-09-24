@@ -23,14 +23,9 @@ namespace Elemental
                 Toolbar = new(),
                 Shortcuts = new(),
                 EditorActions = new(),
-                SceneService = new(),
             };
 
             Context.PanelManager.AddPanel(new MapEditorPanel());
-            Context.PanelManager.AddPanel(new SceneViewPanel());
-            Context.PanelManager.AddPanel(new GameViewPanel());
-            Context.PanelManager.AddPanel(new OutlinerPanel());
-            Context.PanelManager.AddPanel(new InspectorPanel());
             Context.PanelManager.AddPanel(new AssetBrowserPanel());
             Context.PanelManager.ProcessPendingChanges(Context);
         }
@@ -51,7 +46,6 @@ namespace Elemental
                 Execute = () =>
                 {
                     DevoidLog.Info(LogCategory.Editor, "Saving scene");
-                    Context.SceneService.SaveScene();
                 },
             };
 
@@ -64,11 +58,11 @@ namespace Elemental
                 EditorAction = action
             });
 
-            Context.SceneService.OnSceneChanged += scene =>
-            {
-                Context.PanelManager.GetPanel<SceneViewPanel>()!.Viewport.TargetScene = scene;
-                Context.PanelManager.GetPanel<GameViewPanel>()!.Viewport.TargetScene = scene;
-            };
+            //Context.SceneService.OnSceneChanged += scene =>
+            //{
+            //    Context.PanelManager.GetPanel<SceneViewPanel>()!.Viewport.TargetScene = scene;
+            //    Context.PanelManager.GetPanel<GameViewPanel>()!.Viewport.TargetScene = scene;
+            //};
 
 
             EditorTestingScene.LoadTestScene(Context);

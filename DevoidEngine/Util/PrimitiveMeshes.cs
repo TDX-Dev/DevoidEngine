@@ -94,8 +94,7 @@ namespace DevoidEngine.Util
 
             mesh.Surfaces = [surface];
             mesh.Upload();
-
-            return Engine.Instance.AssetManager.RegisterPersistentResource(mesh);
+            return mesh;
         }
 
         public static Mesh CreateCube()

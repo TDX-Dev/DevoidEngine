@@ -1,12 +1,10 @@
-﻿using Assimp.Unmanaged;
-using DevoidEngine.Assets;
-using DevoidGPU;
+﻿using DevoidGPU;
 using System.Numerics;
 using System.Runtime.InteropServices;
 
 namespace DevoidEngine.Core
 {
-    public sealed class Material : AssetType
+    public sealed class Material : IDisposable
     {
         public Shader Shader { get; }
         public BlendMode BlendMode { get; set; } = BlendMode.Opaque;
@@ -188,7 +186,7 @@ namespace DevoidEngine.Core
             MemoryMarshal.Write(span, in value);
         }
 
-        public override void Dispose()
+        public void Dispose()
         {
             foreach (var texture in textures)
             {

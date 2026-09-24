@@ -65,13 +65,11 @@ namespace DevoidEngine.Core
             LoadSettings();
 
             Engine.Instance.VirtualFileSystem.Initialize();
-            Engine.Instance.AssetDatabase.Initialize();
 
         }
 
         public void Unload()
         {
-            Engine.Instance.AssetDatabase.SaveDatabase();
         }
 
         private void LoadSettings()

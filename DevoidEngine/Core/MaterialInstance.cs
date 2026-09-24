@@ -1,11 +1,10 @@
 ﻿using DevoidGPU;
-using DevoidEngine.Assets;
 using System.Numerics;
 using System.Runtime.InteropServices;
 
 namespace DevoidEngine.Core
 {
-    public class MaterialInstance : AssetType
+    public class MaterialInstance : IDisposable
     {
         public Material BaseMaterial { get; }
         public IDescriptorSet DescriptorSet
@@ -271,7 +270,7 @@ namespace DevoidEngine.Core
         }
 
 
-        public override void Dispose()
+        public void Dispose()
         {
             if (disposed)
                 return;

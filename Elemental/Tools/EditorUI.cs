@@ -1,6 +1,4 @@
-﻿using DevoidEngine.AssetPipeline;
-using DevoidEngine.AssetPipeline.Loaders;
-using DevoidEngine.Attributes;
+﻿using DevoidEngine.Attributes;
 using DevoidEngine.Core;
 using DevoidGPU;
 using ImGuiNET;
@@ -18,21 +16,21 @@ namespace Elemental.Tools
 {
     public static class EditorUI
     {
-        private static readonly MethodInfo LoadPathMethod =
-            typeof(Asset)
-                .GetMethods(BindingFlags.Public | BindingFlags.Static)
-                .First(m =>
-                {
-                    if (m.Name != nameof(Asset.Load) ||
-                        !m.IsGenericMethodDefinition)
-                        return false;
+        //private static readonly MethodInfo LoadPathMethod =
+        //    typeof(Asset)
+        //        .GetMethods(BindingFlags.Public | BindingFlags.Static)
+        //        .First(m =>
+        //        {
+        //            if (m.Name != nameof(Asset.Load) ||
+        //                !m.IsGenericMethodDefinition)
+        //                return false;
 
-                    ParameterInfo[] parameters = m.GetParameters();
+        //            ParameterInfo[] parameters = m.GetParameters();
 
-                    return parameters.Length == 2 &&
-                           parameters[0].ParameterType == typeof(string) &&
-                           parameters[1].ParameterType == typeof(bool);
-                });
+        //            return parameters.Length == 2 &&
+        //                   parameters[0].ParameterType == typeof(string) &&
+        //                   parameters[1].ParameterType == typeof(bool);
+        //        });
         private static readonly HashSet<MaterialInstance> openMaterialEditors = [];
 
         static void HandleMouseWrap()
@@ -262,10 +260,6 @@ namespace Elemental.Tools
 
             if (prop.GetIndexParameters().Length > 0)
                 return false;
-
-            if (prop.PropertyType == typeof(MaterialInstance))
-                return DrawMaterialInstanceProperty(prop, target);
-
             if (prop.PropertyType == typeof(int))
                 return DrawIntProperty(prop, target);
 
@@ -593,18 +587,17 @@ namespace Elemental.Tools
 
                 if (assetPayload.NativePtr != null)
                 {
-                    string path = Encoding.UTF8.GetString(
-                        (byte*)assetPayload.Data,
-                        assetPayload.DataSize
-                    );
+                    //string path = Encoding.UTF8.GetString(
+                    //    (byte*)assetPayload.Data,
+                    //    assetPayload.DataSize
+                    //);
 
-                    if (SupportsAssetType(type))
-                    {
-                        MethodInfo loadMethod =
-                            LoadPathMethod.MakeGenericMethod(type);
+                    //if (SupportsAssetType(type))
+                    //{
+                    //    MethodInfo loadMethod = LoadPathMethod.MakeGenericMethod(type);
 
-                        result = loadMethod.Invoke(null, [path, true]);
-                    }
+                    //    result = loadMethod.Invoke(null, [path, true]);
+                    //}
                 }
 
                 ImGui.EndDragDropTarget();
@@ -613,10 +606,10 @@ namespace Elemental.Tools
             return result;
         }
 
-        static bool SupportsAssetType(Type type)
-        {
-            return AssetLoaderRegistry.HasLoader(type);
-        }
+        //static bool SupportsAssetType(Type type)
+        //{
+        //    return AssetLoaderRegistry.HasLoader(type);
+        //}
 
 
         #endregion
@@ -791,258 +784,6 @@ namespace Elemental.Tools
             return changed;
         }
 
-        public static bool DrawMaterialInstanceProperty(PropertyInfo property, object target)
-        {
-            if (property.GetValue(target) is not MaterialInstance material)
-            {
-                ImGui.BeginDisabled();
-
-                ImGui.Button(
-                    $"None ({nameof(MaterialInstance)})",
-                    new Vector2(-1, 0));
-
-                ImGui.EndDisabled();
-
-                return false;
-            }
-
-            ImGui.SetNextItemWidth(-1);
-            ImGui.Button("Material", new Vector2(-1, 0));
-
-            if (ImGui.IsItemHovered() &&
-                ImGui.IsMouseDoubleClicked(ImGuiMouseButton.Left))
-            {
-                openMaterialEditors.Add(material);
-            }
-
-            return false;
-        }
-
         #endregion
-
-        public static void DrawMaterialInstanceEditors()
-        {
-            foreach (var material in openMaterialEditors)
-            {
-                DrawMaterialInstanceEditorWindow(material);
-            }
-        }
-
-        private static void DrawMaterialInstanceEditorWindow(MaterialInstance material)
-        {
-            bool open = true;
-
-            string title =
-                $"Material Instance###{material.GetHashCode()}";
-
-            if (ImGui.Begin(title, ref open))
-            {
-                ImGui.TextUnformatted("Material Instance");
-                ImGui.Separator();
-
-                ImGui.TextUnformatted($"Shader: {material.BaseMaterial.Shader.Name}");
-
-                ImGui.Spacing();
-
-                DrawMaterialInstanceEditor(material);
-            }
-
-            ImGui.End();
-
-            if (!open)
-                openMaterialEditors.Remove(material);
-        }
-
-        private static bool DrawMaterialInstanceEditor(MaterialInstance material)
-        {
-            bool changed = false;
-
-            if (ImGui.BeginTable(
-                "MaterialProperties",
-                2,
-                ImGuiTableFlags.SizingStretchProp |
-                ImGuiTableFlags.BordersInnerV))
-            {
-                ImGui.TableSetupColumn(
-                    "Property",
-                    ImGuiTableColumnFlags.WidthFixed,
-                    140);
-
-                ImGui.TableSetupColumn(
-                    "Value",
-                    ImGuiTableColumnFlags.WidthStretch);
-
-                foreach (var variable in material.BaseMaterial.GetVariables())
-                {
-                    ImGui.TableNextRow();
-
-                    ImGui.TableSetColumnIndex(0);
-                    ImGui.TextUnformatted(variable.Key);
-
-                    ImGui.TableSetColumnIndex(1);
-
-                    if (DrawMaterialVariable(
-                        material,
-                        variable.Key,
-                        variable.Value))
-                    {
-                        changed = true;
-                    }
-                }
-
-                foreach (var texture in material.BaseMaterial.GetTextureBindings())
-                {
-                    ImGui.TableNextRow();
-
-                    ImGui.TableSetColumnIndex(0);
-                    ImGui.TextUnformatted(texture.Key);
-
-                    ImGui.TableSetColumnIndex(1);
-
-                    if (DrawMaterialTexture(material, texture.Key))
-                        changed = true;
-                }
-
-                ImGui.EndTable();
-            }
-
-            return changed;
-        }
-
-        private static bool DrawMaterialVariable(
-            MaterialInstance material,
-            string name,
-            ShaderVariableInfo info)
-        {
-            ReadOnlySpan<byte> raw =
-                material.GetRawValue(name);
-
-            switch (info.Type)
-            {
-                case ShaderVariableType.Float:
-                    {
-                        float value = MemoryMarshal.Read<float>(raw);
-
-                        if (ImGui.DragFloat(
-                            $"##{name}",
-                            ref value,
-                            0.01f))
-                        {
-                            material.SetFloat(name, value);
-                            return true;
-                        }
-
-                        break;
-                    }
-
-                case ShaderVariableType.Int:
-                    {
-                        int value = MemoryMarshal.Read<int>(raw);
-
-                        if (ImGui.DragInt(
-                            $"##{name}",
-                            ref value))
-                        {
-                            material.SetInt(name, value);
-                            return true;
-                        }
-
-                        break;
-                    }
-
-                case ShaderVariableType.Vector2:
-                    {
-                        Vector2 value = MemoryMarshal.Read<Vector2>(raw);
-
-                        if (ImGui.DragFloat2(
-                            $"##{name}",
-                            ref value,
-                            0.01f))
-                        {
-                            material.SetVector2(name, value);
-                            return true;
-                        }
-
-                        break;
-                    }
-
-                case ShaderVariableType.Vector3:
-                    {
-                        Vector3 value = MemoryMarshal.Read<Vector3>(raw);
-
-                        if (ImGui.DragFloat3(
-                            $"##{name}",
-                            ref value,
-                            0.01f))
-                        {
-                            material.SetVector3(name, value);
-                            return true;
-                        }
-
-                        break;
-                    }
-
-                case ShaderVariableType.Vector4:
-                    {
-                        Vector4 value = MemoryMarshal.Read<Vector4>(raw);
-
-                        if (ImGui.DragFloat4(
-                            $"##{name}",
-                            ref value,
-                            0.01f))
-                        {
-                            material.SetVector4(name, value);
-                            return true;
-                        }
-
-                        break;
-                    }
-
-                case ShaderVariableType.Matrix4x4:
-                    {
-                        ImGui.TextUnformatted(
-                            MemoryMarshal.Read<Matrix4x4>(raw).ToString());
-
-                        break;
-                    }
-
-                default:
-                    ImGui.TextUnformatted($"Unsupported: {info.Type}");
-                    break;
-            }
-
-            return false;
-        }
-
-        private static bool DrawMaterialTexture(MaterialInstance material, string name)
-        {
-            Texture? texture;
-
-            if (material.IsTextureOverridden(name))
-                texture = material.GetTextureOverride(name);
-            else
-                texture = material.BaseMaterial.GetDefaultTexture(name);
-
-            bool changed = false;
-
-            if (texture != null)
-            {
-                ImGui.TextUnformatted(texture.Guid.ToString());
-            }
-            else
-            {
-                ImGui.TextUnformatted("None");
-            }
-
-            ImGui.SameLine();
-
-            if (ImGui.SmallButton($"Clear##{name}"))
-            {
-                material.ClearTextureOverride(name);
-                changed = true;
-            }
-
-            return changed;
-        }
     }
 }

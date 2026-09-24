@@ -1,7 +1,6 @@
 ﻿using DevoidEngine.Core;
 using DevoidEngine.Rendering.PostProcessing;
 using DevoidEngine.Rendering.ProbeGI;
-using DevoidEngine.UI;
 using DevoidEngine.Util;
 using DevoidGPU;
 using System.Numerics;
@@ -200,7 +199,6 @@ namespace DevoidEngine.Rendering
             NullMaterial = new Material(NullShader);
             NullMaterialInstance = new MaterialInstance(NullMaterial);
 
-            Engine.Instance.AssetManager.RegisterPersistentResource(NullMaterial);
 
             InformationShader = Shader.FromDescriptorFile(Engine.GraphicsDevice, Path.Combine(Engine.BasePath, "Content/DevoidShaderDescriptors/information_pass.dsd"));
             InformationMaterialInstance = new MaterialInstance(new Material(InformationShader));
@@ -378,79 +376,77 @@ namespace DevoidEngine.Rendering
         public void Render(ICommandList cmd, Viewport viewport)
         {
 
-            ViewportBlitTarget.SetColorAttachment(0, viewport.OutputTexture!);
+            //ViewportBlitTarget.SetColorAttachment(0, viewport.OutputTexture!);
 
-            cmd.SetDescriptorSet(3, PerFrameDescriptor);
+            //cmd.SetDescriptorSet(3, PerFrameDescriptor);
 
-            cmd.SetFramebuffer(ViewportBlitTarget.GPU);
-            cmd.ClearColor(0, Colors.Transparent);
+            //cmd.SetFramebuffer(ViewportBlitTarget.GPU);
+            //cmd.ClearColor(0, Colors.Transparent);
 
-            if (viewport.ActiveCamera == null || ActiveTechnique == null)
-                return;
+            //if (viewport.ActiveCamera == null || ActiveTechnique == null)
+            //    return;
 
-            ExecutePendingGPUCommands(cmd);
+            //ExecutePendingGPUCommands(cmd);
 
-            PopViewport(cmd);
-            PushViewport(cmd, new ViewportRect()
-            {
-                Width = viewport.Width,
-                Height = viewport.Height,
-                X = 0,
-                Y = 0,
-            });
+            //PopViewport(cmd);
+            //PushViewport(cmd, new ViewportRect()
+            //{
+            //    Width = viewport.Width,
+            //    Height = viewport.Height,
+            //    X = 0,
+            //    Y = 0,
+            //});
 
 
-            Camera camera = viewport.ActiveCamera;
-            camera.UpdateProjectionMatrix(((float)viewport.Width) / viewport.Height);
+            //Camera camera = viewport.ActiveCamera;
+            //camera.UpdateProjectionMatrix(((float)viewport.Width) / viewport.Height);
 
-            RenderResourceCache viewportResources = RenderResources[viewport];
+            //RenderResourceCache viewportResources = RenderResources[viewport];
 
-            RenderContext context = new()
-            {
-                Viewport = viewport,
-                Camera = camera,
-                CommandList = cmd,
-                Renderer = this,
-                Resources = viewportResources
-            };
+            //RenderContext context = new()
+            //{
+            //    Viewport = viewport,
+            //    Camera = camera,
+            //    CommandList = cmd,
+            //    Renderer = this,
+            //    Resources = viewportResources
+            //};
 
-            SkyRenderer.Render(context);
+            //SkyRenderer.Render(context);
 
-            renderView.Clear();
-            viewport.TargetScene.World.BuildView(camera, ref renderView);
-            UpdateCameraBuffer(camera.GetCameraData(new Vector2(viewport.Width, viewport.Height)));
-            UpdateSceneData(renderView);
-            UpdateLights(renderView);
+            //renderView.Clear();
+            //viewport.TargetScene.World.BuildView(camera, ref renderView);
+            //UpdateCameraBuffer(camera.GetCameraData(new Vector2(viewport.Width, viewport.Height)));
+            //UpdateSceneData(renderView);
+            //UpdateLights(renderView);
 
-            RenderInformationPass(ref context, renderView);
+            //RenderInformationPass(ref context, renderView);
 
-            RenderVBAOPass(ref context);
+            //RenderVBAOPass(ref context);
 
-            RenderTarget activeTechniqueTarget = ActiveTechnique.Render(context, renderView);
+            //RenderTarget activeTechniqueTarget = ActiveTechnique.Render(context, renderView);
 
-            context.SceneColor = activeTechniqueTarget.ColorTextures[0]!;
+            //context.SceneColor = activeTechniqueTarget.ColorTextures[0]!;
 
-            RenderSceneBlurPass(cmd, ref context);
+            //RenderSceneBlurPass(cmd, ref context);
 
-            Texture finalColor = PostProcessor.Run(this, context, activeTechniqueTarget.ColorTextures[0]!, viewport.TargetScene.World.GetPostProcessSettings(viewport.ActiveCamera) ?? viewport.TargetScene.WorldEnvironmentNode?.PostProcessSettings ?? PostProcessSettings.Default);
+            //Texture finalColor = PostProcessor.Run(this, context, activeTechniqueTarget.ColorTextures[0]!, viewport.TargetScene.World.GetPostProcessSettings(viewport.ActiveCamera) ?? viewport.TargetScene.WorldEnvironmentNode?.PostProcessSettings ?? PostProcessSettings.Default);
 
-            GizmoRenderer.Render(context, viewport, viewportResources);
-            //RenderDebug(cmd, context, viewportResources);
-            RenderUI(cmd, viewport, viewportResources);
+            //GizmoRenderer.Render(context, viewport, viewportResources);
+            ////RenderDebug(cmd, context, viewportResources);
 
-            ViewportBlitTarget.SetColorAttachment(0, viewport.OutputTexture!);
-            cmd.SetFramebuffer(ViewportBlitTarget.GPU);
-            API.RenderToScreen(cmd, finalColor);
-            API.RenderToScreen(cmd, UIRenderTarget.ColorTextures[0]!);
-            API.RenderToScreen(cmd, DebugRenderTarget.ColorTextures[0]!);
-            API.RenderToScreen(cmd, GizmoRenderer.GizmoRenderTarget.ColorTextures[0]!);
+            //ViewportBlitTarget.SetColorAttachment(0, viewport.OutputTexture!);
+            //cmd.SetFramebuffer(ViewportBlitTarget.GPU);
+            //API.RenderToScreen(cmd, finalColor);
+            //API.RenderToScreen(cmd, DebugRenderTarget.ColorTextures[0]!);
+            //API.RenderToScreen(cmd, GizmoRenderer.GizmoRenderTarget.ColorTextures[0]!);
 
 
 
-            if (viewport.TryConsumeObjectPickRequest(out ObjectPickRequest request))
-            {
-                viewport.CompleteObjectPick(new ObjectPickResult(GetIdentifierAtLocation(context, request.Location)));
-            }
+            //if (viewport.TryConsumeObjectPickRequest(out ObjectPickRequest request))
+            //{
+            //    viewport.CompleteObjectPick(new ObjectPickResult(GetIdentifierAtLocation(context, request.Location)));
+            //}
         }
 
         public uint GetIdentifierAtLocation(RenderContext ctx, Vector2 location)
@@ -487,134 +483,6 @@ namespace DevoidEngine.Rendering
 
             ctx.CommandList.UnmapTexture(stagingTexture.GPU);
             return identifier;
-        }
-
-        public void RenderUI(ICommandList cmd, Viewport viewport, RenderResourceCache resources)
-        {
-            UIContext context = viewport.UIContext;
-            context.DrawList.Clear();
-
-            TextureDescription uiColorTexture = new()
-            {
-                Width = viewport.Width,
-                Height = viewport.Height,
-                Depth = 1,
-                Format = TextureFormat.RGBA8_UNorm,
-                Dimension = TextureDimension.Texture2D,
-                ArraySize = 1,
-                Samples = new TextureSampleDescription(1, 0),
-                MipLevels = 1,
-                Usage = TextureUsage.RenderTarget | TextureUsage.ShaderResource
-            };
-
-            Texture UIColorTexture = resources.GetOrCreateTexture("UI_RENDER_COLOR", uiColorTexture);
-
-            Matrix4x4 ortho = Matrix4x4.CreateOrthographicOffCenter(
-                0f, viewport.Width,
-                viewport.Height, 0f,
-                -1f, 1f
-            );
-
-            CameraData ScreenData = new()
-            {
-                View = Matrix4x4.Identity,
-                Projection = ortho,
-                CameraPosition = Vector3.Zero,
-                NearClip = -1f,
-                FarClip = 1f,
-                ScreenSize = new Vector2(viewport.Width, viewport.Height)
-            };
-
-            Matrix4x4.Invert(ortho, out ScreenData.InverseProjection);
-
-            UpdateCameraBuffer(ScreenData);
-
-            UIRenderTarget.SetColorAttachment(0, UIColorTexture);
-
-            cmd.SetFramebuffer(UIRenderTarget.GPU);
-
-            cmd.ClearColor(0, Vector4.Zero);
-
-            foreach (var canvas in context.Canvases)
-            {
-                canvas.Render(context.DrawList, 0);
-            }
-
-            List<UICommand> commands = context.DrawList.Commands;
-
-            Matrix4x4 cachedTransform = Matrix4x4.Identity;
-
-
-            for (var i = 0; i < commands.Count; i++)
-            {
-                var command = commands[i];
-
-                switch (command.Type)
-                {
-                    case UICommandType.PushTransform:
-                        {
-                            cachedTransform = command.Transform.Transform;
-                            break;
-                        }
-                    case UICommandType.PopTransform:
-                        {
-                            cachedTransform = Matrix4x4.Identity;
-                            break;
-                        }
-
-                    case UICommandType.Quad:
-                        {
-                            RenderMeshData meshData = uiRenderDataPool.Get();
-
-                            meshData.render_mesh = PrimitiveMeshes.GetQuad();
-                            meshData.render_material = command.Quad.Material;
-
-                            Matrix4x4 quadTransform =
-                                Matrix4x4.CreateScale(command.Quad.Rect.Size.X, command.Quad.Rect.Size.Y, 1) *
-                                Matrix4x4.CreateTranslation(command.Quad.PivotOffset.X, command.Quad.PivotOffset.Y, 0f) *
-                                Matrix4x4.CreateRotationZ(command.Quad.Rotation) *
-                                Matrix4x4.CreateTranslation(command.Quad.Rect.Position.X, command.Quad.Rect.Position.Y, UIResources.OrderEpsilon * command.Quad.Order) *
-                                cachedTransform;
-
-                            meshData.render_transform = quadTransform;
-
-                            uiRenderCache.Add(meshData);
-
-                            break;
-                        }
-
-                    case UICommandType.Text:
-                        {
-                            RenderMeshData meshData = uiRenderDataPool.Get();
-
-                            meshData.render_mesh = command.Text.TextMesh;
-                            meshData.render_material = command.Text.Material;
-
-                            Matrix4x4 quadTransform =
-                                //Matrix4x4.CreateScale(command.Text.Rect.Size.X, command.Text.Rect.Size.Y, 1) *
-                                Matrix4x4.CreateTranslation(command.Text.PivotOffset.X, command.Text.PivotOffset.Y, 0f) *
-                                Matrix4x4.CreateRotationZ(command.Text.Rotation) *
-                                Matrix4x4.CreateTranslation(command.Text.Rect.Position.X, command.Text.Rect.Position.Y, UIResources.OrderEpsilon * command.Text.Order) *
-                                cachedTransform;
-
-                            meshData.render_transform = quadTransform;
-
-                            uiRenderCache.Add(meshData);
-
-                            break;
-                        }
-                }
-            }
-
-            Execute(cmd, uiRenderCache);
-
-            for (var i = 0; i < uiRenderCache.Count; i++)
-            {
-                uiRenderDataPool.Return(uiRenderCache[i]);
-            }
-
-
-            uiRenderCache.Clear();
         }
         public void RenderInformationPass(ref RenderContext context, RenderView view)
         {
