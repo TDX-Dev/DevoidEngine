@@ -1,9 +1,4 @@
-﻿using DevoidEngine.Core;
-using DevoidEngine.Gizmos;
-using DevoidEngine.Rendering;
-using System;
-using System.Collections.Generic;
-using System.Numerics;
+﻿using System.Numerics;
 
 namespace DevoidEngine.Util
 {
@@ -347,14 +342,6 @@ namespace DevoidEngine.Util
                 maxDepth = Math.Max(maxDepth, GetMaxDepth(node.Right, depth + 1));
 
             return maxDepth;
-        }
-
-        public void DrawGizmos(GizmoContext context, GizmoMaterial material, int level)
-        {
-            if (nodes.Count == 0)
-                return;
-
-            DrawNodeGizmos(context, material, 0, 0, level);
         }
         static bool IntersectTriangle(Vector3 origin, Vector3 direction, Vector3 v0, Vector3 v1, Vector3 v2, out float distance)
         {
@@ -792,7 +779,7 @@ namespace DevoidEngine.Util
             }
         }
 
-        static Vector3 ClosestPointOnTriangle( Vector3 point, Vector3 a, Vector3 b, Vector3 c)
+        static Vector3 ClosestPointOnTriangle(Vector3 point, Vector3 a, Vector3 b, Vector3 c)
         {
             Vector3 ab = b - a;
             Vector3 ac = c - a;
@@ -868,94 +855,6 @@ namespace DevoidEngine.Util
             float w2 = vc * denominator;
 
             return a + ab * v2 + ac * w2;
-        }
-
-        void DrawNodeGizmos(GizmoContext context, GizmoMaterial material, int nodeIndex, int depth, int targetDepth)
-        {
-            BVHNode node = nodes[nodeIndex];
-
-            if (depth == targetDepth)
-            {
-                context.DrawList.AddWireBox(
-                    node.Bounds.min,
-                    node.Bounds.max,
-                    material);
-
-                return;
-            }
-
-            if (node.Left >= 0)
-            {
-                DrawNodeGizmos(
-                    context,
-                    material,
-                    node.Left,
-                    depth + 1,
-                    targetDepth);
-            }
-
-            if (node.Right >= 0)
-            {
-                DrawNodeGizmos(
-                    context,
-                    material,
-                    node.Right,
-                    depth + 1,
-                    targetDepth);
-            }
-        }
-
-        public void DrawAllGizmos(GizmoContext context, GizmoMaterial material)
-        {
-            if (nodes.Count == 0)
-                return;
-
-            DrawAllNodeGizmos(context, material, 0);
-        }
-
-        void DrawAllNodeGizmos(GizmoContext context, GizmoMaterial material, int nodeIndex)
-        {
-            BVHNode node = nodes[nodeIndex];
-
-            context.DrawList.AddWireBox(
-                node.Bounds.min,
-                node.Bounds.max,
-                material);
-
-            if (node.Left >= 0)
-                DrawAllNodeGizmos(context, material, node.Left);
-
-            if (node.Right >= 0)
-                DrawAllNodeGizmos(context, material, node.Right);
-        }
-
-        public void DrawLeafGizmos(GizmoContext context, GizmoMaterial material)
-        {
-            if (nodes.Count == 0)
-                return;
-
-            DrawLeafGizmos(context, material, 0);
-        }
-
-        void DrawLeafGizmos(GizmoContext context, GizmoMaterial material, int nodeIndex)
-        {
-            BVHNode node = nodes[nodeIndex];
-
-            if (node.Left < 0 && node.Right < 0)
-            {
-                context.DrawList.AddWireBox(
-                    node.Bounds.min,
-                    node.Bounds.max,
-                    material);
-
-                return;
-            }
-
-            if (node.Left >= 0)
-                DrawLeafGizmos(context, material, node.Left);
-
-            if (node.Right >= 0)
-                DrawLeafGizmos(context, material, node.Right);
         }
     }
 }

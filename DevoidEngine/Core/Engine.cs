@@ -1,7 +1,4 @@
-﻿using DevoidEngine.Audio;
-using DevoidEngine.Audio.SoLoud;
-using DevoidEngine.Gizmos;
-using DevoidEngine.InputSystem;
+﻿using DevoidEngine.InputSystem;
 using DevoidEngine.Profiling;
 using DevoidEngine.Rendering;
 using DevoidGPU;
@@ -31,9 +28,6 @@ namespace DevoidEngine.Core
         public static Input InputSystem => Instance.inputSystem;
         public static Renderer Renderer => Instance.renderer;
         public static Cursor Cursor => Instance.cursor;
-        //public static PhysicsSystem PhysicsSystem => Instance.physicsSystem;
-        public static AudioManager AudioSystem => Instance.audioSystem;
-        public static GizmoSystem GizmoSystem => Instance.gizmoSystem;
 #if DEBUG
         public static string BasePath => BuildInfo.EngineRoot;
 #else
@@ -41,7 +35,7 @@ namespace DevoidEngine.Core
 #endif
 
         public float InterpolationAlpha { get; set; } = 0;
-        public float TargetFramerate { get; } = 60f;
+        public float SimulationTargetFramerate { get; } = 60f;
         public uint FrameCount { get; internal set; } = 0;
         public float TimeScale { get; set; } = 1f;
         public bool SimulatePhysics { get; set; } = true;
@@ -60,9 +54,6 @@ namespace DevoidEngine.Core
         private readonly Cursor cursor;
 
         private Input inputSystem = null!;
-        //private PhysicsSystem physicsSystem = null!;
-        private AudioManager audioSystem = null!;
-        private GizmoSystem gizmoSystem = null!;
 
         private Engine(EngineConfig config)
         {
@@ -96,11 +87,8 @@ namespace DevoidEngine.Core
             instance.renderer.Initialize(config.RendererConfig);
             instance.ViewportManager = new ViewportManager();
             instance.inputSystem = new Input();
-            instance.audioSystem = new AudioManager(new SoLoudAudioBackend());
-            instance.gizmoSystem = new GizmoSystem();
 
             instance.VirtualFileSystem = new VirtualFileSystem();
-            instance.gizmoSystem.Initialize();
 
         }
     }

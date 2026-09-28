@@ -90,7 +90,6 @@ namespace DevoidEngine.Rendering
             PlaneMesh = PrimitiveMeshes.GetFullscreenPlane();
 
             Environment = new();
-            Sky = new HDRISky();
 
             skyMeshData = new RenderMeshData
             {
@@ -122,7 +121,8 @@ namespace DevoidEngine.Rendering
                 PrefilterResolution,
                 TextureFormat.RGBA16_Float,
                 TextureUsage.RenderTarget | TextureUsage.ShaderResource,
-                PrefilterMipLevels);
+                PrefilterMipLevels
+            );
 
             BRDFLutTexture = Texture.Create2D(BRDFLutResolution, BRDFLutResolution, TextureFormat.RG16_Float, TextureUsage.RenderTarget | TextureUsage.ShaderResource);
 
@@ -135,7 +135,8 @@ namespace DevoidEngine.Rendering
                 32,
                 TextureFormat.RGBA16_Float,
                 TextureUsage.UnorderedAccess |
-                TextureUsage.ShaderResource);
+                TextureUsage.ShaderResource
+                );
 
             ProjectToSHPipeline = ProjectToSHMaterial.BaseMaterial.DefaultPass.GetComputePipeline();
 

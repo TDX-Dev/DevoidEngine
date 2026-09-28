@@ -37,6 +37,7 @@ namespace DevoidEngine.Core
             Swapchain = device.CreateSwapchain(desc);
             Window.OnWindowResize += Window_Resize;
             Window.Minimized += Window_Minimized;
+            Window.Maximized += Window_Maximized;
             window.OnWindowTextInput += Window_OnWindowTextInput;
             window.OnWindowKeyDown += Window_OnWindowKeyDown;
             window.OnWindowKeyUp += Window_OnWindowKeyUp;
@@ -63,6 +64,11 @@ namespace DevoidEngine.Core
         private void Window_Minimized(OpenTK.Windowing.Common.MinimizedEventArgs obj)
         {
             isMinimized = obj.IsMinimized;
+        }
+
+        private void Window_Maximized(OpenTK.Windowing.Common.MaximizedEventArgs obj)
+        {
+            isMinimized = !obj.IsMaximized;
         }
 
         private void Window_Resize(int width, int height)

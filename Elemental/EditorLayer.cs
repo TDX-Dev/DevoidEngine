@@ -70,7 +70,7 @@ namespace Elemental
 
         void RegisterPanels(EditorContext context)
         {
-            
+
         }
 
         public override void OnUpdate(float deltaTime)

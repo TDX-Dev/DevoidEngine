@@ -1,7 +1,5 @@
-﻿using DevoidEngine.Core;
-using DevoidEngine.Rendering;
+﻿using DevoidEngine.Rendering;
 using DevoidGPU;
-using System.Collections.Generic;
 
 namespace DevoidEngine.Core
 {

@@ -53,7 +53,7 @@ namespace DevoidEngine.Rendering
         public Shader DownsampleShader { get; private set; } = null!;
         public MaterialInstance InformationMaterialInstance { get; private set; } = null!;
         public MaterialInstance DownsampleMaterialInstance { get; private set; } = null!;
-        public Shader VBAOShader {  get; private set; } = null!;
+        public Shader VBAOShader { get; private set; } = null!;
         public MaterialInstance VBAOMaterialInstance { get; private set; } = null!;
         public RenderTarget ViewportBlitTarget { get; private set; } = null!;
         public RenderTarget UIRenderTarget { get; private set; } = null!;
@@ -66,7 +66,6 @@ namespace DevoidEngine.Rendering
         public UniformBuffer PerObjectBuffer { get; private set; } = null!;
         public UniformBuffer PerFrameBuffer { get; private set; } = null!;
         public SkyRenderer SkyRenderer { get; private set; } = null!;
-        public GizmoRenderer GizmoRenderer { get; private set; } = null!;
         public PostProcessor PostProcessor { get; private set; } = null!;
         public ProbeGISystem ProbeGISystem { get; private set; } = null!;
         public ProbeGISettings ProbeGISettings
@@ -110,7 +109,7 @@ namespace DevoidEngine.Rendering
         private Pool<RenderMeshData> gizmoRenderDataPool = null!;
         private readonly List<RenderMeshData> uiRenderCache = [];
         private readonly List<RenderMeshData> gizmoRenderCache = [];
-        
+
         private Sampler DownsampleSampler = null!;
 
         private readonly Queue<Action<ICommandList>> pendingGpuCommands = [];
@@ -324,8 +323,6 @@ namespace DevoidEngine.Rendering
             DirectionalLightBuffer = ShaderStorageBuffer<GPUDirectionalLight>.Create(ResourceUsage.Dynamic, Renderer.MAX_DIRECTIONAL_LIGHTS);
 
             SkyRenderer = new SkyRenderer();
-            GizmoRenderer = new GizmoRenderer();
-            GizmoRenderer.Initialize(Engine.GraphicsDevice, Engine.BasePath);
 
             DownsampleSampler = Sampler.Create(new SamplerDescription
             {
@@ -855,7 +852,6 @@ namespace DevoidEngine.Rendering
         {
             ActiveTechnique?.Dispose();
             SkyRenderer.Dispose();
-            GizmoRenderer.Dispose();
 
             DefaultMaterial.Dispose();
             NullMaterial.Dispose();

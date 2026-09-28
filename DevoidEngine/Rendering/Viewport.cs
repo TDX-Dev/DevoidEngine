@@ -1,8 +1,6 @@
 ﻿using DevoidEngine.Core;
-using DevoidEngine.Gizmos;
 using DevoidEngine.Util;
 using DevoidGPU;
-using System;
 using System.Numerics;
 
 namespace DevoidEngine.Rendering
@@ -16,7 +14,6 @@ namespace DevoidEngine.Rendering
         // This will cause a problem where the viewport only targets the main camera, so having multiple cameras for splitscreen for example, will not work.
         public Camera? ActiveCamera => CameraOverride;// ?? TargetScene?.MainCamera?.GetCamera();
         //public Scene TargetScene { get; set; } = null!;
-        public GizmoContext GizmoContext { get; private set; }
         public Camera? CameraOverride { get; set; }
 
         public Texture? OutputTexture { get; private set; } = null;
@@ -29,11 +26,6 @@ namespace DevoidEngine.Rendering
         {
             Width = width;
             Height = height;
-
-            GizmoContext = new()
-            {
-                Viewport = this,
-            };
 
             Engine.Renderer.RegisterViewport(this);
 

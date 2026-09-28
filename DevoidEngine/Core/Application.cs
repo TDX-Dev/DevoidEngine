@@ -4,7 +4,6 @@
 #define DISPLAY_DEBUG_INFO
 
 using DevoidEngine.Imgui;
-using DevoidEngine.Profiling;
 using DevoidEngine.Rendering;
 using DevoidEngine.Util;
 using DevoidGPU;
@@ -103,11 +102,11 @@ namespace DevoidEngine.Core
 
 
 #if DISPLAY_DEBUG_INFO
-            Console.WriteLine( "████  █████ █   █  ███  ███ ████ \t");
+            Console.WriteLine("████  █████ █   █  ███  ███ ████ \t");
             Console.WriteLine($"█   █ █     █   █ █   █  █  █   █ \tDevoid Version: {Engine.Instance.EngineVersion}");
             Console.WriteLine($"█   █ ████  █   █ █   █  █  █   █ \tRenderer: {Engine.Renderer.ActiveTechnique}");
             Console.WriteLine($"█   █ █      █ █  █   █  █  █   █ \tRendering Backend: {specification.API}");
-            Console.WriteLine( "████  █████   █    ███  ███ ████ \t");
+            Console.WriteLine("████  █████   █    ███  ███ ████ \t");
 #endif
 
             Engine.Profiler.Initialize();
@@ -127,90 +126,57 @@ namespace DevoidEngine.Core
                 Engine.Profiler.CPU.BeginScope("APPLICATION_LOOP");
 
                 float timescale = Engine.Instance.TimeScale;
-                float targetDeltaTime = 1 / Engine.Instance.TargetFramerate;
+                float simulationTargetDeltaTime = 1 / Engine.Instance.SimulationTargetFramerate;
                 float deltaTime = (float)frameTimer.GetElapsedSeconds();
                 systemInfoTimer += deltaTime;
                 Engine.Instance.FrameCount = numFrames;
 
-                bool anySurfaceNeedsRefresh = false;
-
-                foreach (var surface in surfaces)
+                mainSurface.Window.PumpEvents();
+                if (!mainSurface.SkipRefresh)
                 {
-                    surface.Window.PumpEvents();
-                    if (surface.SkipRefresh)
-                        anySurfaceNeedsRefresh = true;
-                    if (surface == mainSurface)
-                        Engine.InputSystem.Update(); // Only update main window, change for multi window support
+                    Engine.InputSystem.Update();
                 }
 
-                Engine.AudioSystem.Update();
-
-                deltaTimeAccumulator += deltaTime;
-                while (deltaTimeAccumulator >= targetDeltaTime)
+                deltaTimeAccumulator += Math.Min(deltaTime, 0.25f);
+                while (deltaTimeAccumulator >= simulationTargetDeltaTime)
                 {
-                    FixedUpdate(targetDeltaTime * timescale);
-                    deltaTimeAccumulator -= targetDeltaTime;
+                    FixedUpdate(simulationTargetDeltaTime * timescale);
+                    deltaTimeAccumulator -= simulationTargetDeltaTime;
                 }
 
-                float alpha = deltaTimeAccumulator / targetDeltaTime;
+                float alpha = deltaTimeAccumulator / simulationTargetDeltaTime;
                 alpha = Math.Clamp(alpha, 0f, 1f);
                 Engine.Instance.InterpolationAlpha = alpha;
 
                 Update(deltaTime * timescale);
-                
 
-                ICommandList cmd = Engine.GraphicsDevice.GetCommandList();
-                cmd.Begin();
-
-                foreach (var surface in surfaces)
+                if (!mainSurface.SkipRefresh)
                 {
-                    if (surface.SkipRefresh)
-                        continue;
-                    surface.UpdateSurface(deltaTime);
-                    cmd.SetFramebuffer(surface.Framebuffer);
+                    ICommandList cmd = Engine.GraphicsDevice.GetCommandList();
+                    cmd.Begin();
+
+                    cmd.SetFramebuffer(mainSurface.Framebuffer);
                     cmd.ClearColor(0, Colors.Black);
-                    if (surface == mainSurface)
-                    {
-                        ImguiRenderer.BeginFrame(surface, deltaTime);
-                        UpdateCursor();
-                        Render(cmd, surface);
-                        Engine.InputSystem.EndFrame();
-                    }
 
-                    surface.RenderSurface(cmd);
+                    ImguiRenderer.BeginFrame(mainSurface, deltaTime);
+                    UpdateCursor();
+                    Render(cmd, mainSurface);
+                    Engine.InputSystem.EndFrame();
 
-                }
-                cmd.SetScissor(0, 0, 1280, 720);
-                cmd.End();
-                Engine.GraphicsDevice.Submit(cmd);
+                    cmd.End();
+                    Engine.GraphicsDevice.Submit(cmd);
 
-                foreach (var surface in surfaces)
-                {
-                    if (surface.SkipRefresh)
-                        continue;
-                    surface.Present();
+                    mainSurface.Present();
                 }
 
-                Engine.GraphicsDevice.Submit(cmd);
-
-                for (int i = surfaces.Count - 1; i >= 0; i--)
+                if (mainSurface.Window.IsExiting)
                 {
-                    var surface = surfaces[i];
-
-                    if (surface.Window.IsExiting)
-                    {
-                        surface.Window.Close();
-                        surface.Dispose();
-                        surfaces.RemoveAt(i);
-                    }
-                    else if (!surface.Window.IsVisible)
-                        surface.Window.IsVisible = true;
-                }
-
-                if (surfaces.Count == 0)
-                {
+                    mainSurface.Window.Close();
+                    mainSurface.Dispose();
                     isRunning = false;
                 }
+                else if (!mainSurface.Window.IsVisible)
+                    mainSurface.Window.IsVisible = true;
 
                 numFrames++;
 
@@ -223,14 +189,13 @@ namespace DevoidEngine.Core
 
                 Engine.Profiler.CPU.EndScope();
 
-                if (anySurfaceNeedsRefresh)
+                if (mainSurface.SkipRefresh)
                     Thread.Sleep(16);
             }
 
             // Application loop terminated.
             layerManager.DetachLayers();
             Engine.Instance.ProjectSystem.Unload();
-            Engine.AudioSystem.Dispose();
             Engine.Renderer.Dispose();
             Engine.GraphicsDevice.Dispose();
         }
@@ -243,10 +208,6 @@ namespace DevoidEngine.Core
         void Update(float deltaTime)
         {
             layerManager.UpdateLayers(deltaTime);
-
-            List<Viewport> viewports = Engine.Instance.ViewportManager.GetViewports();
-            Engine.GizmoSystem.Update(deltaTime, viewports);
-
         }
 
         void Render(ICommandList cmd, WindowSurface surface)
