@@ -5,7 +5,7 @@ namespace DevoidEngine.Util
 {
     internal static partial class WindowUtil
     {
-        private const int DWMWA_USE_IMMERSIVE_DARK_MODE = 20;
+        private const int DwmwaUseImmersiveDarkMode = 20;
 
         private enum PreferredAppMode
         {
@@ -56,7 +56,7 @@ namespace DevoidEngine.Util
             bool darkModeEnabled = true;
             int hr = DwmSetWindowAttribute(
                 windowHandle,
-                DWMWA_USE_IMMERSIVE_DARK_MODE,
+                DwmwaUseImmersiveDarkMode,
                 ref darkModeEnabled,
                 Marshal.SizeOf<bool>()
             );
@@ -76,8 +76,8 @@ namespace DevoidEngine.Util
                 IntPtr procAddress = GetProcAddress(hUxtheme, "#135");
                 if (procAddress != IntPtr.Zero)
                 {
-                    SetPreferredAppModeDelegate SetPreferredAppMode = Marshal.GetDelegateForFunctionPointer<SetPreferredAppModeDelegate>(procAddress);
-                    SetPreferredAppMode(PreferredAppMode.ForceDark);
+                    SetPreferredAppModeDelegate setPreferredAppMode = Marshal.GetDelegateForFunctionPointer<SetPreferredAppModeDelegate>(procAddress);
+                    setPreferredAppMode(PreferredAppMode.ForceDark);
                 }
             }
         }
@@ -86,8 +86,8 @@ namespace DevoidEngine.Util
             return shape switch
             {
                 Core.CursorShape.Arrow => MouseCursor.Default,
-                Core.CursorShape.ResizeEW => MouseCursor.ResizeEW,
-                Core.CursorShape.ResizeNS => MouseCursor.ResizeNS,
+                Core.CursorShape.ResizeEw => MouseCursor.ResizeEW,
+                Core.CursorShape.ResizeNs => MouseCursor.ResizeNS,
                 _ => MouseCursor.Default,
             };
         }

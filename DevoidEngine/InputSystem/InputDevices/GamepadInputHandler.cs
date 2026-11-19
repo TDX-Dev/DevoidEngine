@@ -4,15 +4,15 @@ namespace DevoidEngine.InputSystem.InputDevices
 {
     internal class GamepadInputHandler : InputDeviceHandler
     {
-        private readonly IReadOnlyList<JoystickState> states;
-        private readonly Dictionary<(int device, int button), bool> prevButtons;
+        private readonly IReadOnlyList<JoystickState> _states;
+        private readonly Dictionary<(int device, int button), bool> _prevButtons;
 
-        private readonly HashSet<int> connectedLastFrame;
-        private readonly HashSet<int> currentConnected;
+        private readonly HashSet<int> _connectedLastFrame;
+        private readonly HashSet<int> _currentConnected;
 
-        private readonly Dictionary<(int device, GamepadStandardControl), bool> prevHatStates;
+        private readonly Dictionary<(int device, GamepadStandardControl), bool> _prevHatStates;
 
-        private static readonly Dictionary<int, GamepadStandardControl> buttonMap = new()
+        private static readonly Dictionary<int, GamepadStandardControl> ButtonMap = new()
         {
             { 0, GamepadStandardControl.South },
             { 1, GamepadStandardControl.East },
@@ -31,11 +31,11 @@ namespace DevoidEngine.InputSystem.InputDevices
 
         public GamepadInputHandler(IReadOnlyList<JoystickState> joystickstates)
         {
-            states = joystickstates;
-            prevButtons = [];
-            prevHatStates = [];
-            connectedLastFrame = [];
-            currentConnected = [];
+            _states = joystickstates;
+            _prevButtons = [];
+            _prevHatStates = [];
+            _connectedLastFrame = [];
+            _currentConnected = [];
         }
 
         public override void Register(InputBackend backend)
@@ -46,11 +46,11 @@ namespace DevoidEngine.InputSystem.InputDevices
         public override void Update(InputBackend backend)
         {
 
-            currentConnected.Clear(); // IMPORTANT
+            _currentConnected.Clear(); // IMPORTANT
 
-            for (int i = 0; i < states.Count; i++)
+            for (int i = 0; i < _states.Count; i++)
             {
-                var state = states[i];
+                var state = _states[i];
 
                 if (state == null)
                     continue;
@@ -63,9 +63,9 @@ namespace DevoidEngine.InputSystem.InputDevices
                 if (!isValid)
                     continue;
 
-                currentConnected.Add(i);
+                _currentConnected.Add(i);
 
-                if (!connectedLastFrame.Contains(i))
+                if (!_connectedLastFrame.Contains(i))
                 {
                     backend.NotifyDeviceConnected(InputDeviceType.Gamepad, (uint)i);
                 }
@@ -75,9 +75,9 @@ namespace DevoidEngine.InputSystem.InputDevices
                     bool isDown = state.IsButtonDown(j);
                     var key = (i, j);
 
-                    bool wasDown = prevButtons.TryGetValue(key, out var prev) && prev;
+                    bool wasDown = _prevButtons.TryGetValue(key, out var prev) && prev;
 
-                    ushort control = buttonMap.TryGetValue(j, out var mapped)
+                    ushort control = ButtonMap.TryGetValue(j, out var mapped)
                         ? (ushort)mapped
                         : (ushort)(5000 + j);
 
@@ -91,7 +91,7 @@ namespace DevoidEngine.InputSystem.InputDevices
                             Value = 1f
                         });
 
-                        prevButtons[key] = true;
+                        _prevButtons[key] = true;
                     }
                     else if (!isDown && wasDown)
                     {
@@ -103,7 +103,7 @@ namespace DevoidEngine.InputSystem.InputDevices
                             Value = 0f
                         });
 
-                        prevButtons[key] = false;
+                        _prevButtons[key] = false;
                     }
                 }
 
@@ -142,23 +142,23 @@ namespace DevoidEngine.InputSystem.InputDevices
                     EmitHat(backend, i, GamepadStandardControl.DpadRight, (hat & GamepadHats.Right) != 0);
                 }
             }
-            foreach (var old in connectedLastFrame)
+            foreach (var old in _connectedLastFrame)
             {
-                if (!currentConnected.Contains(old))
+                if (!_currentConnected.Contains(old))
                 {
                     backend.NotifyDeviceDisconnected(InputDeviceType.Gamepad, (uint)old);
                 }
             }
 
-            connectedLastFrame.Clear();
-            foreach (var c in currentConnected)
-                connectedLastFrame.Add(c);
+            _connectedLastFrame.Clear();
+            foreach (var c in _currentConnected)
+                _connectedLastFrame.Add(c);
         }
 
         private void EmitHat(InputBackend backend, int device, GamepadStandardControl controlEnum, bool isDown)
         {
             var key = (device, controlEnum);
-            bool wasDown = prevHatStates.TryGetValue(key, out var prev) && prev;
+            bool wasDown = _prevHatStates.TryGetValue(key, out var prev) && prev;
 
             if (isDown && !wasDown)
             {
@@ -170,7 +170,7 @@ namespace DevoidEngine.InputSystem.InputDevices
                     Value = 1f
                 });
 
-                prevHatStates[key] = true;
+                _prevHatStates[key] = true;
             }
             else if (!isDown && wasDown)
             {
@@ -182,7 +182,7 @@ namespace DevoidEngine.InputSystem.InputDevices
                     Value = 0f
                 });
 
-                prevHatStates[key] = false;
+                _prevHatStates[key] = false;
             }
         }
     }

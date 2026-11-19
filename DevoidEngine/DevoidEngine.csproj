@@ -33,7 +33,7 @@
 				namespace DevoidEngine.Core%3b
 				internal static class BuildInfo
 				{
-				public const string EngineRoot = @"$(MSBuildProjectDirectory)"%3b
+					public const string EngineRoot = @"$(MSBuildProjectDirectory)"%3b
 				}
 			</GeneratedCodeLines>
 		</PropertyGroup>

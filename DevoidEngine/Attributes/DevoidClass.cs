@@ -3,8 +3,8 @@
     [AttributeUsage(AttributeTargets.Class)]
     public class DevoidClass : Attribute
     {
-        public Type? type;
-        public Type? inheritsFrom;
+        public Type? Type;
+        public Type? InheritsFrom;
 
         public DevoidClass()
         {
@@ -13,13 +13,13 @@
 
         public DevoidClass(Type type, Type inheritsFrom)
         {
-            this.type = type;
-            this.inheritsFrom = inheritsFrom;
+            this.Type = type;
+            this.InheritsFrom = inheritsFrom;
         }
 
         public DevoidClass(Type type)
         {
-            this.type = type;
+            this.Type = type;
         }
     }
 }

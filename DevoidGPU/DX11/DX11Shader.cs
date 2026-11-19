@@ -4,25 +4,25 @@ using SharpDX.Direct3D11;
 
 namespace DevoidGPU.DX11
 {
-    internal sealed class DX11Shader : IShader
+    internal sealed class Dx11Shader : IShader
     {
         public ShaderDescription Description { get; }
         public ShaderStage Stage { get; }
         public ShaderReflectionData ReflectionData { get; private set; } = null!;
         public string Name { get; }
 
-        internal byte[] bytecode = null!;
+        internal byte[] Bytecode = null!;
 
-        internal VertexShader? VS;
-        internal PixelShader? PS;
-        internal GeometryShader? GS;
-        internal ComputeShader? CS;
+        internal VertexShader? Vs;
+        internal PixelShader? Ps;
+        internal GeometryShader? Gs;
+        internal ComputeShader? Cs;
 
-        private readonly Device device;
+        private readonly Device _device;
 
-        public DX11Shader(Device dx11Device, ShaderDescription desc)
+        public Dx11Shader(Device dx11Device, ShaderDescription desc)
         {
-            device = dx11Device;
+            _device = dx11Device;
             Stage = desc.Stage;
             Name = desc.Name ?? desc.Stage.ToString();
             Description = desc;
@@ -56,11 +56,11 @@ namespace DevoidGPU.DX11
             flags |= ShaderFlags.Debug | ShaderFlags.SkipOptimization;
 #endif
             CompilationResult result;
-            result = ShaderBytecode.Compile(source, entryPoint, profile, flags, EffectFlags.None, shaderDefines, new DX11ShaderIncludeHandler(Path.GetDirectoryName(path)!), Path.GetFileName(path)!);
+            result = ShaderBytecode.Compile(source, entryPoint, profile, flags, EffectFlags.None, shaderDefines, new Dx11ShaderIncludeHandler(Path.GetDirectoryName(path)!), Path.GetFileName(path)!);
             if (result.HasErrors)
                 throw new Exception($"Shader compile error ({Name}): {result.Message}");
 
-            bytecode = result.Bytecode;
+            Bytecode = result.Bytecode;
 
             CreateReflectionInfoFromBytecode();
             CreateShaderFromBytecode();
@@ -71,16 +71,16 @@ namespace DevoidGPU.DX11
             switch (Stage)
             {
                 case ShaderStage.Vertex:
-                    VS = new VertexShader(device, bytecode);
+                    Vs = new VertexShader(_device, Bytecode);
                     break;
                 case ShaderStage.Fragment:
-                    PS = new PixelShader(device, bytecode);
+                    Ps = new PixelShader(_device, Bytecode);
                     break;
                 case ShaderStage.Geometry:
-                    GS = new GeometryShader(device, bytecode);
+                    Gs = new GeometryShader(_device, Bytecode);
                     break;
                 case ShaderStage.Compute:
-                    CS = new ComputeShader(device, bytecode);
+                    Cs = new ComputeShader(_device, Bytecode);
                     break;
                 default:
                     throw new NotSupportedException($"Unsupported shader type: {Stage}");
@@ -92,7 +92,7 @@ namespace DevoidGPU.DX11
         {
             ReflectionData = new ShaderReflectionData();
 
-            ShaderReflection reflection = new(bytecode);
+            ShaderReflection reflection = new(Bytecode);
             SharpDX.D3DCompiler.ShaderDescription desc = reflection.Description;
 
             // Fill in constant buffers
@@ -101,7 +101,7 @@ namespace DevoidGPU.DX11
                 ConstantBuffer cb = reflection.GetConstantBuffer(i);
                 ConstantBufferDescription cbDesc = cb.Description;
 
-                UniformBufferInfo BufferInfo = new()
+                UniformBufferInfo bufferInfo = new()
                 {
                     Name = cbDesc.Name,
                     Size = cbDesc.Size,
@@ -115,9 +115,9 @@ namespace DevoidGPU.DX11
                     var varDesc = variable.Description;
                     var varType = variable.GetVariableType();
                     var typeDesc = varType.Description;
-                    var svt = DX11StateMapper.ConvertResourceType(typeDesc.Name);
+                    var svt = Dx11StateMapper.ConvertResourceType(typeDesc.Name);
 
-                    BufferInfo.Variables.Add(new ShaderVariableInfo
+                    bufferInfo.Variables.Add(new ShaderVariableInfo
                     {
                         Name = varDesc.Name,
                         Offset = varDesc.StartOffset,
@@ -127,7 +127,7 @@ namespace DevoidGPU.DX11
 
                 }
 
-                ReflectionData.UniformBuffers.Add(BufferInfo);
+                ReflectionData.UniformBuffers.Add(bufferInfo);
             }
 
             for (int i = 0; i < desc.BoundResources; i++)
@@ -193,7 +193,7 @@ namespace DevoidGPU.DX11
                                 Name = res.Name,
                                 BindSlot = res.BindPoint,
                                 Stage = Stage,
-                                Type = ShaderResourceType.RWStructuredBuffer
+                                Type = ShaderResourceType.RwStructuredBuffer
                             });
                             break;
                         }
@@ -202,9 +202,9 @@ namespace DevoidGPU.DX11
                         {
                             ShaderResourceType type = res.Dimension switch
                             {
-                                ShaderResourceViewDimension.Texture2D => ShaderResourceType.RWTexture2D,
-                                ShaderResourceViewDimension.Texture2DArray => ShaderResourceType.RWTexture2DArray,
-                                ShaderResourceViewDimension.Texture3D => ShaderResourceType.RWTexture3D,
+                                ShaderResourceViewDimension.Texture2D => ShaderResourceType.RwTexture2D,
+                                ShaderResourceViewDimension.Texture2DArray => ShaderResourceType.RwTexture2DArray,
+                                ShaderResourceViewDimension.Texture3D => ShaderResourceType.RwTexture3D,
 
                                 _ => throw new NotSupportedException(
                                     $"Unsupported UAV texture dimension {res.Dimension}")
@@ -307,6 +307,15 @@ namespace DevoidGPU.DX11
                 ShaderStage.Compute => "cs_5_0",
                 _ => throw new NotSupportedException($"No profile for shader type: {type}")
             };
+        }
+
+        public void Dispose()
+        {
+            Vs?.Dispose();
+            Ps?.Dispose();
+            Cs?.Dispose();
+            Gs?.Dispose();
+            Bytecode = [];
         }
     }
 }

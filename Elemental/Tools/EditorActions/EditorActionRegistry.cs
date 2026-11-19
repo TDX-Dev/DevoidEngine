@@ -7,11 +7,11 @@ namespace Elemental.Tools.EditorActions
 {
     public sealed class EditorActionRegistry : IEditorService
     {
-        private readonly Dictionary<EditorActionId, EditorAction> actions = [];
+        private readonly Dictionary<EditorActionId, EditorAction> _actions = [];
 
         public void Register(EditorAction action)
         {
-            if (!actions.TryAdd(action.Id, action))
+            if (!_actions.TryAdd(action.Id, action))
             {
                 throw new InvalidOperationException($"An action with ID '{action.Id}' is already registered.");
             }
@@ -19,22 +19,22 @@ namespace Elemental.Tools.EditorActions
 
         public void Unregister(EditorActionId id)
         {
-            actions.Remove(id);
+            _actions.Remove(id);
         }
 
         public bool Contains(EditorActionId id)
         {
-            return actions.ContainsKey(id);
+            return _actions.ContainsKey(id);
         }
 
         public bool TryGet(EditorActionId id, out EditorAction? action)
         {
-            return actions.TryGetValue(id, out action);
+            return _actions.TryGetValue(id, out action);
         }
 
         public EditorAction Get(EditorActionId id)
         {
-            if (!actions.TryGetValue(id, out var action))
+            if (!_actions.TryGetValue(id, out var action))
             {
                 throw new KeyNotFoundException($"Action '{id}' is not registered.");
             }
@@ -44,12 +44,12 @@ namespace Elemental.Tools.EditorActions
 
         public IEnumerable<EditorAction> All()
         {
-            return actions.Values;
+            return _actions.Values;
         }
 
         public void Shutdown()
         {
-            actions.Clear();
+            _actions.Clear();
         }
     }
 }

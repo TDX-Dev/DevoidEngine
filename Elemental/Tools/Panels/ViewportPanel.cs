@@ -14,9 +14,9 @@ namespace Elemental.Tools.Panels
         public bool IsHovered { get; private set; }
         public bool IsFocused { get; private set; }
 
-        private Vector2 pendingSize;
-        private Vector2 allocatedSize;
-        private int resizeFrames;
+        private Vector2 _pendingSize;
+        private Vector2 _allocatedSize;
+        private int _resizeFrames;
 
         public ViewportPanel(string title) : base(title)
         {
@@ -46,21 +46,21 @@ namespace Elemental.Tools.Panels
             {
                 PanelSize = contentSize;
 
-                if (contentSize != pendingSize)
+                if (contentSize != _pendingSize)
                 {
-                    pendingSize = contentSize;
-                    resizeFrames = 0;
+                    _pendingSize = contentSize;
+                    _resizeFrames = 0;
                 }
                 else
                 {
-                    resizeFrames++;
+                    _resizeFrames++;
                 }
 
-                if (resizeFrames >= 2 && pendingSize != allocatedSize)
+                if (_resizeFrames >= 2 && _pendingSize != _allocatedSize)
                 {
-                    allocatedSize = pendingSize;
+                    _allocatedSize = _pendingSize;
 
-                    Viewport.Resize((int)allocatedSize.X, (int)allocatedSize.Y);
+                    Viewport.Resize((int)_allocatedSize.X, (int)_allocatedSize.Y);
                 }
             }
 

@@ -6,12 +6,12 @@ namespace DevoidEngine.Core
     public sealed class ShaderStorageBuffer<T> : IDisposable
     where T : unmanaged
     {
-        private readonly IShaderStorageBuffer gpuBuffer;
+        private readonly IShaderStorageBuffer _gpuBuffer;
 
-        public IShaderStorageBuffer GPU => gpuBuffer;
+        public IShaderStorageBuffer Gpu => _gpuBuffer;
 
-        public ulong Size => gpuBuffer.Size;
-        public ResourceUsage Usage => gpuBuffer.Usage;
+        public ulong Size => _gpuBuffer.Size;
+        public ResourceUsage Usage => _gpuBuffer.Usage;
 
         public ShaderStorageBuffer(
             IGraphicsDevice device,
@@ -19,7 +19,7 @@ namespace DevoidEngine.Core
             BufferBind bind,
             uint capacity)
         {
-            gpuBuffer = device.CreateShaderStorageBuffer(
+            _gpuBuffer = device.CreateShaderStorageBuffer(
                 new BufferDescription
                 {
                     Usage = usage,
@@ -47,12 +47,12 @@ namespace DevoidEngine.Core
 
         public void Update(ReadOnlySpan<T> data)
         {
-            gpuBuffer.Update(data);
+            _gpuBuffer.Update(data);
         }
 
         public void Dispose()
         {
-            gpuBuffer.Dispose();
+            _gpuBuffer.Dispose();
         }
     }
 }

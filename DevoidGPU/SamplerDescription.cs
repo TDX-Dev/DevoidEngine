@@ -12,9 +12,9 @@
 
         public CompareFunc CompareFunc;
 
-        public float MipLODBias;
-        public float MinLOD;
-        public float MaxLOD;
+        public float MipLodBias;
+        public float MinLod;
+        public float MaxLod;
 
         public int MaxAnisotropy;
     }

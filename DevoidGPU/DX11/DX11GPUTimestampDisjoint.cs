@@ -2,17 +2,17 @@
 
 namespace DevoidGPU.DX11
 {
-    internal sealed class DX11GPUTimestampDisjoint : IGPUTimestampDisjoint
+    internal sealed class Dx11GpuTimestampDisjoint : IGpuTimestampDisjoint
     {
-        private readonly DeviceContext context;
+        private readonly DeviceContext _context;
 
         internal Query Query { get; }
 
-        public DX11GPUTimestampDisjoint(
+        public Dx11GpuTimestampDisjoint(
             Device device,
             DeviceContext context)
         {
-            this.context = context;
+            this._context = context;
 
             QueryDescription description = new()
             {
@@ -28,7 +28,7 @@ namespace DevoidGPU.DX11
             frequency = 0;
             disjoint = false;
 
-            if (!context.GetData(Query, out QueryDataTimestampDisjoint disjointData))
+            if (!_context.GetData(Query, out QueryDataTimestampDisjoint disjointData))
             {
                 return false;
             }

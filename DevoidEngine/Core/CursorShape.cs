@@ -25,19 +25,19 @@
         //
         // Summary:
         //     A horizontal resize cursor.
-        ResizeEW = 5,
+        ResizeEw = 5,
         //
         // Summary:
         //     A vertical resize cursor.
-        ResizeNS = 6,
+        ResizeNs = 6,
         //
         // Summary:
         //     A diagonal northwest southeast resize cursor.
-        ResizeNWSE = 7,
+        ResizeNwse = 7,
         //
         // Summary:
         //     A diagonal northeast southwest resize cursor.
-        ResizeNESW = 8,
+        ResizeNesw = 8,
         //
         // Summary:
         //     An omni-directional resize cursor.

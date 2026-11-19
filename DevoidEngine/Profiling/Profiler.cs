@@ -4,8 +4,8 @@ namespace DevoidEngine.Profiling
 {
     public class Profiler
     {
-        public CPUProfiler CPU { get; private set; } = null!;
-        public GPUProfiler GPU { get; private set; } = null!;
+        public CpuProfiler Cpu { get; private set; } = null!;
+        public GpuProfiler Gpu { get; private set; } = null!;
 
         public Profiler()
         {
@@ -13,13 +13,13 @@ namespace DevoidEngine.Profiling
 
         public void Initialize()
         {
-            CPU = new CPUProfiler();
-            GPU = new GPUProfiler(Engine.GraphicsDevice);
+            Cpu = new CpuProfiler();
+            Gpu = new GpuProfiler(Engine.GraphicsDevice);
         }
 
         public void BeginFrame()
         {
-            CPU.BeginFrame();
+            Cpu.BeginFrame();
 
         }
 

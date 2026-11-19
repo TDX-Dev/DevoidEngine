@@ -1,0 +1,26 @@
+﻿{
+  "Name": "",
+  "Passes": [
+    {
+      "Name": "Opaque pass",
+      "ShaderPrograms": {
+        "VS": "",
+        "FS": ""
+      },
+      "PipelineState": {},
+      "Uniforms": {
+        "CBMaterial": {
+          "type": "ConstantBuffer",
+          "values": [
+            { "name": "DiffuseColor", "type": "color", "value": "" },
+            { "name": "EmissiveColor", "type": "color", "value": "" }
+          ]
+        },
+        "DiffuseTexture": {
+          "type": "TextureResource",
+          "value": "assets/textures/diffusetexture.png"
+        }
+      }
+    }
+  ]
+}

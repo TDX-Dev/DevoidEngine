@@ -8,21 +8,21 @@ namespace DevoidEngine.Rendering
 
         public readonly List<RenderMeshData> Objects;
 
-        public GPUPointLight[] PointLights;
+        public GpuPointLight[] PointLights;
         public int PointLightCount;
 
-        public GPUSpotLight[] SpotLights;
+        public GpuSpotLight[] SpotLights;
         public int SpotLightCount;
 
-        public GPUDirectionalLight[] DirectionalLights;
+        public GpuDirectionalLight[] DirectionalLights;
         public int DirectionalLightCount;
 
         public RenderView()
         {
             Objects = [];
-            PointLights = new GPUPointLight[Renderer.MAX_POINT_LIGHTS];
-            SpotLights = new GPUSpotLight[Renderer.MAX_SPOT_LIGHTS];
-            DirectionalLights = new GPUDirectionalLight[Renderer.MAX_DIRECTIONAL_LIGHTS];
+            PointLights = new GpuPointLight[Renderer.MAX_POINT_LIGHTS];
+            SpotLights = new GpuSpotLight[Renderer.MAX_SPOT_LIGHTS];
+            DirectionalLights = new GpuDirectionalLight[Renderer.MAX_DIRECTIONAL_LIGHTS];
         }
 
         public void Clear()

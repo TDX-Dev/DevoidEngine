@@ -22,7 +22,7 @@ namespace DevoidEngine.Util
 
     public static class TextureUtil
     {
-        public static float SRGBToLinear(float v)
+        public static float SrgbToLinear(float v)
         {
             if (v <= 0.04045f)
                 return v / 12.92f;
@@ -42,7 +42,7 @@ namespace DevoidEngine.Util
                 return new ImageData(
                     image.Width,
                     image.Height,
-                    TextureFormat.RGBA32_Float,
+                    TextureFormat.Rgba32Float,
                     MemoryMarshal.AsBytes(image.Data).ToArray());
             }
             else
@@ -52,7 +52,7 @@ namespace DevoidEngine.Util
                 return new ImageData(
                     image.Width,
                     image.Height,
-                    TextureFormat.RGBA8_UNorm,
+                    TextureFormat.Rgba8UNorm,
                     image.Data.ToArray());
             }
         }
@@ -68,7 +68,7 @@ namespace DevoidEngine.Util
                 return new ImageData(
                     image.Width,
                     image.Height,
-                    TextureFormat.RGBA32_Float,
+                    TextureFormat.Rgba32Float,
                     MemoryMarshal.AsBytes(image.Data).ToArray());
             }
             else
@@ -78,7 +78,7 @@ namespace DevoidEngine.Util
                 return new ImageData(
                     image.Width,
                     image.Height,
-                    TextureFormat.RGBA8_UNorm,
+                    TextureFormat.Rgba8UNorm,
                     image.Data.ToArray());
             }
         }

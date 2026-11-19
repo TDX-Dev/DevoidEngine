@@ -7,7 +7,7 @@ namespace DevoidEngine.Core
     {
         public Window Window { get; } = null!;
         public ISwapchain Swapchain { get; } = null!;
-        public bool SkipRefresh => isMinimized;
+        public bool SkipRefresh => _isMinimized;
         public IFrameBuffer Framebuffer => Swapchain.Framebuffer;
 
         public event Action<float>? OnUpdate;
@@ -19,10 +19,10 @@ namespace DevoidEngine.Core
         public event Action<Keys, int, KeyModifiers, bool>? OnKeyDown;
         public event Action<Keys, int, KeyModifiers, bool>? OnKeyUp;
 
-        private bool isMinimized;
-        private bool resizePending;
-        private bool isDisposed;
-        private int prevWidth, prevHeight;
+        private bool _isMinimized;
+        private bool _resizePending;
+        private bool _isDisposed;
+        private int _prevWidth, _prevHeight;
 
         public WindowSurface(
             Window window,
@@ -42,8 +42,8 @@ namespace DevoidEngine.Core
             window.OnWindowKeyDown += Window_OnWindowKeyDown;
             window.OnWindowKeyUp += Window_OnWindowKeyUp;
 
-            prevWidth = Window.ClientSize.X;
-            prevHeight = Window.ClientSize.Y;
+            _prevWidth = Window.ClientSize.X;
+            _prevHeight = Window.ClientSize.Y;
         }
 
         private void Window_OnWindowKeyUp(OpenTK.Windowing.GraphicsLibraryFramework.Keys arg1, int arg2, OpenTK.Windowing.GraphicsLibraryFramework.KeyModifiers arg3, bool arg4)
@@ -63,31 +63,31 @@ namespace DevoidEngine.Core
 
         private void Window_Minimized(OpenTK.Windowing.Common.MinimizedEventArgs obj)
         {
-            isMinimized = obj.IsMinimized;
+            _isMinimized = obj.IsMinimized;
         }
 
         private void Window_Maximized(OpenTK.Windowing.Common.MaximizedEventArgs obj)
         {
-            isMinimized = !obj.IsMaximized;
+            _isMinimized = !obj.IsMaximized;
         }
 
         private void Window_Resize(int width, int height)
         {
-            if (width <= 0 || height <= 0 || (height == prevHeight && width == prevWidth))
+            if (width <= 0 || height <= 0 || (height == _prevHeight && width == _prevWidth))
                 return;
-            resizePending = true;
+            _resizePending = true;
         }
 
         private void ResizeSwapchain()
         {
-            if (!resizePending || isMinimized)
+            if (!_resizePending || _isMinimized)
                 return;
             Swapchain.Resize(Window.ClientSize.X, Window.ClientSize.Y);
-            prevWidth = Window.ClientSize.X;
-            prevHeight = Window.ClientSize.Y;
+            _prevWidth = Window.ClientSize.X;
+            _prevHeight = Window.ClientSize.Y;
 
             OnResize?.Invoke(Window.ClientSize.X, Window.ClientSize.Y);
-            resizePending = false;
+            _resizePending = false;
         }
 
         public void UpdateSurface(float deltaTime)
@@ -110,7 +110,7 @@ namespace DevoidEngine.Core
 
         public void Dispose()
         {
-            if (isDisposed)
+            if (_isDisposed)
                 return;
 
             Window.OnWindowResize -= Window_Resize;
@@ -118,7 +118,7 @@ namespace DevoidEngine.Core
             Swapchain.Dispose();
             Window.Dispose();
 
-            isDisposed = true;
+            _isDisposed = true;
         }
     }
 }

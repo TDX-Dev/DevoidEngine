@@ -30,36 +30,36 @@ namespace DevoidEngine.Rendering.PostProcessing
 
         private struct BloomMipShaderData
         {
-            public Vector2 mipSize;
-            public float filterRadius;
+            public Vector2 MipSize;
+            public float FilterRadius;
         }
 
-        private readonly MaterialInstance prefilterMaterial;
-        private readonly MaterialInstance downsampleMaterial;
-        private readonly MaterialInstance upsampleMaterial;
+        private readonly MaterialInstance _prefilterMaterial;
+        private readonly MaterialInstance _downsampleMaterial;
+        private readonly MaterialInstance _upsampleMaterial;
 
-        private readonly RenderTarget target;
-        private readonly UniformBuffer mipShaderDataBuffer;
-        private readonly Sampler downsampleBloomSampler;
-        private readonly Sampler upsampleBloomSampler;
+        private readonly RenderTarget _target;
+        private readonly UniformBuffer _mipShaderDataBuffer;
+        private readonly Sampler _downsampleBloomSampler;
+        private readonly Sampler _upsampleBloomSampler;
 
-        private readonly List<BloomMip> bloomMipList = [];
-        private readonly List<BloomMip> upsampleMipList = [];
+        private readonly List<BloomMip> _bloomMipList = [];
+        private readonly List<BloomMip> _upsampleMipList = [];
 
         public BloomUtility()
         {
-            this.prefilterMaterial = new(new Material(Shader.FromDescriptorFile(Engine.GraphicsDevice, Path.Combine(Engine.BasePath, "Content/DevoidShaderDescriptors/bloom_process_pass.dsd"))));
-            this.downsampleMaterial = new(new(Shader.FromDescriptorFile(Engine.GraphicsDevice, Path.Combine(Engine.BasePath, "Content/DevoidShaderDescriptors/bloom_downsample_pass.dsd"))));
-            this.upsampleMaterial = new(new(Shader.FromDescriptorFile(Engine.GraphicsDevice, Path.Combine(Engine.BasePath, "Content/DevoidShaderDescriptors/bloom_upsample_pass.dsd"))));
+            this._prefilterMaterial = new(new Material(Shader.FromDescriptorFile(Engine.GraphicsDevice, Path.Combine(Engine.BasePath, "Content/DevoidShaderDescriptors/bloom_process_pass.dsd"))));
+            this._downsampleMaterial = new(new(Shader.FromDescriptorFile(Engine.GraphicsDevice, Path.Combine(Engine.BasePath, "Content/DevoidShaderDescriptors/bloom_downsample_pass.dsd"))));
+            this._upsampleMaterial = new(new(Shader.FromDescriptorFile(Engine.GraphicsDevice, Path.Combine(Engine.BasePath, "Content/DevoidShaderDescriptors/bloom_upsample_pass.dsd"))));
 
-            target = RenderTarget.Create(1);
+            _target = RenderTarget.Create(1);
 
-            mipShaderDataBuffer = new UniformBuffer(
+            _mipShaderDataBuffer = new UniformBuffer(
                 Engine.GraphicsDevice,
                 ResourceUsage.Dynamic,
                 (uint)Unsafe.SizeOf<BloomMipShaderData>());
 
-            downsampleBloomSampler = Sampler.Create(new SamplerDescription
+            _downsampleBloomSampler = Sampler.Create(new SamplerDescription
             {
                 AddressU = WrapMode.ClampToBorder,
                 AddressV = WrapMode.ClampToBorder,
@@ -67,12 +67,12 @@ namespace DevoidEngine.Rendering.PostProcessing
                 MagFilter = FilterMode.Linear,
                 MinFilter = FilterMode.Linear,
                 MipFilter = FilterMode.Linear,
-                MinLOD = 0f,
-                MaxLOD = float.MaxValue,
+                MinLod = 0f,
+                MaxLod = float.MaxValue,
                 MaxAnisotropy = 1
             });
 
-            upsampleBloomSampler = Sampler.Create(new SamplerDescription
+            _upsampleBloomSampler = Sampler.Create(new SamplerDescription
             {
                 AddressU = WrapMode.ClampToEdge,
                 AddressV = WrapMode.ClampToEdge,
@@ -80,8 +80,8 @@ namespace DevoidEngine.Rendering.PostProcessing
                 MagFilter = FilterMode.Linear,
                 MinFilter = FilterMode.Linear,
                 MipFilter = FilterMode.Linear,
-                MinLOD = 0f,
-                MaxLOD = float.MaxValue,
+                MinLod = 0f,
+                MaxLod = float.MaxValue,
                 MaxAnisotropy = 1
             });
         }
@@ -97,7 +97,7 @@ namespace DevoidEngine.Rendering.PostProcessing
 
             RenderUpsamples(ctx, filterRadius, namePrefix);
 
-            return upsampleMipList[0].Texture;
+            return _upsampleMipList[0].Texture;
         }
 
         private void BeginPass(PostProcessContext ctx, Texture texture, Vector2 size)
@@ -110,10 +110,10 @@ namespace DevoidEngine.Rendering.PostProcessing
                     Height = (int)size.Y
                 });
 
-            target.SetColorAttachment(0, texture);
+            _target.SetColorAttachment(0, texture);
 
             ctx.CommandList.SetFramebuffer(
-                target.GPU);
+                _target.Gpu);
 
             ctx.CommandList.ClearColor(0, Colors.Transparent);
         }
@@ -127,66 +127,66 @@ namespace DevoidEngine.Rendering.PostProcessing
 
         private void BindMipData(MaterialInstance material, Vector2 inputSize, float filterRadius, bool upsample)
         {
-            mipShaderDataBuffer.Update(
+            _mipShaderDataBuffer.Update(
                 new BloomMipShaderData
                 {
-                    mipSize = inputSize,
-                    filterRadius = filterRadius
+                    MipSize = inputSize,
+                    FilterRadius = filterRadius
                 });
 
             material.DescriptorSet.SetSampler(
                 0,
                 upsample
-                    ? upsampleBloomSampler.GPU
-                    : downsampleBloomSampler.GPU);
+                    ? _upsampleBloomSampler.Gpu
+                    : _downsampleBloomSampler.Gpu);
 
-            material.DescriptorSet.SetUniformBuffer(5, mipShaderDataBuffer.GPU);
+            material.DescriptorSet.SetUniformBuffer(5, _mipShaderDataBuffer.Gpu);
         }
 
         private void RenderPrefilter(PostProcessContext ctx, Texture input, float threshold, float knee)
         {
-            BloomMip firstMip = bloomMipList[0];
+            BloomMip firstMip = _bloomMipList[0];
 
             BeginPass(ctx, firstMip.Texture, firstMip.Size);
 
-            prefilterMaterial.SetTexture("INPUT_TEXTURE", input);
-            prefilterMaterial.SetFloat("threshold", threshold);
-            prefilterMaterial.SetFloat("knee", knee);
+            _prefilterMaterial.SetTexture("INPUT_TEXTURE", input);
+            _prefilterMaterial.SetFloat("threshold", threshold);
+            _prefilterMaterial.SetFloat("knee", knee);
 
-            ctx.Renderer.API.RenderToScreen(ctx.CommandList, prefilterMaterial);
+            ctx.Renderer.API.RenderToScreen(ctx.CommandList, _prefilterMaterial);
 
             EndPass(ctx);
         }
 
         private void RenderDownsamples(PostProcessContext ctx, float filterRadius)
         {
-            for (int i = 1; i < bloomMipList.Count; i++)
+            for (int i = 1; i < _bloomMipList.Count; i++)
             {
-                BloomMip mip = bloomMipList[i];
-                BloomMip previousMip = bloomMipList[i - 1];
+                BloomMip mip = _bloomMipList[i];
+                BloomMip previousMip = _bloomMipList[i - 1];
 
                 BeginPass(
                     ctx,
                     mip.Texture,
                     mip.Size);
 
-                downsampleMaterial.SetTexture(
+                _downsampleMaterial.SetTexture(
                     "INPUT_TEXTURE",
                     previousMip.Texture);
 
                 BindMipData(
-                    downsampleMaterial,
+                    _downsampleMaterial,
                     mip.Size,
                     filterRadius,
                     false);
 
                 ctx.Renderer.API.RenderToScreen(
                     ctx.CommandList,
-                    downsampleMaterial);
+                    _downsampleMaterial);
 
                 EndPass(
                     ctx,
-                    i == bloomMipList.Count - 1);
+                    i == _bloomMipList.Count - 1);
             }
         }
 
@@ -195,16 +195,16 @@ namespace DevoidEngine.Rendering.PostProcessing
             float filterRadius,
             string namePrefix)
         {
-            upsampleMipList.Clear();
-            upsampleMipList.AddRange(bloomMipList);
+            _upsampleMipList.Clear();
+            _upsampleMipList.AddRange(_bloomMipList);
 
-            for (int i = upsampleMipList.Count - 2; i >= 0; i--)
+            for (int i = _upsampleMipList.Count - 2; i >= 0; i--)
             {
-                BloomMip currentMip = upsampleMipList[i];
-                BloomMip previousMip = upsampleMipList[i + 1];
+                BloomMip currentMip = _upsampleMipList[i];
+                BloomMip previousMip = _upsampleMipList[i + 1];
 
                 TextureDescription desc =
-                    currentMip.Texture.GPU.Description;
+                    currentMip.Texture.Gpu.Description;
 
                 desc.MipLevels = 1;
 
@@ -218,29 +218,29 @@ namespace DevoidEngine.Rendering.PostProcessing
                     output,
                     currentMip.Size);
 
-                upsampleMaterial.SetTexture(
+                _upsampleMaterial.SetTexture(
                     "INPUT_TEXTURE",
                     currentMip.Texture);
 
-                upsampleMaterial.SetTexture(
+                _upsampleMaterial.SetTexture(
                     "PREVIOUS_TEXTURE",
                     previousMip.Texture);
 
                 BindMipData(
-                    upsampleMaterial,
+                    _upsampleMaterial,
                     previousMip.Size,
                     filterRadius,
                     true);
 
                 ctx.Renderer.API.RenderToScreen(
                     ctx.CommandList,
-                    upsampleMaterial);
+                    _upsampleMaterial);
 
                 EndPass(
                     ctx,
                     i == 0);
 
-                upsampleMipList[i] =
+                _upsampleMipList[i] =
                     new BloomMip(
                         currentMip.Size,
                         output);
@@ -254,10 +254,10 @@ namespace DevoidEngine.Rendering.PostProcessing
             MipMode mipMode,
             string namePrefix)
         {
-            bloomMipList.Clear();
+            _bloomMipList.Clear();
 
             TextureDescription desc =
-                input.GPU.Description;
+                input.Gpu.Description;
 
             int width = Math.Max(
                 desc.Width >> 1,
@@ -278,7 +278,7 @@ namespace DevoidEngine.Rendering.PostProcessing
                         $"{namePrefix}_{i}",
                         desc);
 
-                bloomMipList.Add(
+                _bloomMipList.Add(
                     new BloomMip(
                         new Vector2(width, height),
                         texture));

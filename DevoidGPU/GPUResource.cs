@@ -1,6 +1,6 @@
 ﻿namespace DevoidGPU
 {
-    public abstract class GPUResource : IDisposable
+    public abstract class GpuResource : IDisposable
     {
         // Size of GPU Resource in bytes
         public ulong Size { get; protected set; } = 0;

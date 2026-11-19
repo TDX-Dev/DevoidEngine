@@ -9,11 +9,11 @@ namespace DevoidEngine.Core
         public int Stride { get; }
         public VertexInfo Layout { get; }
 
-        private IVertexBuffer gpuBuffer;
+        private IVertexBuffer _gpuBuffer;
 
-        public IVertexBuffer GPU => gpuBuffer;
+        public IVertexBuffer Gpu => _gpuBuffer;
 
-        private readonly ResourceUsage usage;
+        private readonly ResourceUsage _usage;
 
         public VertexBuffer(
             IGraphicsDevice device,
@@ -25,9 +25,9 @@ namespace DevoidEngine.Core
             Stride = layout.SizeInBytes;
             Count = 0;
             Capacity = capacity;
-            this.usage = usage;
+            this._usage = usage;
 
-            gpuBuffer = device.CreateVertexBuffer(new VertexBufferDescription
+            _gpuBuffer = device.CreateVertexBuffer(new VertexBufferDescription
             {
                 Size = (ulong)(capacity * Stride),
                 Layout = layout,
@@ -52,7 +52,7 @@ namespace DevoidEngine.Core
 
             Count = data.Length;
 
-            gpuBuffer.Update(data);
+            _gpuBuffer.Update(data);
         }
 
         public void Update(nint data, int len)
@@ -61,7 +61,7 @@ namespace DevoidEngine.Core
 
             Count = len;
 
-            gpuBuffer.Update(data, len * Stride);
+            _gpuBuffer.Update(data, len * Stride);
         }
 
         private void EnsureCapacity(int required)
@@ -71,14 +71,14 @@ namespace DevoidEngine.Core
 
             int newCapacity = Math.Max(required, Capacity * 2);
 
-            gpuBuffer.Dispose();
+            _gpuBuffer.Dispose();
 
-            gpuBuffer = Engine.GraphicsDevice.CreateVertexBuffer(new VertexBufferDescription
+            _gpuBuffer = Engine.GraphicsDevice.CreateVertexBuffer(new VertexBufferDescription
             {
                 Size = (ulong)(newCapacity * Stride),
                 Layout = Layout,
                 Slot = 0,
-                Usage = usage
+                Usage = _usage
             });
 
             Capacity = newCapacity;
@@ -86,7 +86,7 @@ namespace DevoidEngine.Core
 
         public void Dispose()
         {
-            GPU.Dispose();
+            Gpu.Dispose();
         }
     }
 }

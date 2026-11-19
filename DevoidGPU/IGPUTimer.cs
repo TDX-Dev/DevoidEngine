@@ -1,6 +1,6 @@
 ﻿namespace DevoidGPU
 {
-    public interface IGPUTimer : IDisposable
+    public interface IGpuTimer : IDisposable
     {
         bool TryGetResult(out double milliseconds);
     }

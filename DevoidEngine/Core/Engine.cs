@@ -6,13 +6,13 @@ using DevoidGPU.DX11;
 
 namespace DevoidEngine.Core
 {
-    public enum GraphicsAPI
+    public enum GraphicsApi
     {
-        DX11
+        Dx11
     }
     public struct EngineConfig
     {
-        public GraphicsAPI API;
+        public GraphicsApi Api;
         public RendererConfig RendererConfig;
         public Version EngineVersion;
     }
@@ -23,11 +23,11 @@ namespace DevoidEngine.Core
         public static Engine Instance => instance ??
             throw new InvalidOperationException("Engine not Initialized.");
 
-        public static Profiler Profiler => Instance.profiler;
-        public static IGraphicsDevice GraphicsDevice => Instance.graphicsDevice;
-        public static Input InputSystem => Instance.inputSystem;
-        public static Renderer Renderer => Instance.renderer;
-        public static Cursor Cursor => Instance.cursor;
+        public static Profiler Profiler => Instance._profiler;
+        public static IGraphicsDevice GraphicsDevice => Instance._graphicsDevice;
+        public static Input InputSystem => Instance._inputSystem;
+        public static Renderer Renderer => Instance._renderer;
+        public static Cursor Cursor => Instance._cursor;
 #if DEBUG
         public static string BasePath => BuildInfo.EngineRoot;
 #else
@@ -48,29 +48,29 @@ namespace DevoidEngine.Core
 
         public GraphicsDeviceInfo GraphicsDeviceInfo { get; set; }
 
-        private readonly Profiler profiler;
-        private readonly IGraphicsDevice graphicsDevice;
-        private readonly Renderer renderer;
-        private readonly Cursor cursor;
+        private readonly Profiler _profiler;
+        private readonly IGraphicsDevice _graphicsDevice;
+        private readonly Renderer _renderer;
+        private readonly Cursor _cursor;
 
-        private Input inputSystem = null!;
+        private Input _inputSystem = null!;
 
         private Engine(EngineConfig config)
         {
             EngineVersion = config.EngineVersion;
 
-            profiler = new Profiler();
+            _profiler = new Profiler();
 
-            graphicsDevice = config.API switch
+            _graphicsDevice = config.Api switch
             {
-                GraphicsAPI.DX11 => new DX11GraphicsDevice(),
+                GraphicsApi.Dx11 => new Dx11GraphicsDevice(),
                 _ => throw new ArgumentException("Invalid Graphics API type."),
             };
 
-            GraphicsDeviceInfo = graphicsDevice.Info;
+            GraphicsDeviceInfo = _graphicsDevice.Info;
 
-            renderer = new Renderer();
-            cursor = new Cursor();
+            _renderer = new Renderer();
+            _cursor = new Cursor();
 
             ProjectSystem = new Project();
             TextureManager = new TextureManager();
@@ -84,9 +84,9 @@ namespace DevoidEngine.Core
             instance = new Engine(config);
 
 
-            instance.renderer.Initialize(config.RendererConfig);
+            instance._renderer.Initialize(config.RendererConfig);
             instance.ViewportManager = new ViewportManager();
-            instance.inputSystem = new Input();
+            instance._inputSystem = new Input();
 
             instance.VirtualFileSystem = new VirtualFileSystem();
 

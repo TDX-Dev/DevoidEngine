@@ -190,7 +190,7 @@ namespace DevoidEngine.Serialization
             throw new JsonException();
         }
 
-        public static Matrix4x4 ReadMatrix4x4(ref Utf8JsonReader reader)
+        public static Matrix4x4 ReadMatrix4X4(ref Utf8JsonReader reader)
         {
             if (reader.TokenType != JsonTokenType.StartObject)
                 throw new JsonException();

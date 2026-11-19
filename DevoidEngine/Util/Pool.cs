@@ -4,17 +4,17 @@ namespace DevoidEngine.Util
 {
     public class Pool<T> where T : class, new()
     {
-        public readonly ConcurrentQueue<T> objects;
+        public readonly ConcurrentQueue<T> Objects;
 
         public Pool()
         {
-            objects = new ConcurrentQueue<T>();
+            Objects = new ConcurrentQueue<T>();
         }
 
 
         public T Get()
         {
-            if (objects.TryDequeue(out var result))
+            if (Objects.TryDequeue(out var result))
                 return result;
 
             return new T();
@@ -22,7 +22,7 @@ namespace DevoidEngine.Util
 
         public void Return(T obj)
         {
-            objects.Enqueue(obj);
+            Objects.Enqueue(obj);
         }
 
     }

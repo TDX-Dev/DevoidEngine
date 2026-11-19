@@ -5,8 +5,8 @@ namespace DevoidEngine.Util
 {
     public static class MathHelper
     {
-        public const float PI = (float)Math.PI;
-        public const float TwoPI = (float)(Math.PI * 2.0);
+        public const float Pi = (float)Math.PI;
+        public const float TwoPi = (float)(Math.PI * 2.0);
 
 
         public static float Lerp(float start, float end, float t)
@@ -15,11 +15,11 @@ namespace DevoidEngine.Util
         }
         public static float DegToRad(float degrees)
         {
-            return degrees * (PI / 180f);
+            return degrees * (Pi / 180f);
         }
         public static float RadToDeg(float radians)
         {
-            return radians * (180f / PI);
+            return radians * (180f / Pi);
         }
         public static Quaternion EulerToQuaternion(Vector3 eulerDegrees)
         {
@@ -36,9 +36,9 @@ namespace DevoidEngine.Util
             Vector3 euler;
 
             // yaw (Y axis rotation)
-            float siny_cosp = 2 * (q.W * q.Y + q.Z * q.X);
-            float cosy_cosp = 1 - 2 * (q.Y * q.Y + q.X * q.X);
-            euler.Y = MathF.Atan2(siny_cosp, cosy_cosp);
+            float sinyCosp = 2 * (q.W * q.Y + q.Z * q.X);
+            float cosyCosp = 1 - 2 * (q.Y * q.Y + q.X * q.X);
+            euler.Y = MathF.Atan2(sinyCosp, cosyCosp);
 
             // pitch (X axis rotation)
             float sinp = 2 * (q.W * q.X - q.Z * q.Y);
@@ -48,9 +48,9 @@ namespace DevoidEngine.Util
                 euler.X = MathF.Asin(sinp);
 
             // roll (Z axis rotation)
-            float sinr_cosp = 2 * (q.W * q.Z + q.X * q.Y);
-            float cosr_cosp = 1 - 2 * (q.Z * q.Z + q.X * q.X);
-            euler.Z = MathF.Atan2(sinr_cosp, cosr_cosp);
+            float sinrCosp = 2 * (q.W * q.Z + q.X * q.Y);
+            float cosrCosp = 1 - 2 * (q.Z * q.Z + q.X * q.X);
+            euler.Z = MathF.Atan2(sinrCosp, cosrCosp);
 
             return euler * (180f / MathF.PI);
         }

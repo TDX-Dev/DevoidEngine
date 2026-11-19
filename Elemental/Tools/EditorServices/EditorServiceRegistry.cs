@@ -8,20 +8,20 @@ namespace Elemental.Tools.EditorServices
 {
     public sealed class EditorServiceRegistry
     {
-        private readonly Dictionary<Type, IEditorService> services;
+        private readonly Dictionary<Type, IEditorService> _services;
 
         public EditorServiceRegistry()
         {
-            services = [];
+            _services = [];
         }
 
         public void Register<T>(T service) where T : class, IEditorService
         {
-            services.Add(typeof(T), service);
+            _services.Add(typeof(T), service);
         }
         public T Get<T>() where T : class, IEditorService
         {
-            return (T)services[typeof(T)];
+            return (T)_services[typeof(T)];
         }
     }
 }

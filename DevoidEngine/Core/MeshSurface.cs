@@ -11,8 +11,8 @@ namespace DevoidEngine.Core
         public BoundingBox LocalBounds { get; private set; }
         public VertexInfo VertexInfo { get; private set; } = Vertex.VertexInfo;
 
-        private IndexBuffer? IB;
-        private VertexBuffer<Vertex>? VB;
+        private IndexBuffer? _ib;
+        private VertexBuffer<Vertex>? _vb;
 
         public Vector3[]? Positions;
         public Vector2[]? UVs;
@@ -77,9 +77,9 @@ namespace DevoidEngine.Core
             if (computeLocalBounds)
                 ComputeLocalBounds();
 
-            if (VB == null)
+            if (_vb == null)
             {
-                VB = new VertexBuffer<Vertex>(
+                _vb = new VertexBuffer<Vertex>(
                     Engine.GraphicsDevice,
                     vertices.AsSpan(),
                     Vertex.VertexInfo,
@@ -87,21 +87,21 @@ namespace DevoidEngine.Core
             }
             else
             {
-                VB.Update(vertices);
+                _vb.Update(vertices);
             }
 
             if (Indices != null && Indices.Length > 0)
             {
-                if (IB == null)
+                if (_ib == null)
                 {
-                    IB = new IndexBuffer(
+                    _ib = new IndexBuffer(
                         Engine.GraphicsDevice,
                         Indices.AsSpan(),
                         ResourceUsage.Default);
                 }
                 else
                 {
-                    IB.Update(Indices);
+                    _ib.Update(Indices);
                 }
             }
 
@@ -132,32 +132,32 @@ namespace DevoidEngine.Core
 
         public void Draw(ICommandList cmd)
         {
-            if (VB == null)
+            if (_vb == null)
                 return;
 
-            cmd.SetVertexBuffer(VB.GPU);
+            cmd.SetVertexBuffer(_vb.Gpu);
 
-            if (IB != null)
+            if (_ib != null)
             {
-                cmd.SetIndexBuffer(IB.GPU);
-                cmd.DrawIndexed(IB.Count, 0, 0);
+                cmd.SetIndexBuffer(_ib.Gpu);
+                cmd.DrawIndexed(_ib.Count, 0, 0);
             }
             else
             {
-                cmd.Draw(VB.Count, 0);
+                cmd.Draw(_vb.Count, 0);
             }
         }
 
         public void DrawInstanced(ICommandList cmd, int instanceCount)
         {
-            if (VB == null || IB == null)
+            if (_vb == null || _ib == null)
                 return;
 
-            cmd.SetVertexBuffer(VB.GPU);
-            cmd.SetIndexBuffer(IB.GPU);
+            cmd.SetVertexBuffer(_vb.Gpu);
+            cmd.SetIndexBuffer(_ib.Gpu);
 
             cmd.DrawInstancedIndexed(
-                IB.Count,
+                _ib.Count,
                 instanceCount,
                 0,
                 0,
@@ -166,11 +166,11 @@ namespace DevoidEngine.Core
 
         public void Dispose()
         {
-            VB?.Dispose();
-            IB?.Dispose();
+            _vb?.Dispose();
+            _ib?.Dispose();
 
-            VB = null;
-            IB = null;
+            _vb = null;
+            _ib = null;
 
             Positions = null;
             Normals = null;

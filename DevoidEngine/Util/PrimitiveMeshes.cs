@@ -46,9 +46,9 @@ namespace DevoidEngine.Util
             return wireCube;
         }
 
-        public static Mesh GetInvertedUVCube()
+        public static Mesh GetInvertedUvCube()
         {
-            invCube ??= CreateInvertedUVCube();
+            invCube ??= CreateInvertedUvCube();
             return invCube;
         }
 
@@ -58,7 +58,7 @@ namespace DevoidEngine.Util
             return fullscreenMesh;
         }
 
-        public static Mesh GetUVSphere()
+        public static Mesh GetUvSphere()
         {
             uvsphereMesh ??= CreateSphere();
             return uvsphereMesh;
@@ -311,7 +311,7 @@ namespace DevoidEngine.Util
             return CreateMesh(positions, normals, uvs, indices: indices);
         }
 
-        public static Mesh CreateInvertedUVCube()
+        public static Mesh CreateInvertedUvCube()
         {
             Vector3[] positions =
             [

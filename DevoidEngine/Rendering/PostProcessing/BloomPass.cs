@@ -9,11 +9,11 @@ namespace DevoidEngine.Rendering.PostProcessing
         public int BloomMipCount { get; set; } = 8;
         public float BloomRadius { get; set; } = 0.7f;
 
-        private readonly BloomUtility bloomUtility;
+        private readonly BloomUtility _bloomUtility;
 
         public BloomPass()
         {
-            bloomUtility = new BloomUtility();
+            _bloomUtility = new BloomUtility();
         }
 
         public override void Setup()
@@ -28,7 +28,7 @@ namespace DevoidEngine.Rendering.PostProcessing
                 return;
             Texture? scene = ctx.GetTexture("SceneColor");
 
-            Texture bloom = bloomUtility.Process(ctx, scene!, BloomMipCount, BloomRadius, BloomUtility.MipMode.Normal, "PP_BLOOM", true, ctx.Settings.BloomThreshold, ctx.Settings.BloomKnee);
+            Texture bloom = _bloomUtility.Process(ctx, scene!, BloomMipCount, BloomRadius, BloomUtility.MipMode.Normal, "PP_BLOOM", true, ctx.Settings.BloomThreshold, ctx.Settings.BloomKnee);
 
             ctx.SetTexture("Bloom", bloom);
         }

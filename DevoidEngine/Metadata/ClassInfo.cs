@@ -2,7 +2,7 @@
 {
     public sealed class ClassInfo
     {
-        public ClassAPIType ClassAPIType { get; set; }
+        public ClassApiType ClassApiType { get; set; }
         public required Type ClassType { get; set; }
         public required string Name { get; init; }
         public required string AssemblyQualifiedName { get; init; }

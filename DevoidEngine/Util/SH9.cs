@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace DevoidEngine.Util
 {
     [StructLayout(LayoutKind.Sequential)]
-    public struct SH9
+    public struct Sh9
     {
         public Vector4 C0;
         public Vector4 C1;

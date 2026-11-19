@@ -3,10 +3,10 @@
 
 namespace DevoidGPU.DX11
 {
-    internal class DX11GraphicsPipeline : IPipeline
+    internal class Dx11GraphicsPipeline : IPipeline
     {
-        public VertexShader VS = null!;
-        public PixelShader PS = null!;
+        public VertexShader Vs = null!;
+        public PixelShader Ps = null!;
 
         public InputLayout InputLayout = null!;
 
@@ -15,7 +15,7 @@ namespace DevoidGPU.DX11
         public SharpDX.Direct3D11.DepthStencilState DepthStencilState = null!;
         public SharpDX.Direct3D11.BlendState BlendState = null!;
 
-        public DX11PipelineLayout Layout = null!;
+        public Dx11PipelineLayout Layout = null!;
 
         public void Dispose()
         {

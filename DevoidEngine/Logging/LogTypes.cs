@@ -18,7 +18,7 @@
         Physics,
         Audio,
         Input,
-        UI,
+        Ui,
         Scene,
         Serialization,
         Scripting,

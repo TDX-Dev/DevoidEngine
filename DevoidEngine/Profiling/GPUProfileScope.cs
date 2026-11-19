@@ -1,6 +1,6 @@
 ﻿namespace DevoidEngine.Profiling
 {
-    public struct GPUProfileScope
+    public struct GpuProfileScope
     {
         public double DurationMilliseconds;
         public bool HasResult;

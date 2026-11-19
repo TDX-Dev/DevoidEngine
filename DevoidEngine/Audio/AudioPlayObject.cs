@@ -8,88 +8,88 @@ namespace DevoidEngine.Audio
 
         public AudioClipHandle Clip { get; init; }
 
-        private Vector3 position;
+        private Vector3 _position;
         public Vector3 Position
         {
-            get => position;
+            get => _position;
             set
             {
-                if (position == value)
+                if (_position == value)
                     return;
 
-                position = value;
+                _position = value;
                 IsDirty = true;
             }
         }
 
-        private float volume = 1.0f;
+        private float _volume = 1.0f;
         public float Volume
         {
-            get => volume;
+            get => _volume;
             set
             {
-                if (volume == value)
+                if (_volume == value)
                     return;
 
-                volume = value;
+                _volume = value;
                 IsDirty = true;
             }
         }
 
-        private bool loop;
+        private bool _loop;
         public bool Loop
         {
-            get => loop;
+            get => _loop;
             set
             {
-                if (loop == value)
+                if (_loop == value)
                     return;
 
-                loop = value;
+                _loop = value;
                 IsDirty = true;
             }
         }
 
         public bool Is3D { get; init; }
 
-        private float minDistance = 1.0f;
+        private float _minDistance = 1.0f;
         public float MinDistance
         {
-            get => minDistance;
+            get => _minDistance;
             set
             {
-                if (minDistance == value)
+                if (_minDistance == value)
                     return;
 
-                minDistance = value;
+                _minDistance = value;
                 IsDirty = true;
             }
         }
 
-        private float maxDistance = 50.0f;
+        private float _maxDistance = 50.0f;
         public float MaxDistance
         {
-            get => maxDistance;
+            get => _maxDistance;
             set
             {
-                if (maxDistance == value)
+                if (_maxDistance == value)
                     return;
 
-                maxDistance = value;
+                _maxDistance = value;
                 IsDirty = true;
             }
         }
 
-        private AudioAttenuation attenuation = AudioAttenuation.InverseDistance;
+        private AudioAttenuation _attenuation = AudioAttenuation.InverseDistance;
         public AudioAttenuation Attenuation
         {
-            get => attenuation;
+            get => _attenuation;
             set
             {
-                if (attenuation == value)
+                if (_attenuation == value)
                     return;
 
-                attenuation = value;
+                _attenuation = value;
                 IsDirty = true;
             }
         }

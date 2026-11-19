@@ -7,45 +7,45 @@ namespace DevoidGPU.DX11
 {
     // A set of helper functions to convert from RHI representation to
     // Internal DX11 representation.
-    public static class DX11StateMapper
+    public static class Dx11StateMapper
     {
-        internal static Format ToDXGITextureFormat(TextureFormat textureFormat)
+        internal static Format ToDxgiTextureFormat(TextureFormat textureFormat)
         {
             return textureFormat switch
             {
-                TextureFormat.RGBA8_UNorm => Format.R8G8B8A8_UNorm,
-                TextureFormat.RGBA8_UNorm_SRGB => Format.R8G8B8A8_UNorm_SRgb,
-                TextureFormat.BGRA8_UNorm => Format.B8G8R8A8_UNorm,
-                TextureFormat.RGBA16_Float => Format.R16G16B16A16_Float,
-                TextureFormat.RGBA32_Float => Format.R32G32B32A32_Float,
+                TextureFormat.Rgba8UNorm => Format.R8G8B8A8_UNorm,
+                TextureFormat.Rgba8UNormSrgb => Format.R8G8B8A8_UNorm_SRgb,
+                TextureFormat.Bgra8UNorm => Format.B8G8R8A8_UNorm,
+                TextureFormat.Rgba16Float => Format.R16G16B16A16_Float,
+                TextureFormat.Rgba32Float => Format.R32G32B32A32_Float,
 
-                TextureFormat.RG16_Float => Format.R16G16_Float,
+                TextureFormat.Rg16Float => Format.R16G16_Float,
 
-                TextureFormat.RG8_UNorm => Format.R8G8_UNorm,
+                TextureFormat.Rg8UNorm => Format.R8G8_UNorm,
 
-                TextureFormat.R16_Float => Format.R16_Float,
-                TextureFormat.R32_Float => Format.R32_Float,
+                TextureFormat.R16Float => Format.R16_Float,
+                TextureFormat.R32Float => Format.R32_Float,
 
-                TextureFormat.R32_UInt => Format.R32_UInt,
+                TextureFormat.R32UInt => Format.R32_UInt,
 
-                TextureFormat.R8_UInt => Format.R8_UInt,
-                TextureFormat.R8_UNorm => Format.R8_UNorm,
+                TextureFormat.R8UInt => Format.R8_UInt,
+                TextureFormat.R8UNorm => Format.R8_UNorm,
 
-                TextureFormat.Depth24_Stencil8 => Format.D24_UNorm_S8_UInt,
-                TextureFormat.Depth32_Float => Format.D32_Float,
+                TextureFormat.Depth24Stencil8 => Format.D24_UNorm_S8_UInt,
+                TextureFormat.Depth32Float => Format.D32_Float,
 
 
-                TextureFormat.RGBA8_SInt => Format.R8G8B8A8_SInt,
-                TextureFormat.RGBA16_SInt => Format.R16G16B16A16_SInt,
-                TextureFormat.RGBA32_SInt => Format.R32G32B32A32_SInt,
+                TextureFormat.Rgba8SInt => Format.R8G8B8A8_SInt,
+                TextureFormat.Rgba16SInt => Format.R16G16B16A16_SInt,
+                TextureFormat.Rgba32SInt => Format.R32G32B32A32_SInt,
 
-                TextureFormat.RG8_SInt => Format.R8G8_SInt,
-                TextureFormat.RG16_SInt => Format.R16G16_SInt,
-                TextureFormat.RG32_SInt => Format.R32G32_SInt,
+                TextureFormat.Rg8SInt => Format.R8G8_SInt,
+                TextureFormat.Rg16SInt => Format.R16G16_SInt,
+                TextureFormat.Rg32SInt => Format.R32G32_SInt,
 
-                TextureFormat.R8_SInt => Format.R8_SInt,
-                TextureFormat.R16_SInt => Format.R16_SInt,
-                TextureFormat.R32_SInt => Format.R32_SInt,
+                TextureFormat.R8SInt => Format.R8_SInt,
+                TextureFormat.R16SInt => Format.R16_SInt,
+                TextureFormat.R32SInt => Format.R32_SInt,
 
 
 
@@ -59,43 +59,43 @@ namespace DevoidGPU.DX11
         {
             return format switch
             {
-                Format.R8G8B8A8_UNorm => TextureFormat.RGBA8_UNorm,
-                Format.R8G8B8A8_UNorm_SRgb => TextureFormat.RGBA8_UNorm_SRGB,
-                Format.B8G8R8A8_UNorm => TextureFormat.BGRA8_UNorm,
-                Format.R16G16B16A16_Float => TextureFormat.RGBA16_Float,
-                Format.R32G32B32A32_Float => TextureFormat.RGBA32_Float,
+                Format.R8G8B8A8_UNorm => TextureFormat.Rgba8UNorm,
+                Format.R8G8B8A8_UNorm_SRgb => TextureFormat.Rgba8UNormSrgb,
+                Format.B8G8R8A8_UNorm => TextureFormat.Bgra8UNorm,
+                Format.R16G16B16A16_Float => TextureFormat.Rgba16Float,
+                Format.R32G32B32A32_Float => TextureFormat.Rgba32Float,
 
-                Format.R16G16_Float => TextureFormat.RG16_Float,
+                Format.R16G16_Float => TextureFormat.Rg16Float,
 
-                Format.R16_Float => TextureFormat.R16_Float,
-                Format.R32_Float => TextureFormat.R32_Float,
+                Format.R16_Float => TextureFormat.R16Float,
+                Format.R32_Float => TextureFormat.R32Float,
 
-                Format.R32_UInt => TextureFormat.R32_UInt,
+                Format.R32_UInt => TextureFormat.R32UInt,
 
-                Format.R8_UInt => TextureFormat.R8_UInt,
-                Format.R8_UNorm => TextureFormat.R8_UNorm,
+                Format.R8_UInt => TextureFormat.R8UInt,
+                Format.R8_UNorm => TextureFormat.R8UNorm,
 
-                Format.D24_UNorm_S8_UInt => TextureFormat.Depth24_Stencil8,
-                Format.D32_Float => TextureFormat.Depth32_Float,
+                Format.D24_UNorm_S8_UInt => TextureFormat.Depth24Stencil8,
+                Format.D32_Float => TextureFormat.Depth32Float,
 
-                Format.R8G8B8A8_SInt => TextureFormat.RGBA8_SInt,
-                Format.R16G16B16A16_SInt => TextureFormat.RGBA16_SInt,
-                Format.R32G32B32A32_SInt => TextureFormat.RGBA32_SInt,
+                Format.R8G8B8A8_SInt => TextureFormat.Rgba8SInt,
+                Format.R16G16B16A16_SInt => TextureFormat.Rgba16SInt,
+                Format.R32G32B32A32_SInt => TextureFormat.Rgba32SInt,
 
-                Format.R8G8_SInt => TextureFormat.RG8_SInt,
-                Format.R16G16_SInt => TextureFormat.RG16_SInt,
-                Format.R32G32_SInt => TextureFormat.RG32_SInt,
+                Format.R8G8_SInt => TextureFormat.Rg8SInt,
+                Format.R16G16_SInt => TextureFormat.Rg16SInt,
+                Format.R32G32_SInt => TextureFormat.Rg32SInt,
 
-                Format.R8_SInt => TextureFormat.R8_SInt,
-                Format.R16_SInt => TextureFormat.R16_SInt,
-                Format.R32_SInt => TextureFormat.R32_SInt,
+                Format.R8_SInt => TextureFormat.R8SInt,
+                Format.R16_SInt => TextureFormat.R16SInt,
+                Format.R32_SInt => TextureFormat.R32SInt,
 
                 _ => throw new ArgumentOutOfRangeException(nameof(format), $"Unsupported format: {format}")
             };
         }
         internal static Format ResolveResourceFormat(TextureDescription desc)
         {
-            var dx11Format = ToDXGITextureFormat(desc.Format);
+            var dx11Format = ToDxgiTextureFormat(desc.Format);
 
             if (!desc.Usage.HasFlag(TextureUsage.DepthStencil))
                 return dx11Format;
@@ -142,7 +142,7 @@ namespace DevoidGPU.DX11
 
             return flags;
         }
-        internal static ShaderResourceViewDimension ResolveSRVDimension(TextureDescription description)
+        internal static ShaderResourceViewDimension ResolveSrvDimension(TextureDescription description)
         {
             switch (description.Dimension)
             {
@@ -173,34 +173,34 @@ namespace DevoidGPU.DX11
         {
             return format switch
             {
-                TextureFormat.RGBA8_UNorm => 1,
-                TextureFormat.RGBA8_UNorm_SRGB => 1,
-                TextureFormat.BGRA8_UNorm => 1,
-                TextureFormat.RG16_Float => 2,
-                TextureFormat.RGBA16_Float => 2,
-                TextureFormat.RGBA32_Float => 4,
+                TextureFormat.Rgba8UNorm => 1,
+                TextureFormat.Rgba8UNormSrgb => 1,
+                TextureFormat.Bgra8UNorm => 1,
+                TextureFormat.Rg16Float => 2,
+                TextureFormat.Rgba16Float => 2,
+                TextureFormat.Rgba32Float => 4,
 
-                TextureFormat.R16_Float => 2,
-                TextureFormat.R32_Float => 4,
+                TextureFormat.R16Float => 2,
+                TextureFormat.R32Float => 4,
 
-                TextureFormat.R32_UInt => 4,
+                TextureFormat.R32UInt => 4,
 
-                TextureFormat.R8_UInt => 1,
-                TextureFormat.R8_UNorm => 1,
+                TextureFormat.R8UInt => 1,
+                TextureFormat.R8UNorm => 1,
 
-                TextureFormat.Depth24_Stencil8 => 4, // 24 bits depth + 8 bits stencil = 4 bytes
-                TextureFormat.Depth32_Float => 4,
+                TextureFormat.Depth24Stencil8 => 4, // 24 bits depth + 8 bits stencil = 4 bytes
+                TextureFormat.Depth32Float => 4,
 
 
-                TextureFormat.R8_SInt => 1,
-                TextureFormat.RG8_SInt => 1,
-                TextureFormat.RGBA8_SInt => 1,
-                TextureFormat.R16_SInt => 2,
-                TextureFormat.RG16_SInt => 2,
-                TextureFormat.RGBA16_SInt => 2,
-                TextureFormat.R32_SInt => 4,
-                TextureFormat.RG32_SInt => 4,
-                TextureFormat.RGBA32_SInt => 4,
+                TextureFormat.R8SInt => 1,
+                TextureFormat.Rg8SInt => 1,
+                TextureFormat.Rgba8SInt => 1,
+                TextureFormat.R16SInt => 2,
+                TextureFormat.Rg16SInt => 2,
+                TextureFormat.Rgba16SInt => 2,
+                TextureFormat.R32SInt => 4,
+                TextureFormat.Rg32SInt => 4,
+                TextureFormat.Rgba32SInt => 4,
 
                 _ => throw new NotSupportedException($"Unsupported texture format: {format}")
             };
@@ -210,38 +210,38 @@ namespace DevoidGPU.DX11
         {
             return format switch
             {
-                TextureFormat.R8_UNorm => 1,
-                TextureFormat.R8_UInt => 1,
-                TextureFormat.R8_SInt => 1,
+                TextureFormat.R8UNorm => 1,
+                TextureFormat.R8UInt => 1,
+                TextureFormat.R8SInt => 1,
 
-                TextureFormat.R16_Float => 2,
-                TextureFormat.R32_Float => 4,
-                TextureFormat.R16_SInt => 2,
+                TextureFormat.R16Float => 2,
+                TextureFormat.R32Float => 4,
+                TextureFormat.R16SInt => 2,
 
-                TextureFormat.R32_UInt => 4,
-                TextureFormat.R32_SInt => 4,
+                TextureFormat.R32UInt => 4,
+                TextureFormat.R32SInt => 4,
 
-                TextureFormat.RG16_Float => 4,
-                TextureFormat.RG8_SInt => 2,
+                TextureFormat.Rg16Float => 4,
+                TextureFormat.Rg8SInt => 2,
 
-                TextureFormat.RG8_UNorm => 2,
-                TextureFormat.RG16_SInt => 4,
+                TextureFormat.Rg8UNorm => 2,
+                TextureFormat.Rg16SInt => 4,
 
-                TextureFormat.RG32_SInt => 8,
+                TextureFormat.Rg32SInt => 8,
 
-                TextureFormat.RGBA8_UNorm => 4,
-                TextureFormat.RGBA8_UNorm_SRGB => 4,
-                TextureFormat.BGRA8_UNorm => 4,
-                TextureFormat.RGBA8_SInt => 4,
+                TextureFormat.Rgba8UNorm => 4,
+                TextureFormat.Rgba8UNormSrgb => 4,
+                TextureFormat.Bgra8UNorm => 4,
+                TextureFormat.Rgba8SInt => 4,
 
-                TextureFormat.RGBA16_Float => 8,
-                TextureFormat.RGBA16_SInt => 8,
+                TextureFormat.Rgba16Float => 8,
+                TextureFormat.Rgba16SInt => 8,
 
-                TextureFormat.RGBA32_Float => 16,
-                TextureFormat.RGBA32_SInt => 16,
+                TextureFormat.Rgba32Float => 16,
+                TextureFormat.Rgba32SInt => 16,
 
-                TextureFormat.Depth24_Stencil8 => 4,
-                TextureFormat.Depth32_Float => 4,
+                TextureFormat.Depth24Stencil8 => 4,
+                TextureFormat.Depth32Float => 4,
 
                 _ => throw new NotSupportedException(
                     $"Unsupported texture format: {format}")
@@ -255,7 +255,7 @@ namespace DevoidGPU.DX11
                 ShaderInputType.Texture => ShaderResourceType.Texture2D,
                 ShaderInputType.Sampler => ShaderResourceType.Sampler,
                 ShaderInputType.Structured => ShaderResourceType.StructuredBuffer,
-                ShaderInputType.UnorderedAccessViewRWStructured => ShaderResourceType.RWStructuredBuffer,
+                ShaderInputType.UnorderedAccessViewRWStructured => ShaderResourceType.RwStructuredBuffer,
                 _ => ShaderResourceType.Texture2D
             };
         }
@@ -268,12 +268,12 @@ namespace DevoidGPU.DX11
                 "float4" => ShaderVariableType.Vector4,
                 "float3" => ShaderVariableType.Vector3,
                 "float2" => ShaderVariableType.Vector2,
-                "float3x3" => ShaderVariableType.Matrix3x3,
-                "float4x4" => ShaderVariableType.Matrix4x4,
+                "float3x3" => ShaderVariableType.Matrix3X3,
+                "float4x4" => ShaderVariableType.Matrix4X4,
                 _ => ShaderVariableType.Custom
             };
         }
-        public static PrimitiveTopology ToDXPrimitiveType(PrimitiveType type) =>
+        public static PrimitiveTopology ToDxPrimitiveType(PrimitiveType type) =>
             type switch
             {
                 PrimitiveType.TriangleStrip => PrimitiveTopology.TriangleStrip,
@@ -282,7 +282,7 @@ namespace DevoidGPU.DX11
                 PrimitiveType.Triangles => PrimitiveTopology.TriangleList,
                 _ => PrimitiveTopology.Undefined
             };
-        public static BlendOption ToDXBlend(BlendFactor factor)
+        public static BlendOption ToDxBlend(BlendFactor factor)
         {
             return factor switch
             {
@@ -294,7 +294,7 @@ namespace DevoidGPU.DX11
                 _ => BlendOption.One
             };
         }
-        public static BlendOperation ToDXBlendOp(BlendOp op)
+        public static BlendOperation ToDxBlendOp(BlendOp op)
         {
             return op switch
             {
@@ -302,7 +302,7 @@ namespace DevoidGPU.DX11
                 _ => BlendOperation.Add
             };
         }
-        public static ColorWriteMaskFlags ToDXColorMask(ColorMask mask)
+        public static ColorWriteMaskFlags ToDxColorMask(ColorMask mask)
         {
             ColorWriteMaskFlags flags = 0;
 
@@ -313,7 +313,7 @@ namespace DevoidGPU.DX11
 
             return flags;
         }
-        public static SharpDX.Direct3D11.FillMode ToDXFillMode(FillMode mode)
+        public static SharpDX.Direct3D11.FillMode ToDxFillMode(FillMode mode)
         {
             return mode switch
             {
@@ -323,7 +323,7 @@ namespace DevoidGPU.DX11
             };
         }
 
-        public static SharpDX.Direct3D11.CullMode ToDXCullMode(CullMode mode)
+        public static SharpDX.Direct3D11.CullMode ToDxCullMode(CullMode mode)
         {
             return mode switch
             {
@@ -334,7 +334,7 @@ namespace DevoidGPU.DX11
             };
         }
 
-        public static Comparison ToDXDepthComparison(CompareFunc func)
+        public static Comparison ToDxDepthComparison(CompareFunc func)
         {
             return func switch
             {
@@ -351,7 +351,7 @@ namespace DevoidGPU.DX11
         }
 
 
-        public static SharpDX.Direct3D11.ResourceUsage ToDXResourceUsage(ResourceUsage usage)
+        public static SharpDX.Direct3D11.ResourceUsage ToDxResourceUsage(ResourceUsage usage)
         {
             return usage switch
             {
@@ -366,7 +366,7 @@ namespace DevoidGPU.DX11
                 _ => throw new ArgumentOutOfRangeException(nameof(usage))
             };
         }
-        public static CpuAccessFlags ToDXCpuAccess(CpuAccess access)
+        public static CpuAccessFlags ToDxCpuAccess(CpuAccess access)
         {
             CpuAccessFlags flags = CpuAccessFlags.None;
 
@@ -391,7 +391,7 @@ namespace DevoidGPU.DX11
                 elements[i] = new InputElement(
                     attr.Name,
                     attr.Index,
-                    MapDXGIComponentCountToFormat(attr),
+                    MapDxgiComponentCountToFormat(attr),
                     attr.Offset,
                     attr.Slot,
                     isInstance ? InputClassification.PerInstanceData : InputClassification.PerVertexData,
@@ -401,7 +401,7 @@ namespace DevoidGPU.DX11
 
             return elements;
         }
-        public static Format MapDXGIComponentCountToFormat(VertexAttribute attr)
+        public static Format MapDxgiComponentCountToFormat(VertexAttribute attr)
         {
             return attr.Type switch
             {
@@ -433,12 +433,12 @@ namespace DevoidGPU.DX11
                 _ => throw new ArgumentException("Unsupported attribute type")
             };
         }
-        public static Format ToDXIndexFormat(IndexFormat format)
+        public static Format ToDxIndexFormat(IndexFormat format)
         {
             return format == IndexFormat.UInt16 ? SharpDX.DXGI.Format.R16_UInt : SharpDX.DXGI.Format.R32_UInt;
         }
 
-        public static TextureAddressMode ToDXTextureAddressMode(WrapMode wrap)
+        public static TextureAddressMode ToDxTextureAddressMode(WrapMode wrap)
         {
 
             return wrap switch
@@ -457,7 +457,7 @@ namespace DevoidGPU.DX11
             return (size + 15ul) & ~15ul;
         }
 
-        public static Filter ToDXFilter(
+        public static Filter ToDxFilter(
             FilterMode min,
             FilterMode mag,
             FilterMode mip,

@@ -7,13 +7,13 @@ namespace Elemental.Tools.Menu
     {
         public int MainMenuSize = 25;
 
-        private readonly Dictionary<string, MenuItem> menus = [];
+        private readonly Dictionary<string, MenuItem> _menus = [];
 
-        private readonly List<MenuNode> nodes = [];
+        private readonly List<MenuNode> _nodes = [];
 
         public void Register(string path,  MenuItem menuItem)
         {
-            menus.Add(path, menuItem);
+            _menus.Add(path, menuItem);
             RebuildTree();
         }
 
@@ -25,7 +25,7 @@ namespace Elemental.Tools.Menu
 
             MainMenuSize = (int)ImGui.GetWindowSize().Y;
 
-            foreach (var node in nodes)
+            foreach (var node in _nodes)
             {
                 DrawNode(node, context);
             }
@@ -60,13 +60,13 @@ namespace Elemental.Tools.Menu
 
         private void RebuildTree()
         {
-            nodes.Clear();
+            _nodes.Clear();
 
-            foreach (var (path, menuItem) in menus)
+            foreach (var (path, menuItem) in _menus)
             {
                 string[] segments = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
 
-                List<MenuNode> currentChildren = nodes;
+                List<MenuNode> currentChildren = _nodes;
 
                 for (int i = 0; i < segments.Length; i++)
                 {

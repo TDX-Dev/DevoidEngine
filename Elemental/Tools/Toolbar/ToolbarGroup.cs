@@ -8,7 +8,7 @@ namespace Elemental.Tools.Toolbar
     {
         public string Title { get; }
 
-        private readonly List<EditorActionId> actions = [];
+        private readonly List<EditorActionId> _actions = [];
 
         public ToolbarGroup(string title)
         {
@@ -17,7 +17,7 @@ namespace Elemental.Tools.Toolbar
 
         public ToolbarGroup AddAction(EditorActionId action)
         {
-            actions.Add(action);
+            _actions.Add(action);
             return this;
         }
 
@@ -34,14 +34,14 @@ namespace Elemental.Tools.Toolbar
             ImGui.TextColored(new Vector4(0.8f),Title);
             ImGui.SameLine(0, 6);
 
-            for (int i = 0; i < actions.Count; i++)
+            for (int i = 0; i < _actions.Count; i++)
             {
-                if (!registry.TryGet(actions[i], out EditorAction? action))
+                if (!registry.TryGet(_actions[i], out EditorAction? action))
                     continue;
 
                 DrawAction(action!);
 
-                if (i < actions.Count - 1)
+                if (i < _actions.Count - 1)
                     ImGui.SameLine(0, 2);
             }
 

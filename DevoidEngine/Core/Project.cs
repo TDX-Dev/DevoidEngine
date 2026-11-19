@@ -57,7 +57,7 @@ namespace DevoidEngine.Core
             BuildSetupPath = Path.Combine(RootPath, project.BuildSetupPath);
             ConfigPath = Path.Combine(RootPath, project.ConfigPath);
 
-            if (project.DevoidVersion.Major != Application.ENGINE_MAJOR_VER || project.DevoidVersion.Minor != Application.ENGINE_MINOR_VER)
+            if (project.DevoidVersion.Major != Application.EngineMajorVer || project.DevoidVersion.Minor != Application.EngineMinorVer)
             {
                 Console.WriteLine("Project was created with a different version of devoid");
             }

@@ -18,9 +18,9 @@ namespace DevoidEngine.Core
             public ViewportPriority Priority { get; set; }
         }
 
-        private readonly List<ViewportEntry> entries = [];
-        private readonly List<Viewport> cachedSortedViewports = [];
-        private bool isDirty = false;
+        private readonly List<ViewportEntry> _entries = [];
+        private readonly List<Viewport> _cachedSortedViewports = [];
+        private bool _isDirty = false;
 
         /// <summary>
         /// Registers a viewport to be rendered.
@@ -30,13 +30,13 @@ namespace DevoidEngine.Core
             if (viewport == null || Contains(viewport))
                 return;
 
-            entries.Add(new ViewportEntry
+            _entries.Add(new ViewportEntry
             {
                 Viewport = viewport,
                 Priority = priority
             });
 
-            isDirty = true;
+            _isDirty = true;
         }
 
         /// <summary>
@@ -46,28 +46,28 @@ namespace DevoidEngine.Core
         {
             if (viewport == null) return;
 
-            int countBefore = entries.Count;
-            entries.RemoveAll(e => e.Viewport == viewport);
+            int countBefore = _entries.Count;
+            _entries.RemoveAll(e => e.Viewport == viewport);
 
-            if (entries.Count != countBefore)
+            if (_entries.Count != countBefore)
             {
-                isDirty = true;
+                _isDirty = true;
             }
         }
 
         public bool Contains(Viewport viewport)
         {
-            return entries.Exists(e => e.Viewport == viewport);
+            return _entries.Exists(e => e.Viewport == viewport);
         }
 
         public List<Viewport> GetViewports()
         {
-            if (isDirty)
+            if (_isDirty)
             {
                 SortEntries();
             }
 
-            return cachedSortedViewports;
+            return _cachedSortedViewports;
         }
 
         public void RenderAll(ICommandList cmd)
@@ -88,22 +88,22 @@ namespace DevoidEngine.Core
 
         private void SortEntries()
         {
-            entries.Sort((a, b) => a.Priority.CompareTo(b.Priority));
+            _entries.Sort((a, b) => a.Priority.CompareTo(b.Priority));
 
-            cachedSortedViewports.Clear();
-            for (int i = 0; i < entries.Count; i++)
+            _cachedSortedViewports.Clear();
+            for (int i = 0; i < _entries.Count; i++)
             {
-                cachedSortedViewports.Add(entries[i].Viewport);
+                _cachedSortedViewports.Add(_entries[i].Viewport);
             }
 
-            isDirty = false;
+            _isDirty = false;
         }
 
         public void Clear()
         {
-            entries.Clear();
-            cachedSortedViewports.Clear();
-            isDirty = false;
+            _entries.Clear();
+            _cachedSortedViewports.Clear();
+            _isDirty = false;
         }
     }
 }

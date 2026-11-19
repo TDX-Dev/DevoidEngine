@@ -14,7 +14,7 @@
         public TextureUsage Usage;
         public TextureSampleDescription Samples;
 
-        public CpuAccess CPUAccess;
+        public CpuAccess CpuAccess;
         public ResourceUsage ResourceUsage;
 
         public readonly bool Equals(TextureDescription other)
@@ -27,7 +27,7 @@
                    ArraySize == other.ArraySize &&
                    Format == other.Format &&
                    Usage == other.Usage &&
-                   CPUAccess == other.CPUAccess &&
+                   CpuAccess == other.CpuAccess &&
                    ResourceUsage == other.ResourceUsage &&
                    Samples.Equals(other.Samples);
         }
@@ -63,7 +63,7 @@
                 hash = hash * 31 + ArraySize;
                 hash = hash * 31 + (int)Format;
                 hash = hash * 31 + (int)Usage;
-                hash = hash * 31 + (int)CPUAccess;
+                hash = hash * 31 + (int)CpuAccess;
                 hash = hash * 31 + (int)ResourceUsage;
                 hash = hash * 31 + Samples.GetHashCode();
 

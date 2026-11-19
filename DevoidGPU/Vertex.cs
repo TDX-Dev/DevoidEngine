@@ -6,7 +6,7 @@ namespace DevoidGPU
     {
         public readonly Vector3 Position;
         public readonly Vector3 Normal;
-        public readonly Vector2 UV;
+        public readonly Vector2 Uv;
         public readonly Vector4 Tangent;
 
         public static readonly VertexInfo VertexInfo = new(
@@ -21,7 +21,7 @@ namespace DevoidGPU
         {
             this.Position = position;
             this.Normal = Vector3.Zero;
-            this.UV = Vector2.Zero;
+            this.Uv = Vector2.Zero;
             this.Tangent = Vector4.Zero;
         }
 
@@ -29,7 +29,7 @@ namespace DevoidGPU
         {
             this.Position = position;
             this.Normal = normal;
-            this.UV = texcoord;
+            this.Uv = texcoord;
             this.Tangent = Vector4.Zero;
         }
 
@@ -37,7 +37,7 @@ namespace DevoidGPU
         {
             this.Position = position;
             this.Normal = normal;
-            this.UV = texcoord;
+            this.Uv = texcoord;
             this.Tangent = tangent;
         }
     }

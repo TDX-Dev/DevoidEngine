@@ -12,12 +12,12 @@ namespace DevoidEngine.Core
 
         public Vector3 LocalPosition
         {
-            get => localPosition;
+            get => _localPosition;
             set
             {
-                if (localPosition != value)
+                if (_localPosition != value)
                 {
-                    localPosition = value;
+                    _localPosition = value;
                     MarkDirty();
                     //Console.WriteLine("Marked Dirty");
                 }
@@ -28,31 +28,31 @@ namespace DevoidEngine.Core
         {
             get
             {
-                if (eulerDirty)
+                if (_eulerDirty)
                 {
-                    eulerValue = MathHelper.QuaternionToEuler(localRotation);
-                    eulerDirty = false;
+                    _eulerValue = MathHelper.QuaternionToEuler(_localRotation);
+                    _eulerDirty = false;
                 }
 
-                return eulerValue;
+                return _eulerValue;
             }
             set
             {
-                eulerValue = value;
-                localRotation = MathHelper.EulerToQuaternion(value);
+                _eulerValue = value;
+                _localRotation = MathHelper.EulerToQuaternion(value);
                 MarkDirty();
             }
         }
 
         public Quaternion LocalRotation
         {
-            get => localRotation;
+            get => _localRotation;
             set
             {
-                if (localRotation != value)
+                if (_localRotation != value)
                 {
-                    localRotation = value;
-                    eulerDirty = true;
+                    _localRotation = value;
+                    _eulerDirty = true;
                     MarkDirty();
                 }
             }
@@ -60,12 +60,12 @@ namespace DevoidEngine.Core
 
         public Vector3 LocalScale
         {
-            get => localScale;
+            get => _localScale;
             set
             {
-                if (localScale != value)
+                if (_localScale != value)
                 {
-                    localScale = value;
+                    _localScale = value;
                     MarkDirty();
                 }
             }
@@ -75,15 +75,15 @@ namespace DevoidEngine.Core
             get => WorldMatrix.Translation;
             set
             {
-                if (parent != null)
+                if (_parent != null)
                 {
-                    Matrix4x4.Invert(parent.WorldMatrix, out var invParent);
+                    Matrix4x4.Invert(_parent.WorldMatrix, out var invParent);
                     Vector3 local = Vector3.Transform(value, invParent);
-                    localPosition = local;
+                    _localPosition = local;
                 }
                 else
                 {
-                    localPosition = value;
+                    _localPosition = value;
                 }
 
                 MarkDirty();
@@ -93,21 +93,21 @@ namespace DevoidEngine.Core
         {
             get
             {
-                if (parent == null)
-                    return localRotation;
+                if (_parent == null)
+                    return _localRotation;
 
-                return parent.Rotation * localRotation;
+                return _parent.Rotation * _localRotation;
             }
             set
             {
-                if (parent != null)
+                if (_parent != null)
                 {
-                    Quaternion invParent = Quaternion.Inverse(parent.Rotation);
-                    localRotation = invParent * value;
+                    Quaternion invParent = Quaternion.Inverse(_parent.Rotation);
+                    _localRotation = invParent * value;
                 }
                 else
                 {
-                    localRotation = value;
+                    _localRotation = value;
                 }
 
                 MarkDirty();
@@ -118,31 +118,31 @@ namespace DevoidEngine.Core
         {
             get
             {
-                if (parent == null)
-                    return localScale;
+                if (_parent == null)
+                    return _localScale;
 
-                return parent.Scale * localScale;
+                return _parent.Scale * _localScale;
             }
             set
             {
-                if (parent != null)
-                    localScale = value / parent.Scale;
+                if (_parent != null)
+                    _localScale = value / _parent.Scale;
                 else
-                    localScale = value;
+                    _localScale = value;
 
                 MarkDirty();
             }
         }
-        public Matrix4x4 LocalMatrix => Matrix4x4.CreateScale(localScale) * Matrix4x4.CreateFromQuaternion(localRotation) * Matrix4x4.CreateTranslation(localPosition);
+        public Matrix4x4 LocalMatrix => Matrix4x4.CreateScale(_localScale) * Matrix4x4.CreateFromQuaternion(_localRotation) * Matrix4x4.CreateTranslation(_localPosition);
 
         public Matrix4x4 WorldMatrix
         {
             get
             {
-                if (dirty)
+                if (_dirty)
                     RecalculateWorldMatrix();
 
-                return worldMatrix;
+                return _worldMatrix;
             }
         }
 
@@ -152,39 +152,39 @@ namespace DevoidEngine.Core
         public Vector3 Up => Vector3.Normalize(Vector3.Transform(Vector3.UnitY, Rotation));
         [DontSerialize]
         public Vector3 Right => Vector3.Normalize(Vector3.Transform(Vector3.UnitX, Rotation));
-        public Transform3D? Parent => parent;
-        public List<Transform3D> Children => children;
+        public Transform3D? Parent => _parent;
+        public List<Transform3D> Children => _children;
 
-        private Transform3D? parent;
-        private readonly List<Transform3D> children;
+        private Transform3D? _parent;
+        private readonly List<Transform3D> _children;
 
-        private Vector3 localPosition = Vector3.Zero;
-        private Quaternion localRotation = Quaternion.Identity;
-        private Vector3 localScale = Vector3.One;
+        private Vector3 _localPosition = Vector3.Zero;
+        private Quaternion _localRotation = Quaternion.Identity;
+        private Vector3 _localScale = Vector3.One;
 
-        private Vector3 prevLocalPosition;
-        private Quaternion prevLocalRotation;
-        private Vector3 prevLocalScale;
+        private Vector3 _prevLocalPosition;
+        private Quaternion _prevLocalRotation;
+        private Vector3 _prevLocalScale;
 
-        private Matrix4x4 worldMatrix = Matrix4x4.Identity;
+        private Matrix4x4 _worldMatrix = Matrix4x4.Identity;
 
-        private Vector3 eulerValue;
-        private bool eulerDirty = true;
-        private bool dirty = true;
+        private Vector3 _eulerValue;
+        private bool _eulerDirty = true;
+        private bool _dirty = true;
 
-        public bool hasMoved = false;
+        public bool HasMoved = false;
 
-        private Matrix4x4 interpolatedWorldMatrix;
-        private uint interpolatedFrame = uint.MaxValue;
+        private Matrix4x4 _interpolatedWorldMatrix;
+        private uint _interpolatedFrame = uint.MaxValue;
 
         public Transform3D()
         {
-            children = [];
+            _children = [];
         }
 
         public void SetParent(Transform3D? newParent, bool keepWorld = false)
         {
-            if (parent == newParent)
+            if (_parent == newParent)
                 return;
 
             Transform3D? current = newParent;
@@ -194,21 +194,21 @@ namespace DevoidEngine.Core
                 if (current == this)
                     return;
 
-                current = current.parent;
+                current = current._parent;
             }
 
             Matrix4x4 oldWorld = WorldMatrix;
 
-            parent?.children.Remove(this);
+            _parent?._children.Remove(this);
 
-            parent = newParent;
-            parent?.children.Add(this);
+            _parent = newParent;
+            _parent?._children.Add(this);
 
             if (keepWorld)
             {
-                if (parent != null)
+                if (_parent != null)
                 {
-                    Matrix4x4.Invert(parent.WorldMatrix, out var invParent);
+                    Matrix4x4.Invert(_parent.WorldMatrix, out var invParent);
                     // This was changed from:
                     Matrix4x4 local = oldWorld * invParent;
                     //Matrix4x4 local = invParent * oldWorld;
@@ -225,74 +225,74 @@ namespace DevoidEngine.Core
 
         private void RecalculateWorldMatrix()
         {
-            if (parent != null)
-                worldMatrix = LocalMatrix * parent.WorldMatrix;
+            if (_parent != null)
+                _worldMatrix = LocalMatrix * _parent.WorldMatrix;
             else
-                worldMatrix = LocalMatrix;
+                _worldMatrix = LocalMatrix;
 
-            dirty = false;
+            _dirty = false;
         }
 
         internal void MarkDirty()
         {
-            dirty = true;
-            hasMoved = true;
+            _dirty = true;
+            HasMoved = true;
 
-            foreach (var child in children)
+            foreach (var child in _children)
                 child.MarkDirty();
         }
         internal void ClearDirty()
         {
-            if (!hasMoved)
+            if (!HasMoved)
                 return;
 
-            hasMoved = false;
+            HasMoved = false;
 
             TransformChanged?.Invoke();
         }
         internal void CapturePrevious()
         {
-            prevLocalPosition = localPosition;
-            prevLocalRotation = localRotation;
-            prevLocalScale = localScale;
+            _prevLocalPosition = _localPosition;
+            _prevLocalRotation = _localRotation;
+            _prevLocalScale = _localScale;
         }
 
         internal void InitializeInterpolation()
         {
-            prevLocalPosition = localPosition;
-            prevLocalRotation = localRotation;
-            prevLocalScale = localScale;
+            _prevLocalPosition = _localPosition;
+            _prevLocalRotation = _localRotation;
+            _prevLocalScale = _localScale;
 
-            interpolatedWorldMatrix = WorldMatrix;
-            interpolatedFrame = uint.MaxValue;
+            _interpolatedWorldMatrix = WorldMatrix;
+            _interpolatedFrame = uint.MaxValue;
         }
         public Matrix4x4 GetGlobalTransformInterpolated(uint frameIndex, float alpha)
         {
 
-            if (interpolatedFrame == frameIndex)
-                return interpolatedWorldMatrix;
+            if (_interpolatedFrame == frameIndex)
+                return _interpolatedWorldMatrix;
 
             Matrix4x4 local;
 
-            Vector3 pos = Vector3.Lerp(prevLocalPosition, localPosition, alpha);
-            Quaternion rot = Quaternion.Slerp(prevLocalRotation, localRotation, alpha);
-            Vector3 scale = Vector3.Lerp(prevLocalScale, localScale, alpha);
+            Vector3 pos = Vector3.Lerp(_prevLocalPosition, _localPosition, alpha);
+            Quaternion rot = Quaternion.Slerp(_prevLocalRotation, _localRotation, alpha);
+            Vector3 scale = Vector3.Lerp(_prevLocalScale, _localScale, alpha);
 
             local = Matrix4x4.CreateScale(scale) * Matrix4x4.CreateFromQuaternion(rot) * Matrix4x4.CreateTranslation(pos);
             Matrix4x4 result;
 
             // i hate life
-            if (parent != null)
+            if (_parent != null)
             {
                 Matrix4x4 parentGlobal;
 
-                if (parent.interpolatedFrame == frameIndex)
+                if (_parent._interpolatedFrame == frameIndex)
                 {
-                    parentGlobal = parent.interpolatedWorldMatrix;
+                    parentGlobal = _parent._interpolatedWorldMatrix;
                 }
                 else
                 {
-                    parentGlobal = parent.GetGlobalTransformInterpolated(frameIndex, alpha);
+                    parentGlobal = _parent.GetGlobalTransformInterpolated(frameIndex, alpha);
                 }
 
                 result = local * parentGlobal;
@@ -302,8 +302,8 @@ namespace DevoidEngine.Core
                 result = local;
             }
 
-            interpolatedWorldMatrix = result;
-            interpolatedFrame = frameIndex;
+            _interpolatedWorldMatrix = result;
+            _interpolatedFrame = frameIndex;
 
             return result;
         }
@@ -316,9 +316,9 @@ namespace DevoidEngine.Core
                 out Vector3 translation
             );
 
-            localPosition = translation;
-            localRotation = rotation;
-            localScale = scale;
+            _localPosition = translation;
+            _localRotation = rotation;
+            _localScale = scale;
         }
     }
 }

@@ -2,17 +2,17 @@
 
 namespace DevoidGPU.DX11
 {
-    internal sealed class DX11GPUTimestamp : IGPUTimestamp
+    internal sealed class Dx11GpuTimestamp : IGpuTimestamp
     {
-        private readonly DeviceContext context;
+        private readonly DeviceContext _context;
 
         internal Query Query { get; }
 
-        public DX11GPUTimestamp(
+        public Dx11GpuTimestamp(
             Device device,
             DeviceContext context)
         {
-            this.context = context;
+            this._context = context;
 
             QueryDescription description = new()
             {
@@ -25,7 +25,7 @@ namespace DevoidGPU.DX11
 
         public bool TryGetTimestamp(out ulong timestamp)
         {
-            return context.GetData(Query, out timestamp);
+            return _context.GetData(Query, out timestamp);
         }
 
 

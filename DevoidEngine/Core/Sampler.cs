@@ -4,9 +4,9 @@ namespace DevoidEngine.Core
 {
     public sealed class Sampler : IDisposable
     {
-        private readonly ISampler gpuSampler;
+        private readonly ISampler _gpuSampler;
 
-        public ISampler GPU => gpuSampler;
+        public ISampler Gpu => _gpuSampler;
         private static Sampler @default = Create(new SamplerDescription()
         {
             AddressU = WrapMode.Repeat,
@@ -15,8 +15,8 @@ namespace DevoidEngine.Core
             MagFilter = FilterMode.Linear,
             MinFilter = FilterMode.Linear,
             MipFilter = FilterMode.Linear,
-            MinLOD = 0f,
-            MaxLOD = float.MaxValue,
+            MinLod = 0f,
+            MaxLod = float.MaxValue,
             MaxAnisotropy = 1,
         });
 
@@ -28,7 +28,7 @@ namespace DevoidEngine.Core
             SamplerDescription description)
         {
             Description = description;
-            gpuSampler = device.CreateSampler(description);
+            _gpuSampler = device.CreateSampler(description);
         }
 
         public static Sampler Create(
@@ -41,7 +41,7 @@ namespace DevoidEngine.Core
 
         public void Dispose()
         {
-            gpuSampler.Dispose();
+            _gpuSampler.Dispose();
         }
     }
 }

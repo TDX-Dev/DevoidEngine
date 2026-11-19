@@ -9,7 +9,7 @@ namespace DevoidEngine.Core
         public RenderTarget? RenderTarget { get; set; }
         public Frustum Frustum { get; private set; }
 
-        public float FOV { get => MathHelper.RadToDeg(fov_radians); set => fov_radians = MathHelper.DegToRad(value); }
+        public float Fov { get => MathHelper.RadToDeg(FovRadians); set => FovRadians = MathHelper.DegToRad(value); }
         public float Near { get; set; } = 0.1f;
         public float Far { get; set; } = 1000f;
         public Vector3 Position { get; private set; } = Vector3.Zero;
@@ -25,9 +25,9 @@ namespace DevoidEngine.Core
         public Matrix4x4 InverseView;
         public Matrix4x4 InverseViewProjection;
 
-        internal float fov_radians = MathF.PI / 3.0f;
-        internal float prev_aspectratio = 0;
-        internal bool view_dirty = true;
+        internal float FovRadians = MathF.PI / 3.0f;
+        internal float PrevAspectratio = 0;
+        internal bool ViewDirty = true;
 
         public Camera()
         {
@@ -52,15 +52,15 @@ namespace DevoidEngine.Core
 
         public void UpdateProjectionMatrix(float aspectRatio)
         {
-            Projection = Matrix4x4.CreatePerspectiveFieldOfViewLeftHanded(fov_radians, aspectRatio, Near, Far);
+            Projection = Matrix4x4.CreatePerspectiveFieldOfViewLeftHanded(FovRadians, aspectRatio, Near, Far);
 
             Matrix4x4.Invert(Projection, out InverseProjection);
 
             Frustum.Update(View * Projection);
             Matrix4x4.Invert(View * Projection, out InverseViewProjection);
 
-            prev_aspectratio = aspectRatio;
-            view_dirty = false;
+            PrevAspectratio = aspectRatio;
+            ViewDirty = false;
         }
 
         public void UpdateView(Vector3 position, Vector3 front, Vector3 up)
@@ -80,7 +80,7 @@ namespace DevoidEngine.Core
 
             Frustum.Update(View * Projection);
 
-            view_dirty = true;
+            ViewDirty = true;
         }
 
         public Vector3 WorldToScreen(Vector3 worldPos, float screenWidth, float screenHeight)
@@ -136,7 +136,7 @@ namespace DevoidEngine.Core
             return new Ray(origin, direction);
         }
 
-        public bool IntersectsAABB(Vector3 min, Vector3 max)
+        public bool IntersectsAabb(Vector3 min, Vector3 max)
         {
             if (Frustum == null)
                 return false;

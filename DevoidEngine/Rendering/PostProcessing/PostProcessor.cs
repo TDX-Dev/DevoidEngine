@@ -9,23 +9,23 @@ namespace DevoidEngine.Rendering.PostProcessing
 {
     public sealed class PostProcessor
     {
-        private readonly PostProcessGraph graph = new();
-        private readonly PostProcessContext context = new();
+        private readonly PostProcessGraph _graph = new();
+        private readonly PostProcessContext _context = new();
 
-        public void AddPass(PostProcessPass pass) => graph.AddPass(pass);
+        public void AddPass(PostProcessPass pass) => _graph.AddPass(pass);
 
-        public void RemovePass(PostProcessPass pass) => graph.RemovePass(pass);
+        public void RemovePass(PostProcessPass pass) => _graph.RemovePass(pass);
 
-        public void Resize(int width, int height) => graph.Resize(width, height);
+        public void Resize(int width, int height) => _graph.Resize(width, height);
 
         public Texture Run(Renderer renderer, RenderContext renderContext, Texture sceneColor, PostProcessSettings settings)
         {
-            context.Renderer = renderer;
-            context.RenderContext = renderContext;
-            context.CommandList = renderContext.CommandList;
-            context.Settings = settings;
+            _context.Renderer = renderer;
+            _context.RenderContext = renderContext;
+            _context.CommandList = renderContext.CommandList;
+            _context.Settings = settings;
 
-            return graph.Execute(context, sceneColor);
+            return _graph.Execute(_context, sceneColor);
         }
     }
 }

@@ -7,7 +7,7 @@ using MapFlags = SharpDX.Direct3D11.MapFlags;
 
 namespace DevoidGPU.DX11
 {
-    internal sealed class DX11VertexBuffer : IVertexBuffer
+    internal sealed class Dx11VertexBuffer : IVertexBuffer
     {
         public ulong Size { get; }
         public VertexInfo Layout { get; }
@@ -17,13 +17,13 @@ namespace DevoidGPU.DX11
 
         public Buffer Buffer { get; private set; } = null!;
 
-        private readonly Device device;
-        private readonly DeviceContext deviceContext;
+        private readonly Device _device;
+        private readonly DeviceContext _deviceContext;
 
-        public DX11VertexBuffer(Device device, DeviceContext context, VertexBufferDescription description)
+        public Dx11VertexBuffer(Device device, DeviceContext context, VertexBufferDescription description)
         {
-            this.device = device;
-            this.deviceContext = context;
+            this._device = device;
+            this._deviceContext = context;
 
             Size = description.Size;
             Layout = description.Layout;
@@ -36,8 +36,8 @@ namespace DevoidGPU.DX11
             {
                 SizeInBytes = (int)description.Size,
                 BindFlags = BindFlags.VertexBuffer,
-                Usage = DX11StateMapper.ToDXResourceUsage(description.Usage),
-                CpuAccessFlags = description.Usage == ResourceUsage.Dynamic ? CpuAccessFlags.Write : DX11StateMapper.ToDXCpuAccess(description.CpuAccess),
+                Usage = Dx11StateMapper.ToDxResourceUsage(description.Usage),
+                CpuAccessFlags = description.Usage == ResourceUsage.Dynamic ? CpuAccessFlags.Write : Dx11StateMapper.ToDxCpuAccess(description.CpuAccess),
                 OptionFlags = ResourceOptionFlags.None,
                 StructureByteStride = 0
             };
@@ -79,7 +79,7 @@ namespace DevoidGPU.DX11
 
             if ((Usage & ResourceUsage.Dynamic) != 0)
             {
-                var box = deviceContext.MapSubresource(
+                var box = _deviceContext.MapSubresource(
                     Buffer,
                     0,
                     SharpDX.Direct3D11.MapMode.WriteDiscard,
@@ -91,11 +91,11 @@ namespace DevoidGPU.DX11
                     sizeInBytes,
                     sizeInBytes);
 
-                deviceContext.UnmapSubresource(Buffer, 0);
+                _deviceContext.UnmapSubresource(Buffer, 0);
             }
             else
             {
-                deviceContext.UpdateSubresource(
+                _deviceContext.UpdateSubresource(
                     new DataBox(data, 0, 0),
                     Buffer,
                     0);

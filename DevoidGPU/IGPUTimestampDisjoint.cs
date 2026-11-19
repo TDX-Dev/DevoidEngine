@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DevoidGPU
 {
-    public interface IGPUTimestampDisjoint : IDisposable
+    public interface IGpuTimestampDisjoint : IDisposable
     {
         bool TryGetResult(out long frequency, out bool disjoint);
     }

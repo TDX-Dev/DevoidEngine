@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace DevoidEngine.Rendering
 {
-    public sealed class HDRISky : ISky
+    public sealed class HdriSky : ISky
     {
         public MaterialInstance Material => throw new NotImplementedException();
 

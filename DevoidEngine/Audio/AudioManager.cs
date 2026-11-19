@@ -4,48 +4,48 @@ namespace DevoidEngine.Audio
 {
     public sealed class AudioManager : IDisposable
     {
-        internal IAudioBackend _backend;
+        internal IAudioBackend Backend;
         private bool _disposed;
 
         internal AudioManager(IAudioBackend backend)
         {
-            _backend = backend;
-            _backend.Initialize();
+            Backend = backend;
+            Backend.Initialize();
         }
 
         public AudioClipHandle Load(string path)
         {
-            return _backend.Load(path);
+            return Backend.Load(path);
         }
 
         public AudioClipHandle Load(ReadOnlySpan<byte> data)
         {
-            return _backend.Load(data);
+            return Backend.Load(data);
         }
 
         public AudioPlayObject? Play(in AudioPlayDescription desc)
         {
-            return _backend.Play(desc);
+            return Backend.Play(desc);
         }
 
         public void PlayOneShot(in AudioPlayDescription desc)
         {
-            _backend.PlayOneShot(desc);
+            Backend.PlayOneShot(desc);
         }
 
         public void Stop(AudioPlayObject playObject)
         {
-            _backend.Stop(playObject);
+            Backend.Stop(playObject);
         }
 
         public void Pause(AudioPlayObject playObject, bool value = true)
         {
-            _backend.Pause(playObject, value);
+            Backend.Pause(playObject, value);
         }
 
         public void SetListener(Vector3 position, Vector3 forward, Vector3 up)
         {
-            _backend.SetListener(position, forward, up);
+            Backend.SetListener(position, forward, up);
         }
 
         public void QueueDelete(AudioClipHandle handle)
@@ -55,7 +55,7 @@ namespace DevoidEngine.Audio
 
         public void Update()
         {
-            _backend.Update();
+            Backend.Update();
         }
 
 
@@ -64,7 +64,7 @@ namespace DevoidEngine.Audio
             if (_disposed)
                 return;
 
-            _backend?.Dispose();
+            Backend?.Dispose();
 
             _disposed = true;
             GC.SuppressFinalize(this);

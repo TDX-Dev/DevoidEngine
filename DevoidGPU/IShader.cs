@@ -1,6 +1,6 @@
 ﻿namespace DevoidGPU
 {
-    public interface IShader
+    public interface IShader : IDisposable
     {
         ShaderDescription Description { get; }
         ShaderStage Stage { get; }

@@ -4,40 +4,40 @@ namespace DevoidEngine.Core
 {
     public class Cursor
     {
-        internal static CursorState cursorState;
-        internal static CursorShape cursorShape;
-        internal static Vector2 mousePosition;
+        internal static CursorState CursorState;
+        internal static CursorShape CursorShape;
+        internal static Vector2 MousePosition;
 
-        internal static bool stateDirty = false;
-        internal static bool shapeDirty = false;
-        internal static bool posDirty = false;
+        internal static bool StateDirty = false;
+        internal static bool ShapeDirty = false;
+        internal static bool PosDirty = false;
 
         public void SetCursorPosition(Vector2 position)
         {
-            mousePosition = position;
-            posDirty = true;
+            MousePosition = position;
+            PosDirty = true;
         }
 
         public void SetCursorState(CursorState state)
         {
-            cursorState = state;
-            stateDirty = true;
+            CursorState = state;
+            StateDirty = true;
         }
 
         public CursorState GetCursorState()
         {
-            return cursorState;
+            return CursorState;
         }
 
         public void SetCursorShape(CursorShape shape)
         {
-            cursorShape = shape;
-            shapeDirty = true;
+            CursorShape = shape;
+            ShapeDirty = true;
         }
 
         public CursorShape GetCursorShape()
         {
-            return cursorShape;
+            return CursorShape;
         }
     }
 }

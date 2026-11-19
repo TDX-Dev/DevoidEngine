@@ -1,19 +1,19 @@
 ﻿namespace DevoidGPU.DX11
 {
-    internal sealed class DX11DescriptorSet : IDescriptorSet
+    internal sealed class Dx11DescriptorSet : IDescriptorSet
     {
 
         public IDescriptorLayout Layout { get; }
 
-        internal readonly Dictionary<uint, IShaderStorageBuffer> storageBuffers = [];
-        internal readonly Dictionary<uint, IUniformBuffer> uniformBuffers = [];
-        internal readonly Dictionary<uint, ITexture> textures = [];
-        internal readonly Dictionary<uint, ISampler> samplers = [];
+        internal readonly Dictionary<uint, IShaderStorageBuffer> StorageBuffers = [];
+        internal readonly Dictionary<uint, IUniformBuffer> UniformBuffers = [];
+        internal readonly Dictionary<uint, ITexture> Textures = [];
+        internal readonly Dictionary<uint, ISampler> Samplers = [];
 
-        internal readonly Dictionary<uint, IShaderStorageBuffer> rwStorageBuffers = [];
-        internal readonly Dictionary<uint, ITexture> rwTextures = [];
+        internal readonly Dictionary<uint, IShaderStorageBuffer> RwStorageBuffers = [];
+        internal readonly Dictionary<uint, ITexture> RwTextures = [];
 
-        public DX11DescriptorSet(IDescriptorLayout layout)
+        public Dx11DescriptorSet(IDescriptorLayout layout)
         {
             Layout = layout;
         }
@@ -23,42 +23,42 @@
             IShaderStorageBuffer buffer
         )
         {
-            storageBuffers[binding] = buffer;
+            StorageBuffers[binding] = buffer;
         }
 
         public void SetUniformBuffer(
             uint binding,
             IUniformBuffer buffer)
         {
-            uniformBuffers[binding] = buffer;
+            UniformBuffers[binding] = buffer;
         }
 
         public void SetTexture(
             uint binding,
             ITexture texture)
         {
-            textures[binding] = texture;
+            Textures[binding] = texture;
         }
 
         public void SetSampler(
             uint binding,
             ISampler sampler)
         {
-            samplers[binding] = sampler;
+            Samplers[binding] = sampler;
         }
 
         public void SetRWShaderStorageBuffer(
     uint binding,
     IShaderStorageBuffer buffer)
         {
-            rwStorageBuffers[binding] = buffer;
+            RwStorageBuffers[binding] = buffer;
         }
 
-        public void SetRWTexture(
+        public void SetRwTexture(
             uint binding,
             ITexture texture)
         {
-            rwTextures[binding] = texture;
+            RwTextures[binding] = texture;
         }
     }
 }

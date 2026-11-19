@@ -20,230 +20,230 @@ namespace DevoidEngine.Rendering
 
     public class DirectionalLight
     {
-        public GPUDirectionalLight internalLight;
-        public bool needsUpdate;
+        public GpuDirectionalLight InternalLight;
+        public bool NeedsUpdate;
 
         public Vector3 Direction
         {
-            get => new(internalLight.Direction.X, internalLight.Direction.Y, internalLight.Direction.Z);
+            get => new(InternalLight.Direction.X, InternalLight.Direction.Y, InternalLight.Direction.Z);
             set
             {
-                internalLight.Direction.X = value.X;
-                internalLight.Direction.Y = value.Y;
-                internalLight.Direction.Z = value.Z;
-                needsUpdate = true;
+                InternalLight.Direction.X = value.X;
+                InternalLight.Direction.Y = value.Y;
+                InternalLight.Direction.Z = value.Z;
+                NeedsUpdate = true;
             }
         }
 
         public bool Enabled
         {
-            get => internalLight.Direction.W == 1f;
+            get => InternalLight.Direction.W == 1f;
             set
             {
-                internalLight.Direction.W = value ? 1f : 0f;
-                needsUpdate = true;
+                InternalLight.Direction.W = value ? 1f : 0f;
+                NeedsUpdate = true;
             }
         }
 
         public Vector3 Color
         {
-            get => new(internalLight.Color.X, internalLight.Color.Y, internalLight.Color.Z);
+            get => new(InternalLight.Color.X, InternalLight.Color.Y, InternalLight.Color.Z);
             set
             {
-                internalLight.Color.X = value.X;
-                internalLight.Color.Y = value.Y;
-                internalLight.Color.Z = value.Z;
-                needsUpdate = true;
+                InternalLight.Color.X = value.X;
+                InternalLight.Color.Y = value.Y;
+                InternalLight.Color.Z = value.Z;
+                NeedsUpdate = true;
             }
         }
 
         public float Intensity
         {
-            get => internalLight.Color.W;
+            get => InternalLight.Color.W;
             set
             {
-                internalLight.Color.W = value;
-                needsUpdate = true;
+                InternalLight.Color.W = value;
+                NeedsUpdate = true;
             }
         }
     }
 
     public class PointLight
     {
-        public GPUPointLight internalLight;
-        public bool needsUpdate;
+        public GpuPointLight InternalLight;
+        public bool NeedsUpdate;
 
         public Vector3 Position
         {
-            get => new(internalLight.position.X, internalLight.position.Y, internalLight.position.Z);
+            get => new(InternalLight.position.X, InternalLight.position.Y, InternalLight.position.Z);
             set
             {
-                internalLight.position.X = value.X;
-                internalLight.position.Y = value.Y;
-                internalLight.position.Z = value.Z;
-                needsUpdate = true;
+                InternalLight.position.X = value.X;
+                InternalLight.position.Y = value.Y;
+                InternalLight.position.Z = value.Z;
+                NeedsUpdate = true;
             }
         }
 
         public Vector3 Color
         {
-            get => new(internalLight.color.X, internalLight.color.Y, internalLight.color.Z);
+            get => new(InternalLight.color.X, InternalLight.color.Y, InternalLight.color.Z);
             set
             {
-                internalLight.color.X = value.X;
-                internalLight.color.Y = value.Y;
-                internalLight.color.Z = value.Z;
-                needsUpdate = true;
+                InternalLight.color.X = value.X;
+                InternalLight.color.Y = value.Y;
+                InternalLight.color.Z = value.Z;
+                NeedsUpdate = true;
             }
         }
 
         public bool Enabled
         {
-            get => internalLight.position.W == 1f;
+            get => InternalLight.position.W == 1f;
             set
             {
-                internalLight.position.W = value ? 1f : 0f;
-                needsUpdate = true;
+                InternalLight.position.W = value ? 1f : 0f;
+                NeedsUpdate = true;
             }
         }
 
         public float Intensity
         {
-            get => internalLight.color.W;
+            get => InternalLight.color.W;
             set
             {
-                internalLight.color.W = value;
-                needsUpdate = true;
+                InternalLight.color.W = value;
+                NeedsUpdate = true;
             }
         }
 
         public float Range
         {
-            get => internalLight.range.X;
+            get => InternalLight.range.X;
             set
             {
-                internalLight.range.X = value;
-                needsUpdate = true;
+                InternalLight.range.X = value;
+                NeedsUpdate = true;
             }
         }
 
         public int AttenuationType
         {
-            get => (int)internalLight.range.Y;
+            get => (int)InternalLight.range.Y;
             set
             {
-                internalLight.range.Y = value;
-                needsUpdate = true;
+                InternalLight.range.Y = value;
+                NeedsUpdate = true;
             }
         }
 
         public Vector2 AttenuationParameters
         {
-            get => new(internalLight.range.Z, internalLight.range.W);
+            get => new(InternalLight.range.Z, InternalLight.range.W);
             set
             {
-                internalLight.range.Z = value.X;
-                internalLight.range.W = value.Y;
-                needsUpdate = true;
+                InternalLight.range.Z = value.X;
+                InternalLight.range.W = value.Y;
+                NeedsUpdate = true;
             }
         }
     }
 
     public class SpotLight
     {
-        public GPUSpotLight internalLight;
-        public bool needsUpdate;
+        public GpuSpotLight InternalLight;
+        public bool NeedsUpdate;
 
         public Vector3 Position
         {
-            get => new(internalLight.position.X, internalLight.position.Y, internalLight.position.Z);
+            get => new(InternalLight.position.X, InternalLight.position.Y, InternalLight.position.Z);
             set
             {
-                internalLight.position.X = value.X;
-                internalLight.position.Y = value.Y;
-                internalLight.position.Z = value.Z;
-                needsUpdate = true;
+                InternalLight.position.X = value.X;
+                InternalLight.position.Y = value.Y;
+                InternalLight.position.Z = value.Z;
+                NeedsUpdate = true;
             }
         }
 
         public Vector3 Color
         {
-            get => new(internalLight.color.X, internalLight.color.Y, internalLight.color.Z);
+            get => new(InternalLight.color.X, InternalLight.color.Y, InternalLight.color.Z);
             set
             {
-                internalLight.color.X = value.X;
-                internalLight.color.Y = value.Y;
-                internalLight.color.Z = value.Z;
-                needsUpdate = true;
+                InternalLight.color.X = value.X;
+                InternalLight.color.Y = value.Y;
+                InternalLight.color.Z = value.Z;
+                NeedsUpdate = true;
             }
         }
 
         public bool Enabled
         {
-            get => internalLight.position.W == 1f;
+            get => InternalLight.position.W == 1f;
             set
             {
-                internalLight.position.W = value ? 1f : 0f;
-                needsUpdate = true;
+                InternalLight.position.W = value ? 1f : 0f;
+                NeedsUpdate = true;
             }
         }
 
         public float Intensity
         {
-            get => internalLight.color.W;
+            get => InternalLight.color.W;
             set
             {
-                internalLight.color.W = value;
-                needsUpdate = true;
+                InternalLight.color.W = value;
+                NeedsUpdate = true;
             }
         }
 
         public float Range
         {
-            get => internalLight.direction.W;
+            get => InternalLight.direction.W;
             set
             {
-                internalLight.direction.W = value;
-                needsUpdate = true;
+                InternalLight.direction.W = value;
+                NeedsUpdate = true;
             }
         }
 
         public Vector3 Direction
         {
-            get => new(internalLight.direction.X, internalLight.direction.Y, internalLight.direction.Z);
+            get => new(InternalLight.direction.X, InternalLight.direction.Y, InternalLight.direction.Z);
             set
             {
-                internalLight.direction.X = value.X;
-                internalLight.direction.Y = value.Y;
-                internalLight.direction.Z = value.Z;
-                needsUpdate = true;
+                InternalLight.direction.X = value.X;
+                InternalLight.direction.Y = value.Y;
+                InternalLight.direction.Z = value.Z;
+                NeedsUpdate = true;
             }
         }
 
         public float InnerCutoff
         {
-            get => internalLight.innerCutoff;
+            get => InternalLight.innerCutoff;
             set
             {
-                internalLight.innerCutoff = value;
-                needsUpdate = true;
+                InternalLight.innerCutoff = value;
+                NeedsUpdate = true;
             }
         }
 
         public float OuterCutoff
         {
-            get => internalLight.outerCutoff;
+            get => InternalLight.outerCutoff;
             set
             {
-                internalLight.outerCutoff = value;
-                needsUpdate = true;
+                InternalLight.outerCutoff = value;
+                NeedsUpdate = true;
             }
         }
     }
 
 
     [StructLayout(LayoutKind.Sequential, Pack = 16)]
-    public unsafe struct GPUDirectionalLight
+    public unsafe struct GpuDirectionalLight
     {
         public Vector4 Direction; // Normalized + w for enabled/disabled
         public Vector4 Color; // Color + w for intensity
@@ -251,7 +251,7 @@ namespace DevoidEngine.Rendering
 
 
     [StructLayout(LayoutKind.Sequential, Pack = 16)]
-    public unsafe struct GPUPointLight
+    public unsafe struct GpuPointLight
     {
         public Vector4 position; // 3 floats for position 1 float enabled/disabled
         public Vector4 color; // 3 floats for color 1 float for intensity
@@ -261,7 +261,7 @@ namespace DevoidEngine.Rendering
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct GPUSpotLight
+    public struct GpuSpotLight
     {
         public Vector4 position; // W component is enabled/disabled
         public Vector4 color; // W component is intensity

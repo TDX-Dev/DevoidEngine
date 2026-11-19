@@ -4,8 +4,8 @@ namespace DevoidEngine.Core
 {
     public sealed class UniformBuffer : IDisposable
     {
-        private readonly IUniformBuffer gpuBuffer;
-        public IUniformBuffer GPU => gpuBuffer;
+        private readonly IUniformBuffer _gpuBuffer;
+        public IUniformBuffer Gpu => _gpuBuffer;
 
         public UniformBuffer(
             IGraphicsDevice device,
@@ -13,7 +13,7 @@ namespace DevoidEngine.Core
             uint size
         )
         {
-            gpuBuffer = device.CreateUniformBuffer(new BufferDescription()
+            _gpuBuffer = device.CreateUniformBuffer(new BufferDescription()
             {
                 Usage = usage,
                 Bind = BufferBind.Uniform,
@@ -30,22 +30,22 @@ namespace DevoidEngine.Core
 
         public void Update<T>(T data) where T : struct
         {
-            GPU.Update(data);
+            Gpu.Update(data);
         }
 
         public void Update<T>(ReadOnlySpan<T> data) where T : unmanaged
         {
-            GPU.Update<T>(data);
+            Gpu.Update<T>(data);
         }
 
         public void Update(ReadOnlySpan<byte> data)
         {
-            GPU.Update(data);
+            Gpu.Update(data);
         }
 
         public void Dispose()
         {
-            GPU.Dispose();
+            Gpu.Dispose();
         }
     }
 }

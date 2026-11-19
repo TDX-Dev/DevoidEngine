@@ -1,291 +1,130 @@
-﻿using DevoidGPU;
+﻿using DevoidEngine.Logging;
+using DevoidGPU;
 using System.Numerics;
 using System.Runtime.InteropServices;
 
 namespace DevoidEngine.Core
 {
-    public class MaterialInstance : IDisposable
+    public sealed class MaterialInstance : IDisposable
     {
         public Material BaseMaterial { get; }
-        public IDescriptorSet DescriptorSet
+        public IDescriptorSet DescriptorSet { get => _descriptorSet; }
+
+        private readonly Dictionary<string, Texture> _textureOverrides;
+        private readonly Dictionary<string, Sampler> _samplerOverrides;
+
+        private readonly HashSet<string> _overriddenProperties;
+        private readonly HashSet<string> _overriddenTextures;
+        private readonly HashSet<string> _overriddenSamplers;
+
+        private readonly byte[]? _instanceBuffer; // CPU
+        private readonly UniformBuffer? _instanceUniformBuffer; // GPU
+
+        private readonly IDescriptorSet _descriptorSet;
+
+        private bool _isDirty;
+
+        public MaterialInstance(Material baseMaterial)
         {
-            get
+            _textureOverrides = [];
+            _samplerOverrides = [];
+            _overriddenProperties = [];
+            _overriddenTextures = [];
+            _overriddenSamplers = [];
+
+
+            BaseMaterial = baseMaterial;
+            _descriptorSet = Engine.GraphicsDevice.CreateDescriptorSet(BaseMaterial.GetActiveShader().GetActivePass().DescriptorLayout);
+
+            if (baseMaterial.Pass.BufferSize > 0)
             {
-                UpdateBuffer();
-                return descriptorSet;
-            }
-        }
+                _instanceBuffer = new byte[baseMaterial.Pass.BufferSize];
+                BaseMaterial.Pass.GetMaterialBuffer().CopyTo(_instanceBuffer, 0);
 
-        private readonly Dictionary<string, Texture> textureOverrides;
-        private readonly Dictionary<string, Sampler> samplerOverrides;
+                _instanceUniformBuffer = UniformBuffer.Create(ResourceUsage.Dynamic, (uint)BaseMaterial.Pass.BufferSize);
 
-        private readonly HashSet<string> overriddenProperties;
-        private readonly HashSet<string> overriddenTextures;
-        private readonly HashSet<string> overriddenSamplers;
-
-
-        private readonly byte[]? cpuBuffer;
-        private readonly UniformBuffer? gpuBuffer;
-
-        private readonly IDescriptorSet descriptorSet;
-
-        private bool isDirty;
-        private bool disposed;
-        private readonly ShaderPass defaultPass;
-
-        public MaterialInstance(Material material)
-        {
-            BaseMaterial = material;
-            descriptorSet = Engine.GraphicsDevice.CreateDescriptorSet(BaseMaterial.DefaultPass.GetVariant().DescriptorLayout);
-
-            if (BaseMaterial.MaterialBufferSize > 0)
-            {
-                cpuBuffer = new byte[BaseMaterial.MaterialBufferSize];
-                BaseMaterial.GetDefaultMaterialBuffer().CopyTo(cpuBuffer);
-
-                gpuBuffer = UniformBuffer.Create(
-                    ResourceUsage.Dynamic,
-                    (uint)BaseMaterial.MaterialBufferSize);
-
-                descriptorSet.SetUniformBuffer(
-                    (uint)BaseMaterial.MaterialBufferBindSlot,
-                    gpuBuffer.GPU);
+                _descriptorSet.SetUniformBuffer((uint)BaseMaterial.Pass.BufferBindSlot, _instanceUniformBuffer.Gpu);
             }
 
-            //cpuBuffer = new byte[BaseMaterial.MaterialBufferSize];
-            //BaseMaterial.GetDefaultMaterialBuffer().CopyTo(cpuBuffer);
-
-            //gpuBuffer = UniformBuffer.Create(ResourceUsage.Dynamic, (uint)Math.Max(1, BaseMaterial.MaterialBufferSize));
-
-
-            //StringBuilder sb = new();
-
-            //sb.AppendLine($"Descriptor Layout: {BaseMaterial.Shader.Name}");
-            //sb.AppendLine("-----------------");
-
-            //foreach (var binding in BaseMaterial.Shader.GetPass("Forward").DescriptorLayout.Bindings)
-            //{
-            //    sb.AppendLine(binding.ToString());
-            //}
-
-            //Console.WriteLine(sb.ToString());
-
-
-            textureOverrides = [];
-            samplerOverrides = [];
-
-            overriddenProperties = [];
-            overriddenTextures = [];
-            overriddenSamplers = [];
-
-            isDirty = true;
-
-            //descriptorSet.SetUniformBuffer((uint)BaseMaterial.MaterialBufferBindSlot, gpuBuffer.GPU);
-
-            foreach (var kv in BaseMaterial.GetTextureBindings())
+            foreach (var kv in BaseMaterial.Pass.GetTextureBindings())
             {
-                string name = kv.Key;
-                ShaderResourceInfo binding = kv.Value;
-
-                Texture texture =
-                    BaseMaterial.GetDefaultTexture(name);
-
-                descriptorSet.SetTexture(
-                    (uint)binding.BindSlot,
-                    texture.GPU);
+                _descriptorSet.SetTexture((uint)kv.Value.BindSlot, BaseMaterial.Pass.GetTexture(kv.Key).Gpu);
             }
 
-            foreach (var kv in BaseMaterial.GetSamplerBindings())
+            foreach (var kv in BaseMaterial.Pass.GetSamplerBindings())
             {
-                string name = kv.Key;
-
-                ShaderResourceInfo binding = kv.Value;
-
-                Sampler sampler = BaseMaterial.GetDefaultSampler(name);
-
-                descriptorSet.SetSampler(
-                    (uint)binding.BindSlot,
-                    sampler.GPU
-                );
-
+                _descriptorSet.SetSampler((uint)kv.Value.BindSlot, BaseMaterial.Pass.GetSampler(kv.Key).Gpu);
             }
 
-            defaultPass = BaseMaterial.Shader.DefaultPass;
-
+            _instanceUniformBuffer?.Update(_instanceBuffer);
         }
 
         private void UpdateBuffer()
         {
-            if (!isDirty || gpuBuffer == null || cpuBuffer == null)
+            if (!_isDirty || _instanceUniformBuffer == null || _instanceUniformBuffer == null)
                 return;
-            gpuBuffer.Update(cpuBuffer);
-            descriptorSet.SetUniformBuffer((uint)BaseMaterial.MaterialBufferBindSlot, gpuBuffer.GPU);
-            isDirty = false;
+
+            _instanceUniformBuffer.Update(_instanceBuffer);
+            _isDirty = false;
         }
 
-        public void SetInt(string name, int value)
-            => Write(name, value);
-
-        public void SetFloat(string name, float value)
-            => Write(name, value);
-
-        public void SetVector2(string name, Vector2 value)
-            => Write(name, value);
-
-        public void SetVector3(string name, Vector3 value)
-            => Write(name, value);
-
-        public void SetVector4(string name, Vector4 value)
-            => Write(name, value);
-
-        public void SetMatrix4x4(string name, Matrix4x4 value)
-            => Write(name, value);
+        public void SetInt(string name, int value) => Write(name, value);
+        public void SetFloat(string name, float value) => Write(name, value);
+        public void SetVector2(string name, Vector2 value) => Write(name, value);
+        public void SetVector3(string name, Vector3 value) => Write(name, value);
+        public void SetVector4(string name, Vector4 value) => Write(name, value);
+        public void SetMatrix4X4(string name, Matrix4x4 value) => Write(name, value);
 
         private void Write<T>(string name, T value) where T : struct
         {
-            if (cpuBuffer == null)
+            if (!BaseMaterial.Pass.TryGetVariable(name, out ShaderVariableInfo? varInfo))
             {
-                Console.WriteLine("Material has no uniform buffer.");
+                DevoidLog.Warning(LogCategory.Core, $"Variable '{name}' not found in material.");
                 return;
             }
 
-            if (!BaseMaterial.TryGetVariable(name, out var varInfo))
-            {
-                Console.WriteLine($"Variable '{name}' not found in material.");
-                return;
-            }
+            var span = _instanceBuffer.AsSpan(varInfo!.Offset);
+            MemoryMarshal.Write(span, value);
 
-            var span = cpuBuffer.AsSpan(varInfo!.Offset);
-            MemoryMarshal.Write(span, in value);
-            overriddenProperties.Add(name);
-
-            isDirty = true;
+            _overriddenProperties.Add(name);
+            _isDirty = true;
         }
 
         public void SetTexture(string name, Texture texture)
         {
-            if (!BaseMaterial.HasTextureBinding(name))
+            if (!BaseMaterial.Pass.TryGetTextureBinding(name, out ShaderResourceInfo? textureBinding))
             {
-                Console.WriteLine($"Texture '{name}' not found in material layout.");
+                DevoidLog.Warning(LogCategory.Core, $"Texture '{name}' not found in material layout.");
                 return;
             }
 
-            textureOverrides[name] = texture ?? Texture.Default;
-            overriddenTextures.Add(name);
-
-            ShaderResourceInfo binding = BaseMaterial.GetTextureBinding(name);
-
-            descriptorSet.SetTexture((uint)binding.BindSlot, texture?.GPU ?? Texture.Default.GPU);
-        }
-
-        public void ClearTextureOverride(string name)
-        {
-            if (!BaseMaterial.HasTextureBinding(name))
-                return;
-
-            textureOverrides.Remove(name);
-            overriddenTextures.Remove(name);
-
-            ShaderResourceInfo binding =
-                BaseMaterial.GetTextureBinding(name);
-
-            descriptorSet.SetTexture(
-                (uint)binding.BindSlot,
-                BaseMaterial.GetDefaultTexture(name).GPU);
+            _textureOverrides.Add(name, texture);
+            _overriddenTextures.Add(name);
+            _descriptorSet.SetTexture((uint)textureBinding!.BindSlot, texture.Gpu);
         }
 
         public void SetSampler(string name, Sampler sampler)
         {
-            if (!BaseMaterial.HasSamplerBinding(name))
+            if (!BaseMaterial.Pass.TryGetSamplerBinding(name, out ShaderResourceInfo? textureBinding))
             {
-                Console.WriteLine($"Sampler '{name}' not found in material layout.");
+                DevoidLog.Warning(LogCategory.Core, $"Sampler '{name}' not found in material layout.");
                 return;
             }
 
-            samplerOverrides[name] = sampler ?? Sampler.Default;
-            overriddenSamplers.Add(name);
-
-            ShaderResourceInfo binding =
-                BaseMaterial.GetSamplerBinding(name);
-
-            descriptorSet.SetSampler(
-                (uint)binding.BindSlot,
-                sampler?.GPU ?? Sampler.Default.GPU);
+            _samplerOverrides.Add(name, sampler);
+            _overriddenSamplers.Add(name);
+            _descriptorSet.SetSampler((uint)textureBinding!.BindSlot, sampler.Gpu);
         }
-
-        public void ClearSamplerOverride(string name)
-        {
-            if (!BaseMaterial.HasSamplerBinding(name))
-                return;
-
-            samplerOverrides.Remove(name);
-            overriddenSamplers.Remove(name);
-
-            ShaderResourceInfo binding =
-                BaseMaterial.GetSamplerBinding(name);
-
-            descriptorSet.SetSampler(
-                (uint)binding.BindSlot,
-                BaseMaterial.GetDefaultSampler(name).GPU);
-        }
-
-        public ReadOnlySpan<byte> GetRawValue(string name)
-        {
-            if (cpuBuffer == null)
-                return [];
-
-            if (!BaseMaterial.TryGetVariable(name, out var info))
-                return [];
-
-            return cpuBuffer.AsSpan(info!.Offset, info.Size);
-        }
-
-        internal void SetRawValue(
-            string name,
-            ReadOnlySpan<byte> value)
-        {
-            if (cpuBuffer == null)
-                return;
-
-            if (!BaseMaterial.TryGetVariable(name, out var info))
-                return;
-
-            if (value.Length != info!.Size)
-                throw new ArgumentException(
-                    $"Invalid size for material variable '{name}'. " +
-                    $"Expected {info.Size}, got {value.Length}.");
-
-            value.CopyTo(cpuBuffer.AsSpan(info.Offset, info.Size));
-
-            isDirty = true;
-        }
-
-        internal IEnumerable<string> GetOverriddenProperties() => overriddenProperties;
-        internal IEnumerable<KeyValuePair<string, Texture>> GetTextureOverrides() => textureOverrides;
-        public bool IsTextureOverridden(string name) => overriddenTextures.Contains(name);
-        public Texture? GetTextureOverride(string name)
-        {
-            textureOverrides.TryGetValue(name, out var texture);
-            return texture;
-        }
-
 
         public void Dispose()
         {
-            if (disposed)
-                return;
+            _instanceUniformBuffer?.Dispose();
 
-            gpuBuffer?.Dispose();
-            textureOverrides.Clear();
-
-            disposed = true;
-
-            GC.SuppressFinalize(this);
-        }
-
-        ~MaterialInstance()
-        {
-            Dispose();
+            _textureOverrides.Clear();
+            _samplerOverrides.Clear();
+            _overriddenProperties.Clear();
+            _overriddenTextures.Clear();
+            _overriddenSamplers.Clear();
         }
     }
 }

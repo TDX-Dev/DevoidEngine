@@ -2,7 +2,7 @@
 
 namespace DevoidEngine.Util
 {
-    public struct BVHTriangle
+    public struct BvhTriangle
     {
         public int TriangleIndex;
 
@@ -14,7 +14,7 @@ namespace DevoidEngine.Util
         public Vector3 Centroid;
     }
 
-    public struct BVHNode
+    public struct BvhNode
     {
         public BoundingBox Bounds;
 
@@ -25,39 +25,39 @@ namespace DevoidEngine.Util
         public int TriangleCount;
     }
 
-    struct SAHBucket
+    struct SahBucket
     {
         public int Count;
         public BoundingBox Bounds;
     }
 
-    public class BVH
+    public class Bvh
     {
         const int BucketCount = 12;
 
-        readonly uint maxPrimitivesPerNode;
+        readonly uint _maxPrimitivesPerNode;
 
-        readonly List<BVHTriangle> triangles = [];
-        readonly List<BVHNode> nodes = [];
+        readonly List<BvhTriangle> _triangles = [];
+        readonly List<BvhNode> _nodes = [];
 
-        public IReadOnlyList<BVHTriangle> Triangles => triangles;
-        public IReadOnlyList<BVHNode> Nodes => nodes;
+        public IReadOnlyList<BvhTriangle> Triangles => _triangles;
+        public IReadOnlyList<BvhNode> Nodes => _nodes;
 
-        public BVH(uint maxPrimitivesPerNode)
+        public Bvh(uint maxPrimitivesPerNode)
         {
-            this.maxPrimitivesPerNode = Math.Min(255, maxPrimitivesPerNode);
+            this._maxPrimitivesPerNode = Math.Min(255, maxPrimitivesPerNode);
         }
 
         public void Build()
         {
-            nodes.Clear();
+            _nodes.Clear();
 
-            if (triangles.Count == 0)
+            if (_triangles.Count == 0)
                 return;
 
-            nodes.Add(new BVHNode());
+            _nodes.Add(new BvhNode());
 
-            BuildNode(0, 0, triangles.Count);
+            BuildNode(0, 0, _triangles.Count);
         }
 
         void BuildNode(int nodeIndex, int firstTriangle, int triangleCount)
@@ -65,11 +65,11 @@ namespace DevoidEngine.Util
             BoundingBox bounds = BoundingBox.CreateEmptyBounds();
 
             for (int i = firstTriangle; i < firstTriangle + triangleCount; i++)
-                bounds = BoundingBox.Union(bounds, triangles[i].Bounds);
+                bounds = BoundingBox.Union(bounds, _triangles[i].Bounds);
 
-            if (triangleCount <= maxPrimitivesPerNode)
+            if (triangleCount <= _maxPrimitivesPerNode)
             {
-                BVHNode leaf = new()
+                BvhNode leaf = new()
                 {
                     Bounds = bounds,
                     Left = -1,
@@ -78,7 +78,7 @@ namespace DevoidEngine.Util
                     TriangleCount = triangleCount
                 };
 
-                nodes[nodeIndex] = leaf;
+                _nodes[nodeIndex] = leaf;
                 return;
             }
 
@@ -86,15 +86,15 @@ namespace DevoidEngine.Util
 
             for (int i = firstTriangle; i < firstTriangle + triangleCount; i++)
             {
-                Vector3 centroid = triangles[i].Centroid;
+                Vector3 centroid = _triangles[i].Centroid;
                 centroidBounds = BoundingBox.Union(centroidBounds, new BoundingBox(centroid, centroid));
             }
 
-            int axis = LargestAxis(centroidBounds.max - centroidBounds.min);
+            int axis = LargestAxis(centroidBounds.Max - centroidBounds.Min);
 
-            if (centroidBounds.max[axis] <= centroidBounds.min[axis])
+            if (centroidBounds.Max[axis] <= centroidBounds.Min[axis])
             {
-                BVHNode leaf = new()
+                BvhNode leaf = new()
                 {
                     Bounds = bounds,
                     Left = -1,
@@ -103,7 +103,7 @@ namespace DevoidEngine.Util
                     TriangleCount = triangleCount
                 };
 
-                nodes[nodeIndex] = leaf;
+                _nodes[nodeIndex] = leaf;
                 return;
             }
 
@@ -111,7 +111,7 @@ namespace DevoidEngine.Util
 
             if (bestBucket < 0)
             {
-                BVHNode leaf = new()
+                BvhNode leaf = new()
                 {
                     Bounds = bounds,
                     Left = -1,
@@ -120,7 +120,7 @@ namespace DevoidEngine.Util
                     TriangleCount = triangleCount
                 };
 
-                nodes[nodeIndex] = leaf;
+                _nodes[nodeIndex] = leaf;
                 return;
             }
 
@@ -128,7 +128,7 @@ namespace DevoidEngine.Util
 
             if (mid == firstTriangle || mid == firstTriangle + triangleCount)
             {
-                BVHNode leaf = new()
+                BvhNode leaf = new()
                 {
                     Bounds = bounds,
                     Left = -1,
@@ -137,17 +137,17 @@ namespace DevoidEngine.Util
                     TriangleCount = triangleCount
                 };
 
-                nodes[nodeIndex] = leaf;
+                _nodes[nodeIndex] = leaf;
                 return;
             }
 
-            int leftNode = nodes.Count;
-            nodes.Add(new BVHNode());
+            int leftNode = _nodes.Count;
+            _nodes.Add(new BvhNode());
 
-            int rightNode = nodes.Count;
-            nodes.Add(new BVHNode());
+            int rightNode = _nodes.Count;
+            _nodes.Add(new BvhNode());
 
-            nodes[nodeIndex] = new BVHNode
+            _nodes[nodeIndex] = new BvhNode
             {
                 Bounds = bounds,
                 Left = leftNode,
@@ -172,7 +172,7 @@ namespace DevoidEngine.Util
             Vector3 min = Vector3.Min(v0, Vector3.Min(v1, v2));
             Vector3 max = Vector3.Max(v0, Vector3.Max(v1, v2));
 
-            triangles.Add(new BVHTriangle
+            _triangles.Add(new BvhTriangle
             {
                 TriangleIndex = triangleIndex,
                 V0 = v0,
@@ -185,20 +185,20 @@ namespace DevoidEngine.Util
 
         int FindBestSplit(int firstTriangle, int triangleCount, BoundingBox centroidBounds, BoundingBox nodeBounds, int axis)
         {
-            Span<SAHBucket> buckets = stackalloc SAHBucket[BucketCount];
+            Span<SahBucket> buckets = stackalloc SahBucket[BucketCount];
 
-            float min = centroidBounds.min[axis];
-            float max = centroidBounds.max[axis];
+            float min = centroidBounds.Min[axis];
+            float max = centroidBounds.Max[axis];
             float scale = BucketCount / (max - min);
 
             for (int i = firstTriangle; i < firstTriangle + triangleCount; i++)
             {
-                int bucketIndex = GetBucket(triangles[i].Centroid, min, scale, axis);
+                int bucketIndex = GetBucket(_triangles[i].Centroid, min, scale, axis);
 
                 if (buckets[bucketIndex].Count == 0)
-                    buckets[bucketIndex].Bounds = triangles[i].Bounds;
+                    buckets[bucketIndex].Bounds = _triangles[i].Bounds;
                 else
-                    buckets[bucketIndex].Bounds = BoundingBox.Union(buckets[bucketIndex].Bounds, triangles[i].Bounds);
+                    buckets[bucketIndex].Bounds = BoundingBox.Union(buckets[bucketIndex].Bounds, _triangles[i].Bounds);
 
                 buckets[bucketIndex].Count++;
             }
@@ -274,13 +274,13 @@ namespace DevoidEngine.Util
             int left = firstTriangle;
             int right = firstTriangle + triangleCount - 1;
 
-            float min = centroidBounds.min[axis];
-            float max = centroidBounds.max[axis];
+            float min = centroidBounds.Min[axis];
+            float max = centroidBounds.Max[axis];
             float scale = BucketCount / (max - min);
 
             while (left <= right)
             {
-                int leftBucket = GetBucket(triangles[left].Centroid, min, scale, axis);
+                int leftBucket = GetBucket(_triangles[left].Centroid, min, scale, axis);
 
                 if (leftBucket <= split)
                 {
@@ -288,7 +288,7 @@ namespace DevoidEngine.Util
                     continue;
                 }
 
-                int rightBucket = GetBucket(triangles[right].Centroid, min, scale, axis);
+                int rightBucket = GetBucket(_triangles[right].Centroid, min, scale, axis);
 
                 if (rightBucket > split)
                 {
@@ -296,7 +296,7 @@ namespace DevoidEngine.Util
                     continue;
                 }
 
-                (triangles[right], triangles[left]) = (triangles[left], triangles[right]);
+                (_triangles[right], _triangles[left]) = (_triangles[left], _triangles[right]);
                 left++;
                 right--;
             }
@@ -323,7 +323,7 @@ namespace DevoidEngine.Util
 
         public int GetMaxDepth()
         {
-            if (nodes.Count == 0)
+            if (_nodes.Count == 0)
                 return 0;
 
             return GetMaxDepth(0, 0);
@@ -331,7 +331,7 @@ namespace DevoidEngine.Util
 
         int GetMaxDepth(int nodeIndex, int depth)
         {
-            BVHNode node = nodes[nodeIndex];
+            BvhNode node = _nodes[nodeIndex];
 
             int maxDepth = depth;
 
@@ -401,10 +401,10 @@ namespace DevoidEngine.Util
             triangleIndex = -1;
             normal = Vector3.Zero;
 
-            if (nodes.Count == 0)
+            if (_nodes.Count == 0)
                 return false;
 
-            if (!BoundingBox.IntersectsRay(nodes[0].Bounds, origin, direction, maxDistance, out _))
+            if (!BoundingBox.IntersectsRay(_nodes[0].Bounds, origin, direction, maxDistance, out _))
             {
                 return false;
             }
@@ -414,7 +414,7 @@ namespace DevoidEngine.Util
 
         bool RaycastNode(int nodeIndex, Vector3 origin, Vector3 direction, ref float closestDistance, ref int closestTriangle, ref Vector3 closestNormal)
         {
-            BVHNode node = nodes[nodeIndex];
+            BvhNode node = _nodes[nodeIndex];
 
             if (!BoundingBox.IntersectsRay(
                 node.Bounds,
@@ -434,7 +434,7 @@ namespace DevoidEngine.Util
 
                 for (int i = node.FirstTriangle; i < end; i++)
                 {
-                    BVHTriangle triangle = triangles[i];
+                    BvhTriangle triangle = _triangles[i];
 
                     if (!IntersectTriangle(
                         origin,
@@ -468,14 +468,14 @@ namespace DevoidEngine.Util
             int rightChild = node.Right;
 
             bool leftHit = BoundingBox.IntersectsRay(
-                nodes[leftChild].Bounds,
+                _nodes[leftChild].Bounds,
                 origin,
                 direction,
                 closestDistance,
                 out float leftDistance);
 
             bool rightHit = BoundingBox.IntersectsRay(
-                nodes[rightChild].Bounds,
+                _nodes[rightChild].Bounds,
                 origin,
                 direction,
                 closestDistance,
@@ -557,11 +557,11 @@ namespace DevoidEngine.Util
 
         public int CountIntersections(Vector3 origin, Vector3 direction, float maxDistance)
         {
-            if (nodes.Count == 0)
+            if (_nodes.Count == 0)
                 return 0;
 
             if (!BoundingBox.IntersectsRay(
-                nodes[0].Bounds,
+                _nodes[0].Bounds,
                 origin,
                 direction,
                 maxDistance,
@@ -579,7 +579,7 @@ namespace DevoidEngine.Util
 
         int CountIntersectionsNode(int nodeIndex, Vector3 origin, Vector3 direction, float maxDistance)
         {
-            BVHNode node = nodes[nodeIndex];
+            BvhNode node = _nodes[nodeIndex];
 
             if (!BoundingBox.IntersectsRay(
                 node.Bounds,
@@ -601,7 +601,7 @@ namespace DevoidEngine.Util
 
                 for (int i = node.FirstTriangle; i < end; i++)
                 {
-                    BVHTriangle triangle = triangles[i];
+                    BvhTriangle triangle = _triangles[i];
 
                     if (IntersectTriangle(
                         origin,
@@ -634,7 +634,7 @@ namespace DevoidEngine.Util
         }
         public bool Intersects(BoundingBox bounds)
         {
-            if (nodes.Count == 0)
+            if (_nodes.Count == 0)
                 return false;
 
             return IntersectsNode(0, bounds);
@@ -642,7 +642,7 @@ namespace DevoidEngine.Util
 
         bool IntersectsNode(int nodeIndex, BoundingBox bounds)
         {
-            BVHNode node = nodes[nodeIndex];
+            BvhNode node = _nodes[nodeIndex];
 
             if (!BoundingBox.Intersects(node.Bounds, bounds))
                 return false;
@@ -663,7 +663,7 @@ namespace DevoidEngine.Util
             closestPoint = Vector3.Zero;
             distanceSquared = float.MaxValue;
 
-            if (nodes.Count == 0)
+            if (_nodes.Count == 0)
                 return false;
 
             ClosestPointNode(
@@ -677,7 +677,7 @@ namespace DevoidEngine.Util
 
         void ClosestPointNode(int nodeIndex, Vector3 position, ref Vector3 closestPoint, ref float closestDistanceSquared)
         {
-            BVHNode node = nodes[nodeIndex];
+            BvhNode node = _nodes[nodeIndex];
 
             // If this node's AABB is already farther away than
             // our current closest point, nothing underneath it
@@ -699,7 +699,7 @@ namespace DevoidEngine.Util
 
                 for (int i = node.FirstTriangle; i < end; i++)
                 {
-                    BVHTriangle triangle = triangles[i];
+                    BvhTriangle triangle = _triangles[i];
 
                     Vector3 point = ClosestPointOnTriangle(
                         position,
@@ -727,12 +727,12 @@ namespace DevoidEngine.Util
 
             float leftDistanceSquared =
                 BoundingBox.DistanceSquared(
-                    nodes[left].Bounds,
+                    _nodes[left].Bounds,
                     position);
 
             float rightDistanceSquared =
                 BoundingBox.DistanceSquared(
-                    nodes[right].Bounds,
+                    _nodes[right].Bounds,
                     position);
 
             // Visit the closer child first so that we get a

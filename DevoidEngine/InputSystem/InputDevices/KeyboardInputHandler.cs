@@ -5,7 +5,7 @@ namespace DevoidEngine.InputSystem.InputDevices
     internal class KeyboardInputHandler : InputDeviceHandler
     {
         private readonly KeyboardState _state;
-        private readonly Keys[] Keys;
+        private readonly Keys[] _keys;
         private readonly HashSet<Keys> _previous;
         private uint _deviceId = 0;
 
@@ -13,7 +13,7 @@ namespace DevoidEngine.InputSystem.InputDevices
         {
             _state = state;
             _previous = [];
-            Keys = Enum.GetValues<Keys>();
+            _keys = Enum.GetValues<Keys>();
         }
 
         public override void Register(InputBackend backend)
@@ -29,11 +29,11 @@ namespace DevoidEngine.InputSystem.InputDevices
         public override void Update(InputBackend backend)
         {
 
-            foreach (Keys key in Keys)
+            foreach (Keys key in _keys)
             {
                 if (key == InputDevices.Keys.Unknown) continue;
-                var Okey = (OpenTK.Windowing.GraphicsLibraryFramework.Keys)key;
-                bool isDown = _state.IsKeyDown(Okey);
+                var okey = (OpenTK.Windowing.GraphicsLibraryFramework.Keys)key;
+                bool isDown = _state.IsKeyDown(okey);
                 bool wasDown = _previous.Contains(key);
 
                 if (isDown && !wasDown)

@@ -10,24 +10,24 @@ using DXGIDevice = SharpDX.DXGI.Device;
 
 namespace DevoidGPU.DX11
 {
-    public sealed class DX11GraphicsDevice : IGraphicsDevice
+    public sealed class Dx11GraphicsDevice : IGraphicsDevice
     {
-        private readonly Factory1 factory = null!;
-        private readonly Device device = null!;
-        private readonly DeviceContext deviceContext = null!;
+        private readonly Factory1 _factory = null!;
+        private readonly Device _device = null!;
+        private readonly DeviceContext _deviceContext = null!;
 
-        private readonly ICommandQueue graphicsQueue;
-        private readonly ICommandQueue computeQueue;
-        private readonly ICommandQueue copyQueue;
+        private readonly ICommandQueue _graphicsQueue;
+        private readonly ICommandQueue _computeQueue;
+        private readonly ICommandQueue _copyQueue;
 
-        private readonly DX11CommandList cachedCommandList;
-        private readonly Adapter3 adapter;
+        private readonly Dx11CommandList _cachedCommandList;
+        private readonly Adapter3 _adapter;
 
         public GraphicsDeviceInfo Info { get; private set; }
 
-        public DX11GraphicsDevice()
+        public Dx11GraphicsDevice()
         {
-            factory = new Factory1();
+            _factory = new Factory1();
 
             var levels = new[]
             {
@@ -38,7 +38,7 @@ namespace DevoidGPU.DX11
             };
 
 
-            device = new Device(
+            _device = new Device(
                 DriverType.Hardware,
                 DeviceCreationFlags.BgraSupport
 #if DEBUG
@@ -48,10 +48,10 @@ namespace DevoidGPU.DX11
             );
 
 
-            using var dxgiDevice = device.QueryInterface<SharpDX.DXGI.Device>();
-            adapter = dxgiDevice.Adapter.QueryInterface<Adapter3>();
+            using var dxgiDevice = _device.QueryInterface<SharpDX.DXGI.Device>();
+            _adapter = dxgiDevice.Adapter.QueryInterface<Adapter3>();
 
-            AdapterDescription adapterDescription = adapter.Description;
+            AdapterDescription adapterDescription = _adapter.Description;
 
             Info = new GraphicsDeviceInfo
             {
@@ -63,41 +63,41 @@ namespace DevoidGPU.DX11
 
                 VendorId = adapterDescription.VendorId,
                 DeviceId = adapterDescription.DeviceId,
-                FeatureLevel = (int)device.FeatureLevel
+                FeatureLevel = (int)_device.FeatureLevel
             };
 
 
-            deviceContext = device.ImmediateContext;
+            _deviceContext = _device.ImmediateContext;
 
             // Queue Creation
 
-            var queue = new DX11CommandQueue(deviceContext);
+            var queue = new Dx11CommandQueue(_deviceContext);
 
-            graphicsQueue = queue;
-            computeQueue = queue;
-            copyQueue = queue;
+            _graphicsQueue = queue;
+            _computeQueue = queue;
+            _copyQueue = queue;
 
-            cachedCommandList = new DX11CommandList(deviceContext);
+            _cachedCommandList = new Dx11CommandList(_deviceContext);
         }
 
         public ISwapchain CreateSwapchain(SwapchainDescription desc)
         {
-            return new DX11SwapChain(factory, device, desc);
+            return new Dx11SwapChain(_factory, _device, desc);
         }
 
         public IShader CreateShader(ShaderDescription desc)
         {
-            return new DX11Shader(device, desc);
+            return new Dx11Shader(_device, desc);
         }
 
         public IPipeline CreateGraphicsPipeline(GraphicsPipelineDescription desc)
         {
-            DX11GraphicsPipeline dxPipeline = new()
+            Dx11GraphicsPipeline dxPipeline = new()
             {
-                VS = ((DX11Shader)desc.VertexShader).VS!,
-                PS = ((DX11Shader)desc.PixelShader).PS!,
+                Vs = ((Dx11Shader)desc.VertexShader).Vs!,
+                Ps = ((Dx11Shader)desc.PixelShader).Ps!,
 
-                Topology = DX11StateMapper.ToDXPrimitiveType(desc.Topology)
+                Topology = Dx11StateMapper.ToDxPrimitiveType(desc.Topology)
             };
 
 
@@ -118,135 +118,135 @@ namespace DevoidGPU.DX11
                 {
                     IsBlendEnabled = blendState.Enable,
 
-                    SourceBlend = DX11StateMapper.ToDXBlend(blendState.SrcColor),
-                    DestinationBlend = DX11StateMapper.ToDXBlend(blendState.DstColor),
-                    BlendOperation = DX11StateMapper.ToDXBlendOp(blendState.ColorOp),
+                    SourceBlend = Dx11StateMapper.ToDxBlend(blendState.SrcColor),
+                    DestinationBlend = Dx11StateMapper.ToDxBlend(blendState.DstColor),
+                    BlendOperation = Dx11StateMapper.ToDxBlendOp(blendState.ColorOp),
 
-                    SourceAlphaBlend = DX11StateMapper.ToDXBlend(blendState.SrcAlpha),
-                    DestinationAlphaBlend = DX11StateMapper.ToDXBlend(blendState.DstAlpha),
-                    AlphaBlendOperation = DX11StateMapper.ToDXBlendOp(blendState.AlphaOp),
+                    SourceAlphaBlend = Dx11StateMapper.ToDxBlend(blendState.SrcAlpha),
+                    DestinationAlphaBlend = Dx11StateMapper.ToDxBlend(blendState.DstAlpha),
+                    AlphaBlendOperation = Dx11StateMapper.ToDxBlendOp(blendState.AlphaOp),
 
-                    RenderTargetWriteMask = DX11StateMapper.ToDXColorMask(blendState.WriteMask),
+                    RenderTargetWriteMask = Dx11StateMapper.ToDxColorMask(blendState.WriteMask),
                 };
             }
 
-            dxPipeline.BlendState = new SharpDX.Direct3D11.BlendState(device, blendStateDesc);
+            dxPipeline.BlendState = new SharpDX.Direct3D11.BlendState(_device, blendStateDesc);
 
             // Rasterizer State
 
             SharpDX.Direct3D11.RasterizerStateDescription rasterizerStateDesc = new()
             {
-                CullMode = DX11StateMapper.ToDXCullMode(desc.Rasterizer.CullMode),
-                FillMode = DX11StateMapper.ToDXFillMode(desc.Rasterizer.FillMode),
+                CullMode = Dx11StateMapper.ToDxCullMode(desc.Rasterizer.CullMode),
+                FillMode = Dx11StateMapper.ToDxFillMode(desc.Rasterizer.FillMode),
                 IsFrontCounterClockwise = desc.Rasterizer.FrontCounterClockwise,
 
                 IsScissorEnabled = desc.Rasterizer.EnableScissor
             };
 
-            dxPipeline.RasterizerState = new SharpDX.Direct3D11.RasterizerState(device, rasterizerStateDesc);
+            dxPipeline.RasterizerState = new SharpDX.Direct3D11.RasterizerState(_device, rasterizerStateDesc);
 
             // Depth State
 
             SharpDX.Direct3D11.DepthStencilStateDescription depthStateDesc = new()
             {
                 IsDepthEnabled = desc.DepthStencil.DepthTest,
-                DepthComparison = DX11StateMapper.ToDXDepthComparison(desc.DepthStencil.DepthFunc),
+                DepthComparison = Dx11StateMapper.ToDxDepthComparison(desc.DepthStencil.DepthFunc),
                 DepthWriteMask = desc.DepthStencil.DepthWrite ? SharpDX.Direct3D11.DepthWriteMask.All : SharpDX.Direct3D11.DepthWriteMask.Zero
             };
 
-            dxPipeline.DepthStencilState = new SharpDX.Direct3D11.DepthStencilState(device, depthStateDesc);
+            dxPipeline.DepthStencilState = new SharpDX.Direct3D11.DepthStencilState(_device, depthStateDesc);
 
             // InputLayout
 
-            var dxVS = (DX11Shader)desc.VertexShader;
+            var dxVs = (Dx11Shader)desc.VertexShader;
 
             dxPipeline.InputLayout = new SharpDX.Direct3D11.InputLayout(
-                device,
-                dxVS.bytecode,
-                DX11StateMapper.CreateInputElements(desc.VertexLayout)
+                _device,
+                dxVs.Bytecode,
+                Dx11StateMapper.CreateInputElements(desc.VertexLayout)
             );
 
-            dxPipeline.Layout = (DX11PipelineLayout)desc.PipelineLayout;
+            dxPipeline.Layout = (Dx11PipelineLayout)desc.PipelineLayout;
 
             return dxPipeline;
         }
 
         public IComputePipeline CreateComputePipeline(ComputePipelineDescription desc)
         {
-            return new DX11ComputePipeline(desc);
+            return new Dx11ComputePipeline(desc);
         }
 
         public IVertexBuffer CreateVertexBuffer(VertexBufferDescription desc)
         {
-            return new DX11VertexBuffer(device, deviceContext, desc);
+            return new Dx11VertexBuffer(_device, _deviceContext, desc);
         }
         public IIndexBuffer CreateIndexBuffer(IndexBufferDescription desc)
         {
-            return new DX11IndexBuffer(device, deviceContext, desc);
+            return new Dx11IndexBuffer(_device, _deviceContext, desc);
         }
         public ITexture CreateTexture(TextureDescription desc)
         {
-            return new DX11Texture(device, deviceContext, desc);
+            return new Dx11Texture(_device, _deviceContext, desc);
         }
 
         public ISampler CreateSampler(SamplerDescription desc)
         {
-            return new DX11Sampler(device, desc);
+            return new Dx11Sampler(_device, desc);
         }
         public IFrameBuffer CreateFrameBuffer(ITexture?[] colorAttachments, ITexture? depthAttachment)
         {
-            return new DX11Framebuffer([.. colorAttachments.Cast<DX11Texture>()], depthAttachment as DX11Texture);
+            return new Dx11Framebuffer([.. colorAttachments.Cast<Dx11Texture>()], depthAttachment as Dx11Texture);
         }
         public IUniformBuffer CreateUniformBuffer(BufferDescription desc)
         {
-            return new DX11UniformBuffer(device, deviceContext, desc);
+            return new Dx11UniformBuffer(_device, _deviceContext, desc);
         }
 
         public IShaderStorageBuffer CreateShaderStorageBuffer(BufferDescription desc)
         {
-            return new DX11ShaderStorageBuffer(device, deviceContext, desc);
+            return new Dx11ShaderStorageBuffer(_device, _deviceContext, desc);
         }
 
         public IDescriptorLayout CreateDescriptorLayout(DescriptorBinding[] bindings)
         {
-            return new DX11DescriptorLayout(bindings);
+            return new Dx11DescriptorLayout(bindings);
         }
 
         public IDescriptorSet CreateDescriptorSet(IDescriptorLayout layout)
         {
-            return new DX11DescriptorSet(layout);
+            return new Dx11DescriptorSet(layout);
         }
-        public IGPUTimestamp CreateGPUTimestamp()
+        public IGpuTimestamp CreateGpuTimestamp()
         {
-            return new DX11GPUTimestamp(device, device.ImmediateContext);
+            return new Dx11GpuTimestamp(_device, _device.ImmediateContext);
         }
-        public IGPUTimestampDisjoint CreateGPUTimestampDisjoint()
+        public IGpuTimestampDisjoint CreateGpuTimestampDisjoint()
         {
-            return new DX11GPUTimestampDisjoint(device, device.ImmediateContext);
+            return new Dx11GpuTimestampDisjoint(_device, _device.ImmediateContext);
         }
         public ICommandList GetCommandList()
         {
-            cachedCommandList.Reset();
-            return cachedCommandList;
+            _cachedCommandList.Reset();
+            return _cachedCommandList;
         }
         public ICommandQueue GetCommandQueue(CommandListType type)
         {
             return type switch
             {
-                CommandListType.Graphics => graphicsQueue,
-                CommandListType.Compute => computeQueue,
-                CommandListType.Copy => copyQueue,
+                CommandListType.Graphics => _graphicsQueue,
+                CommandListType.Compute => _computeQueue,
+                CommandListType.Copy => _copyQueue,
                 _ => throw new ArgumentOutOfRangeException(nameof(type))
             };
         }
         public void UpdateMemoryInfo()
         {
-            var local = adapter.QueryVideoMemoryInfo(
+            var local = _adapter.QueryVideoMemoryInfo(
                 0,
                 MemorySegmentGroup.Local
             );
 
-            var nonLocal = adapter.QueryVideoMemoryInfo(
+            var nonLocal = _adapter.QueryVideoMemoryInfo(
                 0,
                 MemorySegmentGroup.NonLocal
             );
@@ -263,13 +263,13 @@ namespace DevoidGPU.DX11
         }
         public void Dispose()
         {
-            var debug = device.QueryInterface<DeviceDebug>();
+            var debug = _device.QueryInterface<DeviceDebug>();
 
             debug.ReportLiveDeviceObjects(
                 ReportingLevel.Detail);
 
-            deviceContext.Dispose();
-            device.Dispose();
+            _deviceContext.Dispose();
+            _device.Dispose();
         }
     }
 }

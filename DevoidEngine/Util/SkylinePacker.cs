@@ -2,17 +2,17 @@
 {
     internal class SkylinePacker
     {
-        private readonly List<SkylineNode> nodes = [];
+        private readonly List<SkylineNode> _nodes = [];
 
-        private readonly int width;
-        private readonly int height;
+        private readonly int _width;
+        private readonly int _height;
 
         public SkylinePacker(int width, int height)
         {
-            this.width = width;
-            this.height = height;
+            this._width = width;
+            this._height = height;
 
-            nodes.Add(new SkylineNode
+            _nodes.Add(new SkylineNode
             {
                 X = 0,
                 Y = 0
@@ -28,7 +28,7 @@
             x = 0;
             y = 0;
 
-            if (width <= 0 || height <= 0 || width > this.width || height > this.height)
+            if (width <= 0 || height <= 0 || width > this._width || height > this._height)
             {
                 return false;
             }
@@ -37,30 +37,30 @@
             int bestX = -1;
             int bestNodeIndex = -1;
 
-            for (int i = 0; i < nodes.Count; i++)
+            for (int i = 0; i < _nodes.Count; i++)
             {
-                int currentX = nodes[i].X;
+                int currentX = _nodes[i].X;
 
-                if (currentX + width > this.width)
+                if (currentX + width > this._width)
                 {
                     break;
                 }
 
                 int maxY = 0;
-                for (int j = i; j < nodes.Count; j++)
+                for (int j = i; j < _nodes.Count; j++)
                 {
-                    if (nodes[j].X >= currentX + width)
+                    if (_nodes[j].X >= currentX + width)
                     {
                         break;
                     }
 
-                    if (nodes[j].Y > maxY)
+                    if (_nodes[j].Y > maxY)
                     {
-                        maxY = nodes[j].Y;
+                        maxY = _nodes[j].Y;
                     }
                 }
 
-                if (maxY + height <= this.height && maxY < bestY)
+                if (maxY + height <= this._height && maxY < bestY)
                 {
                     bestY = maxY;
                     bestX = currentX;
@@ -80,11 +80,11 @@
             int newY = y + height;
 
             int yAtRight = 0;
-            for (int i = 0; i < nodes.Count; i++)
+            for (int i = 0; i < _nodes.Count; i++)
             {
-                if (nodes[i].X <= newRight)
+                if (_nodes[i].X <= newRight)
                 {
-                    yAtRight = nodes[i].Y;
+                    yAtRight = _nodes[i].Y;
                 }
                 else
                 {
@@ -92,30 +92,30 @@
                 }
             }
 
-            nodes.Insert(bestNodeIndex, new SkylineNode { X = x, Y = newY });
+            _nodes.Insert(bestNodeIndex, new SkylineNode { X = x, Y = newY });
 
             int removeStart = bestNodeIndex + 1;
-            while (removeStart < nodes.Count && nodes[removeStart].X < newRight)
+            while (removeStart < _nodes.Count && _nodes[removeStart].X < newRight)
             {
-                nodes.RemoveAt(removeStart);
+                _nodes.RemoveAt(removeStart);
             }
 
             bool needsRightNode = true;
-            if (removeStart < nodes.Count && nodes[removeStart].X == newRight)
+            if (removeStart < _nodes.Count && _nodes[removeStart].X == newRight)
             {
                 needsRightNode = false;
             }
 
-            if (needsRightNode && newRight < this.width)
+            if (needsRightNode && newRight < this._width)
             {
-                nodes.Insert(removeStart, new SkylineNode { X = newRight, Y = yAtRight });
+                _nodes.Insert(removeStart, new SkylineNode { X = newRight, Y = yAtRight });
             }
 
-            for (int i = 0; i < nodes.Count - 1; i++)
+            for (int i = 0; i < _nodes.Count - 1; i++)
             {
-                if (nodes[i].Y == nodes[i + 1].Y)
+                if (_nodes[i].Y == _nodes[i + 1].Y)
                 {
-                    nodes.RemoveAt(i + 1);
+                    _nodes.RemoveAt(i + 1);
                     i--;
                 }
             }

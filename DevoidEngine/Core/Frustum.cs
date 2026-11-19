@@ -65,11 +65,11 @@ namespace DevoidEngine.Core
         {
             foreach (var plane in Planes)
             {
-                Vector3 positive = box.min;
+                Vector3 positive = box.Min;
 
-                if (plane.Normal.X >= 0) positive.X = box.max.X;
-                if (plane.Normal.Y >= 0) positive.Y = box.max.Y;
-                if (plane.Normal.Z >= 0) positive.Z = box.max.Z;
+                if (plane.Normal.X >= 0) positive.X = box.Max.X;
+                if (plane.Normal.Y >= 0) positive.Y = box.Max.Y;
+                if (plane.Normal.Z >= 0) positive.Z = box.Max.Z;
 
                 if (Vector3.Dot(plane.Normal, positive) + plane.D < 0)
                     return false;

@@ -4,53 +4,53 @@ using System.Runtime.CompilerServices;
 
 namespace DevoidEngine.Profiling
 {
-    public sealed class GPUProfiler
+    public sealed class GpuProfiler
     {
         private const int FrameCount = 7;
         private const int MaxScopes = 128;
         private const int MaxTimestamps = MaxScopes * 2 + 2;
 
-        private readonly GPUProfileFrame[] frames;
-        private readonly int[] stack;
+        private readonly GpuProfileFrame[] _frames;
+        private readonly int[] _stack;
 
-        private int currentFrame;
-        private int stackTop;
-        private int resolvedFrame = -1;
+        private int _currentFrame;
+        private int _stackTop;
+        private int _resolvedFrame = -1;
 
         public int ScopeCount =>
-            resolvedFrame >= 0
-                ? frames[resolvedFrame].ScopeCount
+            _resolvedFrame >= 0
+                ? _frames[_resolvedFrame].ScopeCount
                 : 0;
 
-        public ReadOnlySpan<GPUProfileScope> Scopes
+        public ReadOnlySpan<GpuProfileScope> Scopes
         {
             get
             {
-                if (resolvedFrame < 0)
+                if (_resolvedFrame < 0)
                     return [];
 
-                GPUProfileFrame frame = frames[resolvedFrame];
+                GpuProfileFrame frame = _frames[_resolvedFrame];
 
                 return frame.Scopes.AsSpan(0, frame.ScopeCount);
             }
         }
 
-        public GPUProfiler(IGraphicsDevice device)
+        public GpuProfiler(IGraphicsDevice device)
         {
-            frames = new GPUProfileFrame[FrameCount];
-            stack = new int[MaxScopes];
+            _frames = new GpuProfileFrame[FrameCount];
+            _stack = new int[MaxScopes];
 
             for (int i = 0; i < FrameCount; i++)
-                frames[i] = new GPUProfileFrame(device);
+                _frames[i] = new GpuProfileFrame(device);
         }
 
         public void BeginFrame(ICommandList cmd)
         {
-            stackTop = 0;
+            _stackTop = 0;
 
             ResolveFrame();
 
-            GPUProfileFrame frame = frames[currentFrame];
+            GpuProfileFrame frame = _frames[_currentFrame];
 
             frame.ScopeCount = 0;
             frame.TimestampCount = 0;
@@ -62,7 +62,7 @@ namespace DevoidEngine.Profiling
 
         public void EndFrame(ICommandList cmd)
         {
-            GPUProfileFrame frame = frames[currentFrame];
+            GpuProfileFrame frame = _frames[_currentFrame];
 
             WriteTimestamp(cmd, frame);
 
@@ -70,20 +70,20 @@ namespace DevoidEngine.Profiling
 
             frame.Submitted = true;
 
-            currentFrame++;
+            _currentFrame++;
 
-            if (currentFrame == FrameCount)
-                currentFrame = 0;
+            if (_currentFrame == FrameCount)
+                _currentFrame = 0;
         }
 
         private void ResolveFrame()
         {
-            int frameIndex = currentFrame - 2;
+            int frameIndex = _currentFrame - 2;
 
             if (frameIndex < 0)
                 frameIndex += FrameCount;
 
-            GPUProfileFrame frame = frames[frameIndex];
+            GpuProfileFrame frame = _frames[frameIndex];
 
             if (!frame.Submitted)
                 return;
@@ -100,7 +100,7 @@ namespace DevoidEngine.Profiling
 
             for (int i = 0; i < frame.ScopeCount; i++)
             {
-                ref GPUProfileScope scope =
+                ref GpuProfileScope scope =
                     ref frame.Scopes[i];
 
                 if (!frame.Timestamps[scope.BeginTimestamp]
@@ -121,13 +121,13 @@ namespace DevoidEngine.Profiling
                 scope.HasResult = true;
             }
 
-            resolvedFrame = frameIndex;
+            _resolvedFrame = frameIndex;
             frame.Submitted = false;
         }
 
         private static void WriteTimestamp(
             ICommandList cmd,
-            GPUProfileFrame frame)
+            GpuProfileFrame frame)
         {
             cmd.WriteTimestamp(
                 frame.Timestamps[frame.TimestampCount++]);
@@ -141,15 +141,15 @@ namespace DevoidEngine.Profiling
             [CallerLineNumber] int line = 0,
             [CallerMemberName] string member = "")
         {
-            GPUProfileFrame frame = frames[currentFrame];
+            GpuProfileFrame frame = _frames[_currentFrame];
 
-            int parent = stackTop > 0
-                ? stack[stackTop - 1]
+            int parent = _stackTop > 0
+                ? _stack[_stackTop - 1]
                 : -1;
 
             int scopeIndex = frame.ScopeCount++;
 
-            ref GPUProfileScope scope =
+            ref GpuProfileScope scope =
                 ref frame.Scopes[scopeIndex];
 
             scope.DurationMilliseconds = 0;
@@ -165,17 +165,17 @@ namespace DevoidEngine.Profiling
 
             WriteTimestamp(cmd, frame);
 
-            stack[stackTop++] = scopeIndex;
+            _stack[_stackTop++] = scopeIndex;
         }
 
         [Conditional("PROFILING")]
         public void EndScope(ICommandList cmd)
         {
-            GPUProfileFrame frame = frames[currentFrame];
+            GpuProfileFrame frame = _frames[_currentFrame];
 
-            int scopeIndex = stack[--stackTop];
+            int scopeIndex = _stack[--_stackTop];
 
-            ref GPUProfileScope scope =
+            ref GpuProfileScope scope =
                 ref frame.Scopes[scopeIndex];
 
             scope.EndTimestamp = frame.TimestampCount;
@@ -183,26 +183,26 @@ namespace DevoidEngine.Profiling
             WriteTimestamp(cmd, frame);
         }
 
-        private sealed class GPUProfileFrame
+        private sealed class GpuProfileFrame
         {
-            public readonly IGPUTimestampDisjoint Disjoint;
-            public readonly IGPUTimestamp[] Timestamps;
-            public readonly GPUProfileScope[] Scopes;
+            public readonly IGpuTimestampDisjoint Disjoint;
+            public readonly IGpuTimestamp[] Timestamps;
+            public readonly GpuProfileScope[] Scopes;
 
             public int TimestampCount;
             public int ScopeCount;
             public bool Submitted;
 
-            public GPUProfileFrame(IGraphicsDevice device)
+            public GpuProfileFrame(IGraphicsDevice device)
             {
-                Disjoint = device.CreateGPUTimestampDisjoint();
+                Disjoint = device.CreateGpuTimestampDisjoint();
 
-                Timestamps = new IGPUTimestamp[MaxTimestamps];
+                Timestamps = new IGpuTimestamp[MaxTimestamps];
 
-                Scopes = new GPUProfileScope[MaxScopes];
+                Scopes = new GpuProfileScope[MaxScopes];
 
                 for (int i = 0; i < MaxTimestamps; i++)
-                    Timestamps[i] = device.CreateGPUTimestamp();
+                    Timestamps[i] = device.CreateGpuTimestamp();
             }
         }
     }

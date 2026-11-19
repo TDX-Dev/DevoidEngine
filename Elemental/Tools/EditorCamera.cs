@@ -26,17 +26,17 @@ namespace Elemental.Tools
         public float MinOrbitDistance { get; set; } = 0.05f;
         public float MaxOrbitDistance { get; set; } = 10000.0f;
 
-        private float orbitYaw;
-        private float orbitPitch;
+        private float _orbitYaw;
+        private float _orbitPitch;
 
-        private float freeYaw;
-        private float freePitch;
+        private float _freeYaw;
+        private float _freePitch;
 
-        private bool wasOrbiting;
-        private bool wasPanning;
-        private bool wasLooking;
+        private bool _wasOrbiting;
+        private bool _wasPanning;
+        private bool _wasLooking;
 
-        private bool ignoreNextMouseDelta;
+        private bool _ignoreNextMouseDelta;
 
         public EditorCamera()
         {
@@ -48,8 +48,8 @@ namespace Elemental.Tools
             UpdateOrbitCamera();
 
             // Both camera modes start from the same state.
-            freeYaw = orbitYaw;
-            freePitch = orbitPitch;
+            _freeYaw = _orbitYaw;
+            _freePitch = _orbitPitch;
         }
 
         public void Update(EditorContext context, float deltaTime, float wheel)
@@ -58,9 +58,9 @@ namespace Elemental.Tools
             {
                 IsInteracting = false;
 
-                wasOrbiting = false;
-                wasPanning = false;
-                wasLooking = false;
+                _wasOrbiting = false;
+                _wasPanning = false;
+                _wasLooking = false;
 
                 Engine.Cursor.SetCursorState(CursorState.Normal);
 
@@ -81,21 +81,21 @@ namespace Elemental.Tools
 
             IsInteracting = orbiting || panning || looking;
 
-            bool modeChanged = orbiting != wasOrbiting || panning != wasPanning || looking != wasLooking;
+            bool modeChanged = orbiting != _wasOrbiting || panning != _wasPanning || looking != _wasLooking;
 
             if (modeChanged)
             {
-                ignoreNextMouseDelta = true;
+                _ignoreNextMouseDelta = true;
             }
 
             // RMB was just pressed.
-            if (looking && !wasLooking)
+            if (looking && !_wasLooking)
             {
                 //Engine.Cursor.SetCursorState(CursorState.Grabbed);
             }
 
             // RMB was just released.
-            if (!looking && wasLooking)
+            if (!looking && _wasLooking)
             {
                 Engine.Cursor.SetCursorState(CursorState.Normal);
             }
@@ -124,20 +124,20 @@ namespace Elemental.Tools
                 Zoom(wheel);
             }
 
-            wasOrbiting = orbiting;
-            wasPanning = panning;
-            wasLooking = looking;
+            _wasOrbiting = orbiting;
+            _wasPanning = panning;
+            _wasLooking = looking;
         }
 
         private void Orbit(Vector2 delta)
         {
-            orbitYaw += delta.X * OrbitSensitivity;
-            orbitPitch += delta.Y * OrbitSensitivity;
+            _orbitYaw += delta.X * OrbitSensitivity;
+            _orbitPitch += delta.Y * OrbitSensitivity;
 
             UpdateOrbitCamera();
 
-            freeYaw = orbitYaw;
-            freePitch = orbitPitch;
+            _freeYaw = _orbitYaw;
+            _freePitch = _orbitPitch;
         }
 
         private void Pan(Vector2 delta)
@@ -163,8 +163,8 @@ namespace Elemental.Tools
              * keeping the free state synchronized makes the
              * relationship between both modes obvious.
              */
-            freeYaw = orbitYaw;
-            freePitch = orbitPitch;
+            _freeYaw = _orbitYaw;
+            _freePitch = _orbitPitch;
         }
 
         private void Zoom(float wheel)
@@ -190,8 +190,8 @@ namespace Elemental.Tools
 
         private void Look(Vector2 delta)
         {
-            freeYaw += delta.X * LookSensitivity;
-            freePitch += delta.Y * LookSensitivity;
+            _freeYaw += delta.X * LookSensitivity;
+            _freePitch += delta.Y * LookSensitivity;
 
             UpdateFreeCamera();
         }
@@ -269,8 +269,8 @@ namespace Elemental.Tools
         {
             Quaternion rotation =
                 Quaternion.CreateFromYawPitchRoll(
-                    orbitYaw,
-                    orbitPitch,
+                    _orbitYaw,
+                    _orbitPitch,
                     0.0f);
 
             Vector3 front =
@@ -299,8 +299,8 @@ namespace Elemental.Tools
         {
             Quaternion rotation =
                 Quaternion.CreateFromYawPitchRoll(
-                    freeYaw,
-                    freePitch,
+                    _freeYaw,
+                    _freePitch,
                     0.0f);
 
             Vector3 front =
@@ -331,8 +331,8 @@ namespace Elemental.Tools
                 Camera.Front *
                 OrbitDistance;
 
-            orbitYaw = freeYaw;
-            orbitPitch = freePitch;
+            _orbitYaw = _freeYaw;
+            _orbitPitch = _freePitch;
         }
 
         public void Focus(
@@ -352,15 +352,15 @@ namespace Elemental.Tools
             /*
              * Focus establishes a new shared camera state.
              */
-            freeYaw = orbitYaw;
-            freePitch = orbitPitch;
+            _freeYaw = _orbitYaw;
+            _freePitch = _orbitPitch;
         }
 
         private Vector2 GetMouseDelta()
         {
-            if (ignoreNextMouseDelta)
+            if (_ignoreNextMouseDelta)
             {
-                ignoreNextMouseDelta = false;
+                _ignoreNextMouseDelta = false;
                 return Vector2.Zero;
             }
 
@@ -369,7 +369,7 @@ namespace Elemental.Tools
 
         public void NotifyMouseWarp()
         {
-            ignoreNextMouseDelta = true;
+            _ignoreNextMouseDelta = true;
         }
     }
 }

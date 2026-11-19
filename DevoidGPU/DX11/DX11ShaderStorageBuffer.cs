@@ -9,22 +9,22 @@ using MapFlags = SharpDX.Direct3D11.MapFlags;
 
 namespace DevoidGPU.DX11
 {
-    internal sealed class DX11ShaderStorageBuffer : IShaderStorageBuffer
+    internal sealed class Dx11ShaderStorageBuffer : IShaderStorageBuffer
     {
         public ulong Size { get; }
         public ResourceUsage Usage { get; }
         public Buffer Buffer { get; private set; } = null!;
 
-        public ShaderResourceView? SRV { get; private set; }
-        public UnorderedAccessView? UAV { get; private set; }
+        public ShaderResourceView? Srv { get; private set; }
+        public UnorderedAccessView? Uav { get; private set; }
 
-        private readonly Device device;
-        private readonly DeviceContext deviceContext;
+        private readonly Device _device;
+        private readonly DeviceContext _deviceContext;
 
-        public DX11ShaderStorageBuffer(Device device, DeviceContext context, BufferDescription description)
+        public Dx11ShaderStorageBuffer(Device device, DeviceContext context, BufferDescription description)
         {
-            this.device = device;
-            this.deviceContext = context;
+            this._device = device;
+            this._deviceContext = context;
 
             this.Size = description.Size;
             Usage = description.Usage;
@@ -38,8 +38,8 @@ namespace DevoidGPU.DX11
             {
                 SizeInBytes = (int)Size,
                 BindFlags = bindFlags,
-                Usage = DX11StateMapper.ToDXResourceUsage(description.Usage),
-                CpuAccessFlags = DX11StateMapper.ToDXCpuAccess(description.CpuAccess),
+                Usage = Dx11StateMapper.ToDxResourceUsage(description.Usage),
+                CpuAccessFlags = Dx11StateMapper.ToDxCpuAccess(description.CpuAccess),
                 OptionFlags = ResourceOptionFlags.BufferStructured,
                 StructureByteStride = description.Stride
             };
@@ -53,7 +53,7 @@ namespace DevoidGPU.DX11
                 Buffer = new Buffer(device, dxDescription);
             }
 
-            SRV = new ShaderResourceView(
+            Srv = new ShaderResourceView(
                 device,
                 Buffer,
                 new ShaderResourceViewDescription
@@ -69,7 +69,7 @@ namespace DevoidGPU.DX11
 
             if (description.Bind.HasFlag(BufferBind.StorageWritable))
             {
-                UAV = new UnorderedAccessView(
+                Uav = new UnorderedAccessView(
                     device,
                     Buffer,
                     new UnorderedAccessViewDescription
@@ -95,7 +95,7 @@ namespace DevoidGPU.DX11
 
             if ((Usage & ResourceUsage.Dynamic) != 0)
             {
-                var box = deviceContext.MapSubresource(
+                var box = _deviceContext.MapSubresource(
                     Buffer,
                     0,
                     SharpDX.Direct3D11.MapMode.WriteDiscard,
@@ -113,7 +113,7 @@ namespace DevoidGPU.DX11
                     }
                 }
 
-                deviceContext.UnmapSubresource(Buffer, 0);
+                _deviceContext.UnmapSubresource(Buffer, 0);
                 return;
             }
 
@@ -121,7 +121,7 @@ namespace DevoidGPU.DX11
             {
                 fixed (T* src = data)
                 {
-                    deviceContext.UpdateSubresource(
+                    _deviceContext.UpdateSubresource(
                         new DataBox((IntPtr)src, 0, 0),
                         Buffer,
                         0

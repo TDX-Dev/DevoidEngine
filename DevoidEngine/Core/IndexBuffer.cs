@@ -8,8 +8,8 @@ namespace DevoidEngine.Core
         public int Capacity { get; private set; }
         public IndexFormat Format { get; }
 
-        private IIndexBuffer gpuBuffer;
-        public IIndexBuffer GPU => gpuBuffer;
+        private IIndexBuffer _gpuBuffer;
+        public IIndexBuffer Gpu => _gpuBuffer;
 
         private int IndexSize =>
             Format switch
@@ -19,7 +19,7 @@ namespace DevoidEngine.Core
                 _ => throw new NotSupportedException()
             };
 
-        private readonly ResourceUsage usage;
+        private readonly ResourceUsage _usage;
 
         public IndexBuffer(
             IGraphicsDevice device,
@@ -30,9 +30,9 @@ namespace DevoidEngine.Core
             Count = 0;
             Capacity = capacity;
             Format = format;
-            this.usage = usage;
+            this._usage = usage;
 
-            gpuBuffer = device.CreateIndexBuffer(new IndexBufferDescription
+            _gpuBuffer = device.CreateIndexBuffer(new IndexBufferDescription
             {
                 Size = (ulong)(capacity * sizeof(uint)),
                 Format = format,
@@ -56,7 +56,7 @@ namespace DevoidEngine.Core
 
             Count = data.Length;
 
-            gpuBuffer.Update(data);
+            _gpuBuffer.Update(data);
         }
 
         public void Update(nint data, int len)
@@ -65,7 +65,7 @@ namespace DevoidEngine.Core
 
             Count = len;
 
-            gpuBuffer.Update(data, len * IndexSize);
+            _gpuBuffer.Update(data, len * IndexSize);
         }
 
         private void EnsureCapacity(int required)
@@ -75,13 +75,13 @@ namespace DevoidEngine.Core
 
             int newCapacity = Math.Max(required, Capacity * 2);
 
-            gpuBuffer.Dispose();
+            _gpuBuffer.Dispose();
 
-            gpuBuffer = Engine.GraphicsDevice.CreateIndexBuffer(new IndexBufferDescription
+            _gpuBuffer = Engine.GraphicsDevice.CreateIndexBuffer(new IndexBufferDescription
             {
                 Size = (ulong)(newCapacity * sizeof(uint)),
                 Format = Format,
-                Usage = usage
+                Usage = _usage
             });
 
             Capacity = newCapacity;
@@ -89,7 +89,7 @@ namespace DevoidEngine.Core
 
         public void Dispose()
         {
-            GPU.Dispose();
+            Gpu.Dispose();
         }
     }
 }

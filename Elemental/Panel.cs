@@ -5,11 +5,11 @@ namespace Elemental
     public abstract class Panel
     {
         public string Title { get; set; }
-        public bool IsOpen { get => isOpen; set => isOpen = value; }
+        public bool IsOpen { get => _isOpen; set => _isOpen = value; }
         public ImGuiWindowFlags WindowFlags { get; protected set; } = ImGuiWindowFlags.None;
 
-        private bool isOpen = true;
-        private bool focusRequested = false;
+        private bool _isOpen = true;
+        private bool _focusRequested = false;
 
 
         protected Panel(string title)
@@ -45,16 +45,16 @@ namespace Elemental
 
         public void RequestFocus()
         {
-            focusRequested = true;
+            _focusRequested = true;
         }
         protected virtual bool OnBeginWindow()
         {
-            if (focusRequested)
+            if (_focusRequested)
             {
                 ImGui.SetNextWindowFocus();
-                focusRequested = false;
+                _focusRequested = false;
             }
-            return ImGui.Begin(Title, ref isOpen, WindowFlags);
+            return ImGui.Begin(Title, ref _isOpen, WindowFlags);
         }
 
         protected abstract void OnImGuiRender(EditorContext context);

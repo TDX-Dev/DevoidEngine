@@ -1,6 +1,6 @@
 ﻿namespace DevoidGPU.DX11
 {
-    internal class DX11ResourceTracker
+    internal class Dx11ResourceTracker
     {
     }
 }

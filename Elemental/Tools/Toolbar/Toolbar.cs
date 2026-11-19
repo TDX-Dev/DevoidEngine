@@ -7,12 +7,12 @@ namespace Elemental.Tools.Toolbar
     {
         public int ToolbarHeight = 40;
 
-        private readonly List<ToolbarGroup> groups = [];
+        private readonly List<ToolbarGroup> _groups = [];
 
         public ToolbarGroup AddGroup(string title)
         {
             ToolbarGroup group = new(title);
-            groups.Add(group);
+            _groups.Add(group);
             return group;
         }
 
@@ -38,11 +38,11 @@ namespace Elemental.Tools.Toolbar
                 ImGuiWindowFlags.NoNav
             );
 
-            for (int i = 0; i < groups.Count; i++)
+            for (int i = 0; i < _groups.Count; i++)
             {
-                groups[i].Draw(context);
+                _groups[i].Draw(context);
 
-                if (i < groups.Count - 1)
+                if (i < _groups.Count - 1)
                     ImGui.SameLine(0, 6);
             }
 

@@ -6,16 +6,16 @@ namespace DevoidEngine.Util
     {
         public static BoundingBox Empty => new(Vector3.Zero, Vector3.Zero);
 
-        public Vector3 min;
-        public Vector3 max;
+        public Vector3 Min;
+        public Vector3 Max;
 
         public BoundingBox(Vector3 min, Vector3 max)
         {
-            this.min = min;
-            this.max = max;
+            this.Min = min;
+            this.Max = max;
         }
 
-        public static void TransformAABB(
+        public static void TransformAabb(
             Vector3 min,
             Vector3 max,
             Matrix4x4 model,
@@ -52,24 +52,24 @@ namespace DevoidEngine.Util
         public static BoundingBox Union(BoundingBox a, BoundingBox b)
         {
             return new BoundingBox(
-                Vector3.Min(a.min, b.min),
-                Vector3.Max(a.max, b.max));
+                Vector3.Min(a.Min, b.Min),
+                Vector3.Max(a.Max, b.Max));
         }
 
         public static float SurfaceArea(BoundingBox bounds)
         {
-            Vector3 d = bounds.max - bounds.min;
+            Vector3 d = bounds.Max - bounds.Min;
 
             return 2.0f * (d.X * d.Y + d.X * d.Z + d.Y * d.Z);
         }
         public static bool Intersects(BoundingBox a, BoundingBox b)
         {
-            return a.min.X <= b.max.X &&
-                   a.max.X >= b.min.X &&
-                   a.min.Y <= b.max.Y &&
-                   a.max.Y >= b.min.Y &&
-                   a.min.Z <= b.max.Z &&
-                   a.max.Z >= b.min.Z;
+            return a.Min.X <= b.Max.X &&
+                   a.Max.X >= b.Min.X &&
+                   a.Min.Y <= b.Max.Y &&
+                   a.Max.Y >= b.Min.Y &&
+                   a.Min.Z <= b.Max.Z &&
+                   a.Max.Z >= b.Min.Z;
         }
         public static bool IntersectsRay(BoundingBox bounds, Vector3 origin, Vector3 direction, float maxDistance)
         {
@@ -80,8 +80,8 @@ namespace DevoidEngine.Util
             {
                 float o = origin[axis];
                 float d = direction[axis];
-                float min = bounds.min[axis];
-                float max = bounds.max[axis];
+                float min = bounds.Min[axis];
+                float max = bounds.Max[axis];
 
                 if (MathF.Abs(d) < 1e-8f)
                 {
@@ -118,8 +118,8 @@ namespace DevoidEngine.Util
             {
                 float o = origin[axis];
                 float d = direction[axis];
-                float min = bounds.min[axis];
-                float max = bounds.max[axis];
+                float min = bounds.Min[axis];
+                float max = bounds.Max[axis];
 
                 if (MathF.Abs(d) < 1e-8f)
                 {
@@ -161,20 +161,20 @@ namespace DevoidEngine.Util
             float dy = 0.0f;
             float dz = 0.0f;
 
-            if (point.X < bounds.min.X)
-                dx = bounds.min.X - point.X;
-            else if (point.X > bounds.max.X)
-                dx = point.X - bounds.max.X;
+            if (point.X < bounds.Min.X)
+                dx = bounds.Min.X - point.X;
+            else if (point.X > bounds.Max.X)
+                dx = point.X - bounds.Max.X;
 
-            if (point.Y < bounds.min.Y)
-                dy = bounds.min.Y - point.Y;
-            else if (point.Y > bounds.max.Y)
-                dy = point.Y - bounds.max.Y;
+            if (point.Y < bounds.Min.Y)
+                dy = bounds.Min.Y - point.Y;
+            else if (point.Y > bounds.Max.Y)
+                dy = point.Y - bounds.Max.Y;
 
-            if (point.Z < bounds.min.Z)
-                dz = bounds.min.Z - point.Z;
-            else if (point.Z > bounds.max.Z)
-                dz = point.Z - bounds.max.Z;
+            if (point.Z < bounds.Min.Z)
+                dz = bounds.Min.Z - point.Z;
+            else if (point.Z > bounds.Max.Z)
+                dz = point.Z - bounds.Max.Z;
 
             return dx * dx + dy * dy + dz * dz;
         }

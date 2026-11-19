@@ -1,6 +1,8 @@
 #ifndef RENDER_CONSTANTS
 #define RENDER_CONSTANTS
 
+#include "./Engine.hlsli"
+
 #define MAX_SPOT_LIGHTS 10
 #define MAX_POINT_LIGHTS 100
 #define MAX_DIR_LIGHTS 1
@@ -64,7 +66,7 @@ struct ProbeGIGlobals
 };
 
 
-cbuffer PerFrame : register(b2)
+cbuffer PerFrame : register(PER_FRAME_CBUFFER)
 {
     int FrameIndex;
     float3 _padding01;

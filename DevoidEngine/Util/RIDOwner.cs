@@ -3,29 +3,29 @@ using System.Runtime.InteropServices;
 
 namespace DevoidEngine.Util
 {
-    public sealed class RIDOwner<T>
+    public sealed class RidOwner<T>
     {
-        private readonly List<Slot<T>> entries = [];
-        private readonly Stack<int> freeList = [];
+        private readonly List<Slot<T>> _entries = [];
+        private readonly Stack<int> _freeList = [];
 
-        public RID MakeRID(T value)
+        public Rid MakeRid(T value)
         {
             int index;
 
-            if (freeList.Count > 0)
+            if (_freeList.Count > 0)
             {
-                index = freeList.Pop();
+                index = _freeList.Pop();
 
-                var entry = entries[index];
+                var entry = _entries[index];
                 entry.Value = value;
                 entry.Occupied = true;
-                entries[index] = entry;
+                _entries[index] = entry;
             }
             else
             {
-                index = entries.Count;
+                index = _entries.Count;
 
-                entries.Add(new Slot<T>
+                _entries.Add(new Slot<T>
                 {
                     Value = value,
                     Generation = 1,
@@ -33,40 +33,40 @@ namespace DevoidEngine.Util
                 });
             }
 
-            return new RID(index, entries[index].Generation);
+            return new Rid(index, _entries[index].Generation);
         }
 
-        public RID GetRID(int index)
+        public Rid GetRid(int index)
         {
-            Slot<T> slot = entries[index];
+            Slot<T> slot = _entries[index];
 
-            return new RID(index, slot.Generation);
+            return new Rid(index, slot.Generation);
         }
 
-        public bool Owns(RID rid)
+        public bool Owns(Rid rid)
         {
-            if (rid.Index < 0 || rid.Index >= entries.Count)
+            if (rid.Index < 0 || rid.Index >= _entries.Count)
                 return false;
 
-            var entry = entries[rid.Index];
+            var entry = _entries[rid.Index];
 
             return entry.Occupied &&
                    entry.Generation == rid.Generation;
         }
 
-        public T Get(RID rid)
+        public T Get(Rid rid)
         {
             if (!Owns(rid))
             {
                 throw new InvalidOperationException();
             }
 
-            return entries[rid.Index].Value;
+            return _entries[rid.Index].Value;
         }
 
-        public ref T GetRef(RID rid)
+        public ref T GetRef(Rid rid)
         {
-            Span<Slot<T>> span = CollectionsMarshal.AsSpan(entries);
+            Span<Slot<T>> span = CollectionsMarshal.AsSpan(_entries);
 
             if ((uint)rid.Index >= (uint)span.Length)
                 throw new InvalidOperationException();
@@ -82,24 +82,24 @@ namespace DevoidEngine.Util
             return ref slot.Value;
         }
 
-        public void Free(RID rid)
+        public void Free(Rid rid)
         {
             if (!Owns(rid))
                 return;
 
-            var entry = entries[rid.Index];
+            var entry = _entries[rid.Index];
 
             entry.Occupied = false;
             entry.Generation++;
 
-            entries[rid.Index] = entry;
+            _entries[rid.Index] = entry;
 
-            freeList.Push(rid.Index);
+            _freeList.Push(rid.Index);
         }
 
         public ReadOnlySpan<Slot<T>> AsSpan()
         {
-            return CollectionsMarshal.AsSpan(entries);
+            return CollectionsMarshal.AsSpan(_entries);
         }
     }
 }

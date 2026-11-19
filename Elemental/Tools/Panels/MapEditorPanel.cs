@@ -15,23 +15,23 @@ namespace Elemental.Tools.Panels
             BackView
         }
 
-        public float horizontalSplit = 0.5f;
-        public float verticalSplit = 0.5f;
-        public float splitterSize = 8f;
+        public float HorizontalSplit = 0.5f;
+        public float VerticalSplit = 0.5f;
+        public float SplitterSize = 8f;
 
-        public Viewport cameraViewport;
-        public Viewport topViewport;
-        public Viewport leftViewport;
-        public Viewport backViewport;
+        public Viewport CameraViewport;
+        public Viewport TopViewport;
+        public Viewport LeftViewport;
+        public Viewport BackViewport;
 
 
 
         public MapEditorPanel() : base("Map Editor Panel")
         {
-            cameraViewport = new Viewport();
-            topViewport = new Viewport();
-            leftViewport = new Viewport();
-            backViewport = new Viewport();
+            CameraViewport = new Viewport();
+            TopViewport = new Viewport();
+            LeftViewport = new Viewport();
+            BackViewport = new Viewport();
         }
 
         public void DrawView(MapEditorView view)
@@ -63,14 +63,14 @@ namespace Elemental.Tools.Panels
         {
             Vector2 availableSize = ImGui.GetContentRegionAvail();
 
-            float splitSizeX = availableSize.X * horizontalSplit;
-            float splitSizeY = availableSize.Y * verticalSplit;
+            float splitSizeX = availableSize.X * HorizontalSplit;
+            float splitSizeY = availableSize.Y * VerticalSplit;
 
-            float leftWidth = splitSizeX - (splitterSize / 2);
-            float rightWidth = availableSize.X - splitSizeX - (splitterSize / 2);
+            float leftWidth = splitSizeX - (SplitterSize / 2);
+            float rightWidth = availableSize.X - splitSizeX - (SplitterSize / 2);
 
-            float topHeight = splitSizeY - (splitterSize / 2);
-            float bottomHeight = availableSize.Y - splitSizeY - (splitterSize / 2);
+            float topHeight = splitSizeY - (SplitterSize / 2);
+            float bottomHeight = availableSize.Y - splitSizeY - (SplitterSize / 2);
 
             Vector2 origin = ImGui.GetCursorPos();
 
@@ -79,35 +79,35 @@ namespace Elemental.Tools.Panels
             ImGui.BeginChild("3DCameraView", new Vector2(leftWidth, topHeight));
             ImGui.EndChild();
 
-            ImGui.SetCursorPos(origin + new Vector2(splitterSize + leftWidth, 0));
+            ImGui.SetCursorPos(origin + new Vector2(SplitterSize + leftWidth, 0));
             ImGui.BeginChild("TopView", new Vector2(rightWidth, topHeight));
             ImGui.EndChild();
 
-            ImGui.SetCursorPos(origin + new Vector2(0, splitterSize + topHeight));
+            ImGui.SetCursorPos(origin + new Vector2(0, SplitterSize + topHeight));
             ImGui.BeginChild("LeftView", new Vector2(leftWidth, bottomHeight));
             ImGui.EndChild();
 
-            ImGui.SetCursorPos(origin + new Vector2(splitterSize + leftWidth, splitterSize + topHeight));
+            ImGui.SetCursorPos(origin + new Vector2(SplitterSize + leftWidth, SplitterSize + topHeight));
             ImGui.BeginChild("BackView", new Vector2(rightWidth, bottomHeight));
             ImGui.EndChild();
 
             ImGui.SetCursorPos(origin + new Vector2(leftWidth, 0));
-            ImGui.InvisibleButton("##splittervertical", new Vector2(splitterSize, availableSize.Y));
+            ImGui.InvisibleButton("##splittervertical", new Vector2(SplitterSize, availableSize.Y));
 
             if (ImGui.IsItemActive())
             {
-                horizontalSplit += ImGui.GetIO().MouseDelta.X / availableSize.X;
-                horizontalSplit = Math.Clamp(horizontalSplit, 0.1f, 0.9f);
+                HorizontalSplit += ImGui.GetIO().MouseDelta.X / availableSize.X;
+                HorizontalSplit = Math.Clamp(HorizontalSplit, 0.1f, 0.9f);
             }
 
             ImGui.SetCursorPos(origin + new Vector2(0, topHeight));
 
-            ImGui.InvisibleButton("##splitterhorizontal", new Vector2(availableSize.X, splitterSize));
+            ImGui.InvisibleButton("##splitterhorizontal", new Vector2(availableSize.X, SplitterSize));
 
             if (ImGui.IsItemActive())
             {
-                verticalSplit += ImGui.GetIO().MouseDelta.Y / availableSize.Y;
-                verticalSplit = Math.Clamp(verticalSplit, 0.1f, 0.9f);
+                VerticalSplit += ImGui.GetIO().MouseDelta.Y / availableSize.Y;
+                VerticalSplit = Math.Clamp(VerticalSplit, 0.1f, 0.9f);
             }
         }
     }

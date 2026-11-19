@@ -35,12 +35,13 @@ struct ShadowData
 };
 
 
+#include "./Engine.hlsli"
 #include "./MathConstants.hlsl"
 #include "./PBRMethods.hlsl"
 #include "./SH9.hlsl"
 
 
-cbuffer SceneData : register(b3)
+cbuffer SceneData : register(PER_SCENE_CBUFFER)
 {
     uint pointLightCount;
     uint spotLightCount;
@@ -59,11 +60,11 @@ cbuffer ProbeGIData : register(b6)
     uint ProbeCount;
 };
 
-StructuredBuffer<GPUPointLight> PointLights : register(t10);
-StructuredBuffer<GPUSpotLight> SpotLights : register(t11);
-StructuredBuffer<GPUDirectionalLight> DirectionalLights : register(t12);
+StructuredBuffer<GPUPointLight> PointLights : register(POINT_LIGHT_SBUFFER);
+StructuredBuffer<GPUSpotLight> SpotLights : register(SPOT_LIGHT_SBUFFER);
+StructuredBuffer<GPUDirectionalLight> DirectionalLights : register(DIR_LIGHT_SBUFFER);
 
-StructuredBuffer<ShadowData> ShadowBuffer : register(t13);
+StructuredBuffer<ShadowData> ShadowBuffer : register(SHADOW_DATA_BUFFER);
 StructuredBuffer<SH9> EnvironmentSH : register(t17);
 
 StructuredBuffer<DiffuseProbe> DiffuseProbes : register(t20);
@@ -71,10 +72,10 @@ StructuredBuffer<DiffuseProbe> DiffuseProbes : register(t20);
 Texture2D ShadowAtlas : register(t9);
 SamplerState ShadowSampler : register(s9);
 
-TextureCube EnvironmentSkybox : register(t15);
-TextureCube PrefilterMap : register(t16);
-Texture2D BRDFLUT : register(t18);
-Texture2D ScreenAO : register(t19);
+TextureCube EnvironmentSkybox : register(ENV_SKYBOX_CUBEMAP);
+TextureCube PrefilterMap : register(ENV_PREFILTER_CUBEMAP);
+Texture2D BRDFLUT : register(BRDF_LUT_TEX);
+Texture2D ScreenAO : register(SCENE_AO_TEX);
 
 SamplerState EnvironmentSampler
 {

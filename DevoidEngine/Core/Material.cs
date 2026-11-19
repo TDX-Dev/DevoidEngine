@@ -1,208 +1,71 @@
-﻿using DevoidGPU;
-using System.Numerics;
-using System.Runtime.InteropServices;
+﻿using DevoidEngine.Logging;
+using DevoidEngine.Serialization;
+using DevoidEngine.Util;
+using DevoidGPU;
 
 namespace DevoidEngine.Core
 {
+    public readonly record struct PipelineKey(VertexInfo VertexLayout, PrimitiveType Topology);
     public sealed class Material : IDisposable
     {
-        public Shader Shader { get; }
-        public BlendMode BlendMode { get; set; } = BlendMode.Opaque;
-        public int MaterialBufferSize => materialBufferSize;
-        public int MaterialBufferBindSlot => materialBufferBindSlot;
-        public ShaderPass DefaultPass => Shader.DefaultPass;
-        public ShaderVariant Variant { get; private set; } = null!;
-        public IReadOnlyDictionary<string, string> Defines => defines;
+        public string Name { get; }
+        public MaterialPass Pass { get; } = null!;
+        private readonly Dictionary<PipelineKey, IPipeline> _graphicsPipelines = [];
 
-
-        private readonly Dictionary<string, ShaderVariableInfo> variables;
-        private readonly Dictionary<string, ShaderResourceInfo> textureBindings;
-        private readonly Dictionary<string, ShaderResourceInfo> samplerBindings;
-
-        private readonly Dictionary<string, Texture> textures;
-        private readonly Dictionary<string, Sampler> samplers;
-
-        private readonly Dictionary<string, string> defines = new(StringComparer.Ordinal);
-
-        private readonly byte[] defaultBuffer = null!;
-
-        private readonly int materialBufferBindSlot = -1;
-        private readonly int materialBufferSize;
-
-        public Material(Shader shader)
+        public Material(MaterialDescriptor descriptor)
         {
-            Shader = shader ?? throw new ArgumentNullException(nameof(shader));
+            Name = descriptor.Name ?? "Unnamed";
 
-            variables = [];
-            textureBindings = [];
-            samplerBindings = [];
-            textures = [];
-            samplers = [];
+            MaterialPassDescriptor? pass = descriptor.Pass;
 
-            RefreshVariant();
-
-            MaterialLayout? layout = shader.MaterialLayout;
-
-            if (layout == null)
-                return;
-
-            materialBufferSize =
-                    layout.BufferSize;
-
-            materialBufferBindSlot =
-                layout.BufferBindSlot;
-
-
-            defaultBuffer =
-                    new byte[layout.BufferSize];
-
-            foreach (var variable in layout.Variables)
+            if (pass == null)
             {
-                variables[variable.Key] =
-                    variable.Value;
-            }
-
-            foreach (var texture in layout.Textures)
-            {
-                textureBindings[texture.Key] = texture.Value;
-                textures[texture.Key] = Texture.Default;
-            }
-
-            foreach (var sampler in layout.Samplers)
-            {
-                samplerBindings[sampler.Key] = sampler.Value;
-                samplers[sampler.Key] = Sampler.Default;
-            }
-        }
-
-        private void RefreshVariant()
-        {
-            Variant = Shader.GetVariant(defines);
-        }
-
-        public void SetDefine(string name, string value = "1")
-        {
-            defines[name] = value;
-
-            RefreshVariant();
-        }
-
-        public void RemoveDefine(string name)
-        {
-            if (defines.Remove(name))
-                RefreshVariant();
-        }
-
-        public bool TryGetVariable(string name, out ShaderVariableInfo? info)
-            => variables.TryGetValue(name, out info);
-
-        public IReadOnlyDictionary<string, ShaderVariableInfo> GetVariables() => variables;
-
-        public bool HasTextureBinding(string name)
-            => textureBindings.ContainsKey(name);
-
-        public ShaderResourceInfo GetTextureBinding(string name)
-            => textureBindings[name];
-
-        public bool HasSamplerBinding(string name)
-            => samplerBindings.ContainsKey(name);
-
-        public ShaderResourceInfo GetSamplerBinding(string name)
-            => samplerBindings[name];
-
-
-        public Texture GetDefaultTexture(string name)
-            => textures[name];
-
-        public Sampler GetDefaultSampler(string name)
-            => samplers[name];
-
-        public ReadOnlySpan<byte> GetDefaultMaterialBuffer()
-            => defaultBuffer;
-
-        public Dictionary<string, ShaderResourceInfo> GetTextureBindings()
-            => textureBindings;
-
-        public Dictionary<string, ShaderResourceInfo> GetSamplerBindings()
-            => samplerBindings;
-
-        public void SetTexture(string name, Texture texture)
-        {
-
-            if (!textureBindings.ContainsKey(name))
-                throw new Exception($"Texture '{name}' not found in material layout.");
-
-            textures[name] = texture ?? Texture.Default;
-        }
-
-        public void SetSampler(string name, Sampler sampler)
-        {
-            if (!samplerBindings.ContainsKey(name))
-                throw new Exception($"Sampler '{name}' not found in material layout.");
-
-            samplers[name] = sampler ?? Sampler.Default;
-        }
-
-        #region SETTERS
-
-        public void SetInt(string name, int value)
-            => Write(name, value);
-        public void SetFloat(string name, float value)
-        {
-            Write(name, value);
-        }
-
-        public void SetVector2(string name, Vector2 value)
-        {
-            Write(name, value);
-        }
-
-        public void SetVector3(string name, Vector3 value)
-        {
-            Write(name, value);
-        }
-
-        public void SetVector4(string name, Vector4 value)
-        {
-            Write(name, value);
-        }
-
-        public void SetMatrix4x4(string name, Matrix4x4 value)
-        {
-            Write(name, value);
-        }
-        #endregion
-
-        private void Write<T>(string name, T value) where T : struct
-        {
-            if (!variables.TryGetValue(name, out var varInfo))
-            {
-                Console.WriteLine($"Variable '{name}' not found in material.");
+                DevoidLog.Error(LogCategory.Core, "Pass is not defined in Material definition.");
                 return;
             }
 
-            var span = defaultBuffer.AsSpan(varInfo.Offset);
+            string? shaderVertexPath = pass.ShaderPrograms.Vs;
+            string? shaderFragmentPath = pass.ShaderPrograms.Fs;
 
-            MemoryMarshal.Write(span, in value);
+            if (shaderVertexPath == null)
+            {
+                DevoidLog.Error(LogCategory.Core, "Vertex path in material definition is null");
+                throw new InvalidDataException("Vertex path in material definition is null");
+            }
+
+            if (shaderFragmentPath == null)
+            {
+                DevoidLog.Error(LogCategory.Core, "Fragment path in material definition is null");
+                throw new InvalidDataException("Fragment path in material definition is null");
+            }
+
+            Shader passShader = new(Name, shaderVertexPath, shaderFragmentPath);
+
+            Pass = new MaterialPass(passShader, pass.PipelineState, pass.Uniforms);
+
+
+            // Material Pass is a left over abstraction from when the engine supported multiple material passes, just leaving it here since it may come in handy later.
         }
+        public IPipeline GetPipeline(VertexInfo vertexLayout, PrimitiveType primitiveType = PrimitiveType.Triangles)
+        {
+            PipelineKey key = new(vertexLayout, primitiveType);
 
+            if (_graphicsPipelines.TryGetValue(key, out var pipeline))
+            {
+                return pipeline;
+            }
+
+            pipeline = Engine.GraphicsDevice.CreateGraphicsPipeline(PipelineHelper.CreatePipelineDescription(Pass.PipelineState, Pass.Shader.GetActivePass(), vertexLayout, primitiveType));
+            return pipeline;
+        }
+        public Shader GetActiveShader()
+        {
+            return Pass.Shader;
+        }
         public void Dispose()
         {
-            foreach (var texture in textures)
-            {
-                if (texture.Value.ID == Texture.Default.ID)
-                    continue;
-                texture.Value.Dispose();
-            }
-
-            //foreach (var sampler in samplers)
-            //{
-
-            //    sampler.Value.Dispose();
-            //}
-
-            Shader.Dispose();
+            Pass.Dispose();
+            _graphicsPipelines.Clear();
         }
-
     }
 }

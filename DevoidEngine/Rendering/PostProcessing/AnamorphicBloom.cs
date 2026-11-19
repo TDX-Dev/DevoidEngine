@@ -9,11 +9,11 @@ namespace DevoidEngine.Rendering.PostProcessing
         public int BloomMipCount { get; set; } = 5;
         public float BloomRadius { get; set; } = 0.5f;
 
-        private readonly BloomUtility bloomUtility;
+        private readonly BloomUtility _bloomUtility;
 
         public AnamorphicBloomPass()
         {
-            bloomUtility = new BloomUtility();
+            _bloomUtility = new BloomUtility();
         }
 
         public override void Setup()
@@ -28,7 +28,7 @@ namespace DevoidEngine.Rendering.PostProcessing
                 return;
             Texture? scene = ctx.GetTexture("SceneColor");
 
-            Texture bloom = bloomUtility.Process(ctx, scene!, BloomMipCount, BloomRadius, BloomUtility.MipMode.Vertical, "PP_ANAMORPHICBLOOM");
+            Texture bloom = _bloomUtility.Process(ctx, scene!, BloomMipCount, BloomRadius, BloomUtility.MipMode.Vertical, "PP_ANAMORPHICBLOOM");
 
             ctx.SetTexture("AnamorphicBloom", bloom);
         }

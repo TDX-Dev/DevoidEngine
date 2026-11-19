@@ -1,6 +1,7 @@
 ﻿using DevoidEngine.Core;
 using DevoidEngine.InputSystem;
 using DevoidEngine.Rendering;
+using DevoidEngine.Util;
 using DevoidGPU;
 using ImGuiNET;
 using OpenTK.Windowing.Desktop;
@@ -37,7 +38,7 @@ namespace DevoidEngine.Imgui
 
     public class ImGuiRenderer : IInputLayer
     {
-        private static readonly Keys[] imGuiKeys =
+        private static readonly Keys[] ImGuiKeys =
         [
             // Navigation & Editing
             Keys.Tab, Keys.Left, Keys.Right, Keys.Up, Keys.Down,
@@ -76,44 +77,62 @@ namespace DevoidEngine.Imgui
             Keys.Period, Keys.Slash, Keys.Backslash
         ];
 
-        private readonly Shader guiShader;
-        private ImShaderData imShaderData = new();
-        private readonly UniformBuffer shaderConstantBuffer;
+        private readonly Shader _guiShader;
+        private readonly IPipeline _guiPipeline;
+        private ImShaderData _imShaderData = new();
+        private readonly UniformBuffer _shaderConstantBuffer;
 
-        private VertexBuffer<ImGuiVertex> vertexBuffer;
-        private IndexBuffer indexBuffer;
+        private VertexBuffer<ImGuiVertex> _vertexBuffer;
+        private IndexBuffer _indexBuffer;
 
-        private readonly IDescriptorSet guiDescriptor;
+        private readonly IDescriptorSet _guiDescriptor;
 
-        private int vertexBufferSize = 2000;
-        private int indexBufferSize = 4000;
+        private int _vertexBufferSize = 2000;
+        private int _indexBufferSize = 4000;
 
-        private Texture? fontTexture;
-        private readonly Sampler defaultSampler;
+        private Texture? _fontTexture;
+        private readonly Sampler _defaultSampler;
 
-        private readonly RenderTarget imguiRenderTarget;
-        private Texture? imguiRenderTexture;
+        private readonly RenderTarget _imguiRenderTarget;
+        private Texture? _imguiRenderTexture;
 
-        private int prevWidth;
-        private int prevHeight;
+        private int _prevWidth;
+        private int _prevHeight;
 
-        private int fontsCount = -1;
-        private ImFontPtr defaultFont;
+        private int _fontsCount = -1;
+        private ImFontPtr _defaultFont;
         private readonly List<nint> _glyphRanges = [];
-        public Action? OnGUI { get; set; }
+        public Action? OnGui { get; set; }
         public float FooterHeight { get; set; } = 24f;
         public float ToolbarHeight { get; set; } = 0f;
 
         public ImGuiRenderer()
         {
-            guiShader = Shader.FromDescriptorFile(Engine.GraphicsDevice, "Content/DevoidShaderDescriptors/imgui_shader.dsd");
-            guiDescriptor = Engine.GraphicsDevice.CreateDescriptorSet(guiShader.DefaultPass.GetVariant().DescriptorLayout);
-            shaderConstantBuffer = UniformBuffer.Create(ResourceUsage.Dynamic, (uint)Unsafe.SizeOf<ImShaderData>());
+            _guiShader = new("IMGUI GUI SHADER", "Content/Shaders/imgui.vert.hlsl", "Content/Shaders/imgui.frag.hlsl");
+            _guiDescriptor = Engine.GraphicsDevice.CreateDescriptorSet(_guiShader.GetActivePass().DescriptorLayout);
 
-            vertexBuffer = new VertexBuffer<ImGuiVertex>(Engine.GraphicsDevice, vertexBufferSize, ImGuiVertex.VertexInfo, ResourceUsage.Dynamic);
-            indexBuffer = new IndexBuffer(Engine.GraphicsDevice, indexBufferSize, ResourceUsage.Dynamic, IndexFormat.UInt16);
+            _guiPipeline = Engine.GraphicsDevice.CreateGraphicsPipeline(
+                PipelineHelper.CreatePipelineDescription(
+                    new()
+                    {
+                        Blend = BlendMode.AlphaBlend,
+                        CullMode = CullMode.Back,
+                        FillMode = FillMode.Solid,
+                        DepthCompareMode = DepthTest.Less,
+                        PrimitiveType = PrimitiveType.Triangles,
+                        WriteDepth = true
+                    },
+                    _guiShader.GetActivePass(),
+                    ImGuiVertex.VertexInfo
+                )
+            );
 
-            defaultSampler = Sampler.Create(new SamplerDescription()
+            _shaderConstantBuffer = UniformBuffer.Create(ResourceUsage.Dynamic, (uint)Unsafe.SizeOf<ImShaderData>());
+
+            _vertexBuffer = new VertexBuffer<ImGuiVertex>(Engine.GraphicsDevice, _vertexBufferSize, ImGuiVertex.VertexInfo, ResourceUsage.Dynamic);
+            _indexBuffer = new IndexBuffer(Engine.GraphicsDevice, _indexBufferSize, ResourceUsage.Dynamic, IndexFormat.UInt16);
+
+            _defaultSampler = Sampler.Create(new SamplerDescription()
             {
                 MinFilter = FilterMode.Linear,
                 MagFilter = FilterMode.Linear,
@@ -122,12 +141,12 @@ namespace DevoidEngine.Imgui
                 AddressV = WrapMode.ClampToEdge,
                 AddressW = WrapMode.ClampToEdge,
                 MaxAnisotropy = 1,
-                MipLODBias = 0.0f,
-                MinLOD = 0.0f,
-                MaxLOD = 0.0f
+                MipLodBias = 0.0f,
+                MinLod = 0.0f,
+                MaxLod = 0.0f
             });
 
-            imguiRenderTarget = RenderTarget.Create(1);
+            _imguiRenderTarget = RenderTarget.Create(1);
         }
 
         private unsafe void DumpImGuiVertices(ImDrawDataPtr drawData, int count = 5)
@@ -168,7 +187,7 @@ namespace DevoidEngine.Imgui
 
         public void SetDefaultFont(ImFontPtr font)
         {
-            defaultFont = font;
+            _defaultFont = font;
         }
 
         public unsafe ImFontPtr LoadIconFont(
@@ -210,28 +229,28 @@ namespace DevoidEngine.Imgui
 
         private unsafe void UpdateMonitors()
         {
-            ImGuiPlatformIOPtr platformIO = ImGui.GetPlatformIO();
+            ImGuiPlatformIOPtr platformIo = ImGui.GetPlatformIO();
 
-            if (platformIO.NativePtr->Monitors.Data != IntPtr.Zero)
+            if (platformIo.NativePtr->Monitors.Data != IntPtr.Zero)
             {
-                Marshal.FreeHGlobal((nint)platformIO.NativePtr->Monitors.Data);
+                Marshal.FreeHGlobal((nint)platformIo.NativePtr->Monitors.Data);
             }
 
             int count = Monitors.GetMonitors().Count;
             if (count == 0)
             {
-                platformIO.NativePtr->Monitors = new ImVector();
+                platformIo.NativePtr->Monitors = new ImVector();
                 return;
             }
 
             IntPtr data = Marshal.AllocHGlobal(Unsafe.SizeOf<ImGuiPlatformMonitor>() * count);
-            platformIO.NativePtr->Monitors = new ImVector(count, count, data);
+            platformIo.NativePtr->Monitors = new ImVector(count, count, data);
 
             var monitors = Monitors.GetMonitors();
             for (int i = 0; i < monitors.Count; i++)
             {
                 MonitorInfo monitor = monitors[i];
-                ImGuiPlatformMonitorPtr imguiMonitor = platformIO.Monitors[i];
+                ImGuiPlatformMonitorPtr imguiMonitor = platformIo.Monitors[i];
 
                 imguiMonitor.MainPos = new Vector2(monitor.ClientArea.Min.X, monitor.ClientArea.Min.Y);
                 imguiMonitor.MainSize = new Vector2(monitor.ClientArea.Size.X, monitor.ClientArea.Size.Y);
@@ -268,12 +287,12 @@ namespace DevoidEngine.Imgui
             byte[] managedPixels = new byte[size];
             Marshal.Copy(pixels, managedPixels, 0, size);
 
-            fontTexture?.Dispose(); // Optimize: Prevents memory leak when fonts change/rebuild
+            _fontTexture?.Dispose(); // Optimize: Prevents memory leak when fonts change/rebuild
 
-            fontTexture = Texture.Create2D(width, height, TextureFormat.RGBA8_UNorm, TextureUsage.ShaderResource);
-            fontTexture.GPU.Update(managedPixels);
+            _fontTexture = Texture.Create2D(width, height, TextureFormat.Rgba8UNorm, TextureUsage.ShaderResource);
+            _fontTexture.Gpu.Update(managedPixels);
 
-            io.Fonts.SetTexID((nint)fontTexture.ID);
+            io.Fonts.SetTexID((nint)_fontTexture.Id);
         }
 
         public void UpdateDisplay(Window window)
@@ -283,24 +302,24 @@ namespace DevoidEngine.Imgui
 
             ImGui.GetIO().DisplaySize = new(window.ClientSize.X, window.ClientSize.Y);
 
-            if (window.ClientSize.X != prevWidth || window.ClientSize.Y != prevHeight)
+            if (window.ClientSize.X != _prevWidth || window.ClientSize.Y != _prevHeight)
             {
-                imguiRenderTexture?.Dispose(); // Optimize: Resolves memory leak upon window resize
+                _imguiRenderTexture?.Dispose(); // Optimize: Resolves memory leak upon window resize
 
-                imguiRenderTexture = Texture.Create2D(
+                _imguiRenderTexture = Texture.Create2D(
                     window.ClientSize.X,
                     window.ClientSize.Y,
-                    TextureFormat.RGBA8_UNorm,
+                    TextureFormat.Rgba8UNorm,
                     TextureUsage.RenderTarget | TextureUsage.ShaderResource
                 );
 
-                prevWidth = window.ClientSize.X;
-                prevHeight = window.ClientSize.Y;
+                _prevWidth = window.ClientSize.X;
+                _prevHeight = window.ClientSize.Y;
             }
 
-            if (imguiRenderTexture != null)
+            if (_imguiRenderTexture != null)
             {
-                imguiRenderTarget.SetColorAttachment(0, imguiRenderTexture);
+                _imguiRenderTarget.SetColorAttachment(0, _imguiRenderTexture);
             }
         }
 
@@ -483,7 +502,7 @@ namespace DevoidEngine.Imgui
             io.MouseWheel = mouse.ScrollDelta.Y;
             io.MouseWheelH = mouse.ScrollDelta.X;
 
-            foreach (Keys key in imGuiKeys)
+            foreach (Keys key in ImGuiKeys)
             {
                 io.AddKeyEvent(MapKey(key), keyboard.IsKeyDown(key));
             }
@@ -504,10 +523,10 @@ namespace DevoidEngine.Imgui
             ImGuiIOPtr io = ImGui.GetIO();
             io.DeltaTime = delta;
 
-            if (io.Fonts.Fonts.Size != fontsCount)
+            if (io.Fonts.Fonts.Size != _fontsCount)
             {
                 ConfigureFontAtlas();
-                fontsCount = io.Fonts.Fonts.Size;
+                _fontsCount = io.Fonts.Fonts.Size;
             }
         }
 
@@ -518,11 +537,11 @@ namespace DevoidEngine.Imgui
             UpdateInput(surface.Window);
 
             ImGui.NewFrame();
-            ImGui.PushFont(defaultFont);
+            ImGui.PushFont(_defaultFont);
 
             CreateDockspace();
 
-            OnGUI?.Invoke();
+            OnGui?.Invoke();
 
             ImGui.PopFont();
         }
@@ -557,8 +576,8 @@ namespace DevoidEngine.Imgui
                 -1.0f, 1.0f
             );
 
-            imShaderData.ProjectionMatrix = mvp;
-            imShaderData.DpiScaling = 1.0f;
+            _imShaderData.ProjectionMatrix = mvp;
+            _imShaderData.DpiScaling = 1.0f;
 
             cmd.SetFramebuffer(surface.Framebuffer);
 
@@ -570,15 +589,14 @@ namespace DevoidEngine.Imgui
                 Height = fbHeight,
             });
 
-            shaderConstantBuffer.Update(imShaderData);
-            guiDescriptor.SetUniformBuffer(0, shaderConstantBuffer.GPU);
+            _shaderConstantBuffer.Update(_imShaderData);
+            _guiDescriptor.SetUniformBuffer(0, _shaderConstantBuffer.Gpu);
 
-            IPipeline guiPipeline = guiShader.DefaultPass.GetPipeline(guiShader.DefaultPass.GetVariant(), ImGuiVertex.VertexInfo);
-            cmd.SetPipeline(guiPipeline);
+            cmd.SetPipeline(_guiPipeline);
 
-            cmd.SetVertexBuffer(vertexBuffer.GPU);
-            cmd.SetIndexBuffer(indexBuffer.GPU);
-            cmd.SetDescriptorSet(0, guiDescriptor);
+            cmd.SetVertexBuffer(_vertexBuffer.Gpu);
+            cmd.SetIndexBuffer(_indexBuffer.Gpu);
+            cmd.SetDescriptorSet(0, _guiDescriptor);
 
             var clipOffset = drawData.DisplayPos;
 
@@ -587,29 +605,29 @@ namespace DevoidEngine.Imgui
                 ImDrawListPtr cmdList = drawData.CmdLists[n];
 
                 int vtxSize = cmdList.VtxBuffer.Size * Unsafe.SizeOf<ImDrawVert>();
-                if (vtxSize > vertexBufferSize)
+                if (vtxSize > _vertexBufferSize)
                 {
-                    vertexBuffer.Dispose();
-                    vertexBufferSize = (int)Math.Max(vertexBufferSize * 1.5f, vtxSize);
-                    vertexBuffer = new VertexBuffer<ImGuiVertex>(Engine.GraphicsDevice, vertexBufferSize, ImGuiVertex.VertexInfo, ResourceUsage.Dynamic);
-                    cmd.SetVertexBuffer(vertexBuffer.GPU);
+                    _vertexBuffer.Dispose();
+                    _vertexBufferSize = (int)Math.Max(_vertexBufferSize * 1.5f, vtxSize);
+                    _vertexBuffer = new VertexBuffer<ImGuiVertex>(Engine.GraphicsDevice, _vertexBufferSize, ImGuiVertex.VertexInfo, ResourceUsage.Dynamic);
+                    cmd.SetVertexBuffer(_vertexBuffer.Gpu);
                 }
 
                 int idxSize = cmdList.IdxBuffer.Size * sizeof(ushort);
-                if (idxSize > indexBufferSize)
+                if (idxSize > _indexBufferSize)
                 {
-                    indexBuffer.Dispose();
-                    indexBufferSize = (int)Math.Max(indexBufferSize * 1.5f, idxSize);
-                    indexBuffer = new IndexBuffer(Engine.GraphicsDevice, indexBufferSize, ResourceUsage.Dynamic, IndexFormat.UInt16);
-                    cmd.SetIndexBuffer(indexBuffer.GPU);
+                    _indexBuffer.Dispose();
+                    _indexBufferSize = (int)Math.Max(_indexBufferSize * 1.5f, idxSize);
+                    _indexBuffer = new IndexBuffer(Engine.GraphicsDevice, _indexBufferSize, ResourceUsage.Dynamic, IndexFormat.UInt16);
+                    cmd.SetIndexBuffer(_indexBuffer.Gpu);
                 }
 
-                vertexBuffer.Update(cmdList.VtxBuffer.Data, cmdList.VtxBuffer.Size);
-                indexBuffer.Update(cmdList.IdxBuffer.Data, cmdList.IdxBuffer.Size);
+                _vertexBuffer.Update(cmdList.VtxBuffer.Data, cmdList.VtxBuffer.Size);
+                _indexBuffer.Update(cmdList.IdxBuffer.Data, cmdList.IdxBuffer.Size);
 
-                for (int cmd_i = 0; cmd_i < cmdList.CmdBuffer.Size; cmd_i++)
+                for (int cmdI = 0; cmdI < cmdList.CmdBuffer.Size; cmdI++)
                 {
-                    ImDrawCmdPtr pcmd = cmdList.CmdBuffer[cmd_i];
+                    ImDrawCmdPtr pcmd = cmdList.CmdBuffer[cmdI];
 
                     var cr = pcmd.ClipRect;
                     int x1 = (int)Math.Floor(cr.X - clipOffset.X);
@@ -635,10 +653,10 @@ namespace DevoidEngine.Imgui
                     });
 
                     var texture = Engine.Instance.TextureManager.Get((ulong)pcmd.TextureId);
-                    guiDescriptor.SetTexture(0, texture.GPU);
-                    guiDescriptor.SetSampler(0, defaultSampler.GPU);
+                    _guiDescriptor.SetTexture(0, texture.Gpu);
+                    _guiDescriptor.SetSampler(0, _defaultSampler.Gpu);
 
-                    cmd.SetDescriptorSet(0, guiDescriptor);
+                    cmd.SetDescriptorSet(0, _guiDescriptor);
                     cmd.DrawIndexed((int)pcmd.ElemCount, (int)pcmd.IdxOffset, (int)pcmd.VtxOffset);
 
                     Engine.Renderer.PopScissor(cmd);

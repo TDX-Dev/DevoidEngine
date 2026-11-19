@@ -15,6 +15,6 @@ namespace DevoidEngine.Rendering
         public Texture Prefilter = null!;
         public Texture BrdfLut = null!;
 
-        public ShaderStorageBuffer<SH9> SH9 = null!;
+        public ShaderStorageBuffer<Sh9> Sh9 = null!;
     }
 }

@@ -2,16 +2,16 @@
 {
     public static class DevoidLog
     {
-        private static readonly List<ILogSink> sinks = [];
+        private static readonly List<ILogSink> Sinks = [];
 
         public static void AddSink(ILogSink sink)
         {
-            sinks.Add(sink);
+            Sinks.Add(sink);
         }
 
         public static void RemoveSink(ILogSink sink)
         {
-            sinks.Remove(sink);
+            Sinks.Remove(sink);
         }
 
         public static void Log(LogLevel level, LogCategory category, string message)
@@ -51,7 +51,7 @@
 
         static void WriteSinks(LogEntry entry)
         {
-            foreach (var sink in sinks)
+            foreach (var sink in Sinks)
                 sink.Write(entry);
         }
     }

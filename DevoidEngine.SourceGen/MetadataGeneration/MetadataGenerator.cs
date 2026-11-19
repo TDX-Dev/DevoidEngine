@@ -35,7 +35,7 @@ namespace DevoidEngine.SourceGen.MetadataGeneration
                         GenerateClass(spc, symbol);
                     }
 
-                    ClassDBRegistryEmitter.Emit(spc, classes);
+                    ClassDbRegistryEmitter.Emit(spc, classes);
                 });
         }
 

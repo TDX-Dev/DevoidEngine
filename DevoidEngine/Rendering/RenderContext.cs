@@ -16,7 +16,7 @@ namespace DevoidEngine.Rendering
         public Texture SceneDepth;
         public Texture SceneNormal;
         public Texture SceneViewDepth;
-        public Texture SceneAO;
+        public Texture SceneAo;
 
         public Texture SceneIdentifier;
 

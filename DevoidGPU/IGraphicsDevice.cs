@@ -19,8 +19,8 @@ namespace DevoidGPU
         IShaderStorageBuffer CreateShaderStorageBuffer(BufferDescription desc);
         IDescriptorLayout CreateDescriptorLayout(DescriptorBinding[] bindings);
         IDescriptorSet CreateDescriptorSet(IDescriptorLayout layout);
-        IGPUTimestamp CreateGPUTimestamp();
-        IGPUTimestampDisjoint CreateGPUTimestampDisjoint();
+        IGpuTimestamp CreateGpuTimestamp();
+        IGpuTimestampDisjoint CreateGpuTimestampDisjoint();
         ICommandList GetCommandList();
         ICommandQueue GetCommandQueue(CommandListType type);
         void UpdateMemoryInfo();

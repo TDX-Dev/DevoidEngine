@@ -6,44 +6,44 @@ using SwapChain = SharpDX.DXGI.SwapChain;
 
 namespace DevoidGPU.DX11
 {
-    internal sealed class DX11SwapChain : ISwapchain
+    internal sealed class Dx11SwapChain : ISwapchain
     {
         public int Width { get; }
         public int Height { get; }
         public bool VSync { get; private set; }
-        public IFrameBuffer Framebuffer => framebuffer;
+        public IFrameBuffer Framebuffer => _framebuffer;
 
-        private readonly Device device;
-        private readonly SwapChain swapchain;
-        private readonly DX11Texture[] backbuffers;
-        private readonly int bufferCount;
-        private readonly Format format;
-        private readonly SwapChainDescription swapchainDescription;
-        private DX11Framebuffer framebuffer = null!;
+        private readonly Device _device;
+        private readonly SwapChain _swapchain;
+        private readonly Dx11Texture[] _backbuffers;
+        private readonly int _bufferCount;
+        private readonly Format _format;
+        private readonly SwapChainDescription _swapchainDescription;
+        private Dx11Framebuffer _framebuffer = null!;
 
-        public DX11SwapChain(Factory factory, Device dx11Device, SwapchainDescription desc)
+        public Dx11SwapChain(Factory factory, Device dx11Device, SwapchainDescription desc)
         {
             if (desc.WindowHandle == IntPtr.Zero)
                 throw new ArgumentException("[DX11]: Window Handle provided was null.");
 
-            device = dx11Device;
-            bufferCount = desc.BufferCount;
-            format = DX11StateMapper.ToDXGITextureFormat(desc.Format);
+            _device = dx11Device;
+            _bufferCount = desc.BufferCount;
+            _format = Dx11StateMapper.ToDxgiTextureFormat(desc.Format);
 
             Width = desc.Width;
             Height = desc.Height;
             VSync = desc.VSync;
 
-            swapchainDescription = new SwapChainDescription()
+            _swapchainDescription = new SwapChainDescription()
             {
-                BufferCount = bufferCount,
+                BufferCount = _bufferCount,
                 ModeDescription = new ModeDescription()
                 {
                     Width = desc.Width,
                     Height = desc.Height,
                     RefreshRate = new Rational((int)desc.RefreshRate.X, (int)desc.RefreshRate.Y),
 
-                    Format = format
+                    Format = _format
                 },
                 IsWindowed = desc.Windowed,
                 Usage = Usage.RenderTargetOutput,
@@ -54,12 +54,12 @@ namespace DevoidGPU.DX11
                 OutputHandle = desc.WindowHandle
             };
 
-            var swapChain = new SwapChain(factory, device, swapchainDescription);
+            var swapChain = new SwapChain(factory, _device, _swapchainDescription);
 
-            swapchain = swapChain;
+            _swapchain = swapChain;
 
-            int count = swapchain.Description.BufferCount;
-            backbuffers = new DX11Texture[count];
+            int count = _swapchain.Description.BufferCount;
+            _backbuffers = new Dx11Texture[count];
 
             CreateBackbuffer();
 
@@ -67,42 +67,42 @@ namespace DevoidGPU.DX11
 
         private void CreateBackbuffer()
         {
-            using var tex = swapchain.GetBackBuffer<Texture2D>(0);
+            using var tex = _swapchain.GetBackBuffer<Texture2D>(0);
 
-            backbuffers[0] = new DX11Texture(device, tex);
+            _backbuffers[0] = new Dx11Texture(_device, tex);
 
-            framebuffer = new DX11Framebuffer(
-                [backbuffers[0]]
+            _framebuffer = new Dx11Framebuffer(
+                [_backbuffers[0]]
             );
         }
 
         public void Present()
         {
 
-            Result result = swapchain.TryPresent(VSync ? 1 : 0, PresentFlags.None);
+            Result result = _swapchain.TryPresent(VSync ? 1 : 0, PresentFlags.None);
 
             if (result != Result.Ok)
             {
                 Console.Write("[DX11]: GPU device problem! Reason: ");
-                Console.WriteLine(device.DeviceRemovedReason);
+                Console.WriteLine(_device.DeviceRemovedReason);
             }
         }
 
         public void Resize(int width, int height)
         {
-            for (int i = 0; i < backbuffers.Length; i++)
-                backbuffers[i]?.Dispose();
+            for (int i = 0; i < _backbuffers.Length; i++)
+                _backbuffers[i]?.Dispose();
 
-            foreach (var rtv in framebuffer.RTVs)
+            foreach (var rtv in _framebuffer.RtVs)
             {
                 rtv?.Dispose();
             }
 
-            swapchain.ResizeBuffers(
-                bufferCount,
+            _swapchain.ResizeBuffers(
+                _bufferCount,
                 width,
                 height,
-                format,
+                _format,
                 SwapChainFlags.None
             );
 
@@ -111,9 +111,9 @@ namespace DevoidGPU.DX11
 
         public void Dispose()
         {
-            for (int i = 0; i < backbuffers.Length; i++)
-                backbuffers[i]?.Dispose();
-            swapchain.Dispose();
+            for (int i = 0; i < _backbuffers.Length; i++)
+                _backbuffers[i]?.Dispose();
+            _swapchain.Dispose();
         }
     }
 }

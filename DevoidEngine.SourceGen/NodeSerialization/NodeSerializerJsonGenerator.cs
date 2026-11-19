@@ -383,7 +383,7 @@ namespace DevoidEngine.SourceGen.NodeSerialization
             sb.AppendLine($"\t\twriter.WriteNumber(\"W\", {expression}.W);");
             sb.AppendLine("\t\twriter.WriteEndObject();");
         }
-        private static void GenerateMatrix4x4Write(StringBuilder sb, string expression)
+        private static void GenerateMatrix4X4Write(StringBuilder sb, string expression)
         {
             sb.AppendLine("\t\twriter.WriteStartObject();");
 
@@ -937,7 +937,7 @@ namespace DevoidEngine.SourceGen.NodeSerialization
 
             sb.AppendLine($"\t\t\t\t\t{target} = new System.Numerics.Quaternion(x, y, z, w);");
         }
-        private static void GenerateMatrix4x4Read(StringBuilder sb, string target)
+        private static void GenerateMatrix4X4Read(StringBuilder sb, string target)
         {
             sb.AppendLine("\t\t\t\t\tif (reader.TokenType != JsonTokenType.StartObject)");
             sb.AppendLine("\t\t\t\t\t\tthrow new JsonException();");

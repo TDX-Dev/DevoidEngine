@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace Elemental.Tools
 {
-    public static class EditorUI
+    public static class EditorUi
     {
         //private static readonly MethodInfo LoadPathMethod =
         //    typeof(Asset)
@@ -31,7 +31,7 @@ namespace Elemental.Tools
         //                   parameters[0].ParameterType == typeof(string) &&
         //                   parameters[1].ParameterType == typeof(bool);
         //        });
-        private static readonly HashSet<MaterialInstance> openMaterialEditors = [];
+        private static readonly HashSet<MaterialInstance> OpenMaterialEditors = [];
 
         static void HandleMouseWrap()
         {
@@ -105,7 +105,7 @@ namespace Elemental.Tools
             return changed;
         }
 
-        public static bool PropertyVector3RGB(ref Vector3 value)
+        public static bool PropertyVector3Rgb(ref Vector3 value)
         {
             bool changed = false;
 
@@ -227,7 +227,7 @@ namespace Elemental.Tools
             if (field.FieldType == typeof(Texture))
             {
                 Texture tex = (Texture)field.GetValue(target)!;
-                PropertyTexture(tex == null ? IntPtr.Zero : (IntPtr)tex.ID);
+                PropertyTexture(tex == null ? IntPtr.Zero : (IntPtr)tex.Id);
                 return false;
             }
 
@@ -510,7 +510,7 @@ namespace Elemental.Tools
 
             ImGuiColorEditFlags flags = ImGuiColorEditFlags.DisplayRGB;
 
-            if (attr != null && attr.HDR)
+            if (attr != null && attr.Hdr)
                 flags |= ImGuiColorEditFlags.HDR;
 
             ImGui.SetNextItemWidth(-1);
@@ -768,7 +768,7 @@ namespace Elemental.Tools
 
             ImGuiColorEditFlags flags = ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.DisplayRGB;// | ImGuiColorEditFlags.DisplayHSV;
 
-            if (attr != null && attr.HDR)
+            if (attr != null && attr.Hdr)
                 flags |= ImGuiColorEditFlags.HDR;
 
             ImGui.SetNextItemWidth(-1);

@@ -10,7 +10,7 @@ namespace DevoidEngine.Rendering.PostProcessing
 {
     public sealed class PostProcessContext
     {
-        private readonly Dictionary<string, Texture> textures = [];
+        private readonly Dictionary<string, Texture> _textures = [];
 
         public Renderer Renderer = null!;
         public ICommandList CommandList = null!;
@@ -20,17 +20,17 @@ namespace DevoidEngine.Rendering.PostProcessing
 
         public void Reset()
         {
-            textures.Clear();
+            _textures.Clear();
         }
 
         public void SetTexture(string name, Texture texture)
         {
-            textures[name] = texture;
+            _textures[name] = texture;
         }
 
         public Texture? GetTexture(string name)
         {
-            if (!textures.TryGetValue(name, out Texture? texture))
+            if (!_textures.TryGetValue(name, out Texture? texture))
                 return null;
 
             return texture;

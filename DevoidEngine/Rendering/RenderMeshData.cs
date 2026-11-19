@@ -5,17 +5,17 @@ namespace DevoidEngine.Rendering
 {
     public class RenderMeshData
     {
-        public Mesh render_mesh = null!;
-        public Matrix4x4 render_transform;
-        public MaterialInstance? render_material;
+        public Mesh RenderMesh = null!;
+        public Matrix4x4 RenderTransform;
+        public MaterialInstance? RenderMaterial;
 
-        public bool is_static = false;
+        public bool IsStatic = false;
 
         public RenderMeshData() { }
 
         public RenderMeshData(Mesh mesh)
         {
-            render_mesh = mesh;
+            RenderMesh = mesh;
         }
     }
 }

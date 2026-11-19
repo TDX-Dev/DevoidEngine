@@ -3,19 +3,19 @@ using System.Runtime.CompilerServices;
 
 namespace DevoidEngine.Profiling
 {
-    public class CPUProfiler
+    public class CpuProfiler
     {
 
-        private readonly List<Scope> scopes = new(128);
-        private readonly int[] stack = new int[128];
-        private int stackTop = 0;
+        private readonly List<Scope> _scopes = new(128);
+        private readonly int[] _stack = new int[128];
+        private int _stackTop = 0;
 
-        public IReadOnlyList<Scope> Scopes => scopes;
+        public IReadOnlyList<Scope> Scopes => _scopes;
 
         public void BeginFrame()
         {
-            scopes.Clear();
-            stackTop = 0;
+            _scopes.Clear();
+            _stackTop = 0;
         }
 
         [Conditional("PROFILING")]
@@ -25,11 +25,11 @@ namespace DevoidEngine.Profiling
             [CallerLineNumber] int line = 0,
             [CallerMemberName] string member = "")
         {
-            int parent = stackTop > 0 ? stack[stackTop - 1] : -1;
+            int parent = _stackTop > 0 ? _stack[_stackTop - 1] : -1;
 
-            int index = scopes.Count;
+            int index = _scopes.Count;
 
-            scopes.Add(new Scope
+            _scopes.Add(new Scope
             {
                 BeginTick = Stopwatch.GetTimestamp(),
                 Parent = parent,
@@ -40,18 +40,18 @@ namespace DevoidEngine.Profiling
                 CustomName = customName
             });
 
-            stack[stackTop++] = index;
+            _stack[_stackTop++] = index;
         }
 
         [Conditional("PROFILING")]
         public void EndScope()
         {
-            int index = stack[--stackTop];
+            int index = _stack[--_stackTop];
 
-            var scope = scopes[index];
+            var scope = _scopes[index];
             scope.EndTick = Stopwatch.GetTimestamp();
 
-            scopes[index] = scope;
+            _scopes[index] = scope;
         }
     }
 }

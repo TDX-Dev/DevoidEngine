@@ -11,6 +11,6 @@ namespace DevoidEngine.Rendering
     [StructLayout(LayoutKind.Sequential)]
     public struct EnvironmentData
     {
-        SH9 SkySHIrradiance;
+        Sh9 SkySHIrradiance;
     }
 }

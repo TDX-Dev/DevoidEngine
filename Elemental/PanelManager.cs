@@ -2,24 +2,24 @@
 {
     public class PanelManager
     {
-        private readonly List<Panel> panels = [];
-        private readonly List<Panel> panelsToAdd = [];
-        private readonly List<Panel> panelsToRemove = [];
+        private readonly List<Panel> _panels = [];
+        private readonly List<Panel> _panelsToAdd = [];
+        private readonly List<Panel> _panelsToRemove = [];
 
         public T AddPanel<T>(T panel) where T : Panel
         {
-            panelsToAdd.Add(panel);
+            _panelsToAdd.Add(panel);
             return panel;
         }
 
         public void RemovePanel(Panel panel)
         {
-            panelsToRemove.Add(panel);
+            _panelsToRemove.Add(panel);
         }
 
         public T? GetPanel<T>() where T : Panel
         {
-            foreach (var panel in panels)
+            foreach (var panel in _panels)
             {
                 if (panel is T typedPanel)
                     return typedPanel;
@@ -31,64 +31,64 @@
         {
             ProcessPendingChanges(context);
 
-            for (int i = 0; i < panels.Count; i++)
+            for (int i = 0; i < _panels.Count; i++)
             {
-                if (panels[i].IsOpen)
+                if (_panels[i].IsOpen)
                 {
-                    panels[i].OnUpdate(context, deltaTime);
+                    _panels[i].OnUpdate(context, deltaTime);
                 }
             }
         }
 
         public void OnRender(EditorContext context)
         {
-            for (int i = 0; i < panels.Count; i++)
+            for (int i = 0; i < _panels.Count; i++)
             {
-                if (panels[i].IsOpen)
+                if (_panels[i].IsOpen)
                 {
-                    panels[i].OnRender(context);
+                    _panels[i].OnRender(context);
                 }
             }
         }
 
         public void OnImGuiRender(EditorContext context)
         {
-            for (int i = 0; i < panels.Count; i++)
+            for (int i = 0; i < _panels.Count; i++)
             {
-                panels[i].Draw(context);
+                _panels[i].Draw(context);
             }
         }
 
         public void ProcessPendingChanges(EditorContext context)
         {
-            if (panelsToAdd.Count > 0)
+            if (_panelsToAdd.Count > 0)
             {
-                foreach (var panel in panelsToAdd)
+                foreach (var panel in _panelsToAdd)
                 {
-                    panels.Add(panel);
+                    _panels.Add(panel);
                     panel.OnAttach(context);
                 }
-                panelsToAdd.Clear();
+                _panelsToAdd.Clear();
             }
 
-            if (panelsToRemove.Count > 0)
+            if (_panelsToRemove.Count > 0)
             {
-                foreach (var panel in panelsToRemove)
+                foreach (var panel in _panelsToRemove)
                 {
                     panel.OnDetach();
-                    panels.Remove(panel);
+                    _panels.Remove(panel);
                 }
-                panelsToRemove.Clear();
+                _panelsToRemove.Clear();
             }
         }
 
         public void Clear()
         {
-            foreach (var panel in panels)
+            foreach (var panel in _panels)
             {
                 panel.OnDetach();
             }
-            panels.Clear();
+            _panels.Clear();
         }
     }
 }

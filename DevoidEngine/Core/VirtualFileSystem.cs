@@ -19,18 +19,18 @@
             Mount(new DirectorySource(Engine.Instance.ProjectSystem.AssetPath));
         }
 
-        private readonly List<IVirtualFileSource> sources = [];
+        private readonly List<IVirtualFileSource> _sources = [];
 
         public void Mount(IVirtualFileSource source)
         {
-            sources.Insert(0, source);
+            _sources.Insert(0, source);
         }
 
         public bool Exists(string path)
         {
             path = Normalize(path);
 
-            foreach (var source in sources)
+            foreach (var source in _sources)
             {
                 if (source.Exists(path))
                     return true;
@@ -43,7 +43,7 @@
         {
             path = Normalize(path);
 
-            foreach (var source in sources)
+            foreach (var source in _sources)
             {
                 if (source.Exists(path))
                     return source.OpenRead(path);

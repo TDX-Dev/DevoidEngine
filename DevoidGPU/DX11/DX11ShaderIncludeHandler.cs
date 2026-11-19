@@ -2,18 +2,18 @@
 
 namespace DevoidGPU.DX11
 {
-    class DX11ShaderIncludeHandler : Include
+    class Dx11ShaderIncludeHandler : Include
     {
-        private readonly Dictionary<Stream, string> streamPaths = [];
-        private readonly string rootDirectory;
+        private readonly Dictionary<Stream, string> _streamPaths = [];
+        private readonly string _rootDirectory;
         public IDisposable? Shadow { get; set; }
 
         // Track opened streams to dispose safely
-        private readonly List<Stream> openedStreams = [];
+        private readonly List<Stream> _openedStreams = [];
 
-        public DX11ShaderIncludeHandler(string root)
+        public Dx11ShaderIncludeHandler(string root)
         {
-            rootDirectory = root;
+            _rootDirectory = root;
         }
 
         public Stream Open(
@@ -24,13 +24,13 @@ namespace DevoidGPU.DX11
             string baseDir;
 
             if (parentStream != null &&
-                streamPaths.TryGetValue(parentStream, out string? parentPath))
+                _streamPaths.TryGetValue(parentStream, out string? parentPath))
             {
                 baseDir = Path.GetDirectoryName(parentPath)!;
             }
             else
             {
-                baseDir = rootDirectory;
+                baseDir = _rootDirectory;
             }
 
             string fullPath =
@@ -46,8 +46,8 @@ namespace DevoidGPU.DX11
 
             var stream = new MemoryStream(cleanBytes);
 
-            streamPaths[stream] = fullPath;
-            openedStreams.Add(stream);
+            _streamPaths[stream] = fullPath;
+            _openedStreams.Add(stream);
 
             return stream;
         }
@@ -81,10 +81,10 @@ namespace DevoidGPU.DX11
 
         public void Dispose()
         {
-            foreach (var stream in openedStreams)
+            foreach (var stream in _openedStreams)
                 stream.Dispose();
 
-            openedStreams.Clear();
+            _openedStreams.Clear();
         }
     }
 }

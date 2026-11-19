@@ -7,8 +7,8 @@
         Vector4,
         Vector3,
         Vector2,
-        Matrix3x3,
-        Matrix4x4,
+        Matrix3X3,
+        Matrix4X4,
         Custom
     }
 }

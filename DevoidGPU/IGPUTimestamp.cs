@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DevoidGPU
 {
-    public interface IGPUTimestamp : IDisposable
+    public interface IGpuTimestamp : IDisposable
     {
         bool TryGetTimestamp(out ulong timestamp);
     }

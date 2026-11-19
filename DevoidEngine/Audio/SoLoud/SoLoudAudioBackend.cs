@@ -5,18 +5,18 @@ namespace DevoidEngine.Audio.SoLoud
 {
     internal class SoLoudAudioBackend : IAudioBackend
     {
-        internal Dictionary<uint, Wav> _audioObjectMapping;
-        internal uint _nextAudioId = 0;
+        internal Dictionary<uint, Wav> AudioObjectMapping;
+        internal uint NextAudioId = 0;
 
-        internal List<AudioPlayObject> _audioPlayObjects;
+        internal List<AudioPlayObject> AudioPlayObjects;
 
         internal Soloud Soloud;
 
         public SoLoudAudioBackend()
         {
             Soloud = new Soloud();
-            _audioObjectMapping = [];
-            _audioPlayObjects = [];
+            AudioObjectMapping = [];
+            AudioPlayObjects = [];
         }
 
         public void Initialize()
@@ -35,15 +35,15 @@ namespace DevoidEngine.Audio.SoLoud
 
         public void Update()
         {
-            for (int i = _audioPlayObjects.Count - 1; i >= 0; i--)
+            for (int i = AudioPlayObjects.Count - 1; i >= 0; i--)
             {
-                var obj = _audioPlayObjects[i];
+                var obj = AudioPlayObjects[i];
 
                 // Remove if finished
                 if (Soloud.isValidVoiceHandle(obj.Handle.Id) == 0)
                 {
-                    _audioPlayObjects[i].OnFinished?.Invoke();
-                    _audioPlayObjects.RemoveAt(i);
+                    AudioPlayObjects[i].OnFinished?.Invoke();
+                    AudioPlayObjects.RemoveAt(i);
                     continue;
                 }
 
@@ -104,20 +104,20 @@ namespace DevoidEngine.Audio.SoLoud
                 throw new NotImplementedException("[Audio/SoLoudBackend]: Audio streaming not supported yet.");
             }
 
-            AudioClipHandle audioHandle = new(++_nextAudioId);
+            AudioClipHandle audioHandle = new(++NextAudioId);
             Wav audio = new();
             int result = audio.load(path);
             if (result != 0)
                 throw new Exception("Audio Load Failed");
 
 
-            _audioObjectMapping[audioHandle.Id] = audio;
+            AudioObjectMapping[audioHandle.Id] = audio;
             return audioHandle;
         }
 
         public unsafe AudioClipHandle Load(ReadOnlySpan<byte> data)
         {
-            AudioClipHandle audioHandle = new(++_nextAudioId);
+            AudioClipHandle audioHandle = new(++NextAudioId);
 
             Wav audio = new();
 
@@ -129,7 +129,7 @@ namespace DevoidEngine.Audio.SoLoud
                     throw new Exception("Audio Load Failed");
             }
 
-            _audioObjectMapping[audioHandle.Id] = audio;
+            AudioObjectMapping[audioHandle.Id] = audio;
             return audioHandle;
         }
 
@@ -156,7 +156,7 @@ namespace DevoidEngine.Audio.SoLoud
                 Is3D = desc.Is3D
             };
 
-            _audioPlayObjects.Add(playObject);
+            AudioPlayObjects.Add(playObject);
 
             return playObject;
         }
@@ -168,7 +168,7 @@ namespace DevoidEngine.Audio.SoLoud
 
         private uint PlayVoice(in AudioPlayDescription desc)
         {
-            if (!_audioObjectMapping.TryGetValue(desc.Clip.Id, out var wav))
+            if (!AudioObjectMapping.TryGetValue(desc.Clip.Id, out var wav))
                 return 0;
 
             uint voice;
@@ -209,7 +209,7 @@ namespace DevoidEngine.Audio.SoLoud
             if (playObject == null) return;
 
             Soloud.stop(playObject.Handle.Id);
-            _audioPlayObjects.Remove(playObject);
+            AudioPlayObjects.Remove(playObject);
         }
 
         public void Pause(AudioPlayObject playObject, bool value = true)
@@ -222,9 +222,9 @@ namespace DevoidEngine.Audio.SoLoud
         {
             Soloud?.stopAll();
 
-            _audioObjectMapping?.Clear();
+            AudioObjectMapping?.Clear();
 
-            _audioPlayObjects?.Clear();
+            AudioPlayObjects?.Clear();
 
             Soloud?.deinit();
         }

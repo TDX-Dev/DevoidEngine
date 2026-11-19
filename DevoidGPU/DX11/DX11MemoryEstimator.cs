@@ -1,6 +1,6 @@
 ﻿namespace DevoidGPU.DX11
 {
-    internal static class DX11MemoryEstimator
+    internal static class Dx11MemoryEstimator
     {
         internal static long CalculateTextureSize(TextureDescription description)
         {
@@ -9,7 +9,7 @@
                 description.Width *
                 description.Height *
                 Math.Max(1, description.Depth) *
-                DX11StateMapper.BytesPerComponent(description.Format) *
+                Dx11StateMapper.BytesPerComponent(description.Format) *
                 description.ArraySize;
 
             size = (long)(size * mipFactor);

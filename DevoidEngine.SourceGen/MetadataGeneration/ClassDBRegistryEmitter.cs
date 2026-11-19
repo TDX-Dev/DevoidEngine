@@ -5,7 +5,7 @@ using System.Text;
 
 namespace DevoidEngine.SourceGen.MetadataGeneration
 {
-    internal static class ClassDBRegistryEmitter
+    internal static class ClassDbRegistryEmitter
     {
         public static void Emit(
             SourceProductionContext context,
@@ -39,10 +39,10 @@ namespace DevoidEngine.SourceGen.MetadataGeneration
 
             foreach (INamedTypeSymbol symbol in symbols)
             {
-                string classDBName = GetClassDBName(symbol);
+                string classDbName = GetClassDbName(symbol);
 
                 source.AppendLine(
-                    $"        ClassDB.Register({classDBName}.Info);");
+                    $"        ClassDB.Register({classDbName}.Info);");
             }
 
             source.AppendLine("""
@@ -55,7 +55,7 @@ namespace DevoidEngine.SourceGen.MetadataGeneration
                 source.ToString());
         }
 
-        private static string GetClassDBName(INamedTypeSymbol symbol)
+        private static string GetClassDbName(INamedTypeSymbol symbol)
         {
             return $"{symbol.Name}_ClassDB";
         }

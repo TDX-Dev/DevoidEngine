@@ -107,7 +107,7 @@ namespace Elemental
             Context.DefaultFont = font;
             Context.BoldFont = boldFont;
         }
-        public override void OnKeyDown(Keys keys, int Scancode, KeyModifiers modifiers, bool isRepeated)
+        public override void OnKeyDown(Keys keys, int scancode, KeyModifiers modifiers, bool isRepeated)
         {
             if (isRepeated)
                 return;

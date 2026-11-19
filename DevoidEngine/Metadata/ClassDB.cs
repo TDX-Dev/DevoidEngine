@@ -6,18 +6,18 @@ using System.Threading.Tasks;
 
 namespace DevoidEngine.Metadata
 {
-    public static class ClassDB
+    public static class ClassDb
     {
-        private static readonly Dictionary<Type, ClassInfo> classes = [];
+        private static readonly Dictionary<Type, ClassInfo> Classes = [];
 
         public static void Register(ClassInfo classInfo)
         {
-            classes.Add(classInfo.ClassType, classInfo);
+            Classes.Add(classInfo.ClassType, classInfo);
         }
 
         public static void PrintAllTypes()
         {
-            foreach (ClassInfo classInfo in classes.Values)
+            foreach (ClassInfo classInfo in Classes.Values)
             {
                 Console.WriteLine(classInfo.ClassType);
             }
@@ -25,15 +25,15 @@ namespace DevoidEngine.Metadata
 
         public static ClassInfo? GetClass(Type type)
         {
-            classes.TryGetValue(type, out ClassInfo? classInfo);
+            Classes.TryGetValue(type, out ClassInfo? classInfo);
             return classInfo;
         }
         public static IEnumerable<ClassInfo> GetDerivedClasses(Type baseType)
         {
-            if (!classes.TryGetValue(baseType, out ClassInfo? baseClass))
+            if (!Classes.TryGetValue(baseType, out ClassInfo? baseClass))
                 yield break;
 
-            foreach (ClassInfo classInfo in classes.Values)
+            foreach (ClassInfo classInfo in Classes.Values)
             {
                 if (classInfo.IsDerivedFrom(baseClass))
                     yield return classInfo;
@@ -41,9 +41,9 @@ namespace DevoidEngine.Metadata
         }
         public static string[] GetClassList()
         {
-            string[] classList = new string[classes.Count];
+            string[] classList = new string[Classes.Count];
             int i = 0;
-            foreach(ClassInfo classInfo in classes.Values)
+            foreach(ClassInfo classInfo in Classes.Values)
             {
                 classList[i++] = classInfo.Name;
             }

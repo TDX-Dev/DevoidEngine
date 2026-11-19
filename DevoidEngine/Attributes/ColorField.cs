@@ -9,11 +9,11 @@ namespace DevoidEngine.Attributes
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
     public class ColorField : Attribute
     {
-        public bool HDR;
+        public bool Hdr;
 
         public ColorField(bool hdr = false)
         {
-            HDR = hdr;
+            Hdr = hdr;
         }
     }
 }

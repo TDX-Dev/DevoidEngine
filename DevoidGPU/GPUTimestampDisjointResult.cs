@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace DevoidGPU
 {
-    public readonly struct GPUTimestampDisjointResult
+    public readonly struct GpuTimestampDisjointResult
     {
         public readonly bool Disjoint;
         public readonly ulong Frequency;
 
-        public GPUTimestampDisjointResult(bool disjoint, ulong frequency)
+        public GpuTimestampDisjointResult(bool disjoint, ulong frequency)
         {
             Disjoint = disjoint;
             Frequency = frequency;

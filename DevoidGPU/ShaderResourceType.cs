@@ -10,10 +10,10 @@
         Sampler,
 
         StructuredBuffer,
-        RWStructuredBuffer,
+        RwStructuredBuffer,
 
-        RWTexture2D,
-        RWTexture2DArray,
-        RWTexture3D
+        RwTexture2D,
+        RwTexture2DArray,
+        RwTexture3D
     }
 }

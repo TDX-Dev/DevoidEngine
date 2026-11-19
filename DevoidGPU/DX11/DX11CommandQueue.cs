@@ -2,9 +2,9 @@
 
 namespace DevoidGPU.DX11
 {
-    internal sealed class DX11CommandQueue : ICommandQueue
+    internal sealed class Dx11CommandQueue : ICommandQueue
     {
-        public DX11CommandQueue(DeviceContext deviceContext) { }
+        public Dx11CommandQueue(DeviceContext deviceContext) { }
         public void Submit(ICommandList commandList)
         {
 

@@ -9,103 +9,103 @@ namespace DevoidEngine.Rendering.PostProcessing
 {
     public sealed class PostProcessGraph
     {
-        private readonly List<PostProcessPass> passes = [];
-        private readonly List<PostProcessPass> compiled = [];
+        private readonly List<PostProcessPass> _passes = [];
+        private readonly List<PostProcessPass> _compiled = [];
 
-        private readonly Dictionary<string, PostProcessPass> producers = [];
+        private readonly Dictionary<string, PostProcessPass> _producers = [];
 
-        private readonly Dictionary<PostProcessPass, List<PostProcessPass>> edges = [];
-        private readonly Dictionary<PostProcessPass, int> incoming = [];
-        private readonly Queue<PostProcessPass> ready = [];
+        private readonly Dictionary<PostProcessPass, List<PostProcessPass>> _edges = [];
+        private readonly Dictionary<PostProcessPass, int> _incoming = [];
+        private readonly Queue<PostProcessPass> _ready = [];
 
-        private bool dirty = true;
+        private bool _dirty = true;
 
         public void AddPass(PostProcessPass pass)
         {
             pass.Setup();
-            passes.Add(pass);
-            dirty = true;
+            _passes.Add(pass);
+            _dirty = true;
         }
 
         public void RemovePass(PostProcessPass pass)
         {
-            passes.Remove(pass);
-            dirty = true;
+            _passes.Remove(pass);
+            _dirty = true;
         }
 
-        public IReadOnlyList<PostProcessPass> Passes => passes;
+        public IReadOnlyList<PostProcessPass> Passes => _passes;
 
         private void Compile()
         {
-            producers.Clear();
+            _producers.Clear();
 
-            foreach (var pass in passes)
+            foreach (var pass in _passes)
             {
                 foreach (var output in pass.Writes)
-                    producers[output] = pass;
+                    _producers[output] = pass;
             }
 
             ResolveOrder();
 
-            dirty = false;
+            _dirty = false;
         }
 
         private void ResolveOrder()
         {
-            compiled.Clear();
-            edges.Clear();
-            incoming.Clear();
-            ready.Clear();
+            _compiled.Clear();
+            _edges.Clear();
+            _incoming.Clear();
+            _ready.Clear();
 
-            foreach (var pass in passes)
+            foreach (var pass in _passes)
             {
-                edges[pass] = [];
-                incoming[pass] = 0;
+                _edges[pass] = [];
+                _incoming[pass] = 0;
             }
 
-            foreach (var pass in passes)
+            foreach (var pass in _passes)
             {
                 foreach (var input in pass.Reads)
                 {
-                    if (!producers.TryGetValue(input, out var producer))
+                    if (!_producers.TryGetValue(input, out var producer))
                         continue;
 
                     if (producer == pass)
                         continue;
 
-                    edges[producer].Add(pass);
-                    incoming[pass]++;
+                    _edges[producer].Add(pass);
+                    _incoming[pass]++;
                 }
             }
 
-            foreach (var pass in passes)
+            foreach (var pass in _passes)
             {
-                if (incoming[pass] == 0)
-                    ready.Enqueue(pass);
+                if (_incoming[pass] == 0)
+                    _ready.Enqueue(pass);
             }
 
-            while (ready.Count > 0)
+            while (_ready.Count > 0)
             {
-                var pass = ready.Dequeue();
+                var pass = _ready.Dequeue();
 
-                compiled.Add(pass);
+                _compiled.Add(pass);
 
-                foreach (var dependent in edges[pass])
+                foreach (var dependent in _edges[pass])
                 {
-                    incoming[dependent]--;
+                    _incoming[dependent]--;
 
-                    if (incoming[dependent] == 0)
-                        ready.Enqueue(dependent);
+                    if (_incoming[dependent] == 0)
+                        _ready.Enqueue(dependent);
                 }
             }
 
-            if (compiled.Count != passes.Count)
+            if (_compiled.Count != _passes.Count)
                 throw new Exception("Cycle detected in post process graph.");
         }
 
         public Texture Execute(PostProcessContext context, Texture sceneColor)
         {
-            if (dirty)
+            if (_dirty)
                 Compile();
 
             context.Reset();
@@ -114,7 +114,7 @@ namespace DevoidEngine.Rendering.PostProcessing
 
             Texture current = sceneColor;
 
-            foreach (var pass in compiled)
+            foreach (var pass in _compiled)
             {
                 pass.Execute(context);
 
@@ -129,7 +129,7 @@ namespace DevoidEngine.Rendering.PostProcessing
 
         public void Resize(int width, int height)
         {
-            foreach (var pass in passes)
+            foreach (var pass in _passes)
                 pass.Resize(width, height);
         }
     }
