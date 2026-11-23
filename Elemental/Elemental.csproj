@@ -18,4 +18,8 @@
 		<None Include="./Assets/**/*.*" CopyToOutputDirectory="PreserveNewest" Visible="true" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <PackageReference Include="System.Net.Http" Version="4.3.4" />
+	</ItemGroup>
+
 </Project>

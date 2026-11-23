@@ -2,6 +2,8 @@
 {
     public struct TextureDescription : IEquatable<TextureDescription>
     {
+        public string Name;
+
         public TextureDimension Dimension;
         public int Width;
         public int Height;

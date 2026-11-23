@@ -48,7 +48,7 @@ namespace DevoidEngine.Core
 
             foreach (var kv in BaseMaterial.Pass.GetTextureBindings())
             {
-                _descriptorSet.SetTexture((uint)kv.Value.BindSlot, BaseMaterial.Pass.GetTexture(kv.Key).Gpu);
+                _descriptorSet.SetTexture((uint)kv.Value.BindSlot, BaseMaterial.Pass.GetTexture(kv.Key).GPU);
             }
 
             foreach (var kv in BaseMaterial.Pass.GetSamplerBindings())
@@ -100,7 +100,7 @@ namespace DevoidEngine.Core
 
             _textureOverrides.Add(name, texture);
             _overriddenTextures.Add(name);
-            _descriptorSet.SetTexture((uint)textureBinding!.BindSlot, texture.Gpu);
+            _descriptorSet.SetTexture((uint)textureBinding!.BindSlot, texture.GPU);
         }
 
         public void SetSampler(string name, Sampler sampler)

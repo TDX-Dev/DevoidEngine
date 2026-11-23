@@ -6,13 +6,13 @@ using DevoidGPU.DX11;
 
 namespace DevoidEngine.Core
 {
-    public enum GraphicsApi
+    public enum GraphicsAPI
     {
-        Dx11
+        DX11
     }
     public struct EngineConfig
     {
-        public GraphicsApi Api;
+        public GraphicsAPI Api;
         public RendererConfig RendererConfig;
         public Version EngineVersion;
     }
@@ -63,7 +63,7 @@ namespace DevoidEngine.Core
 
             _graphicsDevice = config.Api switch
             {
-                GraphicsApi.Dx11 => new Dx11GraphicsDevice(),
+                GraphicsAPI.DX11 => new Dx11GraphicsDevice(),
                 _ => throw new ArgumentException("Invalid Graphics API type."),
             };
 

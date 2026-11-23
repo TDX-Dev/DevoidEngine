@@ -21,8 +21,8 @@ namespace DevoidEngine.Core
                 throw new ArgumentException("", nameof(fragmentShader));
             }
 
-            IShader vShader = LoadProgram($"{name}_VS", vertexShader, "VS_Main", [], ShaderStage.Vertex);
-            IShader fShader = LoadProgram($"{name}_FS", fragmentShader, "PS_Main", [], ShaderStage.Fragment);
+            IShader vShader = LoadProgram($"{name}_VS", vertexShader, "VSMain", [], ShaderStage.Vertex);
+            IShader fShader = LoadProgram($"{name}_FS", fragmentShader, "PSMain", [], ShaderStage.Fragment);
 
             ShaderPass pass = new(vShader, fShader);
             ShaderDefineSet shaderDefineSet = new();

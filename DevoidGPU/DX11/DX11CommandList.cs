@@ -22,19 +22,19 @@ namespace DevoidGPU.DX11
         private Dx11Framebuffer? _currentFramebuffer;
         private (int, int, int, int) _currentViewport;
 
-        private readonly Dx11Texture?[] _boundPsSrVs = new Dx11Texture?[MaxSrVs];
-        private readonly Dx11Texture?[] _boundVsSrVs = new Dx11Texture?[MaxSrVs];
-        private readonly Dx11Texture?[] _boundCsSrVs = new Dx11Texture?[MaxSrVs];
+        private readonly DX11Texture?[] _boundPsSrVs = new DX11Texture?[MaxSrVs];
+        private readonly DX11Texture?[] _boundVsSrVs = new DX11Texture?[MaxSrVs];
+        private readonly DX11Texture?[] _boundCsSrVs = new DX11Texture?[MaxSrVs];
 
 
-        private readonly Dx11Texture?[] _boundRtVs = new Dx11Texture?[8];
-        private Dx11Texture? _boundDsv;
+        private readonly DX11Texture?[] _boundRtVs = new DX11Texture?[8];
+        private DX11Texture? _boundDsv;
 
         private readonly Dx11ShaderStorageBuffer?[] _boundPsSsbOs = new Dx11ShaderStorageBuffer?[MaxSrVs];
         private readonly Dx11ShaderStorageBuffer?[] _boundVsSsbOs = new Dx11ShaderStorageBuffer?[MaxSrVs];
         private readonly Dx11ShaderStorageBuffer?[] _boundCsSsbOs = new Dx11ShaderStorageBuffer?[MaxSrVs];
 
-        private readonly Dx11Texture?[] _boundCsUavTextures = new Dx11Texture?[8];
+        private readonly DX11Texture?[] _boundCsUavTextures = new DX11Texture?[8];
         private readonly Dx11ShaderStorageBuffer?[] _boundCsUavBuffers = new Dx11ShaderStorageBuffer?[8];
 
         private readonly SamplerState?[] _boundVsSamplers = new SamplerState?[MaxSrVs];
@@ -112,7 +112,7 @@ namespace DevoidGPU.DX11
 
             for (int i = 0; i < dx11Fb.ColorAttachments.Count; i++)
             {
-                if (dx11Fb.ColorAttachments[i] is Dx11Texture tex)
+                if (dx11Fb.ColorAttachments[i] is DX11Texture tex)
                 {
                     ResolveForRtv(tex);
                     _boundRtVs[i] = tex;
@@ -123,7 +123,7 @@ namespace DevoidGPU.DX11
                 }
             }
 
-            if (dx11Fb.DepthAttachment is Dx11Texture depth)
+            if (dx11Fb.DepthAttachment is DX11Texture depth)
             {
                 ResolveForRtv(depth);
                 _boundDsv = depth;
@@ -163,7 +163,7 @@ namespace DevoidGPU.DX11
 
         public void GenerateMipmaps(ITexture texture)
         {
-            var dx11Texture = (Dx11Texture)texture;
+            var dx11Texture = (DX11Texture)texture;
 
             _deviceContext.GenerateMips(dx11Texture.Srv);
         }
@@ -238,7 +238,7 @@ namespace DevoidGPU.DX11
                             if (!dxSet.Textures.TryGetValue(binding.Binding, out var tex))
                                 continue;
 
-                            var dxTex = (Dx11Texture)tex;
+                            var dxTex = (DX11Texture)tex;
                             if (dxTex.Srv == null)
                             {
                                 Console.WriteLine($"[DX11]: Cannot bind texture at {binding.Binding} since it does not have a SRV");
@@ -293,7 +293,7 @@ namespace DevoidGPU.DX11
                             if (!dxSet.RwTextures.TryGetValue(binding.Binding, out var texture))
                                 continue;
 
-                            var dxTexture = (Dx11Texture)texture;
+                            var dxTexture = (DX11Texture)texture;
 
                             BindUnorderedAccessView(
                                 binding.Binding,
@@ -334,15 +334,15 @@ namespace DevoidGPU.DX11
 
         public void ResolveSubresource(ITexture multi, ITexture single)
         {
-            var multisampled = ((Dx11Texture)multi);
-            var singlesampled = ((Dx11Texture)single);
+            var multisampled = ((DX11Texture)multi);
+            var singlesampled = ((DX11Texture)single);
 
             _deviceContext.ResolveSubresource(multisampled.TextureResource, 0, singlesampled.TextureResource, 0, singlesampled.Dx11Format);
         }
 
         public void ClearTextureResource(ITexture texture, ClearValue value)
         {
-            var dx11Texture = (Dx11Texture)texture;
+            var dx11Texture = (DX11Texture)texture;
 
             if (dx11Texture.Uav == null)
             {
@@ -362,8 +362,8 @@ namespace DevoidGPU.DX11
             int width,
             int height)
         {
-            Dx11Texture dx11Source = (Dx11Texture)source;
-            Dx11Texture dx11Destination = (Dx11Texture)destination;
+            DX11Texture dx11Source = (DX11Texture)source;
+            DX11Texture dx11Destination = (DX11Texture)destination;
 
             var sourceRegion = new ResourceRegion
             {
@@ -391,7 +391,7 @@ namespace DevoidGPU.DX11
                 throw new InvalidOperationException(
                     "[DX11]: Cannot map a non-staging texture.");
 
-            Dx11Texture dx11Texture = (Dx11Texture)texture;
+            DX11Texture dx11Texture = (DX11Texture)texture;
 
             SharpDX.Direct3D11.MapMode dxMode = mode switch
             {
@@ -408,7 +408,7 @@ namespace DevoidGPU.DX11
 
         public void UnmapTexture(ITexture texture)
         {
-            Dx11Texture dx11Texture = (Dx11Texture)texture;
+            DX11Texture dx11Texture = (DX11Texture)texture;
 
             _deviceContext.UnmapSubresource(dx11Texture.TextureResource, 0);
         }
@@ -464,7 +464,7 @@ namespace DevoidGPU.DX11
                 _deviceContext.ComputeShader.SetShaderResource((int)slot, view);
             }
         }
-        internal void BindShaderResourceView(uint slot, ShaderStage stages, Dx11Texture tex)
+        internal void BindShaderResourceView(uint slot, ShaderStage stages, DX11Texture tex)
         {
             ResolveForSrv(tex);
 
@@ -544,7 +544,7 @@ namespace DevoidGPU.DX11
                 }
             }
         }
-        private void BindUnorderedAccessView(uint slot, ShaderStage stages, Dx11Texture tex)
+        private void BindUnorderedAccessView(uint slot, ShaderStage stages, DX11Texture tex)
         {
             ResolveForUav(tex);
             if ((stages & ShaderStage.Compute) != 0)
@@ -599,7 +599,7 @@ namespace DevoidGPU.DX11
                 _boundCsSamplers[slot] = sampler;
             }
         }
-        private void ResolveForSrv(Dx11Texture tex)
+        private void ResolveForSrv(DX11Texture tex)
         {
             bool dirty = false;
 
@@ -660,7 +660,7 @@ namespace DevoidGPU.DX11
                 }
             }
         }
-        private void ResolveForRtv(Dx11Texture tex)
+        private void ResolveForRtv(DX11Texture tex)
         {
             for (int i = 0; i < _boundPsSrVs.Length; i++)
             {
@@ -691,7 +691,7 @@ namespace DevoidGPU.DX11
                 }
             }
         }
-        private void ResolveForUav(Dx11Texture tex)
+        private void ResolveForUav(DX11Texture tex)
         {
             // Remove from all SRV bindings
 

@@ -21,7 +21,7 @@ namespace DevoidEngine.Core
         public bool VSync;
         public bool Resizable;
 
-        public GraphicsApi Api;
+        public GraphicsAPI Api;
     }
 
     public class Application
@@ -49,7 +49,7 @@ namespace DevoidEngine.Core
 
             EngineConfig configuration = new()
             {
-                Api = GraphicsApi.Dx11,
+                Api = GraphicsAPI.DX11,
                 RendererConfig = new RendererConfig()
                 {
                     Technique = RenderTechnique.Forward
@@ -79,7 +79,7 @@ namespace DevoidEngine.Core
                 new SwapchainDescription()
                 {
                     BufferCount = 2,
-                    Format = DevoidGPU.TextureFormat.Rgba8UNorm,
+                    Format = DevoidGPU.TextureFormat.RGBA8UNorm,
                     Height = specification.Height,
                     Width = specification.Width,
                     RefreshRate = Vector2.Zero,
@@ -104,7 +104,7 @@ namespace DevoidEngine.Core
 #if DISPLAY_DEBUG_INFO
             Console.WriteLine("████  █████ █   █  ███  ███ ████ \t");
             Console.WriteLine($"█   █ █     █   █ █   █  █  █   █ \tDevoid Version: {Engine.Instance.EngineVersion}");
-            Console.WriteLine($"█   █ ████  █   █ █   █  █  █   █ \tRenderer: {Engine.Renderer.ActiveTechnique}");
+            Console.WriteLine($"█   █ ████  █   █ █   █  █  █   █ \tRenderer: NotImpl");
             Console.WriteLine($"█   █ █      █ █  █   █  █  █   █ \tRendering Backend: {specification.Api}");
             Console.WriteLine("████  █████   █    ███  ███ ████ \t");
 #endif
@@ -214,8 +214,9 @@ namespace DevoidEngine.Core
         {
             _layerManager.RenderLayers(cmd);
 
-            Engine.Renderer.PrepareGlobalFrame(cmd);
+            Engine.Renderer.SetupFrame(Engine.Instance.FrameCount);
             Engine.Instance.ViewportManager.RenderAll(cmd);
+            Engine.Renderer.EndFrame();
 
             _layerManager.PostRenderLayers(cmd);
             ImguiRenderer.EndFrame(cmd, surface);

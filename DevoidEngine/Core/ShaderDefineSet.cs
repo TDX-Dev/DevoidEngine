@@ -101,6 +101,10 @@
             HashCode hash = new();
 
             KeyValuePair<string, string>[] values = _defines;
+            if (values == null)
+            {
+                return 0;
+            }
 
             for (int i = 0; i < values.Length; i++)
             {

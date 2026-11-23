@@ -1,4 +1,7 @@
-﻿using DevoidGPU;
+﻿using DevoidEngine.Core;
+using DevoidEngine.Rendering.RGraph;
+using DevoidEngine.Rendering.RGraph.TestPasses;
+using DevoidGPU;
 
 namespace DevoidEngine.Rendering
 {
@@ -29,21 +32,39 @@ namespace DevoidEngine.Rendering
 
     public class Renderer
     {
-        const uint MAX_SPOT_LIGHTS = 32;
-        const uint MAX_POINT_LIGHTS = 32;
-        const uint MAX_DIRECTIONAL_LIGHTS = 1;
+        public const uint MAX_SPOT_LIGHTS = 32;
+        public const uint MAX_POINT_LIGHTS = 32;
+        public const uint MAX_DIRECTIONAL_LIGHTS = 1;
 
         public RenderTechnique Technique;
         public IRenderTechnique RenderTechniqueImpl = null!;
+
+        public RenderAPI API = null!;
 
         private readonly Stack<ViewportRect> _viewportStack = [];
         private readonly Stack<ScissorRect> _scissorStack = [];
         private ViewportRect _currentViewport;
         private ScissorRect _currentScissor;
 
+        // ---TESTING---
+        private RenderGraph graph = null!;
+
         public void Initialize(RendererConfig config)
         {
             Technique = config.Technique;
+            API = new();
+
+            graph = new();
+            graph.AddPass(new TestDebugPreviewPass());
+            graph.AddPass(new TestShadowMapPass());
+            graph.AddPass(new TestGbufferPass());
+            graph.AddPass(new TestLightingPass());
+            graph.AddPass(new TestBloomPass());
+            graph.AddPass(new TestCompositePass());
+
+            graph.RegisterPersistentResource("Backbuffer", Texture.Default);
+
+            graph.Compile();
         }
 
         public void SetupFrame(uint frameCount)

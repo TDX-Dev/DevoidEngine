@@ -1,14 +1,38 @@
-﻿using System.Diagnostics;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
 namespace DevoidEngine.Util
 {
-    public sealed class RidOwner<T>
+    public sealed class RIDOwner<T>
     {
         private readonly List<Slot<T>> _entries = [];
         private readonly Stack<int> _freeList = [];
 
-        public Rid MakeRid(T value)
+        public void FreeAll()
+        {
+            _freeList.Clear();
+            _entries.Clear();
+        }
+
+        public void FreeWhere(Func<T, bool> predicate)
+        {
+            Span<Slot<T>> entries = CollectionsMarshal.AsSpan(_entries);
+
+            for (int i = 0; i < entries.Length; i++)
+            {
+                ref Slot<T> entry = ref entries[i];
+
+                if (!entry.Occupied || !predicate(entry.Value)) continue;
+
+                Free(new RID(i, entry.Generation));
+            }
+        }
+
+        public int GetCount()
+        {
+            return _entries.Count;
+        }
+
+        public RID MakeRID(T value)
         {
             int index;
 
@@ -33,17 +57,17 @@ namespace DevoidEngine.Util
                 });
             }
 
-            return new Rid(index, _entries[index].Generation);
+            return new RID(index, _entries[index].Generation);
         }
 
-        public Rid GetRid(int index)
+        public RID GetRID(int index)
         {
             Slot<T> slot = _entries[index];
 
-            return new Rid(index, slot.Generation);
+            return new RID(index, slot.Generation);
         }
 
-        public bool Owns(Rid rid)
+        public bool Owns(RID rid)
         {
             if (rid.Index < 0 || rid.Index >= _entries.Count)
                 return false;
@@ -54,7 +78,7 @@ namespace DevoidEngine.Util
                    entry.Generation == rid.Generation;
         }
 
-        public T Get(Rid rid)
+        public T Get(RID rid)
         {
             if (!Owns(rid))
             {
@@ -64,7 +88,7 @@ namespace DevoidEngine.Util
             return _entries[rid.Index].Value;
         }
 
-        public ref T GetRef(Rid rid)
+        public ref T GetRef(RID rid)
         {
             Span<Slot<T>> span = CollectionsMarshal.AsSpan(_entries);
 
@@ -82,7 +106,7 @@ namespace DevoidEngine.Util
             return ref slot.Value;
         }
 
-        public void Free(Rid rid)
+        public void Free(RID rid)
         {
             if (!Owns(rid))
                 return;

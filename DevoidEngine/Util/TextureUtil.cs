@@ -42,7 +42,7 @@ namespace DevoidEngine.Util
                 return new ImageData(
                     image.Width,
                     image.Height,
-                    TextureFormat.Rgba32Float,
+                    TextureFormat.RGBA32Float,
                     MemoryMarshal.AsBytes(image.Data).ToArray());
             }
             else
@@ -52,7 +52,7 @@ namespace DevoidEngine.Util
                 return new ImageData(
                     image.Width,
                     image.Height,
-                    TextureFormat.Rgba8UNorm,
+                    TextureFormat.RGBA8UNorm,
                     image.Data.ToArray());
             }
         }
@@ -68,7 +68,7 @@ namespace DevoidEngine.Util
                 return new ImageData(
                     image.Width,
                     image.Height,
-                    TextureFormat.Rgba32Float,
+                    TextureFormat.RGBA32Float,
                     MemoryMarshal.AsBytes(image.Data).ToArray());
             }
             else
@@ -78,7 +78,7 @@ namespace DevoidEngine.Util
                 return new ImageData(
                     image.Width,
                     image.Height,
-                    TextureFormat.Rgba8UNorm,
+                    TextureFormat.RGBA8UNorm,
                     image.Data.ToArray());
             }
         }

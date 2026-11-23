@@ -5,16 +5,16 @@ namespace DevoidEngine.Core
 {
     public sealed class Texture
     {
-        public ITexture Gpu { get; }
+        public ITexture GPU { get; }
 
-        public TextureDimension Dimension => Gpu.Description.Dimension;
-        public int Width => Gpu.Description.Width;
-        public int Height => Gpu.Description.Height;
-        public int Depth => Gpu.Description.Depth;
-        public int MipLevels => Gpu.MipLevels;
-        public int ArraySize => Gpu.ArraySize;
-        public TextureUsage Usage => Gpu.Description.Usage;
-        public TextureFormat Format => Gpu.Format;
+        public TextureDimension Dimension => GPU.Description.Dimension;
+        public int Width => GPU.Description.Width;
+        public int Height => GPU.Description.Height;
+        public int Depth => GPU.Description.Depth;
+        public int MipLevels => GPU.MipLevels;
+        public int ArraySize => GPU.ArraySize;
+        public TextureUsage Usage => GPU.Description.Usage;
+        public TextureFormat Format => GPU.Format;
 
         public ulong Id { get; } = 0;
 
@@ -30,11 +30,11 @@ namespace DevoidEngine.Core
             Default = Create2D(
                 1,
                 1,
-                TextureFormat.Rgba16Float,
+                TextureFormat.RGBA16Float,
                 TextureUsage.ShaderResource
             );
 
-            Default.Gpu.Update<Half>(
+            Default.GPU.Update<Half>(
             [
                 (Half)1.0f, (Half) 1.0f, (Half) 1.0f, (Half) 1.0f
             ]);
@@ -42,7 +42,7 @@ namespace DevoidEngine.Core
 
         internal Texture(ITexture gpu)
         {
-            Gpu = gpu;
+            GPU = gpu;
             Id = Engine.Instance.TextureManager.Register(this);
         }
 
@@ -52,7 +52,7 @@ namespace DevoidEngine.Core
 
             ITexture gpu = device.CreateTexture(description);
 
-            Gpu = gpu;
+            GPU = gpu;
         }
 
         public static Texture Create2D(int width, int height, TextureFormat format, TextureUsage usage)
@@ -133,7 +133,7 @@ namespace DevoidEngine.Core
         public void Dispose()
         {
             Engine.Instance.TextureManager.Unregister(this);
-            Gpu.Dispose();
+            GPU.Dispose();
         }
     }
 }

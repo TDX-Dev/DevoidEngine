@@ -27,7 +27,7 @@ namespace DevoidEngine.Rendering
             Width = width;
             Height = height;
 
-            Engine.Renderer.RegisterViewport(this);
+            //Engine.Renderer.RegisterViewport(this);
 
             _bounds = new Rect(Vector2.Zero, new Vector2(Width, Height));
 
@@ -47,7 +47,7 @@ namespace DevoidEngine.Rendering
             OutputTexture = Texture.Create2D(
                 Width,
                 Height,
-                TextureFormat.Rgba16Float,
+                TextureFormat.RGBA16Float,
                 TextureUsage.ShaderResource | TextureUsage.RenderTarget
             );
         }
@@ -66,11 +66,11 @@ namespace DevoidEngine.Rendering
 
             ReallocateTexture();
 
-            Engine.Renderer.ResizeViewport(this);
+            //Engine.Renderer.ResizeViewport(this);
         }
         public void Dispose()
         {
-            Engine.Renderer.RemoveViewport(this);
+            //Engine.Renderer.RemoveViewport(this);
 
             if (OutputTexture != null)
             {

@@ -1,5 +1,4 @@
 ﻿using DevoidEngine.Core;
-using DevoidEngine.Rendering.PostProcessing;
 using DevoidEngine.Util;
 using System.Diagnostics;
 using System.Numerics;
@@ -10,26 +9,22 @@ namespace DevoidEngine.Rendering
     {
         public Bvh? StaticBvh => _staticBvh;
 
-        private readonly RidOwner<RenderMeshData> _meshIdAllocator;
+        private readonly RIDOwner<RenderMeshData> _meshIdAllocator;
 
-        private readonly RidOwner<GpuPointLight> _pointLights;
-        private readonly RidOwner<GpuSpotLight> _spotLights;
-        private readonly RidOwner<GpuDirectionalLight> _directionalLights;
-
-        private readonly Dictionary<Camera, PostProcessSettings> _postprocessingSettings;
+        private readonly RIDOwner<GpuPointLight> _pointLights;
+        private readonly RIDOwner<GpuSpotLight> _spotLights;
+        private readonly RIDOwner<GpuDirectionalLight> _directionalLights;
 
         private Bvh? _staticBvh;
         private bool _staticBvhDirty = true;
 
         public RenderWorld()
         {
-            _meshIdAllocator = new RidOwner<RenderMeshData>();
+            _meshIdAllocator = new RIDOwner<RenderMeshData>();
 
-            _pointLights = new RidOwner<GpuPointLight>();
-            _spotLights = new RidOwner<GpuSpotLight>();
-            _directionalLights = new RidOwner<GpuDirectionalLight>();
-
-            _postprocessingSettings = [];
+            _pointLights = new RIDOwner<GpuPointLight>();
+            _spotLights = new RIDOwner<GpuSpotLight>();
+            _directionalLights = new RIDOwner<GpuDirectionalLight>();
         }
         public void UpdateAccelerationStructures()
         {
@@ -107,18 +102,18 @@ namespace DevoidEngine.Rendering
 
             _staticBvh = bvh;
         }
-        public Rid CreateMeshInstance(Mesh mesh)
+        public RID CreateMeshInstance(Mesh mesh)
         {
             ArgumentNullException.ThrowIfNull(mesh);
             RenderMeshData data = new(mesh);
 
-            Rid instanceId = _meshIdAllocator.MakeRid(data);
+            RID instanceId = _meshIdAllocator.MakeRID(data);
             mesh.UniqueIdentifier = instanceId.Index + 1;
 
             return instanceId;
         }
 
-        public void InstanceSetTransform(Rid instanceId, Matrix4x4 transform)
+        public void InstanceSetTransform(RID instanceId, Matrix4x4 transform)
         {
             RenderMeshData data = _meshIdAllocator.Get(instanceId);
             data.RenderTransform = transform;
@@ -130,12 +125,12 @@ namespace DevoidEngine.Rendering
             }
         }
 
-        public void InstanceSetMesh(Rid instanceId, Mesh mesh)
+        public void InstanceSetMesh(RID instanceId, Mesh mesh)
         {
             RenderMeshData data = _meshIdAllocator.Get(instanceId);
             data.RenderMesh = mesh;
         }
-        public void InstanceSetStatic(Rid instanceId, bool isStatic)
+        public void InstanceSetStatic(RID instanceId, bool isStatic)
         {
             RenderMeshData data = _meshIdAllocator.GetRef(instanceId);
             if (data.IsStatic == isStatic)
@@ -144,49 +139,49 @@ namespace DevoidEngine.Rendering
             data.IsStatic = isStatic;
             _staticBvhDirty = true;
         }
-        public RenderMeshData GetMeshInstance(Rid rid)
+        public RenderMeshData GetMeshInstance(RID rid)
         {
             return _meshIdAllocator.Get(rid);
         }
 
-        public void FreeMeshInstance(Rid rid)
+        public void FreeMeshInstance(RID rid)
         {
             if (_meshIdAllocator.Get(rid).IsStatic)
                 _staticBvhDirty = true;
             _meshIdAllocator.Free(rid);
         }
 
-        public Rid CreatePointLight()
+        public RID CreatePointLight()
         {
-            return _pointLights.MakeRid(new GpuPointLight());
+            return _pointLights.MakeRID(new GpuPointLight());
         }
 
-        public Rid CreateSpotLight()
+        public RID CreateSpotLight()
         {
-            return _spotLights.MakeRid(new GpuSpotLight());
+            return _spotLights.MakeRID(new GpuSpotLight());
         }
 
-        public Rid CreateDirectionalLight()
+        public RID CreateDirectionalLight()
         {
-            return _directionalLights.MakeRid(new GpuDirectionalLight());
+            return _directionalLights.MakeRID(new GpuDirectionalLight());
         }
 
-        public void FreePointLight(Rid rid)
+        public void FreePointLight(RID rid)
         {
             _pointLights.Free(rid);
         }
 
-        public void FreeSpotLight(Rid rid)
+        public void FreeSpotLight(RID rid)
         {
             _spotLights.Free(rid);
         }
 
-        public void FreeDirectionalLight(Rid rid)
+        public void FreeDirectionalLight(RID rid)
         {
             _directionalLights.Free(rid);
         }
 
-        public void PointLightSetPosition(Rid rid, Vector3 position)
+        public void PointLightSetPosition(RID rid, Vector3 position)
         {
             ref GpuPointLight light =
                 ref _pointLights.GetRef(rid);
@@ -196,7 +191,7 @@ namespace DevoidEngine.Rendering
             light.position.Z = position.Z;
         }
 
-        public void PointLightSetEnabled(Rid rid, bool enabled)
+        public void PointLightSetEnabled(RID rid, bool enabled)
         {
             ref GpuPointLight light =
                 ref _pointLights.GetRef(rid);
@@ -204,7 +199,7 @@ namespace DevoidEngine.Rendering
             light.position.W = enabled ? 1f : 0f;
         }
 
-        public void PointLightSetColor(Rid rid, Vector3 color)
+        public void PointLightSetColor(RID rid, Vector3 color)
         {
             ref GpuPointLight light =
                 ref _pointLights.GetRef(rid);
@@ -214,7 +209,7 @@ namespace DevoidEngine.Rendering
             light.color.Z = color.Z;
         }
 
-        public void PointLightSetIntensity(Rid rid, float intensity)
+        public void PointLightSetIntensity(RID rid, float intensity)
         {
             ref GpuPointLight light =
                 ref _pointLights.GetRef(rid);
@@ -222,7 +217,7 @@ namespace DevoidEngine.Rendering
             light.color.W = intensity;
         }
 
-        public void PointLightSetRange(Rid rid, float radius)
+        public void PointLightSetRange(RID rid, float radius)
         {
             ref GpuPointLight light =
                 ref _pointLights.GetRef(rid);
@@ -230,7 +225,7 @@ namespace DevoidEngine.Rendering
             light.range.X = radius;
         }
 
-        public void PointLightSetAttenuation(Rid rid, LightAttenuationType attenuationType, float linear, float quadratic)
+        public void PointLightSetAttenuation(RID rid, LightAttenuationType attenuationType, float linear, float quadratic)
         {
             ref GpuPointLight light =
                 ref _pointLights.GetRef(rid);
@@ -240,7 +235,7 @@ namespace DevoidEngine.Rendering
             light.range.W = quadratic;
         }
 
-        public void SpotLightSetPosition(Rid rid, Vector3 position)
+        public void SpotLightSetPosition(RID rid, Vector3 position)
         {
             ref GpuSpotLight light =
                 ref _spotLights.GetRef(rid);
@@ -250,7 +245,7 @@ namespace DevoidEngine.Rendering
             light.position.Z = position.Z;
         }
 
-        public void SpotLightSetEnabled(Rid rid, bool enabled)
+        public void SpotLightSetEnabled(RID rid, bool enabled)
         {
             ref GpuSpotLight light =
                 ref _spotLights.GetRef(rid);
@@ -258,7 +253,7 @@ namespace DevoidEngine.Rendering
             light.position.W = enabled ? 1f : 0f;
         }
 
-        public void SpotLightSetColor(Rid rid, Vector3 color)
+        public void SpotLightSetColor(RID rid, Vector3 color)
         {
             ref GpuSpotLight light =
                 ref _spotLights.GetRef(rid);
@@ -268,7 +263,7 @@ namespace DevoidEngine.Rendering
             light.color.Z = color.Z;
         }
 
-        public void SpotLightSetIntensity(Rid rid, float intensity)
+        public void SpotLightSetIntensity(RID rid, float intensity)
         {
             ref GpuSpotLight light =
                 ref _spotLights.GetRef(rid);
@@ -276,7 +271,7 @@ namespace DevoidEngine.Rendering
             light.color.W = intensity;
         }
 
-        public void SpotLightSetDirection(Rid rid, Vector3 direction)
+        public void SpotLightSetDirection(RID rid, Vector3 direction)
         {
             ref GpuSpotLight light =
                 ref _spotLights.GetRef(rid);
@@ -286,14 +281,14 @@ namespace DevoidEngine.Rendering
             light.direction.Z = direction.Z;
         }
 
-        public void SpotLightSetRadius(Rid rid, float radius)
+        public void SpotLightSetRadius(RID rid, float radius)
         {
             ref GpuSpotLight light = ref _spotLights.GetRef(rid);
 
             light.direction.W = radius;
         }
 
-        public void SpotLightSetCutoffs(Rid rid, float innerCutoff, float outerCutoff)
+        public void SpotLightSetCutoffs(RID rid, float innerCutoff, float outerCutoff)
         {
             ref GpuSpotLight light =
                 ref _spotLights.GetRef(rid);
@@ -302,7 +297,7 @@ namespace DevoidEngine.Rendering
             light.outerCutoff = outerCutoff;
         }
 
-        public void SpotLightSetShadowIndex(Rid rid, int shadowIndex)
+        public void SpotLightSetShadowIndex(RID rid, int shadowIndex)
         {
             ref GpuSpotLight light =
                 ref _spotLights.GetRef(rid);
@@ -310,7 +305,7 @@ namespace DevoidEngine.Rendering
             light.shadowIndex = shadowIndex;
         }
 
-        public void DirectionalLightSetDirection(Rid rid, Vector3 direction)
+        public void DirectionalLightSetDirection(RID rid, Vector3 direction)
         {
             ref GpuDirectionalLight light =
                 ref _directionalLights.GetRef(rid);
@@ -320,7 +315,7 @@ namespace DevoidEngine.Rendering
             light.Direction.Z = direction.Z;
         }
 
-        public void DirectionalLightSetEnabled(Rid rid, bool enabled)
+        public void DirectionalLightSetEnabled(RID rid, bool enabled)
         {
             ref GpuDirectionalLight light =
                 ref _directionalLights.GetRef(rid);
@@ -328,7 +323,7 @@ namespace DevoidEngine.Rendering
             light.Direction.W = enabled ? 1f : 0f;
         }
 
-        public void DirectionalLightSetColor(Rid rid, Vector3 color)
+        public void DirectionalLightSetColor(RID rid, Vector3 color)
         {
             ref GpuDirectionalLight light =
                 ref _directionalLights.GetRef(rid);
@@ -338,27 +333,12 @@ namespace DevoidEngine.Rendering
             light.Color.Z = color.Z;
         }
 
-        public void DirectionalLightSetIntensity(Rid rid, float intensity)
+        public void DirectionalLightSetIntensity(RID rid, float intensity)
         {
             ref GpuDirectionalLight light =
                 ref _directionalLights.GetRef(rid);
 
             light.Color.W = intensity;
-        }
-
-        public void AddPostprocessSettings(Camera camera, PostProcessSettings settings)
-        {
-            _postprocessingSettings[camera] = settings;
-        }
-        public void RemovePostProcessSettings(Camera camera)
-        {
-            _postprocessingSettings.Remove(camera);
-        }
-        public PostProcessSettings? GetPostProcessSettings(Camera camera)
-        {
-            if (_postprocessingSettings.TryGetValue(camera, out var ps))
-                return ps;
-            return null;
         }
 
         public void BuildView(Camera camera, ref RenderView view)

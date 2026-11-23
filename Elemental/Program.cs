@@ -15,7 +15,7 @@ namespace Elemental
 
             ApplicationSpecification engineDescription = new()
             {
-                Api = config.GraphicsApi ?? GraphicsApi.Dx11,
+                Api = config.GraphicsApi ?? GraphicsAPI.DX11,
                 Width = config.Width ?? 1280,
                 Height = config.Height ?? 720,
                 Name = "Elemental",

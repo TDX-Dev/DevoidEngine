@@ -289,8 +289,8 @@ namespace DevoidEngine.Imgui
 
             _fontTexture?.Dispose(); // Optimize: Prevents memory leak when fonts change/rebuild
 
-            _fontTexture = Texture.Create2D(width, height, TextureFormat.Rgba8UNorm, TextureUsage.ShaderResource);
-            _fontTexture.Gpu.Update(managedPixels);
+            _fontTexture = Texture.Create2D(width, height, TextureFormat.RGBA8UNorm, TextureUsage.ShaderResource);
+            _fontTexture.GPU.Update(managedPixels);
 
             io.Fonts.SetTexID((nint)_fontTexture.Id);
         }
@@ -309,7 +309,7 @@ namespace DevoidEngine.Imgui
                 _imguiRenderTexture = Texture.Create2D(
                     window.ClientSize.X,
                     window.ClientSize.Y,
-                    TextureFormat.Rgba8UNorm,
+                    TextureFormat.RGBA8UNorm,
                     TextureUsage.RenderTarget | TextureUsage.ShaderResource
                 );
 
@@ -653,7 +653,7 @@ namespace DevoidEngine.Imgui
                     });
 
                     var texture = Engine.Instance.TextureManager.Get((ulong)pcmd.TextureId);
-                    _guiDescriptor.SetTexture(0, texture.Gpu);
+                    _guiDescriptor.SetTexture(0, texture.GPU);
                     _guiDescriptor.SetSampler(0, _defaultSampler.Gpu);
 
                     cmd.SetDescriptorSet(0, _guiDescriptor);

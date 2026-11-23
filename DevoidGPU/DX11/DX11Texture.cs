@@ -8,7 +8,7 @@ using SampleDescription = SharpDX.DXGI.SampleDescription;
 
 namespace DevoidGPU.DX11
 {
-    internal sealed class Dx11Texture : ITexture
+    internal sealed class DX11Texture : ITexture
     {
         public TextureDescription Description { get; }
         public int Width => Description.Width;
@@ -35,7 +35,7 @@ namespace DevoidGPU.DX11
         private readonly bool _ownsResource;
         private readonly RenderTargetView[,]? _rtvs;
 
-        internal Dx11Texture(Device device, Texture2D existing)
+        internal DX11Texture(Device device, Texture2D existing)
         {
             this._device = device;
 
@@ -69,7 +69,7 @@ namespace DevoidGPU.DX11
             Dx11Format = desc.Format;
         }
 
-        public Dx11Texture(Device device, DeviceContext deviceContext, TextureDescription description)
+        public DX11Texture(Device device, DeviceContext deviceContext, TextureDescription description)
         {
             this._device = device;
             this._deviceContext = deviceContext;

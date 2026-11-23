@@ -3,13 +3,13 @@
     public enum TextureFormat
     {
         Unknown,
-        Rgba8UNorm,
-        Rgba8UNormSrgb,
-        Bgra8UNorm,
+        RGBA8UNorm,
+        RGBA8UNormSrgb,
+        BGRA8UNorm,
 
-        Rg16Float,
-        Rgba16Float,
-        Rgba32Float,
+        RG16Float,
+        RGBA16Float,
+        RGBA32Float,
 
         R16Float,
         R32Float,
@@ -21,17 +21,17 @@
         Depth32Float,
 
         // Add Formats at the end due to serialization logic
-        Rg8UNorm,
+        RG8UNorm,
         R32UInt,
 
         R8SInt,
         R16SInt,
         R32SInt,
-        Rg8SInt,
-        Rg16SInt,
-        Rg32SInt,
-        Rgba8SInt,
-        Rgba16SInt,
-        Rgba32SInt,
+        RG8SInt,
+        RG16SInt,
+        RG32SInt,
+        RGBA8SInt,
+        RGBA16SInt,
+        RGBA32SInt,
     }
 }

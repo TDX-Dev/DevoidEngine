@@ -1,12 +1,10 @@
 ﻿using SharpDX.Direct3D;
 using SharpDX.Direct3D11;
 using SharpDX.DXGI;
-using System.Diagnostics;
 using Device = SharpDX.Direct3D11.Device;
 using DeviceContext = SharpDX.Direct3D11.DeviceContext;
 using DeviceCreationFlags = SharpDX.Direct3D11.DeviceCreationFlags;
 using DriverType = SharpDX.Direct3D.DriverType;
-using DXGIDevice = SharpDX.DXGI.Device;
 
 namespace DevoidGPU.DX11
 {
@@ -186,7 +184,7 @@ namespace DevoidGPU.DX11
         }
         public ITexture CreateTexture(TextureDescription desc)
         {
-            return new Dx11Texture(_device, _deviceContext, desc);
+            return new DX11Texture(_device, _deviceContext, desc);
         }
 
         public ISampler CreateSampler(SamplerDescription desc)
@@ -195,7 +193,7 @@ namespace DevoidGPU.DX11
         }
         public IFrameBuffer CreateFrameBuffer(ITexture?[] colorAttachments, ITexture? depthAttachment)
         {
-            return new Dx11Framebuffer([.. colorAttachments.Cast<Dx11Texture>()], depthAttachment as Dx11Texture);
+            return new Dx11Framebuffer([.. colorAttachments.Cast<DX11Texture>()], depthAttachment as DX11Texture);
         }
         public IUniformBuffer CreateUniformBuffer(BufferDescription desc)
         {

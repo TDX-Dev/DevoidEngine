@@ -4,18 +4,18 @@ namespace DevoidEngine.Core
 {
     public sealed class ShaderPass : IDisposable
     {
-        public IShader Vs { get; }
-        public IShader Fs { get; }
+        public IShader VS { get; }
+        public IShader FS { get; }
         public IDescriptorLayout DescriptorLayout { get; }
         public ShaderReflectionData ShaderReflectionData { get; }
 
 
         public ShaderPass(IShader vertexShader, IShader fragmentShader)
         {
-            Vs = vertexShader;
-            Fs = fragmentShader;
+            VS = vertexShader;
+            FS = fragmentShader;
 
-            ShaderReflectionData = ShaderReflectionData.Merge([Vs.ReflectionData, Fs.ReflectionData]);
+            ShaderReflectionData = ShaderReflectionData.Merge([VS.ReflectionData, FS.ReflectionData]);
             IDescriptorLayout descriptorLayout = CreateDescriptorLayout(Engine.GraphicsDevice, ShaderReflectionData);
             DescriptorLayout = descriptorLayout;
         }
@@ -79,8 +79,8 @@ namespace DevoidEngine.Core
 
         public void Dispose()
         {
-            Vs.Dispose();
-            Fs.Dispose();
+            VS.Dispose();
+            FS.Dispose();
         }
     }
 }

@@ -13,8 +13,8 @@ namespace DevoidEngine.Util
             BlendStateDescription bsd = ParseBlend(descriptor.Blend);
             DepthStencilState dss = ParseDepth(descriptor.DepthCompareMode, descriptor.WriteDepth);
             RasterizerState rs = ParseRasterizerState(descriptor.CullMode, descriptor.FillMode);
-            IShader vertexShader = shaderPass.Vs;
-            IShader fragmentShader = shaderPass.Fs;
+            IShader vertexShader = shaderPass.VS;
+            IShader fragmentShader = shaderPass.FS;
 
 
             GraphicsPipelineDescription pipeline = new()
@@ -23,7 +23,7 @@ namespace DevoidEngine.Util
                 DepthStencil = dss,
                 Rasterizer = rs,
                 Topology = primitiveType,
-                VertexLayout = Vertex.VertexInfo,
+                VertexLayout = vertexLayout,
                 VertexShader = vertexShader,
                 PixelShader = fragmentShader,
             };

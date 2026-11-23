@@ -51,7 +51,7 @@ namespace DevoidEngine.Core
         public static RenderTarget Create(Texture[] colorTextures, Texture? depthTexture)
         {
             IGraphicsDevice device = Engine.GraphicsDevice;
-            IFrameBuffer frameBuffer = device.CreateFrameBuffer([.. colorTextures.Select(e => e.Gpu)], depthTexture?.Gpu);
+            IFrameBuffer frameBuffer = device.CreateFrameBuffer([.. colorTextures.Select(e => e.GPU)], depthTexture?.GPU);
 
             return new RenderTarget(frameBuffer, colorTextures, depthTexture);
         }
@@ -77,13 +77,13 @@ namespace DevoidEngine.Core
         public void SetColorAttachment(int slot, Texture texture, int mip = 0, int slice = 0)
         {
             _colorTextures[slot] = texture;
-            Gpu.SetColorAttachment(slot, texture.Gpu, mip, slice);
+            Gpu.SetColorAttachment(slot, texture.GPU, mip, slice);
         }
 
         public void SetDepthAttachment(Texture texture)
         {
             DepthTexture = texture;
-            Gpu.SetDepthAttachment(texture.Gpu);
+            Gpu.SetDepthAttachment(texture.GPU);
         }
     }
 }

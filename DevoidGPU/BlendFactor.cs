@@ -6,6 +6,7 @@
         One,
         SrcAlpha,
         SrcColor,
+        InvSrcColor,
         InvSrcAlpha,
     }
 }

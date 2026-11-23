@@ -11,8 +11,8 @@ namespace DevoidGPU.DX11
         public IReadOnlyList<ITexture?> ColorAttachments => _colorAttachments;
         public ITexture? DepthAttachment => _depthAttachment;
 
-        private readonly Dx11Texture?[] _colorAttachments;
-        private Dx11Texture? _depthAttachment;
+        private readonly DX11Texture?[] _colorAttachments;
+        private DX11Texture? _depthAttachment;
 
         internal readonly RenderTargetView?[] RtVs;
         internal DepthStencilView? Dsv;
@@ -20,8 +20,8 @@ namespace DevoidGPU.DX11
 
 
         public Dx11Framebuffer(
-            Dx11Texture?[] colorAttachments,
-            Dx11Texture? depthAttachment = null
+            DX11Texture?[] colorAttachments,
+            DX11Texture? depthAttachment = null
         )
         {
             this._colorAttachments = colorAttachments;
@@ -39,7 +39,7 @@ namespace DevoidGPU.DX11
 
         internal void ValidateFrameBuffer()
         {
-            Dx11Texture? reference =
+            DX11Texture? reference =
                 _colorAttachments.FirstOrDefault(x => x != null)
                 ?? _depthAttachment;
 
@@ -72,7 +72,7 @@ namespace DevoidGPU.DX11
 
         public void SetColorAttachment(int index, ITexture texture, int mip = 0, int slice = 0)
         {
-            var dxTex = (Dx11Texture)texture;
+            var dxTex = (DX11Texture)texture;
 
             _colorAttachments[index] = dxTex;
             RtVs[index] = dxTex.GetRtv(mip, slice);
@@ -82,7 +82,7 @@ namespace DevoidGPU.DX11
 
         public void SetDepthAttachment(ITexture texture)
         {
-            var dxTex = (Dx11Texture)texture;
+            var dxTex = (DX11Texture)texture;
 
             _depthAttachment = dxTex;
             Dsv = dxTex.Dsv;

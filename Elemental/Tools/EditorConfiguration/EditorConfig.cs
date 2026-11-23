@@ -10,7 +10,7 @@ namespace Elemental.Tools.EditorConfiguration
         public int? Height;
         public bool? Resizable;
         public bool? VSync;
-        public GraphicsApi? GraphicsApi;
+        public GraphicsAPI? GraphicsApi;
 
         private static string FilePath => Path.Combine(AppContext.BaseDirectory, "editor.json");
 

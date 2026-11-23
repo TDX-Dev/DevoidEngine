@@ -15,7 +15,7 @@ namespace DevoidGPU.DX11
 
         private readonly Device _device;
         private readonly SwapChain _swapchain;
-        private readonly Dx11Texture[] _backbuffers;
+        private readonly DX11Texture[] _backbuffers;
         private readonly int _bufferCount;
         private readonly Format _format;
         private readonly SwapChainDescription _swapchainDescription;
@@ -59,7 +59,7 @@ namespace DevoidGPU.DX11
             _swapchain = swapChain;
 
             int count = _swapchain.Description.BufferCount;
-            _backbuffers = new Dx11Texture[count];
+            _backbuffers = new DX11Texture[count];
 
             CreateBackbuffer();
 
@@ -69,7 +69,7 @@ namespace DevoidGPU.DX11
         {
             using var tex = _swapchain.GetBackBuffer<Texture2D>(0);
 
-            _backbuffers[0] = new Dx11Texture(_device, tex);
+            _backbuffers[0] = new DX11Texture(_device, tex);
 
             _framebuffer = new Dx11Framebuffer(
                 [_backbuffers[0]]

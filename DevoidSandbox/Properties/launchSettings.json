@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "DevoidSandbox": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

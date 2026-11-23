@@ -15,12 +15,35 @@ namespace DevoidEngine.Rendering
         public RenderAPI()
         {
             FullscreenShader = new Shader("Fullscreen Shader", "Content/Shaders/fullscreen.vert.hlsl", "Content/Shaders/blit.frag.hlsl");
-            FullscreenPipeline = Engine.GraphicsDevice.CreateGraphicsPipeline(new GraphicsPipelineDescription()
-            {
-                VertexShader = FullscreenShader.GetActivePass().Vs
-            });
+
             FullscreenMesh = PrimitiveMeshes.GetFullscreenPlane();
             FullscreenDescriptor = Engine.GraphicsDevice.CreateDescriptorSet(FullscreenShader.GetActivePass().DescriptorLayout);
+
+            FullscreenPipeline = Engine.GraphicsDevice.CreateGraphicsPipeline(new GraphicsPipelineDescription()
+            {
+                VertexShader = FullscreenShader.GetActivePass().VS,
+                PixelShader = FullscreenShader.GetActivePass().VS,
+                Blend = new BlendStateDescription()
+                {
+                    BlendStates =
+                        [
+                            BlendState.FromBlendMode(BlendMode.AlphaBlend)
+                        ]
+                },
+                Rasterizer = new RasterizerState()
+                {
+                    CullMode = CullMode.Back,
+                    EnableScissor = false,
+                    FillMode = FillMode.Solid,
+                },
+                DepthStencil = new DepthStencilState()
+                {
+                    DepthTest = false,
+                    DepthWrite = false
+                },
+                Topology = PrimitiveType.Triangles,
+                VertexLayout = FullscreenMesh.Surfaces[0].VertexInfo
+            });
 
             FullscreenSampler = Engine.GraphicsDevice.CreateSampler(new SamplerDescription()
             {
@@ -36,8 +59,8 @@ namespace DevoidEngine.Rendering
         {
             if (texture == null) return;
 
-            cmd.SetPipeline(FullscreenShader.DefaultPass.GetPipeline(FullscreenShader.DefaultPass.GetVariant(), FullscreenMesh.Surfaces[0].VertexInfo));
-            FullscreenDescriptor.SetTexture(0, texture.Gpu);
+            cmd.SetPipeline(FullscreenPipeline);
+            FullscreenDescriptor.SetTexture(0, texture.GPU);
 
             cmd.SetDescriptorSet(0, FullscreenDescriptor);
             FullscreenMesh.Draw(cmd);
@@ -47,7 +70,7 @@ namespace DevoidEngine.Rendering
         {
             if (material == null) return;
 
-            cmd.SetPipeline(material.BaseMaterial.GetPipeline(FullscreenMesh.Surfaces[0].VertexInfo));
+            cmd.SetPipeline(FullscreenPipeline);
 
             cmd.SetDescriptorSet(0, material.DescriptorSet);
             FullscreenMesh.Draw(cmd);
