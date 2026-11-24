@@ -203,11 +203,13 @@ namespace DevoidEngine.Core
         void FixedUpdate(float deltaTime)
         {
             _layerManager.FixedUpdateLayers(deltaTime);
+            Engine.Instance.SceneTree.TickFixed(deltaTime);
         }
 
         void Update(float deltaTime)
         {
             _layerManager.UpdateLayers(deltaTime);
+            Engine.Instance.SceneTree.Tick(deltaTime);
         }
 
         void Render(ICommandList cmd, WindowSurface surface)

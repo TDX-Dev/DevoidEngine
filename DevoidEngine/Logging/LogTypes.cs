@@ -22,6 +22,7 @@
         Scene,
         Serialization,
         Scripting,
-        Editor
+        Editor,
+        External
     }
 }

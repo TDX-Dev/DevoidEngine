@@ -1,7 +1,5 @@
 ﻿using Microsoft.CodeAnalysis;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace DevoidEngine.SourceGen.NodeSerialization
@@ -52,8 +50,8 @@ namespace DevoidEngine.SourceGen.NodeSerialization
                     }
                     else if (member is IPropertySymbol property &&
                              !property.IsIndexer &&
-                             property.GetMethod is not null &&
-                             property.SetMethod is not null)
+                             property.GetMethod?.DeclaredAccessibility == Accessibility.Public &&
+                             property.SetMethod?.DeclaredAccessibility == Accessibility.Public)
                     {
                         yield return property;
                     }
@@ -1106,7 +1104,7 @@ namespace DevoidEngine.SourceGen.NodeSerialization
         {
             if (type is IArrayTypeSymbol arrayType)
             {
-                GenerateNestedReadHelpers(sb, arrayType.ElementType,  generated);
+                GenerateNestedReadHelpers(sb, arrayType.ElementType, generated);
 
                 return;
             }

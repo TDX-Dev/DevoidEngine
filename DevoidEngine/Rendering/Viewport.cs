@@ -1,13 +1,14 @@
 ﻿using DevoidEngine.Core;
+using DevoidEngine.Nodes;
 using DevoidEngine.Util;
 using DevoidGPU;
 using System.Numerics;
 
 namespace DevoidEngine.Rendering
 {
-    public class Viewport : IDisposable
+    public class Viewport : Node, IDisposable
     {
-        public bool Render { get; set; } = true;
+        public bool CanRender { get; set; } = true;
         public Rect Bounds => _bounds;
         public int Width { get; private set; }
         public int Height { get; private set; }

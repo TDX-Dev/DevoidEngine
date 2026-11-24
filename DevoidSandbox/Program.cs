@@ -1,4 +1,5 @@
 ﻿using DevoidEngine.Core;
+using DevoidEngine.Logging;
 
 namespace DevoidSandbox
 {
@@ -12,12 +13,15 @@ namespace DevoidSandbox
                 Api = GraphicsAPI.DX11,
                 Resizable = false,
                 VSync = true,
-                Width = 1920,
-                Height = 1080,
+                Width = 1920 / 4,
+                Height = 1080 / 4,
             };
+
+            DevoidLog.AddSink(new ConsoleLogSink());
 
             Application devoidApplication = new(devoidAppSpec);
 
+            devoidApplication.AddLayer(new SandboxLayer());
 
             devoidApplication.Run();
         }

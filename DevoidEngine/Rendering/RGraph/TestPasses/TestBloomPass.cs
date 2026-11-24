@@ -10,6 +10,8 @@ namespace DevoidEngine.Rendering.RGraph.TestPasses
             Name = "Bloom Pass";
         }
 
+
+
         public override void Setup(RenderGraphBuilder builder)
         {
             TextureDescription bloomPassOutput = new()

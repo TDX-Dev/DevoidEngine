@@ -46,6 +46,8 @@ namespace DevoidEngine.Core
         public Version EngineVersion { get; set; } = null!;
         public Project ProjectSystem { get; set; } = null!;
 
+        public SceneTree SceneTree { get; set; } = null!;
+
         public GraphicsDeviceInfo GraphicsDeviceInfo { get; set; }
 
         private readonly Profiler _profiler;
@@ -89,6 +91,8 @@ namespace DevoidEngine.Core
             instance._inputSystem = new Input();
 
             instance.VirtualFileSystem = new VirtualFileSystem();
+
+            instance.SceneTree = new SceneTree();
 
         }
     }

@@ -1,8 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 
 namespace DevoidEngine.SourceGen.MetadataGeneration
@@ -12,7 +10,7 @@ namespace DevoidEngine.SourceGen.MetadataGeneration
     {
         private static readonly string[] AllowedBaseClasses =
         [
-            "DevoidEngine.Nodes.Node"
+            //"DevoidEngine.Nodes.Node"
         ];
 
 

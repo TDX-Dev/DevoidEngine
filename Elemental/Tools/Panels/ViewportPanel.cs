@@ -30,7 +30,7 @@ namespace Elemental.Tools.Panels
 
             bool visible = base.OnBeginWindow();
 
-            Viewport.Render = visible;
+            Viewport.CanRender = visible;
 
             IsHovered = visible && ImGui.IsWindowHovered();
             IsFocused = visible && ImGui.IsWindowFocused();

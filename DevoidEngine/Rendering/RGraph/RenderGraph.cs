@@ -87,7 +87,7 @@ namespace DevoidEngine.Rendering.RGraph
         }
         public void Compile()
         {
-            ResetGraph();
+            //ResetGraph();
 
 
             SetupPassesAndRecordDependencies();
@@ -243,7 +243,7 @@ namespace DevoidEngine.Rendering.RGraph
             }
 
 
-            PrintDependencies();
+            //PrintDependencies();
         }
 
         void BuildTopologicalOrder(List<bool> neededPasses, List<HashSet<int>> adj, List<int> indegrees)
@@ -487,6 +487,13 @@ namespace DevoidEngine.Rendering.RGraph
         void SetupPassesAndRecordDependencies()
         {
             RenderGraphBuilder builder = new(this);
+
+            for (int i = 0; i < _passes.Count; i++)
+            {
+                builder.RenderPassIndexCurrent = i;
+                _passes[i].CreateResources(builder);
+            }
+
             for (int i = 0; i < _passes.Count; i++)
             {
                 builder.RenderPassIndexCurrent = i;

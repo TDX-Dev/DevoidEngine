@@ -281,7 +281,7 @@ namespace DevoidEngine.Core
             local = Matrix4x4.CreateScale(scale) * Matrix4x4.CreateFromQuaternion(rot) * Matrix4x4.CreateTranslation(pos);
             Matrix4x4 result;
 
-            // i hate life
+            // straight from godot transform update logic
             if (_parent != null)
             {
                 Matrix4x4 parentGlobal;
