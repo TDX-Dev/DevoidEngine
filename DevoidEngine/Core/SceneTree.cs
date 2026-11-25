@@ -1,58 +1,46 @@
-﻿namespace DevoidEngine.Core
+﻿using DevoidEngine.Rendering;
+
+namespace DevoidEngine.Core
 {
     public class SceneTree
     {
-        private readonly List<Scene> scenes;
-
-        public SceneTree()
-        {
-            scenes = [];
-        }
-
+        public Viewport RootViewport { get; private set; } = null!;
+        public Scene? CurrentScene { get; private set; }
 
         public ulong TickCount = 0;
-        public ulong TichPhysicsCount = 0;
+        public ulong TickPhysicsCount = 0;
 
-        public void LoadSceneFromFile()
+        public void Initialize()
         {
-
+            RootViewport = new Viewport();
         }
 
-        public void LoadScene(Scene scene)
+        public Scene LoadScene(Scene scene)
         {
-
-        }
-
-        public Scene NewScene(bool addToTree = false)
-        {
-            Scene scene = new(this);
-
-            if (addToTree)
+            if (CurrentScene != null)
             {
-                scenes.Add(scene);
-                scene.OnTreeEntered();
+                CurrentScene.OnTreeExited();
+                CurrentScene.Root.SetParent(null, true);
             }
 
+            CurrentScene = scene;
+
+            CurrentScene.Root.SetParent(RootViewport, true);
+            RootViewport.TargetScene = CurrentScene;
+            scene.OnTreeEntered();
             return scene;
         }
 
         public void Tick(float dt)
         {
-            for (int i = 0; i < scenes.Count; i++)
-                scenes[i].Tick(dt);
-
-            for (int i = 0; i < scenes.Count; i++)
-                scenes[i].TickLate();
-
-
+            RootViewport.Tick(dt);
             TickCount++;
         }
 
         public void TickFixed(float dt)
         {
-            for (int i = 0; i < scenes.Count; i++)
-                scenes[i].TickFixed(dt);
+            RootViewport.TickFixed(dt);
+            TickPhysicsCount++;
         }
-
     }
 }

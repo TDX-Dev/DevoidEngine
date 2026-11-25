@@ -12,15 +12,5 @@ namespace DevoidEngine.Rendering
         public RenderResourceCache Resources;
 
         public ICommandList CommandList;
-
-        public Texture SceneDepth;
-        public Texture SceneNormal;
-        public Texture SceneViewDepth;
-        public Texture SceneAo;
-
-        public Texture SceneIdentifier;
-
-        public Texture SceneColor;
-        public Texture SceneColorBlurredHalfRes;
     }
 }

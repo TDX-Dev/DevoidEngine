@@ -51,9 +51,10 @@ namespace DevoidEngine.Nodes
                 Children[i].TreeExited();
         }
 
+        public bool IsInSceneTree() => Scene.IsInTree;
         public Viewport GetViewport()
         {
-            throw new NotImplementedException();
+            return GetAncestor<Viewport>() ?? (IsInSceneTree() ? Engine.Instance.SceneTree.RootViewport : throw new Exception($"'{this.GetType().Name}' Node not in scene tree"));
         }
         public void Destroy()
         {

@@ -44,7 +44,14 @@
 
         public static void Debug(LogLevel level, LogCategory category, string message)
         {
-            var entry = new LogEntry(LogLevel.Debug, category, message);
+            var entry = new LogEntry(level, category, message);
+
+            WriteSinks(entry);
+        }
+
+        public static void Debug(string message)
+        {
+            var entry = new LogEntry(LogLevel.Debug, LogCategory.External, message);
 
             WriteSinks(entry);
         }

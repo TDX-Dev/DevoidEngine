@@ -1,4 +1,5 @@
 ﻿using DevoidEngine.Core;
+using DevoidEngine.Logging;
 using DevoidEngine.Rendering.RGraph;
 using DevoidEngine.Rendering.RGraph.TestPasses;
 using DevoidGPU;
@@ -46,15 +47,16 @@ namespace DevoidEngine.Rendering
         private ViewportRect _currentViewport;
         private ScissorRect _currentScissor;
 
-        // ---TESTING---
-        private RenderGraph graph = null!;
+        private readonly Dictionary<Viewport, RenderGraph> ViewportGraphs = [];
 
         public void Initialize(RendererConfig config)
         {
             Technique = config.Technique;
             API = new();
+        }
 
-            graph = new();
+        public void SetupGraphPasses(RenderGraph graph)
+        {
             graph.AddPass(new TestDebugPreviewPass());
             graph.AddPass(new TestShadowMapPass());
             graph.AddPass(new TestGbufferPass());
@@ -63,8 +65,6 @@ namespace DevoidEngine.Rendering
             graph.AddPass(new TestCompositePass());
 
             graph.RegisterPersistentResource("Backbuffer", Texture.Default);
-
-            graph.Compile();
         }
 
         public void SetupFrame(uint frameCount)
@@ -77,14 +77,59 @@ namespace DevoidEngine.Rendering
 
         }
 
-        public void RenderViewport(Viewport viewport)
+        public void RenderViewport(ICommandList cmd, Viewport viewport)
         {
+            RenderGraph graph = ViewportGraphs[viewport];
+            graph.Execute(cmd, viewport);
+        }
 
+        public void RegisterViewport(Viewport viewport)
+        {
+            if (ViewportGraphs.ContainsKey(viewport))
+            {
+                throw new InvalidOperationException("Cannot register viewport again.");
+            }
+
+            RenderGraph graph = new(new RenderResourceCache(Engine.GraphicsDevice));
+            DevoidLog.Info(LogCategory.Rendering, $"New rendergraph created for viewport ID: {viewport.Id}");
+
+            SetupGraphPasses(graph);
+
+            graph.Compile(new()
+            {
+                Viewport = viewport
+            });
+
+            ViewportGraphs.Add(viewport, graph);
+        }
+
+        public void ResizeViewport(Viewport viewport)
+        {
+            if (!ViewportGraphs.TryGetValue(viewport, out var cache))
+                throw new InvalidOperationException("Viewport was not registered.");
+            cache.Dispose();
+            DevoidLog.Info(LogCategory.Rendering, $"Viewport ID: {viewport.Id} was resized, rebuilding rendergraph.");
+        }
+
+        public void RemoveViewport(Viewport viewport)
+        {
+            if (ViewportGraphs.TryGetValue(viewport, out RenderGraph? cache))
+            {
+                cache.Dispose();
+                ViewportGraphs.Remove(viewport);
+                DevoidLog.Info(LogCategory.Rendering, $"Viewport ID: {viewport.Id} and its rendergraph disposed.");
+                return;
+            }
+
+            throw new InvalidOperationException("Viewport was not registered, cannot be removed.");
         }
 
         public void Dispose()
         {
+            foreach (var kvp in ViewportGraphs)
+                kvp.Value.Dispose();
 
+            ViewportGraphs.Clear();
         }
         #region RASTERIZERSTATE
         public void PushViewport(ICommandList cmd, ViewportRect viewport)

@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 namespace DevoidEngine.Rendering.RGraph
 {
-    public class RenderGraph
+    public sealed class RenderGraph : IDisposable
     {
         private struct ResourceAlloc
         {
@@ -49,12 +49,14 @@ namespace DevoidEngine.Rendering.RGraph
         private readonly List<RenderPass> _passes;
         private readonly List<int> _passOrder;
 
+        private readonly RenderResourceCache _resourceManager;
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         bool IsWriteAccess(RGResourceAccessType accessType) => accessType == RGResourceAccessType.Write || accessType == RGResourceAccessType.ReadWrite;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         bool IsReadAccess(RGResourceAccessType accessType) => accessType == RGResourceAccessType.Read || accessType == RGResourceAccessType.ReadWrite;
 
-        public RenderGraph()
+        public RenderGraph(RenderResourceCache resourceManager)
         {
             _resources = new RIDOwner<RGTextureResource>();
             _resourceDependencyMap = [];
@@ -66,8 +68,26 @@ namespace DevoidEngine.Rendering.RGraph
 
             _passes = [];
             _passOrder = [];
-        }
 
+            _resourceManager = resourceManager;
+        }
+        public void Dispose()
+        {
+            //for (int i = 0; i < _passes.Count; i++)
+            //    _passes[i].Dispose();
+
+            _passes.Clear();
+            _resources.FreeWhere(res => !res.Imported);
+
+            _resourceDependencyMap.Clear();
+            _passDependencyList.Clear();
+            _resourceFirstUse.Clear();
+            _resourceLastUse.Clear();
+            _passOrder.Clear();
+
+            _textureReuseRecords.Clear();
+            _resourceManager.Dispose();
+        }
         void ResetGraph()
         {
             _resources.FreeWhere(res => !res.Imported);
@@ -85,12 +105,17 @@ namespace DevoidEngine.Rendering.RGraph
         {
             _passes.Add(pass);
         }
-        public void Compile()
+        public void Compile(RenderGraphCompileInfo compileInfo)
         {
             //ResetGraph();
 
+            RenderGraphContext ctx = new()
+            {
+                Viewport = compileInfo.Viewport,
+            };
 
-            SetupPassesAndRecordDependencies();
+
+            SetupPassesAndRecordDependencies(ctx);
 
             int resCount = _resources.GetCount();
 
@@ -229,7 +254,7 @@ namespace DevoidEngine.Rendering.RGraph
 
                     if (!reused)
                     {
-                        resource.Resource = new Texture(resource.Description);
+                        resource.Resource = _resourceManager.GetOrCreateTexture(resource.Name, resource.Description);
                         resource.Allocated = true;
                     }
                     activeTextures.Enqueue(new()
@@ -245,7 +270,14 @@ namespace DevoidEngine.Rendering.RGraph
 
             //PrintDependencies();
         }
-
+        public void Execute(ICommandList cmd, Viewport viewport)
+        {
+            RenderGraphExecutionContext context = new(this, cmd, viewport);
+            for (int i = 0; i < _passOrder.Count; i++)
+            {
+                _passes[_passOrder[i]].Execute(context);
+            }
+        }
         void BuildTopologicalOrder(List<bool> neededPasses, List<HashSet<int>> adj, List<int> indegrees)
         {
             int passCount = neededPasses.Count;
@@ -484,7 +516,7 @@ namespace DevoidEngine.Rendering.RGraph
             }
         }
 
-        void SetupPassesAndRecordDependencies()
+        void SetupPassesAndRecordDependencies(RenderGraphContext ctx)
         {
             RenderGraphBuilder builder = new(this);
 
@@ -497,7 +529,7 @@ namespace DevoidEngine.Rendering.RGraph
             for (int i = 0; i < _passes.Count; i++)
             {
                 builder.RenderPassIndexCurrent = i;
-                _passes[i].Setup(builder);
+                _passes[i].Setup(ctx, builder);
             }
         }
 
@@ -524,7 +556,15 @@ namespace DevoidEngine.Rendering.RGraph
             }
             return null;
         }
+        public Texture GetTexture(RID handle)
+        {
+            ref RGTextureResource resource = ref _resources.GetRef(handle);
 
+            if (!resource.Allocated || resource.Resource == null)
+                throw new InvalidOperationException("Resource not allocated.");
+
+            return resource.Resource;
+        }
         public RID RegisterPersistentResource(string name, Texture texture)
         {
             RGTextureResource resource = new()

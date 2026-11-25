@@ -9,7 +9,7 @@ namespace DevoidEngine.Rendering.RGraph.TestPasses
         {
             Name = "DebugPreviewPass";
         }
-        public override void Setup(RenderGraphBuilder builder)
+        public override void Setup(RenderGraphContext ctx, RenderGraphBuilder builder)
         {
             TextureDescription debugOutputDesc = new()
             {

@@ -12,7 +12,7 @@ namespace DevoidEngine.Rendering.RGraph.TestPasses
 
 
 
-        public override void Setup(RenderGraphBuilder builder)
+        public override void Setup(RenderGraphContext ctx, RenderGraphBuilder builder)
         {
             TextureDescription bloomPassOutput = new()
             {

@@ -118,7 +118,10 @@ namespace DevoidEngine.Core
             if (_surfaces.Count == 0)
                 return;
 
+            Engine.Instance.SceneTree.Initialize();
+
             _layerManager.AttachLayers();
+
             while (_isRunning)
             {
                 Engine.Profiler.BeginFrame();

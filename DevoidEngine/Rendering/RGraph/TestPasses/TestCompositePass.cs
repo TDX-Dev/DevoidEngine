@@ -9,7 +9,7 @@ namespace DevoidEngine.Rendering.RGraph.TestPasses
             Name = "Composite Pass";
         }
 
-        public override void Setup(RenderGraphBuilder builder)
+        public override void Setup(RenderGraphContext ctx, RenderGraphBuilder builder)
         {
 
             RID compositePassTextureHandle = builder.FindTexture("Backbuffer")!.Value;

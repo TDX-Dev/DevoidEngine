@@ -36,6 +36,7 @@ namespace DevoidEngine.Core
                 Priority = priority
             });
 
+
             _isDirty = true;
         }
 
@@ -76,13 +77,11 @@ namespace DevoidEngine.Core
 
             for (int i = 0; i < viewports.Count; i++)
             {
-                //Viewport viewport = viewports[i];
+                Viewport viewport = viewports[i];
 
-
-                //if (viewport.TargetScene == null || viewport.ActiveCamera == null || !viewport.Render)
-                //    continue;
-
-                //Engine.Renderer.Render(cmd, viewport);
+                if (viewport.TargetScene == null || viewport.ActiveCamera == null || !viewport.CanRender)
+                    continue;
+                Engine.Renderer.RenderViewport(cmd, viewport);
             }
         }
 

@@ -13,8 +13,7 @@ namespace DevoidEngine.Rendering
         public int Width { get; private set; }
         public int Height { get; private set; }
         // This will cause a problem where the viewport only targets the main camera, so having multiple cameras for splitscreen for example, will not work.
-        public Camera? ActiveCamera => CameraOverride;// ?? TargetScene?.MainCamera?.GetCamera();
-        //public Scene TargetScene { get; set; } = null!;
+        public Camera? ActiveCamera => CameraOverride ?? _activeCamera; public Scene TargetScene { get; set; } = null!;
         public Camera? CameraOverride { get; set; }
 
         public Texture? OutputTexture { get; private set; } = null;
@@ -22,13 +21,17 @@ namespace DevoidEngine.Rendering
         private Rect _bounds;
         private ObjectPickRequest? _pendingPick;
         private ObjectPickResult? _completedPick;
+        private readonly List<Camera> _cameras = [];
+        private Camera? _activeCamera;
+
 
         public Viewport(int width = 1280, int height = 720)
         {
             Width = width;
             Height = height;
 
-            //Engine.Renderer.RegisterViewport(this);
+            Engine.Instance.ViewportManager.RegisterViewport(this);
+            Engine.Renderer.RegisterViewport(this);
 
             _bounds = new Rect(Vector2.Zero, new Vector2(Width, Height));
 
@@ -67,11 +70,12 @@ namespace DevoidEngine.Rendering
 
             ReallocateTexture();
 
-            //Engine.Renderer.ResizeViewport(this);
+            Engine.Renderer.ResizeViewport(this);
         }
         public void Dispose()
         {
-            //Engine.Renderer.RemoveViewport(this);
+            Engine.Renderer.RemoveViewport(this);
+            Engine.Instance.ViewportManager.UnregisterViewport(this);
 
             if (OutputTexture != null)
             {
@@ -100,6 +104,53 @@ namespace DevoidEngine.Rendering
 
             result = default;
             return false;
+        }
+
+        internal void RegisterCamera(Camera camera)
+        {
+            if (_cameras.Contains(camera))
+                return;
+
+            _cameras.Add(camera);
+
+            // Automatically select the first registered camera.
+            if (_activeCamera == null)
+                SetActiveCamera(camera);
+        }
+
+        internal void UnregisterCamera(Camera camera)
+        {
+            _cameras.Remove(camera);
+
+            if (_activeCamera == camera)
+            {
+                SetActiveCamera(null);
+                MakeNextCameraCurrent();
+            }
+        }
+
+        public void SetActiveCamera(Camera? camera)
+        {
+            if (_activeCamera == camera)
+                return;
+
+            if (camera != null && !_cameras.Contains(camera))
+                throw new InvalidOperationException("Camera is not registered with this viewport.");
+            _activeCamera = camera;
+        }
+
+        private void MakeNextCameraCurrent(Camera? exclude = null)
+        {
+            foreach (Camera camera in _cameras)
+            {
+                if (camera == exclude)
+                    continue;
+
+                if (_activeCamera != null)
+                    return;
+
+                SetActiveCamera(camera);
+            }
         }
 
         internal bool TryConsumeObjectPickRequest(out ObjectPickRequest request)

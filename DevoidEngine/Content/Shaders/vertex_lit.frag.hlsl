@@ -10,6 +10,5 @@ struct PSInput
 
 float4 PSMain(PSInput input) : SV_Target0
 {
-    
     return float4(0, 1, 0, 1);
 }

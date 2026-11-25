@@ -11,7 +11,7 @@ namespace DevoidEngine.Rendering.RGraph.TestPasses
             Name = "Lighting Pass";
         }
 
-        public override void Setup(RenderGraphBuilder builder)
+        public override void Setup(RenderGraphContext ctx, RenderGraphBuilder builder)
         {
             TextureDescription lightingPassOutput = new()
             {

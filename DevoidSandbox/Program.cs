@@ -11,7 +11,7 @@ namespace DevoidSandbox
             {
                 Name = "Devoid Sandbox Application",
                 Api = GraphicsAPI.DX11,
-                Resizable = false,
+                Resizable = true,
                 VSync = true,
                 Width = 1920 / 4,
                 Height = 1080 / 4,

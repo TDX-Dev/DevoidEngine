@@ -10,7 +10,7 @@ namespace DevoidEngine.Rendering.RGraph.TestPasses
             Name = "GBuffer Pass";
         }
 
-        public override void Setup(RenderGraphBuilder builder)
+        public override void Setup(RenderGraphContext ctx, RenderGraphBuilder builder)
         {
             TextureDescription gbufferOutputDesc = new()
             {

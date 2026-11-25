@@ -1,4 +1,5 @@
 ﻿using DevoidEngine.Nodes;
+using DevoidEngine.Rendering;
 using DevoidEngine.Util;
 
 namespace DevoidEngine.Core
@@ -20,9 +21,11 @@ namespace DevoidEngine.Core
         public bool IsEditing => SceneMode == SceneMode.Edit;
         public bool IsRunning => SceneMode is SceneMode.Play or SceneMode.Edit;
         public SceneMode SceneMode { get; private set; } = SceneMode.None;
+        public bool IsInTree => inTree;
 
         public SparseListSet<Node> nodes;
         public Node Root;
+        public RenderWorld RenderWorld;
 
         private readonly SceneTree sceneTree;
 
@@ -31,6 +34,8 @@ namespace DevoidEngine.Core
 
         public Scene(SceneTree tree)
         {
+            RenderWorld = new RenderWorld();
+
             nodes = new();
             sceneTree = tree;
 
